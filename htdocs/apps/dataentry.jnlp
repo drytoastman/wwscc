@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jnlp codebase="http://localhost/apps/" href="dataentry.jnlp" spec="1.0+">
+    <information>
+        <title>Data Entry</title>
+        <vendor>bwilson</vendor>
+        <homepage href=""/>
+        <description>Data Entry</description>
+        <description kind="short">Data Entry</description>
+    </information>
+	
+	<resources>
+		<j2se version="1.6+"/>
+		<jar eager="true" href="wwsccapps.jar"/>
+		<jar eager="true" href="RXTXcomm.jar"/>
+		<jar eager="true" href="sqlite.jar"/>
+		<jar eager="true" href="miglayout15-swing.jar"/>
+	</resources>
+
+	<resources os="Windows">
+		<nativelib href="windows.dll.jar"/>
+	</resources>
+
+	<application-desc main-class="org.wwscc.dataentry.DataEntry"/>
+
+	<component-desc/>
+
+  <security>
+      <all-permissions/>
+  </security>
+  
+</jnlp>

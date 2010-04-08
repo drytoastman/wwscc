@@ -1,0 +1,15 @@
+
+td.bestraw { 
+	background-color:#E55; 
+}
+
+td.bestnet {
+	background-color:#FE6;
+}
+
+@media print {
+	h1, h2, h3 { margin-top: 1px; margin-bottom: 2px; }
+	.raw, .carnum, .caryear, .cardesc { font-size: 0.8em; }
+	.noprint { display: none; }
+}
+

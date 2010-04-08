@@ -1,0 +1,14 @@
+# Can't use php_value statements in here as dreamhost uses php CGI
+
+# Redirect everything that is not an actual file to index.php, ignore database files
+# inside series to protect them from download or possibly do other stuff with that URL
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !css/*.css$
+RewriteRule ([^/]*).css$  css/$1.css
+
+RewriteCond %{REQUEST_FILENAME} !-f [OR]
+RewriteCond %{REQUEST_FILENAME} series/(.*) [OR]
+RewriteCond %{REQUEST_FILENAME} backup/(.*)
+RewriteRule . index.php
+

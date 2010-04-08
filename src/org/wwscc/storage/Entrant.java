@@ -1,0 +1,156 @@
+/*
+ * This software is licensed under the GPLv3 license, included as
+ * ./GPLv3-LICENSE.txt in the source distribution.
+ *
+ * Portions created by Brett Wilson are Copyright 2008 Brett Wilson.
+ * All rights reserved.
+ */
+
+package org.wwscc.storage;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
+public class Entrant
+{
+	private static Logger log = Logger.getLogger("org.wwscc.storage.Entrant");
+
+	protected String firstname;
+	protected String lastname;
+	protected Car car;
+	protected Map<Integer, Run> runs;
+	protected double index = 1.000;  // TODO load index when loading entrant
+
+	public Entrant()
+	{
+		runs = new HashMap<Integer,Run>();
+	}
+
+	static public class NumOrder implements Comparator<Entrant>
+	{
+	    public int compare(Entrant e1, Entrant e2) { return e1.car.number - e2.car.number; }
+	}
+
+	public String getName() { return firstname + " " + lastname; }
+	public String getFirstName() { return firstname; }
+	public String getLastName() { return lastname; }
+
+	public int getCarId() { return car.id; }
+	public String getCarModel() { return car.model; }
+	public String getCarColor() { return car.color; }
+	public String getCarDesc() { return car.year + " " + car.model + " " + car.color; }
+	public String getClassCode() { return car.classcode; }
+	public String getIndexCode() { return car.indexcode; }
+	public int getNumber() { return car.number; }
+
+	public boolean isInRunOrder() { return car.isInRunOrder; }
+	public void setInRunOrder(boolean flag) { car.isInRunOrder = flag; }
+
+
+	public Run getRun(int num)
+	{
+		return runs.get(num);
+	}
+
+	/**
+	 * Return an array of runs, each in their proper indexed locations, missing runs will be null
+	 */
+	public Run[] getRuns()
+	{
+		if (runs.size() <= 0)
+			return new Run[0];
+
+		Run result[] = new Run[Collections.max(runs.keySet())];
+		for (int ii = 0; ii < result.length; ii++)
+		{
+			result[ii] = runs.get(ii+1);
+		}
+
+		return result;
+	}
+
+	/**
+	 * Determine if this entrant has any runs entered at all
+	 */
+	public boolean hasRuns()
+	{
+		return (runs.size() > 0);
+	}
+
+	/**
+	 * Return the number of actual recorded runs (not the max run number recorded)
+	 */
+	public int runCount()
+	{
+		return runs.size();
+	}
+
+
+	public Map<Integer, Run> removeRuns()
+	{
+		Map<Integer, Run> ret = new HashMap<Integer,Run>(runs);
+		runs.clear();
+		Database.d.setEntrantRuns(car, runs.values());
+		return ret;
+	}
+
+	public void setRuns(Map<Integer,Run> newruns)
+	{
+		for (Run r : newruns.values())
+		{
+			r.updateTo(Database.d.currentEvent.id, Database.d.currentCourse, r.run, car.id, index);
+			runs.put(r.run, r);
+		}
+
+		Database.d.setEntrantRuns(car, runs.values());
+	}
+	
+	public void setRun(Run r, int pos)
+	{
+		// TODO, always set for global state?
+		r.updateTo(Database.d.currentEvent.id, Database.d.currentCourse, pos, car.id, index);
+
+		HashMap<Integer, Run> tempruns = new HashMap<Integer,Run>(runs);
+		tempruns.put(pos, r);
+		sortRuns(tempruns);
+		if (Database.d.setEntrantRuns(car, tempruns.values()))
+			runs = tempruns;
+	}
+
+
+	public void deleteRun(int num)
+	{
+		Run r = runs.get(num);
+		if (r != null)
+		{
+			HashMap<Integer, Run> tempruns = new HashMap<Integer,Run>(runs);
+			tempruns.remove(num);
+			sortRuns(tempruns);
+			if (Database.d.setEntrantRuns(car, tempruns.values()))
+				runs = tempruns;
+		}
+	}
+
+	private static Run.RawOrder rorder = new Run.RawOrder();
+	private static Run.NetOrder norder = new Run.NetOrder();
+
+	protected void sortRuns(Map<Integer, Run> theruns)
+	{
+		Run list[] = theruns.values().toArray(new Run[0]);
+		if (list.length == 0) return;
+
+		Arrays.sort(list, rorder);
+		for (int ii = 0; ii < list.length; ii++)
+			list[ii].rorder = ii+1;
+
+		Arrays.sort(list, norder);
+		for (int ii = 0; ii < list.length; ii++)
+			list[ii].norder = ii+1;
+	}
+}
+
+

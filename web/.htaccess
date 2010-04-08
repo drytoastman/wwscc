@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteBase /
+RewriteRule ^dreamhost\.fcgi/ - [L]
+RewriteRule ^(.*)$ dreamhost.fcgi/$1 [L]
+Options +ExecCGI
+AddHandler fastcgi-script .fcgi

@@ -1,0 +1,123 @@
+/** Some misc stuff, center divs, headers, no boders on linked images, **/
+
+div, h1, h2, h3, h4 { text-align:center; }
+a img { border: none; }
+
+
+/** Center tables with collapsed borders **/
+
+table {
+	margin: 0px auto;
+	border-collapse: collapse;
+}
+
+table.centercols { 
+	margin-top: 20px;
+}
+
+table.classresults, table.toptimes, table.auditreport, table.champ {
+	font-size:0.9em; 
+}
+
+table.toptimes {
+	display: inline;
+}
+
+
+/** Various TD types and their span internals **/
+
+td {
+	text-align:left; 
+	padding: 5px 3px 3px;
+}
+
+td.run {
+	text-align:center;
+}
+
+td.carnum, td.points {
+	text-align:right;
+}
+
+td.bestnet { 
+	font-weight: bold; 
+}
+
+td.bestnet .net {
+	text-decoration: underline;
+}
+
+td.attend {
+	text-align: center;
+}
+
+span { 
+	padding: 2px; 
+}
+
+span.net {
+	display: block;
+}
+
+span.raw {
+	display: block; 
+}
+
+span.reaction {
+	display: none;
+}
+
+/** Table header entries **/
+
+th { 
+	background-color: #dcdcdc; 
+	text-align: center;
+}
+
+th.classhead { 
+	text-align: left; 
+	background-color: #4682B4; 
+	color: white; 
+	border-top: 1px solid black;
+	padding-left: 6px;
+}
+
+table.champ th {
+	padding: 0px 5px;
+}
+
+
+/** These are all the special items at the top of the results **/
+
+div#seriestitle {
+	font: bold 2.0em Tahoma;
+	color: #3333FF;
+}
+
+div#sponsortitle {
+	font: bold 1.5em Tahoma;
+	color: #3333FF;
+}
+
+div#eventtitle {
+	font: bold 1.0em Tahoma;
+	color: #3333FF;
+}
+
+div#hosttitle {
+	font-weight: bold;
+}
+
+div#hosttitle span.host {
+	font-style: italic;
+}
+
+div#classlinks {
+	font-size:0.9em; 
+	margin-bottom: 10px;
+}
+
+div#classlinks a {
+	margin-left: 2px;
+	margin-right: 2px;
+}

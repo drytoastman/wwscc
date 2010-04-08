@@ -1,0 +1,177 @@
+
+/** Some misc stuff, center divs, headers, no boders on linked images, **/
+
+div, h1, h2, h3, h4 { text-align:center; }
+a img { border: none; }
+
+
+/** Center tables with collapsed borders **/
+
+table {
+	margin: 0px auto;
+	border-collapse: collapse;
+}
+
+table.centercols { 
+	margin-top: 20px;
+}
+
+table.classresults, table.toptimes, table.auditreport, table.champ {
+	font-size:0.9em; 
+}
+
+table.toptimes {
+	display: inline;
+}
+
+
+/** Various TD types and their span internals **/
+
+td {
+	text-align:left; 
+	padding: 5px 3px 3px;
+}
+
+td.run {
+	text-align:center;
+	vertical-align: top;
+}
+
+td.carnum, td.points {
+	text-align:right;
+}
+
+td.bestnet { 
+	font-weight: bold; 
+}
+
+td.bestnet .net {
+	text-decoration: underline;
+}
+
+td.attend {
+	text-align: center;
+}
+
+table.dialins td {
+	border: 1px solid black;
+}
+
+table.classresults td {
+	border-top: 1px solid black;
+}
+
+span { 
+	padding: 2px; 
+}
+
+span.net {
+	display: block;
+	font-size: 1.1em;
+}
+
+span.raw {
+	display: block; 
+	font-size: 0.75em;
+}
+
+span.reaction {
+	display: block;
+	font-size: 0.75em;
+}
+
+/** Table header entries **/
+
+th { 
+	background-color: #dcdcdc; 
+	text-align: center;
+}
+
+th.classhead { 
+	text-align: left; 
+	background-color: #4682B4; 
+	color: white; 
+	border-top: 1px solid black;
+	padding-left: 6px;
+}
+
+table.champ th {
+	padding: 0px 5px;
+}
+
+table.dialins th {
+	padding: 5px 5px 2px;
+	border: 1px solid black;
+}
+
+
+/** These are all the special items at the top of the results **/
+
+div#seriestitle {
+	font: bold 2.0em Tahoma;
+	color: #3333FF;
+}
+
+div#sponsortitle {
+	font: bold 1.5em Tahoma;
+	color: #3333FF;
+}
+
+div#eventtitle {
+	font: bold 1.0em Tahoma;
+	color: #3333FF;
+}
+
+div#hosttitle {
+	font-weight: bold;
+}
+
+div#hosttitle span.host {
+	font-style: italic;
+}
+
+div#classlinks {
+	font-size:0.9em; 
+	margin-bottom: 10px;
+}
+
+div#classlinks a {
+	margin-left: 2px;
+	margin-right: 2px;
+}
+
+ul li {
+text-align: right;
+font-size: 0.9em;
+font-family: arial;
+color: #EDD;
+}
+
+ul.classlist {
+margin: 0;
+padding: 0;
+list-style: none;
+width: 350px;
+}
+
+ul.classlist li {
+float: left;
+width: 70px;
+margin: 0;
+padding: 0;
+}
+
+ul.challist {
+margin: 0;
+padding: 0;
+list-style: none;
+width: 420px;
+}
+
+ul.challist li {
+float: left;
+width: 140px;
+margin: 0;
+padding: 0;
+}
+

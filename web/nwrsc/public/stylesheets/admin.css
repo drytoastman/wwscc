@@ -1,0 +1,55 @@
+
+table.reglist thead {
+background-color:#888;
+color: white;
+font-weight: bold;
+}
+	
+table.reglist tbody td {
+background-color:#eee;
+padding: 1px 5px 1px 5px;
+}
+	
+ol li { padding-bottom: 5px; }
+ol li li { padding-bottom: 0px; }
+
+
+label {
+	text-align: right;
+	margin-right: 10px;
+}
+
+.body {
+	margin-left: 20px;
+}
+
+table.input th {
+	text-align: right;
+	padding-right: 10px;
+}
+
+td.help {
+	padding-left: 8px;
+	font: 0.7em Arial;
+}
+	
+div.error { 
+	color: #FF0000; 
+	font-weight: bold;
+}
+
+.labelcol { 
+	text-align: right; 
+	font-weight: bold;
+	xbackground: #eef;
+}
+
+.fielderror {
+    color: red;
+    font-weight: bold;
+}
+
+.even {
+	background: #eee;
+}
+

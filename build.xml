@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<project name="wwscc" default="default" basedir=".">
+    <description>Builds, tests, and runs the project wwscc.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <import file="nbproject/profiler-build-impl.xml"/>
+
+    <target depends="init" name="makedist">
+
+		<loadfile property="dist.revision" srcFile="./.svn/entries">
+			<filterchain>
+				<headfilter lines="1" skip="3"/>
+				<deletecharacters chars="\n"/>
+			</filterchain>
+		</loadfile>
+
+		<property name="filehome" value="scorekeeper.wwscc.org" />
+		<property name="exename" value="WWSCCJavaSetup-r${dist.revision}" />
+		<property name="issname" value="java.iss" />
+
+        <echo file="${issname}"><![CDATA[[Setup]
+AppName=WWSCC Java Apps
+AppVerName=WWSCC Java Apps r${dist.revision}
+OutputDir=.
+OutputBaseFilename=${exename}
+AppPublisher=Brett Wilson
+DefaultDirName=c:\timing
+DefaultGroupName=WW Timing
+AllowNoIcons=yes
+Compression=lzma
+SolidCompression=yes
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Dirs]
+Name: "{app}\series"; Permissions: users-modify; Flags: uninsneveruninstall
+Name: "{app}\backup"; Permissions: users-modify; Flags: uninsneveruninstall
+
+[Files]
+Source: "dist\*"; DestDir: "{app}"; Excludes: ".svn,README.TXT"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "lib\*.dll"; DestDir: "{app}"; Excludes: ".svn"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.dataentry.DataEntry";  WorkingDir: "{app}";
+Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.registration.Registration";  WorkingDir: "{app}";
+Name: "{group}\Admin"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.admin.Admin";  WorkingDir: "{app}";
+Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.bwtimer.Timer";  WorkingDir: "{app}";
+Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.protimer.ProSoloInterface";  WorkingDir: "{app}";
+Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.challenge.ChallengeGUI";  WorkingDir: "{app}";
+Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}"
+
+[Registry]
+Root: HKCU; Subkey: "Software\JavaSoft\Prefs\/Data/Entry"; ValueType: string; ValueName: "installroot"; ValueData: "{app}"
+
+[Code]
+function InitializeSetup(): Boolean;
+var
+ ErrorCode: Integer;
+ JavaInstalled : Boolean;
+ Result1 : Boolean;
+ Versions: TArrayOfString;
+ I: Integer;
+begin
+ if RegGetSubkeyNames(HKLM, 'SOFTWARE\JavaSoft\Java Runtime Environment', Versions) then
+ begin
+  for I := 0 to GetArrayLength(Versions)-1 do
+   if JavaInstalled = true then
+   begin
+    //do nothing
+   end else
+   begin
+    if ( Versions[I][2]='.' ) and ( ( StrToInt(Versions[I][1]) > 1 ) or ( ( StrToInt(Versions[I][1]) = 1 ) and ( StrToInt(Versions[I][3]) >= 6 ) ) ) then
+    begin
+     JavaInstalled := true;
+    end else
+    begin
+     JavaInstalled := false;
+    end;
+   end;
+ end else
+ begin
+  JavaInstalled := false;
+ end;
+
+ if JavaInstalled then
+ begin
+  Result := true;
+ end else
+    begin
+  Result1 := MsgBox('This tool requires Java Runtime Environment version 1.6 or newer to run. Please download and install the JRE and run this setup again. Do you want to download it now?',
+   mbConfirmation, MB_YESNO) = idYes;
+  if Result1 = false then
+  begin
+   Result:=false;
+  end else
+  begin
+   Result:=false;
+   ShellExec('open','http://www.java.com/getjava/','','',SW_SHOWNORMAL,ewNoWait,ErrorCode);
+  end;
+    end;
+end;
+end.
+		]]></echo>
+
+		<exec executable="c:/Program Files/Inno Setup 5/iscc.exe" osfamily="Windows">
+			<arg line="${issname}"/>
+		</exec>
+
+		<input message="Enter keyboard-interactive password for ${filehome}" addproperty="scp.password" />
+		<scp todir="brett_wilson@${filehome}:scorekeeper.wwscc.org/setup/" password="${scp.password}">
+			<fileset dir=".">
+				<include name="${exename}.exe"/>
+			</fileset>
+		</scp>
+
+		<delete file="${exename}.exe"/>
+		<delete file="${issname}"/>
+
+    </target>
+
+
+</project>
