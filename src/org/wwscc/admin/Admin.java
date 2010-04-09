@@ -114,14 +114,12 @@ public class Admin extends JFrame
 	{
 		try
 		{
-			System.setProperty("swing.defaultlaf", UIManager.getSystemLookAndFeelClassName());
 			Logging.logSetup("admin");
 			new Admin();
 		}
 		catch (Throwable e)
 		{
 			log.log(Level.SEVERE, "Admin app died: " + e, e);
-			e.printStackTrace();
 		}
 	}
 

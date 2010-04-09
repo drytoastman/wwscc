@@ -203,10 +203,8 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 	{
 		try
 		{
-			System.setProperty("swing.defaultlaf", UIManager.getSystemLookAndFeelClassName());
 			Logging.logSetup("prointerface");
-
-			ProSoloInterface psi = new ProSoloInterface();
+			new ProSoloInterface();
 		}
 		catch (Throwable e)
 		{

@@ -21,7 +21,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.wwscc.dialogs.DatabaseDialog;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.MergeProcess;
@@ -131,9 +130,7 @@ public class Registration extends JFrame implements ActionListener
 	{
 		try
 		{
-			System.setProperty("swing.defaultlaf", UIManager.getSystemLookAndFeelClassName());
 			Logging.logSetup("registration");
-
 			SwingUtilities.invokeLater(new Runnable() { public void run() {
 				try {
 					new Registration();

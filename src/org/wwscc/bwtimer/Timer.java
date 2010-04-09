@@ -328,10 +328,6 @@ public class Timer extends JPanel implements ActionListener
 		}
 	}
 
-	static {
-		System.setProperty("swing.defaultlaf", UIManager.getSystemLookAndFeelClassName());
-	}
-	
 	public static void main(String args[])
 	{
 		try

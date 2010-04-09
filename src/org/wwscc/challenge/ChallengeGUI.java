@@ -99,7 +99,6 @@ public class ChallengeGUI extends JFrame
 	{
 		try
 		{
-			System.setProperty("swing.defaultlaf", UIManager.getSystemLookAndFeelClassName());
 			Logging.logSetup("challenge");
 			SwingUtilities.invokeLater(new Runnable() { public void run() {
 				try {

@@ -29,13 +29,8 @@ public class SqliteDatabase extends SQLDataInterface
 	
 	static 
 	{
-		try
-		{
-			System.loadLibrary("sqliteintf");
-			log.info("Sqlite version " + libversion());
-		} catch (UnsatisfiedLinkError e) {
-			log.severe("Can't load Sqlite Interface library\n<blockquote>"+e);
-		}
+		System.loadLibrary("sqliteintf");
+		log.info("Sqlite version " + libversion());
 	}
 
 	class Prepared

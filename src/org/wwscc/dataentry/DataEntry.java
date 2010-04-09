@@ -33,7 +33,7 @@ import org.wwscc.util.Messenger;
 
 public class DataEntry extends JFrame implements MessageListener
 {
-	private static Logger log = Logger.getLogger("org.wwscc.dataentry.DataEntry");
+	private static Logger log = Logger.getLogger(DataEntry.class.getName());
 
 	Menus menus;
 	EntryModel dataModel;
@@ -120,7 +120,6 @@ public class DataEntry extends JFrame implements MessageListener
 	{
 		try
 		{
-			System.setProperty("swing.defaultlaf", UIManager.getSystemLookAndFeelClassName());
 			Class.forName("org.wwscc.dataentry.Sounds");
 			Logging.logSetup("dataentry");
 			

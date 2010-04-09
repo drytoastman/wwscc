@@ -7,6 +7,30 @@
     <import file="nbproject/build-impl.xml"/>
     <import file="nbproject/profiler-build-impl.xml"/>
 
+	<target name="-post-jar">
+
+		<loadfile property="dist.revision" srcFile="./.svn/entries">
+			<filterchain>
+				<headfilter lines="1" skip="3"/>
+				<deletecharacters chars="\n"/>
+			</filterchain>
+		</loadfile>
+
+		<jar destfile="wwsccapps-r${dist.revision}.jar">
+			<zipgroupfileset dir="lib" includes="*.jar" /> 
+			<fileset dir="native">
+				<include name="**/*.so"/>
+				<include name="**/*.dll"/>
+			</fileset>
+			<fileset dir="${build.classes.dir}"/>
+			<manifest>
+				<attribute name="Main-Class" value="org.wwscc.util.Launcher" />
+			</manifest>
+		</jar>
+
+	</target>
+
+
     <target depends="init" name="makedist">
 
 		<loadfile property="dist.revision" srcFile="./.svn/entries">
