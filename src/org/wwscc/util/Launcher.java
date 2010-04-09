@@ -34,11 +34,10 @@ public class Launcher
 		try
 		{
 			libname = System.mapLibraryName(name);
+			dirname = System.getProperty("os.name").split("\\s")[0] + System.getProperty("sun.arch.data.model", "?");
 			File ondisk = new File(libname);
 			if (!ondisk.exists())
 			{
-				String osname = System.getProperty("os.name").split("\\s")[0];
-				dirname = osname + System.getProperty("sun.arch.data.model", "?");
 				InputStream is = Launcher.class.getResourceAsStream("/" + dirname + "/" + libname);
 				if (is == null)
 					throw new FileNotFoundException("Can't locate file in jar");
@@ -56,11 +55,11 @@ public class Launcher
 
 			System.loadLibrary(name);
 		}
-		catch (Exception e)
+		catch (Throwable e)
 		{
 			JOptionPane.showMessageDialog(null, 
-					"<HTML>Failed to unpack/load '/" + dirname + "/" + libname + "', " +
-					function + " will be broken<br><blockquote><font size=-1>" + e.getMessage(),
+					"<HTML><br><B>" + function + " will be broken</b><br><br>" +
+					"Failed to unpack or load '/" + dirname + "/" + libname + "': " + e.getMessage(),
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
