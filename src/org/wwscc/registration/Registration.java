@@ -43,22 +43,19 @@ public class Registration extends JFrame implements ActionListener
 		driverEntry = new EntryPanel();
 
 		BorderLayout layout = new BorderLayout();
-		layout.setHgap(5);
-		layout.setVgap(5);
-
 		JPanel content = new JPanel(layout);
 		content.add(setupBar, BorderLayout.NORTH);
 		content.add(driverEntry, BorderLayout.CENTER);
 
 		setContentPane(content);
-		setSize(450,768);
+		setSize(450, 570);
 		setVisible(true);
 		
 		log.info("Starting Application: " + new java.util.Date());
 
 		JMenu file = new JMenu("File");
-		file.add(createItem("Open Database"));
-		file.add(createItem("Download Database"));
+		file.add(createItem("Open Local Database"));
+		file.add(createItem("Download Database Copy"));
 		file.add(new JSeparator());
 		file.add(createItem("Merge Database"));
 		file.add(createItem("Quit"));
@@ -86,12 +83,12 @@ public class Registration extends JFrame implements ActionListener
 		{
 			System.exit(0);
 		}
-		else if (cmd.equals("Open Database"))
+		else if (cmd.equals("Open Local Database"))
 		{
 			Database.open();
 			Database.d.trackRegChanges(true);
 		}
-		else if (cmd.equals("Download Database"))
+		else if (cmd.equals("Download Database Copy"))
 		{
 			new Thread(new Runnable() {
 				public void run() {

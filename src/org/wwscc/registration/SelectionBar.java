@@ -20,6 +20,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
+import net.miginfocom.swing.MigLayout;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
 import org.wwscc.util.MT;
@@ -39,18 +40,18 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		super();
 
 		Messenger.register(MT.DATABASE_CHANGED, this);
+		setLayout(new MigLayout("ins 2, fill"));
 		setBorder(new BevelBorder(0));
 
 		Font f = new Font(Font.DIALOG, Font.BOLD, 14);
 		eventSelect = new JComboBox();
 		eventSelect.setActionCommand("eventChange");
 		eventSelect.addActionListener(this);
-		//((BasicComboBoxRenderer)eventSelect.getRenderer()).setBorder(new EmptyBorder(1,8,1,8));
 
 		JLabel l = new JLabel("Event:");
 		l.setFont(f);
 
-		add(l);
+		add(l, "al center, split");
 		add(eventSelect);
 		add(Box.createHorizontalStrut(40));
 	}

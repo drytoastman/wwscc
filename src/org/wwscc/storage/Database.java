@@ -16,6 +16,7 @@ import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.dialogs.DatabaseDialog;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
+import org.wwscc.util.MultiInputDialog;
 import org.wwscc.util.Prefs;
 
 /**
@@ -111,11 +112,28 @@ public class Database
 		file = null;
 	}
 
+	static class CancelException extends IOException {}
+
+	private static String getHost() throws IOException
+	{
+		MultiInputDialog dia = new MultiInputDialog("Scorekeeper Server");
+		String host = Prefs.getHomeServer();
+		dia.addString("Hostname", host);
+		if (dia.runDialog())
+		{
+			host = dia.getResponse("Hostname");
+			Prefs.setHomeServer(host);
+			return host;
+		}
+
+		throw new CancelException();
+	}
+
 	public static File download(boolean lockServerSide)
 	{
 		try
 		{
-			RemoteHTTPConnection conn = new RemoteHTTPConnection();
+			RemoteHTTPConnection conn = new RemoteHTTPConnection(getHost());
 			String dbname = (String)JOptionPane.showInputDialog(null,
 						"Select the file to check out", "Download File", JOptionPane.PLAIN_MESSAGE,
 						null, conn.getAvailableForCheckout()[0].toArray(), null);
@@ -129,6 +147,10 @@ public class Database
 			openDatabaseFile(out);
 			return out;
 		}
+		catch (CancelException ex)
+		{
+			return null;
+		}
 		catch (Exception ex)
 		{
 			log.severe("Download error: " + ex);
@@ -140,9 +162,10 @@ public class Database
 	{
 		try
 		{
-			RemoteHTTPConnection conn = new RemoteHTTPConnection();
 			if (file == null)
 				throw new Exception("Current database is not a local file, can't upload");
+
+			RemoteHTTPConnection conn = new RemoteHTTPConnection(getHost());
 			File save = file;
 			closeDatabase();
 			openFakeFile();
@@ -156,6 +179,10 @@ public class Database
 			Messenger.sendEvent(MT.COURSE_CHANGED, null);
 			Messenger.sendEvent(MT.RUNGROUP_CHANGED, null);
 			Prefs.setSeriesFile("");
+		}
+		catch (CancelException ex)
+		{
+			return;
 		}
 		catch (Exception ex)
 		{

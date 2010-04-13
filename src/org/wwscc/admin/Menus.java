@@ -11,16 +11,13 @@ package org.wwscc.admin;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
-import javax.swing.SwingWorker;
 import org.wwscc.storage.Database;
 import org.wwscc.util.MultiInputDialog;
 import org.wwscc.util.Prefs;
@@ -41,11 +38,6 @@ public class Menus extends JMenuBar implements ActionListener
 		add(file);
 
 		file.add(createItem("Open Database", null));
-		file.add(createItem("Checkout Database", null));
-		file.add(createItem("Checkin Database", null));
-		file.add(createItem("Runs To Reg", null));
-		file.addSeparator();
-		file.add(createItem("Copy Online Database", null));
 		file.addSeparator();
 		file.add(createItem("Online Setup", null));
 		file.add(createItem("Quit", null));
@@ -83,21 +75,6 @@ public class Menus extends JMenuBar implements ActionListener
 			Database.open();
 		}
 
-		else if (cmd.equals("Copy Online Database"))
-		{
-			new NetworkTask(false, false).execute(); // Download without lock
-		}
-
-		else if (cmd.equals("Checkout Database"))
-		{
-			new NetworkTask(false, true).execute(); // Download with lock
-		}
-
-		else if (cmd.equals("Checkin Database"))
-		{
-			new NetworkTask(true, false).execute(); // Upload
-		}
-
 		else if (cmd.equals("Online Setup"))
 		{
 			MultiInputDialog d = new MultiInputDialog("Online Setup");
@@ -122,55 +99,5 @@ public class Menus extends JMenuBar implements ActionListener
 			log.info("Unknown command from menubar: " + cmd); 
 		} 
 	} 
-
-
-	class NetworkTask extends SwingWorker<File, Object>
-	{
-		boolean upload;
-		boolean dolock;
-	
-		public NetworkTask(boolean upload, boolean dolock)
-		{
-			this.upload = upload;
-			this.dolock = dolock;
-		}
-	
-		@Override
-		public File doInBackground() 
-		{ return null; /*
-			DatabaseTransfer web = new DatabaseTransfer();
-	
-			if (upload)
-				return web.uploadDatabase();
-			else
-				return web.downloadDatabase(dolock); */
-		}
-
-		@Override
-		protected void done() 
-		{
-			try 
-			{
-				File f = get();
-				if (f != null)
-				{
-					if (upload)
-					{
-						//TODO backup here if local and upload, Database.backup(f);
-						Database.closeDatabase();
-					}
-					else
-					{
-						Database.open();
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				log.log(Level.SEVERE, "Web Interface Error", e);
-			}
-		}
-	}
-
 }
 

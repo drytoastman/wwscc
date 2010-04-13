@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -75,7 +76,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	TimeStorage defaultModel;
 	TimeStorage course2Model;
 
-	JPanel statusPanel;
 	JLabel reactionLabel;
 	JLabel sixtyLabel;
 	TimeTextField reaction;
@@ -91,6 +91,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	JButton del;
 	JButton enter;
 
+	JLabel connectionStatus;
 	ModeButtonGroup modeGroup;
 
 
@@ -103,6 +104,9 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.COURSE_CHANGED, this);
 
+		connectionStatus = new JLabel("");
+		modeGroup = new ModeButtonGroup();
+		
 		timerTakesFocus = false;
 		mode = Mode.OFF;
 		tclient = null;
@@ -117,8 +121,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		timeList.setPrototypeCellValue("999.999");
 		timeList.setCellRenderer(new RunListRenderer());
 		timeList.setFixedCellHeight(26);
-
-		statusPanel = new JPanel();
 
 		reactionLabel = new JLabel("Reac");
 		sixtyLabel = new JLabel("Sixty");
@@ -172,7 +174,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		
 		setLayout(new MigLayout("ins 0 0 0 4, hidemode 3, fillx", "[al right, 50!][fill,grow]", ""));
-		add(statusPanel, "spanx 2, growx, wrap");
+		add(connectionStatus, "spanx 2, al center, wrap");
 		add(del, "spanx 2, growx, wrap");
 		add(scroll, "spanx 2, growx, h 50:300:500, wrap");
 		add(reactionLabel, "");
@@ -206,7 +208,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	public JMenu getTimerMenu()
 	{
 		JMenu timerMenu = new JMenu("Timer");
-		modeGroup = new ModeButtonGroup();
 		for (Mode m : Mode.values())
 		{
 			JRadioButtonMenuItem bm = new JRadioButtonMenuItem();
@@ -285,25 +286,23 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				segVal[ii].setVisible(false);
 				segLabel[ii].setVisible(false);
 			}
-			statusPanel.setVisible(true);
 
 			/* Now try and setup the new model */
 			switch (newMode)
 			{
 				case OFF:
-					statusPanel.setVisible(false);
 					break;
 					
 				case BASIC_SERIAL:
 					commPort = newCommPort;
-					SerialDataInterface.get(commPort).open();
+					SerialDataInterface.open(commPort);
 					defaultModel = new SimpleTimeListModel(0);
 					course2Model = defaultModel;
 					break;
 
 				case BWTIMER_SERIAL:
 					commPort = newCommPort;
-					SerialDataInterface.get(commPort).open();
+					SerialDataInterface.open(commPort);
 					defaultModel = new TimerModel();
 					course2Model = defaultModel;
 					break;
@@ -329,7 +328,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		catch (Exception ioe) // IOError, etc, warn and go to off mode
 		{
 			String msg = ioe.getMessage();
-			if ((msg != null) && msg.equals("cancel"))
+			if ((msg != null) && !msg.equals("cancel"))
 			{
 				log.warning("Timer Select Failed (" + ioe.getMessage() + "), turning Off");
 				mode = Mode.OFF;				
@@ -338,6 +337,16 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			if (modeGroup != null)
 				modeGroup.setSelected(mode);  // Select off or previous mode if we canceled early.
 		}
+
+		String msg = modeGroup.getSelected();
+		if ((msg == null) || msg.equals("") || msg.equals("Off"))
+		{
+			msg = "Not Connected";
+			connectionStatus.setForeground(Color.RED);
+		}
+		else
+			connectionStatus.setForeground(Color.BLACK);
+		connectionStatus.setText(msg);
 	}
 
 	@Override
@@ -581,6 +590,15 @@ class ModeButtonGroup extends ButtonGroup
 				break;
 			}
 		}
+	}
+
+	public String getSelected()
+	{
+		ButtonModel m = getSelection();
+		for (AbstractButton b : buttons)
+			if (b.getModel() == m)
+				return b.getText();
+		return null;
 	}
 }
 

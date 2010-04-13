@@ -18,10 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TooManyListenersException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.wwscc.dialogs.PortDialog;
 import org.wwscc.storage.Run;
@@ -40,6 +40,7 @@ public class SerialDataInterface implements SerialPortEventListener
 	private InputStream is = null;
 	private ByteBuffer buffer = null;
 	private boolean open = false;
+	private int ioerrorbump = 0;
 
 
     public SerialDataInterface(CommPortIdentifier portId)
@@ -49,6 +50,12 @@ public class SerialDataInterface implements SerialPortEventListener
 
 	public void open() throws PortInUseException, UnsupportedCommOperationException, TooManyListenersException, IOException
 	{
+		if (open)
+		{
+			log.info(commId.getName() + " already open, skipping");
+			return;
+		}
+		
 		log.info("Opening port " + commId.getName());
 		buffer = new ByteBuffer();
 
@@ -72,6 +79,7 @@ public class SerialDataInterface implements SerialPortEventListener
 	
 	public void close() throws IOException
 	{
+		log.info("Closing port " + commId.getName());
 		os.close();
 		is.close();
 		port.close();
@@ -113,25 +121,28 @@ public class SerialDataInterface implements SerialPortEventListener
 	@Override
     public void serialEvent(SerialPortEvent e)
 	{
-		switch (e.getEventType())
+		int type = e.getEventType();
+		switch (type)
 		{
 		    case SerialPortEvent.DATA_AVAILABLE:
 				try
 				{
 					buffer.readData(is);
-
 					byte[] newline;
 					while ((newline = buffer.getNextLine()) != null)
 						processData(newline);
 				}
 				catch (IOException ex)
 				{
-					log.warning("serial port read error: " + ex);
-					return;
+					ioerrorbump++; // only show error if this is repeated, once is from reopening
+					if (ioerrorbump > 1)
+						log.log(Level.WARNING, "serial port read error: " + ex, ex);
 				}
+				ioerrorbump = 0;
 				break;
 
 			default:
+				System.out.println("Recieved serialEvent " + type);
 				break;
 		}
 	}   
@@ -185,7 +196,7 @@ public class SerialDataInterface implements SerialPortEventListener
 
 	private static Map<String, SerialDataInterface> _ports = null;
 
-	public static void scan()
+	private static void scan()
 	{
 		_ports = new HashMap<String, SerialDataInterface>();
 		java.util.Enumeration list = CommPortIdentifier.getPortIdentifiers();
@@ -198,16 +209,11 @@ public class SerialDataInterface implements SerialPortEventListener
 		}
 	}
 
-	public static Map<String, SerialDataInterface> getPorts()
+	private static Map<String, SerialDataInterface> getPorts()
 	{
 		if (_ports == null)
 			scan();
 		return _ports;
-	}
-
-	public static SerialDataInterface get(String name)
-	{
-		return getPorts().get(name);
 	}
 
 	public static SerialDataInterface open(String name)
@@ -247,31 +253,6 @@ public class SerialDataInterface implements SerialPortEventListener
 			log.warning("Unable to close port: " + e);
 		}
 	}
-
-	public static boolean isOpen(String name)
-	{
-		if (getPorts().containsKey(name))
-			return getPorts().get(name).open;
-		return false;
-	}
-
-	public static Collection<String> ports()
-	{
-		return getPorts().keySet();
-	}
-
-	public static void openAllPorts()
-	{
-		for (String k : getPorts().keySet())
-			open(k);
-	}
-
-	public static void closeAllPorts()
-	{
-		for (String k : getPorts().keySet())
-			close(k);
-	}
-
 
 	public static String selectPort(String prefName)
 	{

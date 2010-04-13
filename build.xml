@@ -64,16 +64,15 @@ Name: "{app}\series"; Permissions: users-modify; Flags: uninsneveruninstall
 Name: "{app}\backup"; Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
-Source: "dist\*"; DestDir: "{app}"; Excludes: ".svn,README.TXT"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "lib\*.dll"; DestDir: "{app}"; Excludes: ".svn"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "wwsccapps-r${dist.revision}.jar"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.dataentry.DataEntry";  WorkingDir: "{app}";
-Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.registration.Registration";  WorkingDir: "{app}";
-Name: "{group}\Admin"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.admin.Admin";  WorkingDir: "{app}";
-Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.bwtimer.Timer";  WorkingDir: "{app}";
-Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.protimer.ProSoloInterface";  WorkingDir: "{app}";
-Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-cp wwsccapps.jar org.wwscc.challenge.ChallengeGUI";  WorkingDir: "{app}";
+Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar DataEntry";  WorkingDir: "{app}";
+Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar Registration";  WorkingDir: "{app}";
+Name: "{group}\Admin"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar Admin";  WorkingDir: "{app}";
+Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar BWTimer";  WorkingDir: "{app}";
+Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar ProTimer";  WorkingDir: "{app}";
+Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar ChallengeGUI";  WorkingDir: "{app}";
 Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}"
 
 [Registry]

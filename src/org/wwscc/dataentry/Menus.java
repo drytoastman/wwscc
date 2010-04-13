@@ -47,8 +47,8 @@ public class Menus extends JMenuBar implements ActionListener
 		add(file);
 
 		file.add(createItem("Open Database", null));
-		file.add(createItem("Upload Database", null));
-		file.add(createItem("Download Database", null));
+		file.add(createItem("Download and Lock Database", null));
+		file.add(createItem("Upload and Unlock Database", null));
 		file.add(createItem("Quit", null));
 
 
@@ -91,6 +91,8 @@ public class Menus extends JMenuBar implements ActionListener
 		audit.add(createItem("In Run Order", null));
 		audit.add(createItem("Order By First Name", null));
 		audit.add(createItem("Order By Last Name", null));
+
+		items.get("Upload and Unlock Database").setEnabled(false);
 	}
 
 	protected JMenuItem createItem(String title, KeyStroke ks)
@@ -157,7 +159,8 @@ public class Menus extends JMenuBar implements ActionListener
 		{
 			Database.open();
 		}
-		else if (cmd.equals("Download Database"))
+
+		else if (cmd.equals("Download and Lock Database"))
 		{
 			new Thread(new Runnable() {
 				public void run() {
@@ -165,7 +168,7 @@ public class Menus extends JMenuBar implements ActionListener
 				}
 			}).start();
 		}
-		else if (cmd.equals("Upload Database"))
+		else if (cmd.equals("Upload and Unlock Database"))
 		{
 			new Thread(new Runnable() {
 				public void run() {
@@ -181,6 +184,6 @@ public class Menus extends JMenuBar implements ActionListener
 		{ 
 			log.info("Unknown command from menubar: " + cmd); 
 		} 
-	} 
+	}
 }
 

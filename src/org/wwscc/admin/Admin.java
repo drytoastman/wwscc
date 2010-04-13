@@ -19,7 +19,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.table.AbstractTableModel;
 import org.wwscc.storage.Database;
 import org.wwscc.util.Logging;

@@ -27,7 +27,7 @@ public class Prefs
 		}));
 	}
 
-	public static String getHomeServer() { return prefs.get("hostname", ""); }
+	public static String getHomeServer() { return prefs.get("hostname", "scorekeeper.wwscc.org"); }
 	public static String getPasswordFor(String db) { return prefs.get("password-"+db, ""); }
 	public static String getInstallRoot() { return prefs.get("installroot", "c:/timing"); }
 	public static String getSeriesFile(String def) { return prefs.get("seriesfile", def); }

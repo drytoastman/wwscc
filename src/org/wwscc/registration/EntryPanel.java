@@ -19,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 
 import net.miginfocom.swing.MigLayout;
@@ -60,19 +61,20 @@ public class EntryPanel extends DriverCarPanel
 		add(createTitle("1. Search"), "spanx 4, wrap");
 
 		add(new JLabel("First Name"), "");
-		add(firstSearch, "wrap");
+		add(firstSearch, "");
+		add(smallButton("Clear"), "wrap");
 		add(new JLabel("Last Name"), "");
 		add(lastSearch, "wrap");
-		add(smallButton("Clear"), "wrap");
+		
 
 		add(createTitle("2. Driver"), "spanx 4, wrap");
-		add(dscroll, "spanx 2, spany 2, hmin 150");
+		add(dscroll, "spanx 2, spany 2, hmin 130");
 		add(smallButton("New Driver"), "");
 		add(smallButton("Edit Driver"), "wrap");
 		add(driverInfo, "spanx2, wrap");
 
 		add(createTitle("3. Car"), "spanx 4, wrap");
-		add(cscroll, "spanx 2, spany 2, hmin 150");
+		add(cscroll, "spanx 2, spany 2, hmin 130");
 		add(smallButton("New Car"), "");
 		add(smallButton("New From"), "wrap");
 		add(carInfo, "spanx2, wrap");
@@ -86,7 +88,7 @@ public class EntryPanel extends DriverCarPanel
 	{
 		JLabel lbl = new JLabel(text);
 		lbl.setFont(new Font("serif", Font.BOLD, 16));
-		lbl.setBorder(new UnderlineBorder(10, 0, 0, 0));
+		lbl.setBorder(new UnderlineBorder(0, 0, 0, 0));
 
 		return lbl;
 	}

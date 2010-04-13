@@ -25,6 +25,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -51,9 +52,11 @@ public class Timer extends JPanel implements ActionListener
 	private static Logger log = Logger.getLogger(Timer.class.getCanonicalName());
 
 	ButtonGroup lights;
+	JLabel openPort;
 	JButton ds, df, ff; 
 	TimerTable table;
 	TimerModel model;
+	SerialDataInterface serial;
 
 	public Timer() throws IOException
 	{
@@ -61,7 +64,10 @@ public class Timer extends JPanel implements ActionListener
 
 		model = new TimerModel();
 		table = new TimerTable(model);
-		
+		JPanel bottom = new JPanel();
+		openPort = new JLabel("Not Connected");
+		bottom.add(openPort);
+
 		JScrollPane scroll = new JScrollPane(table);
 		scroll.getViewport().setBackground(Color.WHITE);
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -69,8 +75,10 @@ public class Timer extends JPanel implements ActionListener
 
 		add(controls(), BorderLayout.NORTH);
 		add(scroll, BorderLayout.CENTER);
-
+		add(bottom, BorderLayout.SOUTH);
+		
 		lights = new ButtonGroup();
+		serial = null;
 	}
 
 	private JComponent controls()
@@ -121,7 +129,40 @@ public class Timer extends JPanel implements ActionListener
 		bar.add(timer);
 		return bar;
 	}
-	
+
+	public void openPort()
+	{
+		String port;
+		try
+		{
+			if ((port = SerialDataInterface.selectPort("BasicSerial")) != null)
+			{
+				if (serial != null)
+				try { serial.close(); } catch (IOException ioe) {}
+				serial = SerialDataInterface.open(port);
+				openPort.setText("Connected to " + port);
+			}
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, "Can't open port: " + e, e);
+		}
+	}
+
+	public void closePort()
+	{
+		if (serial == null)
+			return;
+		try {
+			serial.close();
+			openPort.setText("Not connected");
+		} catch (IOException ioe) {
+			log.log(Level.SEVERE, "Failed to close: " + ioe, ioe);
+		}
+		
+		serial = null;
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
@@ -136,14 +177,9 @@ public class Timer extends JPanel implements ActionListener
 		else if (com.equals("Reset"))
 			model.reset();
 		else if (com.equals("Connect"))
-		{
-			SerialDataInterface.scan();
-			SerialDataInterface.openAllPorts();
-		}
+			openPort();
 		else if (com.equals("Disconnect"))
-		{
-			SerialDataInterface.closeAllPorts();
-		}
+			closePort();
 		else
 		{
 			try {
@@ -333,7 +369,6 @@ public class Timer extends JPanel implements ActionListener
 		try
 		{
 			Logging.logSetup("bwtimer");
-			SerialDataInterface.openAllPorts();
 			Timer t = new Timer();
 			
 			JFrame f = new JFrame("Timer");
@@ -353,6 +388,7 @@ public class Timer extends JPanel implements ActionListener
 
 
 			t.getRootPane().setDefaultButton(t.df);
+			t.openPort();
 		}
 		catch (Throwable e)
 		{

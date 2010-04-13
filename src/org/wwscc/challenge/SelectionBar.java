@@ -20,8 +20,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
@@ -88,7 +86,6 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		JComboBox combo = new JComboBox();
 		combo.setActionCommand(name);
 		combo.addActionListener(this);
-		((BasicComboBoxRenderer)combo.getRenderer()).setBorder(new EmptyBorder(1,8,1,8));
 		return combo;
 	}
 

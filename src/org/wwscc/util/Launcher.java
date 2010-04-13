@@ -25,8 +25,8 @@ import org.wwscc.registration.Registration;
  */
 public class Launcher
 {
-	static String[] apps = new String[] {"Admin", "DataEntry", "Challenge GUI", "Pro Timer",
-										"BW Timer", "Registration"};
+	static String[] apps = new String[] {"Admin", "DataEntry", "ChallengeGUI", "ProTimer",
+										"BWTimer", "Registration"};
 
 	public static void installLibrary(String name, String function)
 	{
@@ -58,7 +58,7 @@ public class Launcher
 		catch (Throwable e)
 		{
 			JOptionPane.showMessageDialog(null, 
-					"<HTML><br><B>" + function + " will be broken</b><br><br>" +
+					"<HTML><B>" + function + " will be broken</b><br><br>" +
 					"Failed to unpack or load '/" + dirname + "/" + libname + "': " + e.getMessage(),
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
@@ -92,11 +92,11 @@ public class Launcher
 				Admin.main(args);
 			else if (app.equals("DataEntry"))
 				DataEntry.main(args);
-			else if (app.equals("Challenge GUI"))
+			else if (app.equals("ChallengeGUI"))
 				ChallengeGUI.main(args);
-			else if (app.equals("Pro Timer"))
+			else if (app.equals("ProTimer"))
 				ProSoloInterface.main(args);
-			else if (app.equals("BW Timer"))
+			else if (app.equals("BWTimer"))
 				Timer.main(args);
 			else if (app.equals("Registration"))
 				Registration.main(args);

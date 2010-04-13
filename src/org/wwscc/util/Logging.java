@@ -47,13 +47,13 @@ public class Logging
 		{
 			prefix = roots[0].getPath();
 			if (prefix.equals("/"))
-				prefix = "%h/";
+				prefix = "%h";
 		}
 		else
-			prefix = "%h/";
+			prefix = "%h";
 
 
-		FileHandler fh = new FileHandler(prefix+name+".%g.log", 1000000, 10, true);
+		FileHandler fh = new FileHandler(prefix+"/"+name+".%g.log", 1000000, 10, true);
 		fh.setFormatter(formatter);
 		fh.setLevel(Level.ALL);
 
