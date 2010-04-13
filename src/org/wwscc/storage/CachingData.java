@@ -8,6 +8,7 @@
 
 package org.wwscc.storage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -137,10 +138,10 @@ public class CachingData extends DataInterface
 	public void setClass2RunGroupMapping(Map<String, Integer> l) { wrapped.setClass2RunGroupMapping(l); }
 
 	@Override
-	public void newDriver(Driver d) { wrapped.newDriver(d); }
+	public void newDriver(Driver d) throws IOException { wrapped.newDriver(d); }
 
 	@Override
-	public void updateDriver(Driver d) { wrapped.updateDriver(d); }
+	public void updateDriver(Driver d) throws IOException { wrapped.updateDriver(d); }
 
 	@Override
 	public List<Car> getCarsForDriver(int driverid) { return wrapped.getCarsForDriver(driverid); }
@@ -149,13 +150,13 @@ public class CachingData extends DataInterface
 	public List<String> getCarAttributes(String attr) { return wrapped.getCarAttributes(attr); }
 
 	@Override
-	public void registerCar(int carid) { wrapped.registerCar(carid); }
+	public void registerCar(int carid) throws IOException { wrapped.registerCar(carid); }
 
 	@Override
-	public void unregisterCar(int carid) { wrapped.unregisterCar(carid); }
+	public void unregisterCar(int carid) throws IOException { wrapped.unregisterCar(carid); }
 
 	@Override
-	public void newCar(Car c) { wrapped.newCar(c); }
+	public void newCar(Car c) throws IOException { wrapped.newCar(c); }
 
 	@Override
 	public void insertRun(Run r) { wrapped.insertRun(r); }
@@ -248,19 +249,19 @@ public class CachingData extends DataInterface
 	}
 
 	@Override
-	public void deleteDriver(Driver d) { wrapped.deleteDriver(d); }
+	public void deleteDriver(Driver d) throws IOException { wrapped.deleteDriver(d); }
 
 	@Override
-	public void deleteDrivers(Collection<Driver> d) { wrapped.deleteDrivers(d); }
+	public void deleteDrivers(Collection<Driver> d) throws IOException { wrapped.deleteDrivers(d); }
 
 	@Override
-	public void updateCar(Car d) { wrapped.updateCar(d); }
+	public void updateCar(Car d) throws IOException { wrapped.updateCar(d); }
 
 	@Override
-	public void deleteCar(Car d) { wrapped.deleteCar(d); }
+	public void deleteCar(Car d) throws IOException { wrapped.deleteCar(d); }
 
 	@Override
-	public void deleteCars(Collection<Car> d) { wrapped.deleteCars(d); }
+	public void deleteCars(Collection<Car> d) throws IOException { wrapped.deleteCars(d); }
 
 	@Override
 	public boolean isRegistered(Car c) { return wrapped.isRegistered(c); }

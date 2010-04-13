@@ -11,6 +11,7 @@ package org.wwscc.storage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -42,6 +43,7 @@ public class MergeProcess
 			for (Change change : Database.d.getChanges())
 			{
 				String type = change.getType();
+				log.info("Merge "+type+": " + change.arg);
 				if (type.equals("SETEVENT"))
 				{
 					Event e = (Event)change.arg;
@@ -97,11 +99,12 @@ public class MergeProcess
 
 			dest.commit();
 			Database.d.clearChanges();
+			Database.d.setCurrentEvent(Database.d.getCurrentEvent());
 		}
 		catch (Exception e)
 		{
 			dest.rollback();
-			log.severe("Unable to merge: " + e);
+			log.log(Level.SEVERE, "Unable to merge: " + e, e);
 		}
 	}
 }

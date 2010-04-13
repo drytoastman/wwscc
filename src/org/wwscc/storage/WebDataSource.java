@@ -100,6 +100,9 @@ public class WebDataSource extends SQLDataInterface
 				SADateTime d = (SADateTime)v;
 				out.write(DATETIMETYPE);
 				out.writeInt((int)d.getSeconds());
+			} else if (v == null) {
+				out.write(STRINGTYPE);
+				out.writeShort(0);
 			} else {
 				throw new IOException("unexpected param type: " + v.getClass());
 			}

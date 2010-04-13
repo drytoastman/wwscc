@@ -13,13 +13,14 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 
 import net.miginfocom.swing.MigLayout;
@@ -111,19 +112,25 @@ public class EntryPanel extends DriverCarPanel
 	public void actionPerformed(ActionEvent e)
 	{
 		String cmd = e.getActionCommand();
-
-		if (cmd.equals("Register Entrant") && (selectedCar != null))
+		try
 		{
-				Database.d.registerCar(selectedCar.getId());
-				reloadCars(selectedCar);
+			if (cmd.equals("Register Entrant") && (selectedCar != null))
+			{
+					Database.d.registerCar(selectedCar.getId());
+					reloadCars(selectedCar);
+			}
+			else if (cmd.equals("Unregister Entrant") && (selectedCar != null))
+			{
+					Database.d.unregisterCar(selectedCar.getId());
+					reloadCars(selectedCar);
+			}
+			else
+				super.actionPerformed(e);
 		}
-		else if (cmd.equals("Unregister Entrant") && (selectedCar != null))
+		catch (IOException ioe)
 		{
-				Database.d.unregisterCar(selectedCar.getId());
-				reloadCars(selectedCar);
+			log.log(Level.SEVERE, "Registation failed: " + ioe, ioe);
 		}
-		else
-			super.actionPerformed(e);
 	}
 
 

@@ -8,6 +8,7 @@
 
 package org.wwscc.storage;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -71,19 +72,19 @@ public abstract class DataInterface
 	public abstract Map<String, Integer> getClass2RunGroupMapping(); // return the class codes assigned to the current event
 	public abstract void setClass2RunGroupMapping(Map<String, Integer> l);  // set the classes/run group match ups for the current event
 
-	public abstract void newDriver(Driver d); // create a new driver from data in d and set the id variable
-	public abstract void updateDriver(Driver d); // update the driver values in the database
-	public abstract void deleteDriver(Driver d);
-	public abstract void deleteDrivers(Collection<Driver> d);
+	public abstract void newDriver(Driver d) throws IOException; // create a new driver from data in d and set the id variable
+	public abstract void updateDriver(Driver d) throws IOException; // update the driver values in the database
+	public abstract void deleteDriver(Driver d) throws IOException;
+	public abstract void deleteDrivers(Collection<Driver> d) throws IOException;
 
 	public abstract List<Car> getCarsForDriver(int driverid); // get all cars for this driverid
 	public abstract List<String> getCarAttributes(String attr); // get a unique list of possible 'attr' for the car
-	public abstract void registerCar(int carid); // add this car to the current event registration
-	public abstract void unregisterCar(int carid); // remove this car from the current event registration
-	public abstract void newCar(Car c); // create a new car entry with this data, sets the id variable
-	public abstract void updateCar(Car d); // update the car values in the database
-	public abstract void deleteCar(Car d);
-	public abstract void deleteCars(Collection<Car> d);
+	public abstract void registerCar(int carid) throws IOException; // add this car to the current event registration
+	public abstract void unregisterCar(int carid) throws IOException; // remove this car from the current event registration
+	public abstract void newCar(Car c) throws IOException; // create a new car entry with this data, sets the id variable
+	public abstract void updateCar(Car d) throws IOException; // update the car values in the database
+	public abstract void deleteCar(Car d) throws IOException;
+	public abstract void deleteCars(Collection<Car> d) throws IOException;
 	public abstract boolean isRegistered(Car c);
 
 	public abstract boolean setEntrantRuns(Car newCar, Collection<Run> runs);

@@ -16,9 +16,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -202,8 +204,12 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 				@Override
 				public void dialogFinished(Driver d) {
 					if (d == null) return;
-					Database.d.newDriver(d);
-					focusOnDriver(d.getFirstName(), d.getLastName());
+					try {
+						Database.d.newDriver(d);
+						focusOnDriver(d.getFirstName(), d.getLastName());
+					} catch (IOException ioe) {
+						log.log(Level.SEVERE, "Failed to create driver: " + ioe, ioe);
+					}
 				}
 			});
 		}
@@ -215,8 +221,12 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 				@Override
 				public void dialogFinished(Driver d) {
 					if (d == null) return;
-					Database.d.updateDriver(d);
-					driverInfo.setText(driverDisplay(d));
+					try {
+						Database.d.updateDriver(d);
+						driverInfo.setText(driverDisplay(d));
+					} catch (IOException ioe) {
+						log.log(Level.SEVERE, "Failed to update driver: " + ioe, ioe);
+					}
 				}
 			});
 		}
@@ -234,13 +244,20 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 				public void dialogFinished(Car c) {
 					if (c == null)
 						return;
-					if (selectedDriver != null)
+					try
 					{
-						c.setDriverId(selectedDriver.getId());
-						Database.d.newCar(c);
-						reloadCars(c);
-						if (cd.getAddToRunOrder())
-							Messenger.sendEvent(MT.CAR_ADD, c.getId());
+						if (selectedDriver != null)
+						{
+							c.setDriverId(selectedDriver.getId());
+							Database.d.newCar(c);
+							reloadCars(c);
+							if (cd.getAddToRunOrder())
+								Messenger.sendEvent(MT.CAR_ADD, c.getId());
+						}
+					}
+					catch (IOException ioe)
+					{
+						log.log(Level.SEVERE, "Failed to create a car: " + ioe, ioe);
 					}
 				}
 			});

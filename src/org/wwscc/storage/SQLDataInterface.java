@@ -196,6 +196,7 @@ public abstract class SQLDataInterface extends DataInterface
 			return;
 		
 		try{
+			log.info("Track " + type + ", " + o);
 			executeUpdate("TRACK", newList(type, serialize(o)));
 		} catch (IOException ioe) {
 			logError("trackChange", ioe);
@@ -634,54 +635,33 @@ public abstract class SQLDataInterface extends DataInterface
 
 
 	@Override
-	public void newDriver(Driver d)
+	public void newDriver(Driver d) throws IOException
 	{
-		try
-		{
-			List<Object> vals = newList();
-			AUTO.addDriverValues(d, vals);
-			executeUpdate("INSERTDRIVER", vals);
-			d.id = lastInsertId();
-			trackChange("INSERTDRIVER", d);
-		}
-		catch (Exception ioe)
-		{
-			logError("newDriver", ioe);
-		}
+		List<Object> vals = newList();
+		AUTO.addDriverValues(d, vals);
+		executeUpdate("INSERTDRIVER", vals);
+		d.id = lastInsertId();
+		trackChange("INSERTDRIVER", d);
 	}
 
 	@Override
-	public void updateDriver(Driver d)
+	public void updateDriver(Driver d) throws IOException
 	{
-		try
-		{
-			List<Object> vals = new ArrayList<Object>();
-			AUTO.addDriverValues(d, vals);
-			vals.add(d.id);
-			executeUpdate("UPDATEDRIVER", vals);
-			trackChange("UPDATEDRIVER", d);
-		}
-		catch (Exception ioe)
-		{
-			logError("updateDriver", ioe);
-		}
+		List<Object> vals = new ArrayList<Object>();
+		AUTO.addDriverValues(d, vals);
+		vals.add(d.id);
+		executeUpdate("UPDATEDRIVER", vals);
+		trackChange("UPDATEDRIVER", d);
 	}
 
 	@Override
-	public void deleteDriver(Driver d)
+	public void deleteDriver(Driver d) throws IOException
 	{
-		try
-		{
-			executeUpdate("DELETEDRIVER", newList(d.id));
-		}
-		catch (Exception ioe)
-		{
-			logError("deleteDriver", ioe);
-		}
+		executeUpdate("DELETEDRIVER", newList(d.id));
 	}
 
 	@Override
-	public void deleteDrivers(Collection<Driver> list)
+	public void deleteDrivers(Collection<Driver> list) throws IOException
 	{
 		try
 		{
@@ -690,10 +670,10 @@ public abstract class SQLDataInterface extends DataInterface
 				executeUpdate("DELETEDRIVER", newList(d.id));
 			commit();
 		}
-		catch (Exception ioe)
+		catch (IOException ioe)
 		{
 			rollback();
-			logError("deleteDrivers", ioe);
+			throw ioe;
 		}
 	}
 
@@ -737,86 +717,51 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void registerCar(int carid) 
+	public void registerCar(int carid) throws IOException
 	{
-		try
-		{
-			List<Object> vals = newList(currentEvent.id, carid);
-			executeUpdate("REGISTERCAR", vals);
-			trackChange("REGISTERCAR", carid);
-		}
-		catch (Exception ioe)
-		{
-			logError("registerCar", ioe);
-		}
+		List<Object> vals = newList(currentEvent.id, carid);
+		executeUpdate("REGISTERCAR", vals);
+		trackChange("REGISTERCAR", carid);
 	}
 
 	@Override
-	public void unregisterCar(int carid)
+	public void unregisterCar(int carid) throws IOException
 	{
-		try
-		{
-			List<Object> vals = newList(currentEvent.id, carid);
-			executeUpdate("UNREGISTERCAR", vals);
-			trackChange("UNREGISTERCAR", carid);
-		}
-		catch (Exception ioe)
-		{
-			logError("unregisterCar", ioe);
-		}
+		List<Object> vals = newList(currentEvent.id, carid);
+		executeUpdate("UNREGISTERCAR", vals);
+		trackChange("UNREGISTERCAR", carid);
 	}
 
 
 	@Override
-	public void newCar(Car c) 
+	public void newCar(Car c) throws IOException
 	{
-		try
-		{
-			List<Object> vals = newList();
-			AUTO.addCarValues(c, vals);
-			executeUpdate("INSERTCAR", vals);
-			c.id = lastInsertId();
-			trackChange("INSERTCAR", c);
-		}
-		catch (Exception ioe)
-		{
-			logError("newCar", ioe);
-		}
+		List<Object> vals = newList();
+		AUTO.addCarValues(c, vals);
+		executeUpdate("INSERTCAR", vals);
+		c.id = lastInsertId();
+		trackChange("INSERTCAR", c);
 	}
 
 
 	@Override
-	public void updateCar(Car c)
+	public void updateCar(Car c) throws IOException
 	{
-		try
-		{
-			List<Object> vals = new ArrayList<Object>();
-			AUTO.addCarValues(c, vals);
-			vals.add(c.id);
-			executeUpdate("UPDATECAR", vals);
-			trackChange("UPDATECAR", c);
-		}
-		catch (Exception ioe)
-		{
-			logError("updateCar", ioe);
-		}
+		List<Object> vals = new ArrayList<Object>();
+		AUTO.addCarValues(c, vals);
+		vals.add(c.id);
+		executeUpdate("UPDATECAR", vals);
+		trackChange("UPDATECAR", c);
 	}
 
 	@Override
-	public void deleteCar(Car c)
+	public void deleteCar(Car c) throws IOException
 	{
-		try
-		{
-			executeUpdate("DELETECAR", newList(c.id));
-		}
-		catch (Exception ioe)
-		{
-			logError("deleteCar", ioe);
-		}
+		executeUpdate("DELETECAR", newList(c.id));
 	}
 
 	@Override
-	public void deleteCars(Collection<Car> list)
+	public void deleteCars(Collection<Car> list) throws IOException
 	{
 		try
 		{
@@ -825,10 +770,10 @@ public abstract class SQLDataInterface extends DataInterface
 				executeUpdate("DELETECAR", newList(c.id));
 			commit();
 		}
-		catch (Exception ioe)
+		catch (IOException ioe)
 		{
 			rollback();
-			logError("deleteCars", ioe);
+			throw ioe;
 		}
 	}
 

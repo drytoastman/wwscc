@@ -8,6 +8,7 @@
 
 package org.wwscc.admin;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.table.AbstractTableModel;
@@ -74,7 +75,7 @@ public class DataStore
 		driverModel.fireTableDataChanged();
 	}
 
-	public void deleteDrivers(int rows[])
+	public void deleteDrivers(int rows[]) throws IOException
 	{
 		ArrayList<Driver> list = new ArrayList<Driver>();
 		for (int r : rows)
@@ -82,11 +83,12 @@ public class DataStore
 			drivers.remove(driverlist[r].getId());
 			list.add(driverlist[r]);
 		}
+		
 		Database.d.deleteDrivers(list);
 		dataChanged();
 	}
 
-	public void deleteCars(int rows[])
+	public void deleteCars(int rows[])  throws IOException
 	{
 		ArrayList<Car> list = new ArrayList<Car>();
 		for (int r : rows)

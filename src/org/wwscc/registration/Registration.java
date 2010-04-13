@@ -25,6 +25,7 @@ import org.wwscc.dialogs.DatabaseDialog;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.MergeProcess;
 import org.wwscc.util.Logging;
+import org.wwscc.util.Prefs;
 
 
 public class Registration extends JFrame implements ActionListener
@@ -99,7 +100,7 @@ public class Registration extends JFrame implements ActionListener
 		}
 		else if (cmd.equals("Merge Database"))
 		{
-			DatabaseDialog dd = new DatabaseDialog(null, "1.1.1.1/"+Database.d.getCurrentSeries(), true);
+			DatabaseDialog dd = new DatabaseDialog(null, Prefs.getMergeHost()+"/"+Database.d.getCurrentSeries(), true);
 			dd.doDialog("Merge Series", null);
 
 			if (dd.getResult() != null)
@@ -107,9 +108,13 @@ public class Registration extends JFrame implements ActionListener
 				String spec = (String)dd.getResult();
 				final String sp[] = spec.split("/");
 				if (sp.length != 2)
+				{
 					log.severe("Invalid network spec: " + spec);
-				else
-					new Thread(new Runnable() { public void run() { MergeProcess.mergeTo(sp[0], sp[1]); }}).start();
+					return;
+				}
+
+				Prefs.setMergeHost(sp[0]);
+				new Thread(new Runnable() { public void run() { MergeProcess.mergeTo(sp[0], sp[1]); }}).start();
 			}
 		}
 		else

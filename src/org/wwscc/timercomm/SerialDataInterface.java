@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
 import java.util.logging.Level;
@@ -198,14 +199,30 @@ public class SerialDataInterface implements SerialPortEventListener
 
 	private static void scan()
 	{
-		_ports = new HashMap<String, SerialDataInterface>();
+		if (_ports == null)
+			_ports = new HashMap<String, SerialDataInterface>();
+		List<CommPortIdentifier> found = new ArrayList<CommPortIdentifier>();
 		java.util.Enumeration list = CommPortIdentifier.getPortIdentifiers();
 		while (list.hasMoreElements())
 		{
 			CommPortIdentifier c = (CommPortIdentifier)list.nextElement();
 			log.fine("RXTX found " + c.getName());
 			if (c.getPortType() == CommPortIdentifier.PORT_SERIAL)
+				found.add(c);
+		}
+
+		// Add new
+		for (CommPortIdentifier c : found)
+		{
+			if (!_ports.containsKey(c.getName()))
 				_ports.put(c.getName(), new SerialDataInterface(c));
+		}
+
+		// Remove missing
+		for (SerialDataInterface di : _ports.values())
+		{
+			if (!found.contains(di.commId))
+				_ports.remove(di.commId.getName());
 		}
 	}
 
@@ -261,6 +278,7 @@ public class SerialDataInterface implements SerialPortEventListener
 		a = new ArrayList<String>();
 		u = new ArrayList<String>();
 
+		scan();
 		for (String s : getPorts().keySet())
 		{
 			try

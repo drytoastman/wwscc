@@ -9,6 +9,7 @@
 package org.wwscc.admin;
 
 import java.awt.BorderLayout;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultRowSorter;
@@ -65,7 +66,11 @@ public class Admin extends JFrame
 				System.out.println("double click on " + r);
 			}
 			public void cutModelRows(int r[]) {
-				dataStore.deleteDrivers(r);
+				try {
+					dataStore.deleteDrivers(r);
+				} catch (IOException ioe) {
+					log.log(Level.SEVERE, "Driver cut failed: " + ioe, ioe);
+				}
 			}
 		};
 		d.setAutoCreateRowSorter(true);
@@ -90,7 +95,11 @@ public class Admin extends JFrame
 				System.out.println("double click on " + r);
 			}
 			public void cutModelRows(int r[]) {
-				dataStore.deleteCars(r);
+				try {
+					dataStore.deleteCars(r);
+				} catch (IOException ioe) {
+					log.log(Level.SEVERE, "Car cut failed: " + ioe, ioe);
+				}
 			}
 		};
 		c.setAutoCreateRowSorter(true);

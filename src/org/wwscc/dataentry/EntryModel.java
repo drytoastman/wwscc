@@ -8,8 +8,10 @@
 
 package org.wwscc.dataentry;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.table.AbstractTableModel;
@@ -50,7 +52,11 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		if (tableData == null) return;
 
 		tableData.add(Database.d.loadEntrant(carid, true));
-		Database.d.registerCar(carid);
+		try {
+			Database.d.registerCar(carid);
+		} catch (IOException ioe) {
+			log.log(Level.WARNING, "Registration during car add failed: " + ioe, ioe);
+		}
 		if (Prefs.useDoubleCourseMode())
 			Database.d.addToRunOrderOpposite(carid);
 
