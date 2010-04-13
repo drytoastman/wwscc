@@ -123,7 +123,7 @@
 		%elif len(ev.regentries) >= ev.perlimit:
 			<span class='limit'>You have reached this event's prereg limit of ${ev.perlimit} car(s).</span>
 		%else:
-			${carSelection(None, ev, c.cars, ev.regentries)}
+			${carSelection(None, ev, c.cars, [x.carid for x in ev.regentries])}
 		%endif
 
 		<%doc> Where they change their registration </%doc>
@@ -131,7 +131,7 @@
 			<div class='espacer'></div>
 			<div class='erule'>Change/Unregister a currently registered car</div>
 			%for reg in ev.regentries:
-				${carSelection(reg, ev, c.cars, ev.regentries)}
+				${carSelection(reg, ev, c.cars, [x.carid for x in ev.regentries])}
 			%endfor
 		%endif
 
