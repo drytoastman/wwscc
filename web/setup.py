@@ -73,6 +73,6 @@ if sys.argv[1] == 'sdist':
 			zip.write(distfile, 'pysource/%s' % f)
 	zip.close()
 	
-	subprocess.call("scp PythonSetup-* %s bwilson@files.bw.homedns.org:/data/svn/files/" % distfile, shell=True)
+	subprocess.call("scp PythonSetup-* %s brett_wilson@scorekeeper.wwscc.org:scorekeeper.wwscc.org/setup/" % distfile, shell=True)
 	
 
