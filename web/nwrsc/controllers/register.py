@@ -139,6 +139,7 @@ class RegisterController(BaseController):
 
 		query = self.session.query(Car.number).distinct().filter(Car.classcode==c.code).filter(Car.driverid!=c.driverid)
 		c.numbers = set([x[0] for x in query])
+		c.largestnumber = int(self.settings.get('largestcarnumber', 1999))
 		return render_mako('/register/available.mako')
 
 	def new(self):

@@ -38,7 +38,7 @@ color: blue;
 
 <h3>Your Available Numbers For ${c.code} - Select One</h3>
 <ul>
-%for num in range(0, 2000):
+%for num in range(0, c.largestnumber+1):
 %if num in c.numbers:
 	<li>${num}</li>
 %else:
