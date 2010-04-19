@@ -32,9 +32,12 @@ import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.Scrollable;
 import javax.swing.TransferHandler;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.Entrant;
 import org.wwscc.util.MessageListener;
@@ -45,7 +48,7 @@ import org.wwscc.util.Messenger;
  * The BracketPane displays a tournament bracket, the driver labels and some action buttons.
  * @author bwilson
  */
-public class BracketPane extends JComponent implements MessageListener, Scrollable
+public class BracketPane extends JLayeredPane implements MessageListener, Scrollable
 {
 	private static Logger log = Logger.getLogger(BracketPane.class.getCanonicalName());
 	private static final int roundWidth = 100;
@@ -100,19 +103,29 @@ public class BracketPane extends JComponent implements MessageListener, Scrollab
 			lower = new EntrantLabel(round, Id.Entry.Level.LOWER);
 			open = new JButton("Open " + round);
 			//open.setTransferHandler(roundMove);
+			
 			open.addMouseMotionListener(new MouseAdapter() {
 				@Override
 				public void mouseDragged(MouseEvent e)
 				{
 					JComponent c = (JComponent)e.getSource();
 					TransferHandler th = c.getTransferHandler();
-					th.exportAsDrag(c, e, TransferHandler.MOVE);
+					if (th != null)
+						th.exportAsDrag(c, e, TransferHandler.MOVE);
 				}
 			});
+
 			open.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e)
 				{
-					Messenger.sendEvent(MT.OPEN_ROUND, new Id.Round(challengeid, round));
+					RoundViewer v = new RoundViewer(model, new Id.Round(challengeid, round));
+					v.addInternalFrameListener(new InternalFrameAdapter() {
+						public void internalFrameClosed(InternalFrameEvent e) {
+							requestFocus();
+					}});
+					add(v, new Integer(10));
+					Dimension size = v.getPreferredSize();
+					v.setBounds(open.getX(), open.getY(), size.width, size.height);
 				}
 			});
 		}
@@ -262,7 +275,8 @@ public class BracketPane extends JComponent implements MessageListener, Scrollab
 
 		setMinimumSize(newSize);
 		setPreferredSize(newSize);
-		setMaximumSize(newSize);
+		//setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+		setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 		
 		/* +1 extra round for the 3rd place bracket 
 		 * example:
@@ -296,19 +310,19 @@ public class BracketPane extends JComponent implements MessageListener, Scrollab
 				rg = rounds.get(ii);
 				rg.upper.updateEntrant();
 				rg.lower.updateEntrant();
-				add(rg.upper);
-				add(rg.lower);
-				add(rg.open);
+				add(rg.upper, new Integer(5));
+				add(rg.lower, new Integer(5));
+				add(rg.open, new Integer(5));
 			}
 			
 			thirdPRound.upper.updateEntrant();
 			thirdPRound.lower.updateEntrant();
-			add(thirdPRound.upper);
-			add(thirdPRound.lower);
-			add(thirdPRound.open);
+			add(thirdPRound.upper, new Integer(5));
+			add(thirdPRound.lower, new Integer(5));
+			add(thirdPRound.open, new Integer(5));
 			
-			add(winner1);
-			add(winner3);
+			add(winner1, new Integer(5));
+			add(winner3, new Integer(5));
 			winner1.updateEntrant();
 			winner3.updateEntrant();
 		}
@@ -492,7 +506,7 @@ public class BracketPane extends JComponent implements MessageListener, Scrollab
 			System.out.println(ioe.getMessage());
 		}
 	}
-	
+
 	@Override
 	public Dimension getPreferredScrollableViewportSize()
 	{

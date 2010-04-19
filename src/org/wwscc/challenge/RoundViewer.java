@@ -19,9 +19,13 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.SoftBevelBorder;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.components.DoubleLabel;
 import org.wwscc.storage.ChallengeRound;
@@ -36,7 +40,7 @@ import org.wwscc.util.TimeTextField;
 /**
  *
  */
-public class RoundViewer extends JPanel implements MessageListener
+public class RoundViewer extends JInternalFrame implements MessageListener
 {
 	static NumberFormat df;
 	static
@@ -53,22 +57,15 @@ public class RoundViewer extends JPanel implements MessageListener
 	static Color next2 = new Color(150, 50, 0);
 
 	ChallengeModel model;
-	JButton close;
 	JLabel round, result, rldiff, lrdiff;
 	EntrantDisplay top, bottom;
 	Id.Round roundId;
 
 	public RoundViewer(ChallengeModel m, Id.Round rid)
-	{		
+	{
+		super("Round X", false, true);
 		model = m;
 		roundId = rid;
-
-		close = new IconButton();
-		close.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Messenger.sendEvent(MT.CLOSE_ROUND, roundId);
-			}
-		});
 		
 		top = new EntrantDisplay(rid.makeUpper());
 		bottom = new EntrantDisplay(rid.makeLower());
@@ -78,11 +75,11 @@ public class RoundViewer extends JPanel implements MessageListener
 		result = new JLabel("No comment yet");
 		result.setFont(new Font(Font.DIALOG, Font.BOLD, 12));
 		
-		setLayout(new MigLayout("ins 1", "[70][]"));
-		setBorder(new BevelBorder(BevelBorder.RAISED));
+		setLayout(new MigLayout("ins 3", "[70][]"));
+		//setBorder(new SoftBevelBorder(BevelBorder.RAISED));
+		//setBorder(new LineBorder(Color.GRAY, 2));
+		
 		setBackground(Color.WHITE);
-
-		add(close, "spanx 2, right, wrap");
 		
 		add(top.nameLbl, "wmax 70");
 		add(top.leftRun, "growx, wrap");
@@ -102,13 +99,19 @@ public class RoundViewer extends JPanel implements MessageListener
 
 		event(MT.ACTIVE_CHANGE, null);
 		event(MT.RUN_CHANGED, null);
+		addInternalFrameListener(new InternalFrameAdapter() {
+			public void internalFrameClosed(InternalFrameEvent e)
+			{
+				System.out.println("unregistering");
+				Messenger.unregister(MT.ACTIVE_CHANGE, RoundViewer.this);
+				Messenger.unregister(MT.RUN_CHANGED, RoundViewer.this);
+			}
+		});
+
+		pack();
+		setVisible(true);
 	}
 
-	public void close()
-	{
-		Messenger.unregister(MT.ACTIVE_CHANGE, this);
-		Messenger.unregister(MT.RUN_CHANGED, this);
-	}
 	
 	public void updateResults()
 	{	
@@ -291,7 +294,7 @@ public class RoundViewer extends JPanel implements MessageListener
 			info = new JLabel("0.000");
 
 			setLayout(new MigLayout(""));
-			setBorder(new BevelBorder(BevelBorder.RAISED));
+			setBorder(new SoftBevelBorder(BevelBorder.RAISED));
 
 			add(activate);
 			add(value, "");
