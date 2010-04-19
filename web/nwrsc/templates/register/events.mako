@@ -99,11 +99,11 @@
 		%endif
 		%if ev.snail:
 			<span class='elabel'>Mail:</span>
-			<div class='eaddress'>${ev.snail}</div>
+			<div class='eaddress'>${ev.snail|n}</div>
 		%endif
 		%if ev.notes:
 			<span class='elabel'>Notes:</span>
-			<div class='enotes'>${ev.notes}</div>
+			<div class='enotes'>${ev.notes|n}</div>
 		%endif
 	%endif
 
