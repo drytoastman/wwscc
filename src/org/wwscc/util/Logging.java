@@ -62,7 +62,7 @@ public class Logging
 
 		root.addHandler(ah);
 		root.addHandler(fh);
-		//root.addHandler(ch);
+		root.addHandler(ch);
 
 		root.setLevel(Level.WARNING);
 		wwscc.setLevel(Level.FINER);

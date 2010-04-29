@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.ChallengeRound;
-import org.wwscc.storage.ChallengeRound.RoundEntry;
+import org.wwscc.storage.ChallengeRound.RoundEntrant;
 import org.wwscc.storage.ChallengeRun;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Dialins;
@@ -90,14 +90,14 @@ public class ChallengeModel implements MessageListener
 			if (rid.isLeft())
 			{
 				topleft = true;
-				msg.left = r.getCar1().getDial();
-				msg.right = r.getCar2().getDial();
+				msg.left = r.getTopCar().getDial();
+				msg.right = r.getBottomCar().getDial();
 			}
 			else
 			{
 				topleft = false;
-				msg.left = r.getCar2().getDial();
-				msg.right = r.getCar1().getDial();
+				msg.left = r.getBottomCar().getDial();
+				msg.right = r.getTopCar().getDial();
 			}
 		}
 		else
@@ -105,14 +105,14 @@ public class ChallengeModel implements MessageListener
 			if (rid.isLeft())
 			{
 				topleft = false;
-				msg.left = r.getCar2().getDial();
-				msg.right = r.getCar1().getDial();
+				msg.left = r.getBottomCar().getDial();
+				msg.right = r.getTopCar().getDial();
 			}
 			else
 			{
 				topleft = true;
-				msg.left = r.getCar1().getDial();
-				msg.right = r.getCar2().getDial();
+				msg.left = r.getTopCar().getDial();
+				msg.right = r.getBottomCar().getDial();
 			}
 		}
 
@@ -172,7 +172,7 @@ public class ChallengeModel implements MessageListener
 	public ChallengeRun getRun(Id.Run rid)
 	{
 		ChallengeRound r = getRound(rid);
-		RoundEntry re = (rid.isUpper()) ? r.getCar1() : r.getCar2();
+		RoundEntrant re = (rid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 		return (rid.isLeft()) ? re.getLeft() : re.getRight();
 	}
 
@@ -193,7 +193,7 @@ public class ChallengeModel implements MessageListener
 			r.setChallengeRound(rid);
 
 			ChallengeRound round = getRound(rid);
-			RoundEntry re = (rid.isUpper()) ? round.getCar1() : round.getCar2();
+			RoundEntrant re = (rid.isUpper()) ? round.getTopCar() : round.getBottomCar();
 			r.setCarId(re.getCar());
 			round.applyRun(r);
 			Database.d.insertRun(r);
@@ -233,7 +233,7 @@ public class ChallengeModel implements MessageListener
 	public void setEntrant(Id.Entry eid, Entrant e)
 	{
 		ChallengeRound r = getRound(eid);
-		RoundEntry re = (eid.isUpper()) ? r.getCar1() : r.getCar2();
+		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 		if (e != null)
 		{
 			re.setCar(e.getCarId());
@@ -250,7 +250,7 @@ public class ChallengeModel implements MessageListener
 	public Entrant getEntrant(Id.Entry eid)
 	{
 		ChallengeRound r = getRound(eid);
-		RoundEntry re = (eid.isUpper()) ? r.getCar1() : r.getCar2();
+		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 		Entrant e = entrantcache.get(re.getCar());
 		if ((e == null) && (re.getCar() > 0))
 		{
@@ -263,7 +263,7 @@ public class ChallengeModel implements MessageListener
 	public Double getDial(Id.Entry eid)
 	{
 		ChallengeRound r = getRound(eid);
-		RoundEntry re = (eid.isUpper()) ? r.getCar1() : r.getCar2();
+		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 		return re.getDial();
 	}
 	
@@ -287,7 +287,7 @@ public class ChallengeModel implements MessageListener
 		/* Get the active left or right run */
 		Id.Run rid = (run.course() == Run.LEFT) ? activeLeft: activeRight;
 		ChallengeRound rnd = getRound(rid);
-		RoundEntry re = (rid.isUpper()) ? rnd.getCar1() : rnd.getCar2();
+		RoundEntrant re = (rid.isUpper()) ? rnd.getTopCar() : rnd.getBottomCar();
 		ChallengeRun cr = (rid.isLeft()) ? re.getLeft() : re.getRight();
 		
 		if (cr == null)
@@ -330,40 +330,40 @@ public class ChallengeModel implements MessageListener
 	private void checkForWinner(Id.Round rid)
 	{
 		ChallengeRound r = getRound(rid);
-		ChallengeRun tl = r.getCar1().getLeft();
-		ChallengeRun tr = r.getCar1().getRight();
-		ChallengeRun bl = r.getCar2().getLeft();
-		ChallengeRun br = r.getCar2().getRight();
-		ChallengeRound.RoundEntry winner = null;
+		ChallengeRun tl = r.getTopCar().getLeft();
+		ChallengeRun tr = r.getTopCar().getRight();
+		ChallengeRun bl = r.getBottomCar().getLeft();
+		ChallengeRun br = r.getBottomCar().getRight();
+		ChallengeRound.RoundEntrant winner = null;
 		
 		switch (r.getState())
 		{
 			case HALFNORMAL:
 				if (!tl.isOK())
-					winner = r.getCar2();
+					winner = r.getBottomCar();
 				else if (!br.isOK())
-					winner = r.getCar1();
+					winner = r.getTopCar();
 				break;
 				
 			case HALFINVERSE:
 				if (!tr.isOK())
-					winner = r.getCar2();
+					winner = r.getBottomCar();
 				if (!bl.isOK())
-					winner = r.getCar1();
+					winner = r.getTopCar();
 				break;
 				
 			case DONE:
-				r.getCar1().setResultByNet(tl.getNet() + tr.getNet());
-				r.getCar2().setResultByNet(bl.getNet() + br.getNet());
+				r.getTopCar().setResultByNet(tl.getNet() + tr.getNet());
+				r.getBottomCar().setResultByNet(bl.getNet() + br.getNet());
 				
 				if ((!tl.isOK()) || (!tr.isOK()))
-					winner = r.getCar2();
+					winner = r.getBottomCar();
 				else if ((!bl.isOK()) || (!br.isOK()))
-					winner = r.getCar1();
-				else if (r.getCar1().getResult() < r.getCar2().getResult())
-					winner = r.getCar1();
-				else if (r.getCar2().getResult() < r.getCar1().getResult())
-					winner = r.getCar2();
+					winner = r.getTopCar();
+				else if (r.getTopCar().getResult() < r.getBottomCar().getResult())
+					winner = r.getTopCar();
+				else if (r.getBottomCar().getResult() < r.getTopCar().getResult())
+					winner = r.getBottomCar();
 				else
 					log.warning("Strange state checking for winner, there is none");
 				break;
@@ -377,9 +377,9 @@ public class ChallengeModel implements MessageListener
 		Id.Entry eid = rid.advancesTo();
 		ChallengeRound next = getRound(eid);
 		if (eid.isUpper())
-			next.getCar1().setTo(winner);
+			next.getTopCar().setTo(winner);
 		else
-			next.getCar2().setTo(winner);
+			next.getBottomCar().setTo(winner);
 		Database.d.updateChallengeRound(next);
 		Messenger.sendEvent(MT.ENTRANT_CHANGED, eid);
 		
@@ -387,13 +387,13 @@ public class ChallengeModel implements MessageListener
 		Id.Entry thirdid = rid.advanceThird();
 		if (thirdid != null)
 		{
-			ChallengeRound.RoundEntry loser;
-			loser = (winner == r.getCar1()) ? r.getCar2() : r.getCar1();
+			ChallengeRound.RoundEntrant loser;
+			loser = (winner == r.getTopCar()) ? r.getBottomCar() : r.getTopCar();
 			ChallengeRound third = getRound(thirdid);
 			if (thirdid.isUpper())
-				third.getCar1().setTo(loser);
+				third.getTopCar().setTo(loser);
 			else
-				third.getCar2().setTo(loser);
+				third.getBottomCar().setTo(loser);
 			Database.d.updateChallengeRound(third);
 			Messenger.sendEvent(MT.ENTRANT_CHANGED, thirdid);
 		}
@@ -483,14 +483,14 @@ public class ChallengeModel implements MessageListener
 			case AUTO_WIN:
 				Id.Entry eid = (Id.Entry)data;
 				ChallengeRound r = getRound(eid);
-				RoundEntry re = (eid.isUpper()) ? r.getCar1() : r.getCar2();
+				RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 				
 				Id.Entry nextid = eid.advancesTo();
 				ChallengeRound next = getRound(nextid);
 				if (nextid.isUpper())
-					next.getCar1().setTo(re);
+					next.getTopCar().setTo(re);
 				else
-					next.getCar2().setTo(re);
+					next.getBottomCar().setTo(re);
 				Database.d.updateChallengeRound(next);
 				Messenger.sendEvent(MT.ENTRANT_CHANGED, nextid);
 		}

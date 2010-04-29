@@ -26,11 +26,12 @@ import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
 import org.wwscc.util.BrowserControl;
 import org.wwscc.util.MT;
+import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.Prefs;
 
 
-public class Menus extends JMenuBar implements ActionListener
+public class Menus extends JMenuBar implements ActionListener, MessageListener
 {
 	private static Logger log = Logger.getLogger("org.wwscc.dataentry.Menus");
 
@@ -41,6 +42,7 @@ public class Menus extends JMenuBar implements ActionListener
 	public Menus()
 	{
 		items = new HashMap <String,JMenuItem>();
+		Messenger.register(MT.DATABASE_CHANGED, this);
 
 		/* File Menu */
 		JMenu file = new JMenu("File");
@@ -50,7 +52,6 @@ public class Menus extends JMenuBar implements ActionListener
 		file.add(createItem("Download and Lock Database", null));
 		file.add(createItem("Upload and Unlock Database", null));
 		file.add(createItem("Quit", null));
-
 
 		/* Edit Menu *
 		JMenu edit = new JMenu("Edit");
@@ -91,8 +92,6 @@ public class Menus extends JMenuBar implements ActionListener
 		audit.add(createItem("In Run Order", null));
 		audit.add(createItem("Order By First Name", null));
 		audit.add(createItem("Order By Last Name", null));
-
-		items.get("Upload and Unlock Database").setEnabled(false);
 	}
 
 	protected JMenuItem createItem(String title, KeyStroke ks)
@@ -184,6 +183,18 @@ public class Menus extends JMenuBar implements ActionListener
 		{ 
 			log.info("Unknown command from menubar: " + cmd); 
 		} 
+	}
+
+	
+	@Override
+	public void event(MT type, Object data)
+	{
+		switch (type)
+		{
+			case DATABASE_CHANGED:
+				items.get("Upload and Unlock Database").setEnabled(Database.file != null);
+				break;
+		}
 	}
 }
 

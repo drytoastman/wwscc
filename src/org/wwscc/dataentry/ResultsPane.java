@@ -425,7 +425,8 @@ public class ResultsPane extends JPanel implements MessageListener
 
 		public void setData(List<EventResult> v)
 		{
-			data = v;
+			if (v != null)
+				data = v;
 			fireTableDataChanged();
 		}
 

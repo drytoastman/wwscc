@@ -20,28 +20,33 @@ public class ChallengeRound
 	protected int id;
 	protected int challengeid;
 	protected int round;
-	protected RoundEntry car1;
-	protected RoundEntry car2;
+	protected boolean swappedstart;
+	protected RoundEntrant car1;
+	protected RoundEntrant car2;
 
 	public ChallengeRound()
 	{
 		challengeid = -1;
 		round = -1;
+		swappedstart = false;
 	}
 
 	public ChallengeRound(int challenge, int rnd)
 	{
 		challengeid = challenge;
 		round = rnd;
-		car1 = new RoundEntry();
-		car2 = new RoundEntry();
+		swappedstart = false;
+		car1 = new RoundEntrant();
+		car2 = new RoundEntrant();
 	}
 
 	public int getId() { return id; }
 	public int getChallengeId() { return challengeid; }
 	public int getRound() { return round; }
-	public RoundEntry getCar1() { return car1; }
-	public RoundEntry getCar2() { return car2; }
+	public RoundEntrant getTopCar() { return car1; }
+	public RoundEntrant getBottomCar() { return car2; }
+	public boolean isSwappedStart() { return swappedstart; }
+	public void swapStart() { swappedstart = !swappedstart; }
 
 	public void applyRun(ChallengeRun r)
 	{
@@ -96,13 +101,13 @@ public class ChallengeRound
 	/**
 	 * Organization class to combine the elements of a single car in a challenge round.
 	 */
-	public static class RoundEntry
+	public static class RoundEntrant
 	{
 		protected int carid;
 		protected double dial, result, newdial;
 		private ChallengeRun left, right;
 
-		public RoundEntry()
+		public RoundEntrant()
 		{
 			carid = -1;
 			left = null;
@@ -125,7 +130,7 @@ public class ChallengeRound
 				log.info("Throwing away run as it isn't left or right: " + r);
 		}
 		
-		public void setTo(RoundEntry re)
+		public void setTo(RoundEntrant re)
 		{
 			carid = re.carid;
 			if (re.newdial == 0.0)

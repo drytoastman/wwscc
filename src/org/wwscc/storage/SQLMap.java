@@ -80,7 +80,7 @@ public class SQLMap
 		sql.put("GETSETTING", "select val from settings where name=?");
 		sql.put("GETUPDATED", "select carid, updated from eventresults where classcode=? and eventid=?");
 
-		sql.put("INSERTBLANKCHALLENGEROUND", "insert into challengerounds (challengeid,round,car1id,car2id) values (?,?,?,?)");
+		sql.put("INSERTBLANKCHALLENGEROUND", "insert into challengerounds (challengeid,round,swappedstart,car1id,car2id) values (?,?,?,?,?)");
 		sql.put("INSERTCAR", "insert or ignore into cars ("+AUTO.getCarVarStr()+") values ("+AUTO.getCarArgStr()+")");
 		sql.put("INSERTCHALLENGE", "insert into challenges (eventid, name, depth, bonus) values (?,?,?,?)");
 		sql.put("INSERTCLASSRESULTS", "insert into eventresults VALUES (NULL, ?,?,?,?,?,?,?,?,?,?)");
@@ -105,7 +105,7 @@ public class SQLMap
 		
 		sql.put("UNREGISTERCAR", "delete from registered where eventid=? and carid=?");
 		sql.put("UPDATECAR", "update cars set "+ AUTO.getCarSetStr() + " where id=?");
-		sql.put("UPDATECHALLENGEROUND", "update challengerounds set challengeid=?,round=?,"+
+		sql.put("UPDATECHALLENGEROUND", "update challengerounds set challengeid=?,round=?,swappedstart=?,"+
 					"car1id=?,car1dial=?,car1result=?,car1newdial=?,"+
 					"car2id=?,car2dial=?,car2result=?,car2newdial=? "+
 					"where id=?");

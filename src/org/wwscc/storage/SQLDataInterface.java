@@ -999,7 +999,7 @@ public abstract class SQLDataInterface extends DataInterface
 			executeUpdate("INSERTCHALLENGE", newList(currentEvent.id, name, depth, bonus));
 			currentChallengeId = lastInsertId();
 
-			List<Object> rargs = newList(currentChallengeId, 0, -1, -1);
+			List<Object> rargs = newList(currentChallengeId, 0, false, -1, -1);
 			for (int ii = 0; ii <= rounds; ii++)
 			{
 				rargs.set(1, ii);
@@ -1049,12 +1049,12 @@ public abstract class SQLDataInterface extends DataInterface
 				rnd.id = r.getInt("id");
 				rnd.challengeid = r.getInt("challengeid");
 				rnd.round = r.getInt("round");
-				rnd.car1 = new ChallengeRound.RoundEntry();
+				rnd.car1 = new ChallengeRound.RoundEntrant();
 				rnd.car1.carid = r.getInt("car1id");
 				rnd.car1.dial = r.getDouble("car1dial");
 				rnd.car1.result = r.getDouble("car1result");
 				rnd.car1.newdial = r.getDouble("car1newdial");
-				rnd.car2 = new ChallengeRound.RoundEntry();
+				rnd.car2 = new ChallengeRound.RoundEntrant();
 				rnd.car2.carid = r.getInt("car2id");
 				rnd.car2.dial = r.getDouble("car2dial");
 				rnd.car2.result = r.getDouble("car2result");
@@ -1154,6 +1154,7 @@ public abstract class SQLDataInterface extends DataInterface
 			List<Object> list = newList();
 			list.add(r.challengeid);
 			list.add(r.round);
+			list.add(r.swappedstart);
 			list.add(r.car1.carid);
 			list.add(r.car1.dial);
 			list.add(r.car1.result);

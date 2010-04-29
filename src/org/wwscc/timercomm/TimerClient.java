@@ -60,6 +60,7 @@ public class TimerClient implements Runnable
 	public boolean send(String s)
 	{
 		try {
+			log.fine("Sending '" + s + "' to the timer");
 			out.write(s.getBytes());
 			return true;
 		} catch (IOException ioe) {

@@ -159,9 +159,9 @@ class Codec(object):
 		stream = StringBuilder()
 		for n, v in zip(names, vals):
 
-			if n == 'date': # hack but useful
+			if n == 'date' and type(v) is str: # hack but useful
 				v = Codec.sldate.result_processor(None)(v) 
-			elif n == 'updated':
+			elif n == 'updated' and type(v) is str:
 				v = Codec.sldatetime.result_processor(None)(v) 
 
 			if type(v) is bool:

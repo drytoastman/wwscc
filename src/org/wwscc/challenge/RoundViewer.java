@@ -15,23 +15,23 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.NumberFormat;
-import javax.swing.ImageIcon;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import net.miginfocom.swing.MigLayout;
-import org.wwscc.components.DoubleLabel;
+import org.wwscc.components.UnderlineBorder;
 import org.wwscc.storage.ChallengeRound;
+import org.wwscc.storage.ChallengeRound.RoundState;
 import org.wwscc.storage.ChallengeRun;
 import org.wwscc.storage.Entrant;
-import org.wwscc.util.IconButton;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -42,6 +42,8 @@ import org.wwscc.util.TimeTextField;
  */
 public class RoundViewer extends JInternalFrame implements MessageListener
 {
+	private static Logger log = Logger.getLogger(RoundViewer.class.getCanonicalName());
+	
 	static NumberFormat df;
 	static
 	{
@@ -50,115 +52,237 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		df.setMaximumFractionDigits(3);
 	}
 
-	public static ImageIcon goIcon;
-	public static ImageIcon goOverIcon;
-	public static ImageIcon goPressIcon;
 	static Color next = new Color(10, 150, 10);
 	static Color next2 = new Color(150, 50, 0);
+	static Font midResultFont = new Font(Font.DIALOG, Font.BOLD, 12);
+	static Font finalResultFont = new Font(Font.DIALOG, Font.BOLD, 14);
 
 	ChallengeModel model;
-	JLabel round, result, rldiff, lrdiff;
+	JButton stage, swap;
+	JLabel firstresult, secondresult, finalresult, rldiff, lrdiff;
 	EntrantDisplay top, bottom;
 	Id.Round roundId;
+	boolean swapped;
 
 	public RoundViewer(ChallengeModel m, Id.Round rid)
 	{
-		super("Round X", false, true);
+		super("Round " + rid.round, false, true);
 		model = m;
 		roundId = rid;
-		
+		swapped = model.getRound(roundId).isSwappedStart();
+
 		top = new EntrantDisplay(rid.makeUpper());
 		bottom = new EntrantDisplay(rid.makeLower());
 
-		round = new JLabel("Rnd " + rid.round);
-		round.setFont(new Font(Font.DIALOG, Font.BOLD, 12));
-		result = new JLabel("No comment yet");
-		result.setFont(new Font(Font.DIALOG, Font.BOLD, 12));
-		
-		setLayout(new MigLayout("ins 3", "[70][]"));
-		//setBorder(new SoftBevelBorder(BevelBorder.RAISED));
-		//setBorder(new LineBorder(Color.GRAY, 2));
-		
-		setBackground(Color.WHITE);
-		
-		add(top.nameLbl, "wmax 70");
-		add(top.leftRun, "growx, wrap");
-		add(top.autoWin, "");
-		add(top.rightRun, "growx, wrap");
+		firstresult = new JLabel();
+		firstresult.setFont(midResultFont);
+		secondresult = new JLabel();
+		secondresult.setFont(midResultFont);
+		finalresult = new JLabel("No comment yet");
+		finalresult.setFont(finalResultFont);
 
-		add(round, "al center center");
-		add(result, "al center center, wrap");
-		
-		add(bottom.nameLbl, "wmax 90");
-		add(bottom.leftRun, "growx, wrap");
-		add(bottom.autoWin, "");
-		add(bottom.rightRun, "growx, wrap");
+		stage = new JButton("Stage");
+		stage.addActionListener(new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (model.getRound(roundId).isSwappedStart())
+					model.makeActive(roundId.makeUpperRight());
+				else
+					model.makeActive(roundId.makeUpperLeft());
+
+			}
+		});
+
+		swap = new JButton("Swap");
+		swap.addActionListener(new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				model.getRound(roundId).swapStart();
+				swapped = model.getRound(roundId).isSwappedStart();
+				updateResults();
+				buildLayout();
+			}
+		});
+
+		buildLayout();
 		
 		Messenger.register(MT.ACTIVE_CHANGE, this);
 		Messenger.register(MT.RUN_CHANGED, this);
-
 		event(MT.ACTIVE_CHANGE, null);
 		event(MT.RUN_CHANGED, null);
 		addInternalFrameListener(new InternalFrameAdapter() {
 			public void internalFrameClosed(InternalFrameEvent e)
 			{
-				System.out.println("unregistering");
 				Messenger.unregister(MT.ACTIVE_CHANGE, RoundViewer.this);
 				Messenger.unregister(MT.RUN_CHANGED, RoundViewer.this);
 			}
 		});
 
-		pack();
 		setVisible(true);
 	}
 
-	
-	public void updateResults()
-	{	
-		String name;		
-		double val;
-		double topdiff = top.getDiff();
-		double bottomdiff = bottom.getDiff();
-		double newdial = 0;
+	protected void buildLayout()
+	{
+		getContentPane().removeAll();
+		setLayout(new MigLayout("ins 3, fill", "[]30[]"));
+		setBackground(Color.WHITE);
 
-		ChallengeRound r = model.getRound(roundId);
-		if (topdiff > bottomdiff)
+		EntrantDisplay left, right;
+		if (swapped)
 		{
-			name = bottom.getFirstName();
-			val = topdiff - bottomdiff;
-			if (r.getCar2().breakout())
-				newdial = r.getCar2().getNewDial();
+			log.fine("building layout with swapped start order");
+			left = bottom;
+			right = top;
 		}
 		else
 		{
-			name = top.getFirstName();
-			val = bottomdiff - topdiff;
-			if (r.getCar1().breakout())
-				newdial = r.getCar1().getNewDial();
+			log.fine("building layout with regular start order");
+			left = top;
+			right = bottom;
+		}
+		
+		add(stage, "span 2, split 2, al center");
+		add(swap, "wrap");
+
+
+		add(left.nameLbl, "al center, split 2");
+		add(left.dialLbl, "");
+		add(right.nameLbl, "al center, split 2");
+		add(right.dialLbl, "wrap");
+
+		add(left.autoWin, "hmax 15, al center");
+		add(right.autoWin, "hmax 15, al center, wrap");
+
+		JLabel border = new JLabel(" ");
+		border.setBorder(new UnderlineBorder());
+		add(border, "growx, span 2, wrap");
+		add(new JLabel("Left Run"), "");
+		add(new JLabel("Right Run"), "wrap");
+		add(left.leftRun, "");
+		add(right.rightRun, "wrap");
+
+		add(firstresult, "al center center, span 2, wrap");
+
+		add(new JLabel("Right Run"), "");
+		add(new JLabel("Left Run"), "wrap");
+		add(left.rightRun, "");
+		add(right.leftRun, "wrap");
+
+		add(secondresult, "al center center, span 2, wrap");
+		add(finalresult, "al center center, span 2, wrap");
+		
+		pack();
+		revalidate();
+	}
+
+	protected String getRunResult(boolean first)
+	{
+		EntrantDisplay e1, e2;
+		RunDisplay r1, r2;
+		double d1, d2;
+		int c1, c2;
+		String ret;
+
+		if (swapped)
+		{
+			e1 = bottom;
+			e2 = top;
+		}
+		else
+		{
+			e1 = top;
+			e2 = bottom;
 		}
 
-		
-		switch (r.getState())
+		if (first)
 		{
-			case NONE:
-				result.setText("No comment yet");
+			r1 = e1.leftRun;
+			r2 = e2.rightRun;
+		}
+		else
+		{
+			r1 = e1.rightRun;
+			r2 = e2.leftRun;
+		}
+
+		d1 = r1.getDiff();
+		d2 = r2.getDiff();
+		c1 = r1.getRun().getCones();
+		c2 = r2.getRun().getCones();
+
+		if (Double.isNaN(d1) && Double.isNaN(d2))
+			ret = "Both runs invalid";
+		else if (Double.isNaN(d1) || !r1.getRun().getStatus().equals("OK"))
+			ret = e1.getName() + " has status " + r1.getRun().getStatus();
+		else if (Double.isNaN(d2) || !r2.getRun().getStatus().equals("OK"))
+			ret = e2.getName() + " has status " + r2.getRun().getStatus();
+		else if (d1 < d2)
+		{
+			ret = e1.getName() + " returns faster by " + df.format(d2 - d1);
+			if ((c1 != 0) || (c2 != 0))
+				ret += " (" + df.format(d2 - d1 - (2*c2) + (2*c1)) + ") ";
+		}
+		else if (d2 < d1)
+		{
+			ret = e2.getName() + " returns faster by " + df.format(d1 - d2);
+			if ((c1 != 0) || (c2 != 0))
+				ret += " (" + df.format(d1 - d2 - (2*c1) + (2*c2)) + ") ";
+		}
+		else
+			ret = "Both return with the same net time!";
+
+		return ret;
+	}
+
+	public void updateResults()
+	{	
+		firstresult.setText(" Run 1 Result ");
+		secondresult.setText(" Run 2 Result ");
+		finalresult.setText(" Final Result ");
+
+		ChallengeRound r = model.getRound(roundId);
+		RoundState state = r.getState();
+		// Do we need first run results ?
+		for (RoundState rs : new RoundState[] { RoundState.HALFNORMAL, RoundState.HALFINVERSE, RoundState.PARTIAL2, RoundState.DONE })
+		{
+			if (state == rs)  // much easier in python :)
+			{
+				firstresult.setText(getRunResult(true));
 				break;
-				
-			case HALFNORMAL:
-			case HALFINVERSE:
-				result.setText(name + " leads by " + df.format(val));
-				break;
-				
-			case DONE:
-				if (newdial > 0)
-					result.setText(name + " wins by " + df.format(val) + "  NewDial: " + df.format(newdial));
-				else
-					result.setText(name + " wins by " + df.format(val));
-				break;
-				
-			case INVALID:
-				result.setText("Invalid round state");
-				break;
+			}
+		}
+
+		// Do we need second run and final results ?
+		if (state == RoundState.DONE)
+		{
+			String name;
+			double val;
+			double topdiff = top.getDiff();
+			double bottomdiff = bottom.getDiff();
+			double newdial = 0;
+
+			if (topdiff > bottomdiff)
+			{
+				name = bottom.getName();
+				val = topdiff - bottomdiff;
+				if (r.getBottomCar().breakout())
+					newdial = r.getBottomCar().getNewDial();
+			}
+			else
+			{
+				name = top.getName();
+				val = bottomdiff - topdiff;
+				if (r.getTopCar().breakout())
+					newdial = r.getTopCar().getNewDial();
+			}
+			String result = name + " wins by " + df.format(val);
+			if (newdial > 0)
+				result += " and breaks out! New dialin is " + df.format(newdial);
+
+			secondresult.setText(getRunResult(false));
+			finalresult.setText(result);
+		}
+		else if (state == RoundState.INVALID)
+		{
+			finalresult.setText("Invalid round state");
 		}
 	}
 	
@@ -183,7 +307,8 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 	class EntrantDisplay extends JComponent
 	{
 		public String name;
-		public DoubleLabel nameLbl;
+		public JLabel nameLbl;
+		public JLabel dialLbl;
 		public JButton autoWin;
 		public double dial;
 		public RunDisplay leftRun, rightRun;
@@ -196,7 +321,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			dial = model.getDial(eid);
 			Entrant e = model.getEntrant(eid);
 			if (e != null)
-				name = model.getEntrant(eid).getFirstName();
+				name = e.getFirstName() + " " + e.getLastName();
 			else
 				name = "(none)";
 			autoWin = new JButton("AutoWin");
@@ -206,14 +331,15 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 					Messenger.sendEvent(MT.AUTO_WIN, entryId);
 				}
 			});
-			nameLbl = new DoubleLabel(name, df.format(dial));
-			nameLbl.setOpaque(false);
-			nameLbl.setFont(new Font(Font.DIALOG, Font.BOLD, 13), new Font(Font.DIALOG, Font.PLAIN, 12));
+			nameLbl = new JLabel(name);
+			nameLbl.setFont(new Font(Font.DIALOG, Font.BOLD, 13));
+			dialLbl = new JLabel(df.format(dial));
+			dialLbl.setFont(new Font(Font.DIALOG, Font.PLAIN, 12));
 			leftRun = new RunDisplay(eid.makeLeft(), dial);
 			rightRun = new RunDisplay(eid.makeRight(), dial);
 		}
 		
-		public String getFirstName()
+		public String getName()
 		{
 			return name;
 		}
@@ -247,7 +373,6 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 
 	class RunDisplay extends JComponent implements ActionListener, FocusListener
 	{	
-		JButton activate;
 		TimeTextField value;
 		JComboBox cones;
 		JComboBox status;
@@ -267,16 +392,6 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			dial = inDial;
 			run = null;
 			diff = Double.NaN;
-
-			if (goIcon == null)
-			{
-				goIcon = new ImageIcon(getClass().getResource("/org/wwscc/images/go.png"));
-				goOverIcon = new ImageIcon(getClass().getResource("/org/wwscc/images/go-hover.png"));
-				goPressIcon = new ImageIcon(getClass().getResource("/org/wwscc/images/go-press.png"));
-			}
-
-			activate = new IconButton(goIcon, goOverIcon, goPressIcon);
-			activate.addActionListener(this);
 			
 			savetime = 0;
 			value = new TimeTextField("00.000", 5);
@@ -296,7 +411,6 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			setLayout(new MigLayout(""));
 			setBorder(new SoftBevelBorder(BevelBorder.RAISED));
 
-			add(activate);
 			add(value, "");
 			add(cones, "width 34!");
 			add(status, "");
@@ -307,7 +421,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		{
 			return run;
 		}
-		
+
 		public double getDiff()
 		{
 			return diff;
@@ -357,9 +471,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 				return;
 			
 			Object o = e.getSource();
-			if (o == activate)
-				model.makeActive(runId);
-			else if (o == cones)
+			if (o == cones)
 				model.setCones(runId, (Integer)cones.getSelectedItem());
 			else if (o == status)
 				model.setStatus(runId, (String)status.getSelectedItem());
