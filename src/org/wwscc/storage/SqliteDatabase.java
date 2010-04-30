@@ -140,18 +140,21 @@ public class SqliteDatabase extends SQLDataInterface
 	@Override
 	public void start() throws IOException
 	{
+		log.fine("start");
 		execute(begin, null);
 	}
 
 	@Override
 	public void commit() throws IOException
 	{
+		log.fine("commit");
 		execute(commit, null);
 	}
 
 	@Override
 	public void rollback()
 	{
+		log.fine("rollback");
 		try
 		{
 			execute(rollback, null);
