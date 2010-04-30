@@ -172,7 +172,7 @@ public class BracketPane extends JLayeredPane implements MessageListener, Scroll
 
 			case PRELOAD_MENU:
 				BracketingList b = new BracketingList(baseRounds*2);
-				b.doDialog("Preload", null);
+				b.doDialog("Auto Load", null);
 				List<Entrant> toload = b.getResult();
 				if (toload == null)
 					break;

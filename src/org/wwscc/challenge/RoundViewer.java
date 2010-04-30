@@ -56,6 +56,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 	static Color next2 = new Color(150, 50, 0);
 	static Font midResultFont = new Font(Font.DIALOG, Font.BOLD, 12);
 	static Font finalResultFont = new Font(Font.DIALOG, Font.BOLD, 14);
+	static Font timeFont = new Font("SansSerif", Font.PLAIN, 12);
 
 	ChallengeModel model;
 	JButton stage, swap;
@@ -173,13 +174,19 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		revalidate();
 	}
 
-	protected String getRunResult(boolean first)
+	private static class ResultTuple
+	{
+		public String msg = "";
+		public boolean defaultWin = false;
+	}
+
+	private ResultTuple getRunResult(boolean first)
 	{
 		EntrantDisplay e1, e2;
 		RunDisplay r1, r2;
 		double d1, d2;
 		int c1, c2;
-		String ret;
+		ResultTuple ret = new ResultTuple();
 
 		if (swapped)
 		{
@@ -208,26 +215,34 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		c1 = r1.getRun().getCones();
 		c2 = r2.getRun().getCones();
 
-		if (Double.isNaN(d1) && Double.isNaN(d2))
-			ret = "Both runs invalid";
-		else if (Double.isNaN(d1) || !r1.getRun().getStatus().equals("OK"))
-			ret = e1.getName() + " has status " + r1.getRun().getStatus();
-		else if (Double.isNaN(d2) || !r2.getRun().getStatus().equals("OK"))
-			ret = e2.getName() + " has status " + r2.getRun().getStatus();
+		if (Double.isNaN(d1) || Double.isNaN(d2))
+		{
+			ret.msg = " --- ";
+		}
+		else if (!r1.getRun().getStatus().equals("OK"))
+		{
+			ret.defaultWin = true;
+			ret.msg = e1.getName() + " has status " + r1.getRun().getStatus();
+		}
+		else if (!r2.getRun().getStatus().equals("OK"))
+		{
+			ret.defaultWin = true;
+			ret.msg = e2.getName() + " has status " + r2.getRun().getStatus();
+		}
 		else if (d1 < d2)
 		{
-			ret = e1.getName() + " returns faster by " + df.format(d2 - d1);
+			ret.msg = e1.getName() + " returns faster by " + df.format(d2 - d1);
 			if ((c1 != 0) || (c2 != 0))
-				ret += " (" + df.format(d2 - d1 - (2*c2) + (2*c1)) + ") ";
+				ret.msg += " (" + df.format(d2 - d1 - (2*c2) + (2*c1)) + ") ";
 		}
 		else if (d2 < d1)
 		{
-			ret = e2.getName() + " returns faster by " + df.format(d1 - d2);
+			ret.msg = e2.getName() + " returns faster by " + df.format(d1 - d2);
 			if ((c1 != 0) || (c2 != 0))
-				ret += " (" + df.format(d1 - d2 - (2*c1) + (2*c2)) + ") ";
+				ret.msg += " (" + df.format(d1 - d2 - (2*c1) + (2*c2)) + ") ";
 		}
 		else
-			ret = "Both return with the same net time!";
+			ret.msg = "Both return with the same net time!";
 
 		return ret;
 	}
@@ -238,20 +253,23 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		secondresult.setText(" Run 2 Result ");
 		finalresult.setText(" Final Result ");
 
-		ChallengeRound r = model.getRound(roundId);
-		RoundState state = r.getState();
+		ChallengeRound round = model.getRound(roundId);
+		RoundState state = round.getState();
+		ResultTuple firstHalfData = new ResultTuple();
+
 		// Do we need first run results ?
 		for (RoundState rs : new RoundState[] { RoundState.HALFNORMAL, RoundState.HALFINVERSE, RoundState.PARTIAL2, RoundState.DONE })
 		{
 			if (state == rs)  // much easier in python :)
 			{
-				firstresult.setText(getRunResult(true));
+				firstHalfData = getRunResult(true);
+				firstresult.setText(firstHalfData.msg);
 				break;
 			}
 		}
-
+		
 		// Do we need second run and final results ?
-		if (state == RoundState.DONE)
+		if ((state == RoundState.DONE) || (firstHalfData.defaultWin))
 		{
 			String name;
 			double val;
@@ -263,21 +281,34 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			{
 				name = bottom.getName();
 				val = topdiff - bottomdiff;
-				if (r.getBottomCar().breakout())
-					newdial = r.getBottomCar().getNewDial();
+				if (round.getBottomCar().breakout())
+					newdial = round.getBottomCar().getNewDial();
 			}
 			else
 			{
 				name = top.getName();
 				val = bottomdiff - topdiff;
-				if (r.getTopCar().breakout())
-					newdial = r.getTopCar().getNewDial();
+				if (round.getTopCar().breakout())
+					newdial = round.getTopCar().getNewDial();
 			}
-			String result = name + " wins by " + df.format(val);
+
+			String result;
+			ResultTuple secondHalfData = new ResultTuple();
+
+			if (state == RoundState.DONE) // can enter this area after first half default
+				secondHalfData = getRunResult(false);
+
+			if (firstHalfData.defaultWin || secondHalfData.defaultWin)
+				result = name + " wins by default";
+			else
+				result = name + " wins by " + df.format(val);
+
 			if (newdial > 0)
 				result += " and breaks out! New dialin is " + df.format(newdial);
 
-			secondresult.setText(getRunResult(false));
+			if (state == RoundState.DONE) // can enter this area after first half default
+				secondresult.setText(secondHalfData.msg);
+			
 			finalresult.setText(result);
 		}
 		else if (state == RoundState.INVALID)
@@ -396,7 +427,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			savetime = 0;
 			value = new TimeTextField("00.000", 5);
 			value.addFocusListener(this);
-			value.setFont(new Font("SansSerif", Font.PLAIN, 12));
+			value.setFont(timeFont);
 
 			cones = new JComboBox(new Integer[] {0, 1, 2, 3, 4, 5});
 			cones.addActionListener(this);
@@ -407,6 +438,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			status.setFont(f);
 			
 			info = new JLabel("0.000");
+			info.setFont(timeFont);
 
 			setLayout(new MigLayout(""));
 			setBorder(new SoftBevelBorder(BevelBorder.RAISED));

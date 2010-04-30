@@ -42,7 +42,6 @@ public class Menus extends JMenuBar implements ActionListener
 		add(file);
 		file.add(createItem("Open Database", null));
 		file.add(createItem("Save Bracket as Image", null));
-		file.add(createItem("Preload", null));
 		file.addSeparator();
 		file.add(createItem("Quit", null));
 		
@@ -51,6 +50,7 @@ public class Menus extends JMenuBar implements ActionListener
 		chl.add(createItem("New Open Challenge", null));
 		chl.add(createItem("New Ladies Challenge", null));
 		chl.add(createItem("New Bonus Challenge", null));
+		chl.add(createItem("Auto Load Current", null));
 
 		JMenu timer = new JMenu("Timer");
 		add(timer);
@@ -109,7 +109,7 @@ public class Menus extends JMenuBar implements ActionListener
 				Messenger.sendEvent(MT.PRINT_BRACKET, chooser.getSelectedFile());
 			}
 		}
-		else if (cmd.equals("Preload"))
+		else if (cmd.equals("Auto Load Current"))
 		{
 			Messenger.sendEvent(MT.PRELOAD_MENU, null);
 		}
