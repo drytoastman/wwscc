@@ -398,7 +398,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			int index = timeList.getSelectedIndex();
 			if (index >= 0)
 			{
-				defaultModel.remove(index);
+				activeModel.remove(index);
 				selectNext(index);
 			}
 		}

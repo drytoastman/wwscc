@@ -39,6 +39,8 @@ public abstract class SQLDataInterface extends DataInterface
 			Object o = get(key);
 			if (o instanceof Boolean)
 				return (Boolean)o;
+			else if (o instanceof Integer)
+				return ((Integer)o) != 0;
 			else if (o instanceof String)
 			{
 				String b = (String)o;
