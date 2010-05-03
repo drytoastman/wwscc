@@ -62,20 +62,19 @@ public class EntryPanel extends DriverCarPanel
 		add(createTitle("1. Search"), "spanx 4, wrap");
 
 		add(new JLabel("First Name"), "");
-		add(firstSearch, "");
-		add(smallButton("Clear"), "wrap");
+		add(firstSearch, "wrap");
 		add(new JLabel("Last Name"), "");
 		add(lastSearch, "wrap");
-		
+		add(smallButton("Clear"), "skip, wrap");
 
 		add(createTitle("2. Driver"), "spanx 4, wrap");
-		add(dscroll, "spanx 2, spany 2, hmin 130");
+		add(dscroll, "spanx 2, spany 2, hmin 125");
 		add(smallButton("New Driver"), "");
 		add(smallButton("Edit Driver"), "wrap");
 		add(driverInfo, "spanx2, wrap");
 
 		add(createTitle("3. Car"), "spanx 4, wrap");
-		add(cscroll, "spanx 2, spany 2, hmin 130");
+		add(cscroll, "spanx 2, spany 2, hmin 125");
 		add(smallButton("New Car"), "");
 		add(smallButton("New From"), "wrap");
 		add(carInfo, "spanx2, wrap");
