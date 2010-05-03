@@ -381,7 +381,8 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 		else
 		{
 			setBackground(Color.red);
-			topLine = "You shouldn't be reading this";
+			topLine = "ERROR";
+			bottomLine = "No data for this cell";
 		}
 		return this;
 	}

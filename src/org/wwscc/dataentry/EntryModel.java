@@ -51,12 +51,20 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 	{
 		if (tableData == null) return;
 
-		tableData.add(Database.d.loadEntrant(carid, true));
+		Entrant e = Database.d.loadEntrant(carid, true);
+		if (e == null)
+		{
+			log.warning("Failed to fetch entrant data, perhaps try again");
+			return;
+		}
+		tableData.add(e);
+
 		try {
 			Database.d.registerCar(carid);
 		} catch (IOException ioe) {
-			log.log(Level.WARNING, "Registration during car add failed: " + ioe, ioe);
+			log.log(Level.INFO, "Registration during car add failed: " + ioe, ioe);
 		}
+
 		if (Prefs.useDoubleCourseMode())
 			Database.d.addToRunOrderOpposite(carid);
 
@@ -70,13 +78,25 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		/* We are being asked to swap an entrant */
 		Entrant old = tableData.get(row);
 		Entrant newe = Database.d.loadEntrant(carid, true);
+		if (newe == null)
+		{
+			log.warning("Failed to fetch entrant data, perhaps try again");
+			return;
+		}
 		newe.setRuns(old.removeRuns());
 
 		if (Prefs.useDoubleCourseMode())
 		{
 			Entrant oldop = Database.d.loadEntrantOpposite(old.getCarId(), true);
 			Entrant newop = Database.d.loadEntrant(carid, true);
-			newop.setRuns(oldop.removeRuns());
+			if (oldop != null && newop != null)
+			{
+				newop.setRuns(oldop.removeRuns());
+			}
+			else
+			{
+				log.warning("Dual course mode swap failed, couldn't load data");
+			}
 		}
 
 		tableData.set(row, newe);
@@ -149,7 +169,7 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		Entrant e = tableData.get(row);
 		if (e == null)  
 		{ 
-			log.warning("get("+row+","+col+") e is null"); 
+			log.info("get("+row+","+col+") e is null");
 			return null; 
 		} 
 
