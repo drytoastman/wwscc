@@ -113,7 +113,7 @@ public class RemoteHTTPConnection
 	protected byte[] doRequest(URL url, String method, String content, Object... args) throws IOException
 	{
 		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-		conn.setConnectTimeout(2500);
+		conn.setConnectTimeout(3500);
 		conn.setRequestProperty("User-Agent", "Scorekeeper 1.1");
 		conn.setRequestProperty("X-Scorekeeper", Prefs.getPasswordFor(dbname));
 		conn.setRequestProperty("Host", hostname);
@@ -204,8 +204,8 @@ public class RemoteHTTPConnection
 		ret[1] = new ArrayList<String>();
 
 		monitor = new ProgressMonitor(null, "getAvailable", "Connecting...", 0, Integer.MAX_VALUE);
-		monitor.setMillisToDecideToPopup(300);
-		monitor.setMillisToPopup(1000);
+		monitor.setMillisToDecideToPopup(0);
+		monitor.setMillisToPopup(0);
 		String data = new String(basicRequest(new URL(String.format("http://%s/dbserve/available", cachedip)), "GET", null));
 		for (String db : data.split("\n"))
 		{

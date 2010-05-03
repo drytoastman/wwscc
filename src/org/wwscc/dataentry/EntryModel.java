@@ -165,6 +165,7 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 	{
 		if (tableData == null) return null;
 		if (row >= tableData.size()) return null;
+		if (row < 0) return null;
 
 		Entrant e = tableData.get(row);
 		if (e == null)  
