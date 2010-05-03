@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
@@ -177,12 +178,11 @@ public class RemoteHTTPConnection
 			in.close();
 			return buf.toByteArray();
 		}
-		catch (IOException ioe)
+		catch (HttpRetryException rte) // only try and catch the need for auth retry
 		{
-			if (conn.getResponseCode() == 401)
+			if (rte.responseCode() == 401)
 				throw new AuthException();
-			else
-				throw ioe;
+			throw rte;
 		}
 	}
 
