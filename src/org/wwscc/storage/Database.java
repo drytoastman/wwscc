@@ -10,6 +10,7 @@ package org.wwscc.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
@@ -134,17 +135,33 @@ public class Database
 		try
 		{
 			RemoteHTTPConnection conn = new RemoteHTTPConnection(getHost());
+			List<String> available[] = conn.getAvailableForCheckout();
 			String dbname = (String)JOptionPane.showInputDialog(null,
-						"Select the file to check out", "Download File", JOptionPane.PLAIN_MESSAGE,
-						null, conn.getAvailableForCheckout()[0].toArray(), null);
+						lockServerSide ? "Select the file to check out" : "Select the file to download",
+						lockServerSide ? "Checkout Database" : "Download Database",
+						JOptionPane.PLAIN_MESSAGE,
+						null, 
+						lockServerSide ? available[0].toArray() : available[2].toArray(),
+						null);
 			if (dbname == null)
 				return null;
 			File out = new File(Prefs.getInstallRoot()+"/series/"+dbname+".db");
 			if (out.exists())
-				throw new Exception("Can't download file, already exists on local system ("+out+")");
+			{
+				if (!lockServerSide)
+				{
+					if ((file != null) && file.equals(out))
+						d.close();
+					if (!out.delete())
+						throw new IOException("Unable to delete old version already on disk ("+out+")");
+				}
+				else
+					throw new Exception("Can't download file, already exists on local system ("+out+")");
+			}
 
 			conn.downloadDatabase(out, lockServerSide);
 			openDatabaseFile(out);
+			d.clearChanges();
 			return out;
 		}
 		catch (CancelException ex)

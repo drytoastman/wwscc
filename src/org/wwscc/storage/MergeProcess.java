@@ -8,11 +8,13 @@
 
 package org.wwscc.storage;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  */
@@ -99,12 +101,31 @@ public class MergeProcess
 
 			dest.commit();
 			Database.d.clearChanges();
-			Database.d.setCurrentEvent(Database.d.getCurrentEvent());
 		}
 		catch (Exception e)
 		{
 			dest.rollback();
 			log.log(Level.SEVERE, "Unable to merge: " + e, e);
+			return;
+		}
+
+		/* download the merged version from the server so we are completely synced again */
+		try  
+		{
+			File db = Database.file;
+			Database.d.close();
+			if (!db.delete())
+				throw new IOException("Error deleting old version already on disk ("+db+")");
+
+			dest.server.downloadDatabase(db, false);
+			Database.openDatabaseFile(db);
+			Database.d.trackRegChanges(true);
+			Database.d.setCurrentEvent(Database.d.getCurrentEvent());
+			JOptionPane.showMessageDialog(null, "Merge Complete");
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, "Unable to download new merged version from server:\n " + e, e);
 		}
 	}
 }

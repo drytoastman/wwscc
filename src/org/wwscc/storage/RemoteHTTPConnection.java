@@ -184,6 +184,14 @@ public class RemoteHTTPConnection
 				throw new AuthException();
 			throw rte;
 		}
+		catch (IOException ioe)
+		{
+			// catch 401 in an IOexception, can't use getResponseCode as this may be a connection error
+			String msg = ioe.getMessage();
+			if (msg.contains("401") && msg.contains("response code"))
+				throw new AuthException();
+			throw ioe;
+		}
 	}
 
 	public byte[] performSQL(String name, byte[] data) throws IOException
@@ -199,9 +207,10 @@ public class RemoteHTTPConnection
 	@SuppressWarnings("unchecked")
 	public List<String>[] getAvailableForCheckout() throws IOException
 	{
-		List<String>[] ret = new List[2];
-		ret[0] = new ArrayList<String>();
-		ret[1] = new ArrayList<String>();
+		List<String>[] ret = new List[3];
+		ret[0] = new ArrayList<String>(); // unlocked
+		ret[1] = new ArrayList<String>(); // locked
+		ret[2] = new ArrayList<String>(); // all
 
 		monitor = new ProgressMonitor(null, "getAvailable", "Connecting...", 0, Integer.MAX_VALUE);
 		monitor.setMillisToDecideToPopup(0);
@@ -216,6 +225,7 @@ public class RemoteHTTPConnection
 				continue;
 			}
 
+			ret[2].add(parts[0]);
 			if (parts[1].trim().equals("0"))
 				ret[0].add(parts[0]);
 			else
@@ -238,6 +248,8 @@ public class RemoteHTTPConnection
 		FileOutputStream output = new FileOutputStream(dst);
 		output.write(basicRequest(new URL(String.format("http://%s/dbserve/%s/%s",
 							cachedip, dbname, action)), "GET", null));
+		output.close();
+		output = null;
 	}
 
 	public void uploadDatabase(File f) throws IOException
