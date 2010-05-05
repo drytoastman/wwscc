@@ -69,7 +69,6 @@ Source: "wwsccapps-r${dist.revision}.jar"; DestDir: "{app}"; Flags: ignoreversio
 [Icons]
 Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar DataEntry";  WorkingDir: "{app}";
 Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar Registration";  WorkingDir: "{app}";
-Name: "{group}\Admin"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar Admin";  WorkingDir: "{app}";
 Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar BWTimer";  WorkingDir: "{app}";
 Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar ProTimer";  WorkingDir: "{app}";
 Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar ChallengeGUI";  WorkingDir: "{app}";
