@@ -47,15 +47,16 @@ class DbserveController(BaseController):
 
 	def copy(self):
 		response.headers['Content-type'] = 'application/octet-stream'
-		fp = open(self.databasePath(self.database))
+		fp = open(self.databasePath(self.database), 'rb')
 		data = fp.read()
+		log.info("Read in database file of %d bytes", len(data))
 		fp.close()
 		return data
 
 
 	def upload(self):
 		dbpost = request.POST['db']
-		out = open(self.databasePath(self.database), 'w')
+		out = open(self.databasePath(self.database), 'wb')
 		shutil.copyfileobj(dbpost.file, out)
 		dbpost.file.close()
 		out.close()
