@@ -113,7 +113,7 @@ class DbserveController(BaseController):
 
 		except Exception, e:
 			self.session.rollback()
-			msg = BaseException.__str__(e)
+			msg = Exception.__str__(e)
 			filename, lineno, name, line = traceback.extract_tb(sys.exc_info()[2])[-1]
 			return Codec.encodeError(filename, lineno, msg)
 
