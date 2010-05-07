@@ -167,7 +167,11 @@ public class EntryPanel extends DriverCarPanel
 
 	class RegListRenderer extends DefaultListCellRenderer
 	{
-		private Color mygray = new Color(220,220,220);
+		private Color mygray = new Color(150,150,150);
+		private Color mygraybackground = new Color(50,50,50);
+
+		private Color myred = new Color(220, 60, 60);
+		private Color myredbackground = new Color(90,10,10);
 
 		@Override
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean iss, boolean chf)
@@ -183,16 +187,24 @@ public class EntryPanel extends DriverCarPanel
 				if (!c.getIndexCode().equals(""))
 					myclass += " ("+c.getIndexCode()+")";
 				
-				setText(myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor());
-				if (c.isRegistered)
-				{
-					setForeground(mygray);
-					if (iss)
-						setBackground(Color.GRAY);
-				}
+				String data = myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor();
 				if (c.isInRunOrder)
 				{
-					setForeground(Color.RED);
+					setText("X - " + data);
+					setForeground(myred);
+					//if (iss)
+					//	setBackground(myredbackground);
+				}
+				else if (c.isRegistered)
+				{
+					setText("R - " + data);
+					//setForeground(mygray);
+					//if (iss)
+					//	setBackground(mygraybackground);
+				}
+				else
+				{
+					setText("     " + data);
 				}
 			}
 			else if (value instanceof Driver)
