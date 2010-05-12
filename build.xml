@@ -8,15 +8,7 @@
     <import file="nbproject/profiler-build-impl.xml"/>
 
 	<target name="-post-jar">
-
-		<loadfile property="dist.revision" srcFile="./.svn/entries">
-			<filterchain>
-				<headfilter lines="1" skip="3"/>
-				<deletecharacters chars="\n"/>
-			</filterchain>
-		</loadfile>
-
-		<jar destfile="wwsccapps-r${dist.revision}.jar">
+		<jar destfile="wwsccapps.jar">
 			<zipgroupfileset dir="lib" includes="*.jar" /> 
 			<fileset dir="native">
 				<include name="**/*.so"/>
@@ -27,7 +19,6 @@
 				<attribute name="Main-Class" value="org.wwscc.util.Launcher" />
 			</manifest>
 		</jar>
-
 	</target>
 
 
@@ -64,14 +55,14 @@ Name: "{app}\series"; Permissions: users-modify; Flags: uninsneveruninstall
 Name: "{app}\backup"; Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
-Source: "wwsccapps-r${dist.revision}.jar"; DestDir: "{app}"; Flags: ignoreversion
+Source: "wwsccapps.jar"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar DataEntry";  WorkingDir: "{app}";
-Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar Registration";  WorkingDir: "{app}";
-Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar BWTimer";  WorkingDir: "{app}";
-Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar ProTimer";  WorkingDir: "{app}";
-Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-jar wwsccapps-r${dist.revision}.jar ChallengeGUI";  WorkingDir: "{app}";
+Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar DataEntry";  WorkingDir: "{app}";
+Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar Registration";  WorkingDir: "{app}";
+Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar BWTimer";  WorkingDir: "{app}";
+Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ProTimer";  WorkingDir: "{app}";
+Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ChallengeGUI";  WorkingDir: "{app}";
 Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}"
 
 [Registry]
