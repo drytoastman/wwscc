@@ -17,8 +17,11 @@ class EventForm(forms.TableForm):
 		chair = forms.TextField(help_text='the event chair', size='40')
 		ispro = forms.CheckBox(help_text='check if a ProSolo', label_text='Is a Pro')
 		courses = forms.TextField(help_text='number of courses, usually 1', validator = Int(), size='4')
-		runs = forms.TextField(validator = Int(), size='4')
-		segments = forms.TextField(size='40')
+		runs = forms.TextField(help_text='number of runs that are taken', validator = Int(), size='4')
+		runscounted = forms.TextField(help_text='number of runs that are counted towards results',
+									validator = Int(), size='4', label_text='Runs Counted')
+		segments = forms.TextField(help_text='comma separated list of minimum segment times',
+									size='40', label_text='Segment List')
 		regopened = forms.CalendarDateTimePicker(help_text='When prereg should open', label_text='Registration Opens')
 		regclosed = forms.CalendarDateTimePicker(help_text='When prereg should close', label_text='Registration Closes')
 		perlimit = forms.TextField(help_text='Preregistred cars allowed per person', 

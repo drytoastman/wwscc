@@ -81,7 +81,7 @@ def RecalculateResults(session):
 				yield "\tId: %s (%s, %s)\n" % (car.carid, val, str)
 
 				for course in range(1, event.courses+1):
-					UpdateRunTotals(session, event.id, car.carid, course, val)
+					UpdateRunTotals(session, event, car.carid, course, val)
 			session.commit()
 
 			for cls in session.query(Car.classcode).distinct().join(Run).filter(Run.eventid==event.id):
@@ -110,15 +110,11 @@ def total(*args):
 			tot += a
 	return tot
 
-def bad(val, max = 10, min = 0):
-	return val > min and val < max
-
-def UpdateRunTotals(session, eventid, carid, course, index):
+def UpdateRunTotals(session, event, carid, course, index):
 	min = 10
-	runs = session.query(Run).filter(Run.eventid==eventid).filter(Run.carid==carid).filter(Run.course==course).all()
+	runs = session.query(Run).filter(Run.eventid==event.id).filter(Run.carid==carid).filter(Run.course==course).all()
 	for r in runs:
-		if abs(r.raw - total(r.seg1, r.seg2, r.seg3, r.seg4, r.seg5)) > 0.001 or \
-			bad(r.seg1) or bad(r.seg2) or bad(r.seg3) or bad(r.seg4) or bad(r.seg5):
+		if abs(r.raw - total(r.seg1, r.seg2, r.seg3, r.seg4, r.seg5)) > 0.001:
 			r.seg1 = 0
 			r.seg2 = 0
 			r.seg3 = 0
@@ -135,8 +131,18 @@ def UpdateRunTotals(session, eventid, carid, course, index):
 
 
 	for ii, r in enumerate(sorted(runs, netsort)):
-		r.norder = (ii+1)
+		r.bnorder = (ii+1)
+		r.norder = -1
 
 	for ii, r in enumerate(sorted(runs, rawsort)):
+		r.brorder = (ii+1)
+		r.rorder = -1
+
+	reduxruns = filter(lambda x: x.run <= event.runscounted, runs)
+
+	for ii, r in enumerate(sorted(reduxruns, netsort)):
+		r.norder = (ii+1)
+
+	for ii, r in enumerate(sorted(reduxruns, rawsort)):
 		r.rorder = (ii+1)
 

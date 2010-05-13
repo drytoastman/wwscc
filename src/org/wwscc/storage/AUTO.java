@@ -14,6 +14,7 @@ public class AUTO
 		o.ispro = rs.getBoolean("ispro");
 		o.courses = rs.getInt("courses");
 		o.runs = rs.getInt("runs");
+		o.countedruns = rs.getInt("runscounted");
 		o.segments = rs.getString("segments");
 		o.password = rs.getString("password");
 		o.name = rs.getString("name");
@@ -35,17 +36,17 @@ public class AUTO
 	
 	public static String getEventVarStr()
 	{
-		return "ispro,courses,runs,segments,password,name,date,location,sponsor,host,designer,regopened,regclosed,perlimit,totlimit,cost,paypal,snail,notes";
+		return "ispro,courses,runs,countedruns,segments,password,name,date,location,sponsor,host,designer,regopened,regclosed,perlimit,totlimit,cost,paypal,snail,notes";
 	}
 	
 	public static String getEventArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getEventSetStr()
 	{
-		return "ispro=?,courses=?,runs=?,segments=?,password=?,name=?,date=?,location=?,sponsor=?,host=?,designer=?,regopened=?,regclosed=?,perlimit=?,totlimit=?,cost=?,paypal=?,snail=?,notes=?";
+		return "ispro=?,courses=?,runs=?,countedruns=?,segments=?,password=?,name=?,date=?,location=?,sponsor=?,host=?,designer=?,regopened=?,regclosed=?,perlimit=?,totlimit=?,cost=?,paypal=?,snail=?,notes=?";
 	}
 	
 	public static void addEventValues(org.wwscc.storage.Event o, List<Object> l)
@@ -53,6 +54,7 @@ public class AUTO
 		l.add(o.ispro);
 		l.add(o.courses);
 		l.add(o.runs);
+		l.add(o.countedruns);
 		l.add(o.segments);
 		l.add(o.password);
 		l.add(o.name);
@@ -178,6 +180,8 @@ public class AUTO
 		o.status = rs.getString("status");
 		o.rorder = rs.getInt("rorder");
 		o.norder = rs.getInt("norder");
+		o.brorder = rs.getInt("brorder");
+		o.bnorder = rs.getInt("bnorder");
 		o.reaction = rs.getDouble("reaction");
 		o.sixty = rs.getDouble("sixty");
 		o.seg1 = rs.getDouble("seg1");
@@ -192,17 +196,17 @@ public class AUTO
 	
 	public static String getRunVarStr()
 	{
-		return "carid,eventid,course,run,cones,gates,status,rorder,norder,reaction,sixty,seg1,seg2,seg3,seg4,seg5,raw,net";
+		return "carid,eventid,course,run,cones,gates,status,rorder,norder,brorder,bnorder,reaction,sixty,seg1,seg2,seg3,seg4,seg5,raw,net";
 	}
 	
 	public static String getRunArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getRunSetStr()
 	{
-		return "carid=?,eventid=?,course=?,run=?,cones=?,gates=?,status=?,rorder=?,norder=?,reaction=?,sixty=?,seg1=?,seg2=?,seg3=?,seg4=?,seg5=?,raw=?,net=?";
+		return "carid=?,eventid=?,course=?,run=?,cones=?,gates=?,status=?,rorder=?,norder=?,brorder=?,bnorder=?,reaction=?,sixty=?,seg1=?,seg2=?,seg3=?,seg4=?,seg5=?,raw=?,net=?";
 	}
 	
 	public static void addRunValues(org.wwscc.storage.Run o, List<Object> l)
@@ -216,6 +220,8 @@ public class AUTO
 		l.add(o.status);
 		l.add(o.rorder);
 		l.add(o.norder);
+		l.add(o.brorder);
+		l.add(o.bnorder);
 		l.add(o.reaction);
 		l.add(o.sixty);
 		l.add(o.seg1);
@@ -274,6 +280,8 @@ public class AUTO
 		o.status = rs.getString("status");
 		o.rorder = rs.getInt("rorder");
 		o.norder = rs.getInt("norder");
+		o.brorder = rs.getInt("brorder");
+		o.bnorder = rs.getInt("bnorder");
 		o.reaction = rs.getDouble("reaction");
 		o.sixty = rs.getDouble("sixty");
 		o.seg1 = rs.getDouble("seg1");
@@ -288,17 +296,17 @@ public class AUTO
 	
 	public static String getChallengeRunVarStr()
 	{
-		return "carid,eventid,course,run,cones,gates,status,rorder,norder,reaction,sixty,seg1,seg2,seg3,seg4,seg5,raw,net";
+		return "carid,eventid,course,run,cones,gates,status,rorder,norder,brorder,bnorder,reaction,sixty,seg1,seg2,seg3,seg4,seg5,raw,net";
 	}
 	
 	public static String getChallengeRunArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getChallengeRunSetStr()
 	{
-		return "carid=?,eventid=?,course=?,run=?,cones=?,gates=?,status=?,rorder=?,norder=?,reaction=?,sixty=?,seg1=?,seg2=?,seg3=?,seg4=?,seg5=?,raw=?,net=?";
+		return "carid=?,eventid=?,course=?,run=?,cones=?,gates=?,status=?,rorder=?,norder=?,brorder=?,bnorder=?,reaction=?,sixty=?,seg1=?,seg2=?,seg3=?,seg4=?,seg5=?,raw=?,net=?";
 	}
 	
 	public static void addChallengeRunValues(org.wwscc.storage.ChallengeRun o, List<Object> l)
@@ -312,6 +320,8 @@ public class AUTO
 		l.add(o.status);
 		l.add(o.rorder);
 		l.add(o.norder);
+		l.add(o.brorder);
+		l.add(o.bnorder);
 		l.add(o.reaction);
 		l.add(o.sixty);
 		l.add(o.seg1);

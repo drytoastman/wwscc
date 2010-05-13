@@ -27,7 +27,7 @@ public class Run implements Serial
 	protected int carid, eventid, course, run; 
 	protected int cones, gates;
 	protected String status;
-	protected int rorder, norder;
+	protected int rorder, norder, brorder, bnorder;
 	protected double reaction, sixty, seg1, seg2, seg3, seg4, seg5, raw, net;
 
 	public static class RawOrder implements Comparator<Run>
@@ -67,6 +67,8 @@ public class Run implements Serial
 		this.run = -1;
 		this.rorder = -1;
 		this.norder = -1;
+		this.brorder = -1;
+		this.bnorder = -1;
 
 		if (!status.equals("OK"))
 		{
@@ -103,6 +105,8 @@ public class Run implements Serial
 
 	public int getNetOrder() { return norder; }
 	public int getRawOrder() { return rorder; }
+	public int getBestRawOrder() { return brorder; }
+	public int getBestNetOrder() { return bnorder; }
 
 	public void setCourse(int c) { course = c; }
 	

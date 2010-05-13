@@ -19,6 +19,7 @@ public class Event implements Serializable
 	protected boolean ispro;
 	protected int courses;
 	protected int runs;
+	protected int countedruns;
 	protected String segments;
 
 	protected String password;
@@ -51,6 +52,7 @@ public class Event implements Serializable
 
 	public int getId() { return id; }
 	public int getRuns() { return runs; }
+	public int getCountedRuns() { return countedruns; }
 	public int getCourses() { return courses; }
 	public boolean isPro() { return ispro; }
 

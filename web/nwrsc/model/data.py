@@ -131,6 +131,8 @@ t_runs = Table('runs', metadata,
 	Column('net', Float, default=0),
 	Column('rorder', SmallInteger, default=0),
 	Column('norder', SmallInteger, default=0),
+	Column('brorder', SmallInteger, default=0),
+	Column('bnorder', SmallInteger, default=0),
 	UniqueConstraint('eventid', 'carid', 'course', 'run', name='runidx_3')
 	)
 Index('runidx_1', t_runs.c.eventid)

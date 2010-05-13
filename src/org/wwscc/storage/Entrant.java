@@ -8,10 +8,12 @@
 
 package org.wwscc.storage;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -140,16 +142,40 @@ public class Entrant
 
 	protected void sortRuns(Map<Integer, Run> theruns)
 	{
-		Run list[] = theruns.values().toArray(new Run[0]);
-		if (list.length == 0) return;
+		List<Run> list = new ArrayList<Run>(theruns.values());
+		if (list.size() == 0) return;
 
-		Arrays.sort(list, rorder);
-		for (int ii = 0; ii < list.length; ii++)
-			list[ii].rorder = ii+1;
+		Collections.sort(list, rorder);
+		for (int ii = 0; ii < list.size(); ii++)
+		{
+			list.get(ii).brorder = ii+1;
+			list.get(ii).rorder = -1;
+		}
 
-		Arrays.sort(list, norder);
-		for (int ii = 0; ii < list.length; ii++)
-			list[ii].norder = ii+1;
+		Collections.sort(list, norder);
+		for (int ii = 0; ii < list.size(); ii++)
+		{
+			list.get(ii).bnorder = ii+1;
+			list.get(ii).norder = -1;
+		}
+
+		// reduce list to first x runs
+		int cnt = Database.d.getCurrentEvent().countedruns;
+		Iterator<Run> iter = list.iterator();
+		while (iter.hasNext())
+		{
+			Run r = iter.next();
+			if (r.run > cnt)
+				iter.remove();
+		}
+
+		Collections.sort(list, rorder);
+		for (int ii = 0; ii < list.size(); ii++)
+			list.get(ii).rorder = ii+1;
+
+		Collections.sort(list, norder);
+		for (int ii = 0; ii < list.size(); ii++)
+			list.get(ii).norder = ii+1;
 	}
 }
 
