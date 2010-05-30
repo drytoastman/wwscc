@@ -18,7 +18,7 @@ class EventForm(forms.TableForm):
 		ispro = forms.CheckBox(help_text='check if a ProSolo', label_text='Is a Pro')
 		courses = forms.TextField(help_text='number of courses, usually 1', validator = Int(), size='4')
 		runs = forms.TextField(help_text='number of runs that are taken', validator = Int(), size='4')
-		runscounted = forms.TextField(help_text='number of runs that are counted towards results',
+		countedruns = forms.TextField(help_text='number of runs that are counted towards results',
 									validator = Int(), size='4', label_text='Runs Counted')
 		segments = forms.TextField(help_text='comma separated list of minimum segment times',
 									size='40', label_text='Segment List')

@@ -14,7 +14,7 @@ public class AUTO
 		o.ispro = rs.getBoolean("ispro");
 		o.courses = rs.getInt("courses");
 		o.runs = rs.getInt("runs");
-		o.countedruns = rs.getInt("runscounted");
+		o.countedruns = rs.getInt("countedruns");
 		o.segments = rs.getString("segments");
 		o.password = rs.getString("password");
 		o.name = rs.getString("name");
