@@ -3,24 +3,36 @@
 <% from nwrsc.forms import settingsForm %>
 ${settingsForm(action=h.url_for(action=c.action), value=c.settings)|n}
 
+<br/>
 <h3>Images</h3>
 <form method=post enctype="multipart/form-data" action="${h.url_for(action='uploadimage')}">
 <table>
-<tr>
-<td><b>Sponsor Image</b><br/><input type=file name="sponsorimage"></td>
-<td><img src='${h.url_for(controller='db', name='sponsorimage', eventid=None, action='nocache')}'/></td>
+
+<tr class='odd'>
+<td class='labelcol'><label>Sponsor Image</label></td>
+<td><input type=file name="sponsorimage">
+<td><img src='${h.url_for(controller='db', name='sponsorimage', eventid=None, action='nocache')}' height="70" /></td>
 </tr>
-<tr>
-<td><b>Series Image</b><br/><input type=file name="seriesimage"></td>
-<td><img src='${h.url_for(controller='db', name='seriesimage', eventid=None, action='nocache')}'/></td>
+
+
+<tr class='even'>
+<td class='labelcol'><label>Series Image</label></td>
+<td><input type=file name="seriesimage">
+<td><img src='${h.url_for(controller='db', name='seriesimage', eventid=None, action='nocache')}' height="70" /></td>
+</tr>
+<tr class='odd,lastrow'>
+<td></td>
+<td>
+<input type=submit value="Submit">
+</td>
 </tr>
 </table>
-<input type=submit value="Upload">
 </form>
 
 
+<br/>
 <h3>Template Code</h3>
-<ul>
+<ul id='templatelist'>
 <li><a target='_blank' href='${h.url_for(action='editor', name='classresult.mako')}'>Class Tables</a>
 <li><a target='_blank' href='${h.url_for(action='editor', name='toptimes.mako')}'>Top Times List</a>
 <li><a target='_blank' href='${h.url_for(action='editor', name='event.mako')}'>Event Template</a>

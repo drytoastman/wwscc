@@ -42,7 +42,6 @@ x = setup(
     test_suite='nose.collector',
     package_data={'nwrsc': ['i18n/*/LC_MESSAGES/*.mo']},
     zip_safe=False,
-    paster_plugins=['PasteScript', 'Pylons'],
     entry_points="""
     [paste.app_factory]
     main = nwrsc.config.middleware:make_app

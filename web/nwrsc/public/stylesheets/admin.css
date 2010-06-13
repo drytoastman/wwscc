@@ -38,10 +38,21 @@ div.error {
 	font-weight: bold;
 }
 
+
+h1, h2, h3, h4 { font-family: helvetica; color: #111; }
+li { font-family: helvetica; font-size: 15px; }
+li li { font-size: 13px; }
+li li li { font-size: 12px; }
+
 .labelcol { 
 	text-align: right; 
 	font-weight: bold;
-	xbackground: #eef;
+	font-family: helvetica;
+	font-size: 14px;
+	color: #444;
+}
+
+.fieldcol {
 }
 
 .fielderror {
@@ -49,7 +60,24 @@ div.error {
     font-weight: bold;
 }
 
-.even {
-	background: #eee;
+.even td, .odd td {
+	padding-top: 8px;
+	border-bottom: 1px solid #DDD;
+}
+
+.even:hover, .odd:hover {
+	background: #ddd;
+}
+
+#lastrow {
+	border-bottom: none;
+}
+
+#templatelist li {
+	margin-left: 0px;
+}
+
+#templatelist a {
+	text-decoration:none;
 }
 

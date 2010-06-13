@@ -17,7 +17,8 @@
 
     <table border="0" cellspacing="0" cellpadding="2" ${tw.attrs(attrs=table_attrs)}>
         % for i, field in enumerate(fields):
-        <tr class="${i%2 and 'odd' or 'even'}" id="${field.id}.container" title="${field.help_text}" \
+		<% lastrow = (i == len(fields)-1) and ",lastrow" or "" %>
+        <tr class="${i%2 and 'odd' or 'even'}${lastrow}" id="${field.id}-container" title="${field.help_text}" \
                 ${tw.attrs(args_for(field).get('container_attrs') or field.container_attrs)}>\
             <%
                 required = ['',' required'][int(field.is_required)]
