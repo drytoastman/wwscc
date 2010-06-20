@@ -32,7 +32,7 @@
 		</loadfile>
 
 		<property name="filehome" value="scorekeeper.wwscc.org" />
-		<property name="exename" value="WWSCCJavaSetup-r${dist.revision}" />
+		<property name="exename" value="WWSCCSetup-r${dist.revision}" />
 		<property name="issname" value="java.iss" />
 
         <echo file="${issname}"><![CDATA[[Setup]
@@ -59,14 +59,15 @@ Name: "java"; Description: "Java Applications"; Types: full
 Name: "python"; Description: "Python And Web Service"; Types: full
 
 [Dirs]
-Name: "{app}\series"; Permissions: users-modify; Flags: uninsneveruninstall
-Name: "{app}\backup"; Permissions: users-modify; Flags: uninsneveruninstall
+Name: "{userdocs}\nwrsc\series"; Permissions: users-modify; Flags: uninsneveruninstall
+Name: "{userdocs}\nwrsc\backup"; Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
 Source: "wwsccapps.jar"; DestDir: "{app}"; Flags: ignoreversion; Components: java
 Source: "web\installer\python\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Components: python
-Source: "web\installer\XY*"; DestDir: "{app}"; Flags: ignoreversion; Components: python
-Source: "web\installer\nwrsc.ini"; DestDir: "{app}"; Flags: ignoreversion; Components: python
+Source: "web\installer\XYNTService.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: python;
+Source: "web\installer\XYNTService.ini"; DestDir: "{app}"; Flags: ignoreversion; Components: python; AfterInstall: UpdateXY()
+Source: "web\installer\nwrsc.ini"; DestDir: "{userdocs}\nwrsc"; Flags: ignoreversion; Components: python
 
 [Icons]
 Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar DataEntry";  WorkingDir: "{app}"; Components: java
@@ -77,9 +78,24 @@ Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar Ch
 Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}"; Components: java
 
 [Registry]
-Root: HKCU; Subkey: "Software\JavaSoft\Prefs\/Data/Entry"; ValueType: string; ValueName: "installroot"; ValueData: "{app}"
+Root: HKCU; Subkey: "Software\JavaSoft\Prefs\org\wwscc\util"; ValueType: string; ValueName: "installroot"; ValueData: "{userdocs}\nwrsc"
+
+[Run]
+Filename: "{app}\XYNTService.exe"; Parameters: "-i"
+
+[UninstallRun]
+Filename: "{app}\XYNTService.exe"; Parameters: "-u"
 
 [Code]
+procedure UpdateXY();
+var
+  filename: string;
+begin
+  filename := ExpandConstant('{app}\XYNTService.ini');
+  SetIniString('Process0', 'CommandLine', ExpandConstant('pythonw.exe Scripts\paster-script.py serve "{userdocs}\nwrsc\nwrsc.ini"'), filename);
+  SetIniString('Process0', 'WorkingDir', ExpandConstant('{app}'), filename);
+end;
+
 function InitializeSetup(): Boolean;
 var
  ErrorCode: Integer;
