@@ -1,0 +1,7 @@
+<span xmlns:py="http://genshi.edgewall.org/">
+    ${children[0].display(value, attrs=attrs)}
+    <a id="${id}_view" href="javascript:" onclick="return twd_link_view(this, '$link', '${popup_options}')"
+            py:attrs="(not value) and dict(style='display:none') or dict()">    
+        ${view_text}
+    </a>
+</span>

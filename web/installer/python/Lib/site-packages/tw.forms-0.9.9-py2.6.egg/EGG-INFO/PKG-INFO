@@ -1,0 +1,19 @@
+Metadata-Version: 1.0
+Name: tw.forms
+Version: 0.9.9
+Summary: Web Widgets for building and validating forms. (former ToscaWidgetsForms)
+Home-page: http://toscawidgets.org
+Author: Alberto Valverde Gonzalez
+Author-email: alberto@toscat.net
+License: MIT
+Download-URL: http://toscawidgets.org/download
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Web Environment
+Classifier: Environment :: Web Environment :: ToscaWidgets
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Software Development :: Widget Sets
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python

@@ -1,0 +1,26 @@
+
+    [distutils.commands]
+    archive_tw_resources = tw.core.command:archive_tw_resources
+    aggregate_tw_resources = tw.core.command:aggregate_tw_resources
+
+    [python.templating.engines]
+    toscawidgets = tw.core.engine_plugin:ToscaWidgetsTemplatePlugin
+
+    [toscawidgets.host_frameworks]
+    wsgi = tw.mods.wsgi:WSGIHostFramework
+    pylons = tw.mods.pylonshf:PylonsHostFramework
+    turbogears = tw.mods.tg:Turbogears
+
+    [toscawidgets.widgets]
+    widgets = tw.api
+    resources = tw.api
+
+    [paste.paster_create_template]
+    toscawidgets=tw.paste_template:ToscaWidgetsTemplate
+
+    [turbogears.extensions]
+    toscawidgets=tw.mods.tg
+
+    [paste.filter_app_factory]
+    middleware = tw.api:make_middleware
+    

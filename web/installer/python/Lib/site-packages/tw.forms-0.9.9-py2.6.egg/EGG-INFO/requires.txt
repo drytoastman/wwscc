@@ -1,0 +1,8 @@
+ToscaWidgets > 0.9.7
+FormEncode >= 1.1
+
+[mako]
+Mako
+
+[genshi]
+Genshi >= 0.3.6

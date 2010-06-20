@@ -1,0 +1,16 @@
+<select xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:py="http://genshi.edgewall.org/"
+        name="${name}"
+        class="${css_class}"
+        id="${id}"
+        py:attrs="attrs" >
+    <optgroup py:for="group, options in grouped_options"
+              py:strip="not group"
+              label="${group}" >
+        <option py:for="value, desc, attrs in options"
+                py:attrs="attrs"
+                py:content="desc"
+                value="${value}" />
+    </optgroup>
+</select>
+

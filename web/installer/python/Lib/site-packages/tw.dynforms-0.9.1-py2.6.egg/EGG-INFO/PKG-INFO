@@ -1,0 +1,19 @@
+Metadata-Version: 1.0
+Name: tw.dynforms
+Version: 0.9.1
+Summary: A collection of widgets for creating dynamic forms. Features include growing tables, hiding fields, ajax lookups and more.
+Home-page: http://pajhome.org.uk/
+Author: Paul Johnston
+Author-email: paj@pajhome.org.uk
+License: UNKNOWN
+Description: UNKNOWN
+Keywords: toscawidgets.widgets
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Web Environment
+Classifier: Environment :: Web Environment :: ToscaWidgets
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Software Development :: Widget Sets
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python

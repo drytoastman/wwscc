@@ -1,0 +1,13 @@
+<fieldset xmlns="http://www.w3.org/1999/xhtml" xmlns:py="http://genshi.edgewall.org/"
+    id="${id}"
+    class="${css_class}"
+    py:attrs="attrs"
+>
+    <legend py:content="legend" />
+    <py:for each="field in hidden_fields">
+        ${field.display(value_for(field), **args_for(field))}
+    </py:for>
+    <py:for each="field in fields">
+        ${field.display(value_for(field), **args_for(field))} <br />
+    </py:for>
+</fieldset>

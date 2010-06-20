@@ -1,0 +1,12 @@
+
+        [toscawidgets.widgets]
+        # Use 'widgets' to point to the module where widgets should be imported
+        # from to register in the widget browser
+        widgets = tw.dynforms
+        # Use 'samples' to point to the module where widget examples
+        # should be imported from to register in the widget browser
+        samples = tw.dynforms.samples
+        # Use 'resources' to point to the module where resources
+        # should be imported from to register in the widget browser
+        #resources = toscawidgets.widgets.dynforms.resources
+    

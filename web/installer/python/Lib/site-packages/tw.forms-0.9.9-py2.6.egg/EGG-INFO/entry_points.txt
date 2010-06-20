@@ -1,0 +1,5 @@
+
+    [toscawidgets.widgets]
+    widgets = tw.forms
+    samples = tw.forms.samples
+    

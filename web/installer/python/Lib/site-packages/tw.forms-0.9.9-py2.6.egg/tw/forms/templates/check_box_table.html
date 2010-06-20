@@ -1,0 +1,18 @@
+<table xmlns="http://www.w3.org/1999/xhtml" 
+       xmlns:py="http://genshi.edgewall.org/"
+       id="${id}"
+       class="${css_class}"
+       py:attrs="attrs" >
+    <tbody>
+    <tr py:for="i,row in enumerate(options_rows)">
+        <td py:for="value, desc, attrs in row">
+            <py:with vars="id_c = id_counter.next()">
+            <input id="${id}_${id_c}" value="${value}" name="${name}" 
+                   type="${field_type}" py:attrs="attrs" />
+            <label for="${id}_${id_c}" py:content="desc" />
+            </py:with>
+        </td>
+        <td py:for="j in xrange(num_cols - len(row))" />
+    </tr>
+    </tbody>
+</table>
