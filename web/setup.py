@@ -52,26 +52,11 @@ x = setup(
 )
 
 import sys
+import os
+import subprocess
 if sys.argv[1] == 'sdist':
-	import zipfile
-	import os
-	import subprocess
-	
-	zip = zipfile.ZipFile('PythonSetup-%s.zip' % x.get_version(), 'w')
-	for f in os.listdir('installer'):
-		if not os.path.isdir('installer/%s' % f):
-			zip.write('installer/%s' % f, f)
-	
-	for f in os.listdir('installer/pysource'):
-		if not os.path.isdir('installer/pysource/%s' % f):
-			zip.write('installer/pysource/%s' % f, 'pysource/%s' % f)
-	
 	for f in os.listdir('dist'):
 		if x.get_version() in f:
 			distfile = "dist/%s" % f
-			zip.write(distfile, 'pysource/%s' % f)
-	zip.close()
-	
-	subprocess.call("scp PythonSetup-* %s brett_wilson@scorekeeper.wwscc.org:scorekeeper.wwscc.org/setup/" % distfile, shell=True)
-	
+	subprocess.call("scp %s brett_wilson@scorekeeper.wwscc.org:scorekeeper.wwscc.org/setup/" % distfile, shell=True)
 
