@@ -36,12 +36,12 @@
 		<property name="issname" value="java.iss" />
 
         <echo file="${issname}"><![CDATA[[Setup]
-AppName=WWSCC Java Apps
-AppVerName=WWSCC Java Apps r${dist.revision}
+AppName=WWSCC Applications
+AppVerName=WWSCC Applications r${dist.revision}
 OutputDir=.
 OutputBaseFilename=${exename}
 AppPublisher=Brett Wilson
-DefaultDirName=c:\timing
+DefaultDirName={pf}\nwrsc
 DefaultGroupName=WW Timing
 AllowNoIcons=yes
 Compression=lzma
@@ -50,20 +50,31 @@ SolidCompression=yes
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
+[Types]
+Name: "full"; Description: "Full installation"
+Name: "custom"; Description: "Custom installation"; Flags: iscustom
+
+[Components]
+Name: "java"; Description: "Java Applications"; Types: full
+Name: "python"; Description: "Python And Web Service"; Types: full
+
 [Dirs]
 Name: "{app}\series"; Permissions: users-modify; Flags: uninsneveruninstall
 Name: "{app}\backup"; Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
-Source: "wwsccapps.jar"; DestDir: "{app}"; Flags: ignoreversion
+Source: "wwsccapps.jar"; DestDir: "{app}"; Flags: ignoreversion; Components: java
+Source: "web\installer\python\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Components: python
+Source: "web\installer\XY*"; DestDir: "{app}"; Flags: ignoreversion; Components: python
+Source: "web\installer\nwrsc.ini"; DestDir: "{app}"; Flags: ignoreversion; Components: python
 
 [Icons]
-Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar DataEntry";  WorkingDir: "{app}";
-Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar Registration";  WorkingDir: "{app}";
-Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar BWTimer";  WorkingDir: "{app}";
-Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ProTimer";  WorkingDir: "{app}";
-Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ChallengeGUI";  WorkingDir: "{app}";
-Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}"
+Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar DataEntry";  WorkingDir: "{app}"; Components: java
+Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar Registration";  WorkingDir: "{app}"; Components: java
+Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar BWTimer";  WorkingDir: "{app}"; Components: java
+Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ProTimer";  WorkingDir: "{app}"; Components: java
+Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ChallengeGUI";  WorkingDir: "{app}"; Components: java
+Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}"; Components: java
 
 [Registry]
 Root: HKCU; Subkey: "Software\JavaSoft\Prefs\/Data/Entry"; ValueType: string; ValueName: "installroot"; ValueData: "{app}"
