@@ -1,4 +1,4 @@
-rm -r web/installer/python/Lib/site-packages/nwrsc*
+rm -r installer/python/Lib/site-packages/nwrsc*
 ./installer/python/python setup.py easy_install --no-deps .
 rm `find installer/python -name '*.pyc'`
 python setup.py sdist
