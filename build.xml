@@ -59,23 +59,24 @@ Name: "java"; Description: "Java Applications"; Types: full
 Name: "python"; Description: "Python And Web Service"; Types: full
 
 [Dirs]
+Name: "{app}\java"; Permissions: users-modify
 Name: "{userdocs}\nwrsc\series"; Permissions: users-modify; Flags: uninsneveruninstall
 Name: "{userdocs}\nwrsc\backup"; Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
-Source: "wwsccapps.jar"; DestDir: "{app}"; Flags: ignoreversion; Components: java
+Source: "wwsccapps.jar"; DestDir: "{app}\java"; Flags: ignoreversion; Components: java
 Source: "web\installer\python\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Components: python
 Source: "web\installer\XYNTService.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: python
 Source: "web\installer\XYNTService.ini"; DestDir: "{app}"; Flags: ignoreversion; Components: python
 Source: "web\installer\nwrsc.ini"; DestDir: "{userdocs}\nwrsc"; Flags: ignoreversion; Components: python
 
 [Icons]
-Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar DataEntry";  WorkingDir: "{app}"; Components: java
-Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar Registration";  WorkingDir: "{app}"; Components: java
-Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar BWTimer";  WorkingDir: "{app}"; Components: java
-Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ProTimer";  WorkingDir: "{app}"; Components: java
-Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ChallengeGUI";  WorkingDir: "{app}"; Components: java
-Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}"; Components: java
+Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar DataEntry";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar Registration";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar BWTimer";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ProTimer";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ChallengeGUI";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}\java"; Components: java
 
 [Registry]
 Root: HKCU; Subkey: "Software\JavaSoft\Prefs\org\wwscc\util"; ValueType: string; ValueName: "installroot"; ValueData: "{userdocs}\nwrsc"
@@ -83,7 +84,7 @@ Root: HKCU; Subkey: "Software\JavaSoft\Prefs\org\wwscc\util"; ValueType: string;
 [INI]
 Filename: "{app}\XYNTService.ini"; Section: "Process0"; Key: "CommandLine"; String: "pythonw.exe Scripts\paster-script.py serve ""{userdocs}\nwrsc\nwrsc.ini"""
 Filename: "{app}\XYNTService.ini"; Section: "Process0"; Key: "WorkingDir"; String: """{app}"""
-Filename: "{userdocs}\nwrsc\nwrsc.ini"; Section: "handler_errorlog"; Key: "args"; String: "('{userdocs}\nwrsc\nwrsc.log', 'a')"
+Filename: "{userdocs}\nwrsc\nwrsc.ini"; Section: "handler_errorlog"; Key: "args"; String: "(r'{userdocs}\nwrsc\nwrsc.log', 'a')"
 
 [Run]
 Filename: "{app}\XYNTService.exe"; Parameters: "-i"
