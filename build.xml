@@ -82,8 +82,10 @@ Root: HKCU; Subkey: "Software\JavaSoft\Prefs\org\wwscc\util"; ValueType: string;
 
 [Run]
 Filename: "{app}\XYNTService.exe"; Parameters: "-i"
+Filename: "{app}\XTNTService.exe"; Parameters: "-r NWRSc"
 
 [UninstallRun]
+Filename: "{app}\XTNTService.exe"; Parameters: "-k NWRSc"
 Filename: "{app}\XYNTService.exe"; Parameters: "-u"
 
 [Code]
