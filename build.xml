@@ -65,8 +65,8 @@ Name: "{userdocs}\nwrsc\backup"; Permissions: users-modify; Flags: uninsneveruni
 [Files]
 Source: "wwsccapps.jar"; DestDir: "{app}"; Flags: ignoreversion; Components: java
 Source: "web\installer\python\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Components: python
-Source: "web\installer\XYNTService.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: python;
-Source: "web\installer\XYNTService.ini"; DestDir: "{app}"; Flags: ignoreversion; Components: python; AfterInstall: UpdateXY()
+Source: "web\installer\XYNTService.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: python
+Source: "web\installer\XYNTService.ini"; DestDir: "{app}"; Flags: ignoreversion; Components: python
 Source: "web\installer\nwrsc.ini"; DestDir: "{userdocs}\nwrsc"; Flags: ignoreversion; Components: python
 
 [Icons]
@@ -80,22 +80,27 @@ Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}"; 
 [Registry]
 Root: HKCU; Subkey: "Software\JavaSoft\Prefs\org\wwscc\util"; ValueType: string; ValueName: "installroot"; ValueData: "{userdocs}\nwrsc"
 
+[INI]
+Filename: "{app}\XYNTService.ini"; Section: "Process0"; Key: "CommandLine"; String: "pythonw.exe Scripts\paster-script.py serve ""{userdocs}\nwrsc\nwrsc.ini"""
+Filename: "{app}\XYNTService.ini"; Section: "Process0"; Key: "WorkingDir"; String: """{app}"""
+Filename: "{userdocs}\nwrsc\nwrsc.ini"; Section: "handler_errorlog"; Key: "args"; String: "('{userdocs}\nwrsc\nwrsc.log', 'a')"
+
 [Run]
 Filename: "{app}\XYNTService.exe"; Parameters: "-i"
-Filename: "{app}\XTNTService.exe"; Parameters: "-r NWRSc"
+Filename: "{app}\XYNTService.exe"; Parameters: "-r NWRSc"
 
 [UninstallRun]
-Filename: "{app}\XTNTService.exe"; Parameters: "-k NWRSc"
+Filename: "{app}\XYNTService.exe"; Parameters: "-k NWRSc"
 Filename: "{app}\XYNTService.exe"; Parameters: "-u"
 
 [Code]
-procedure UpdateXY();
+procedure CurStepChanged(CurStep: TSetupStep);
 var
-  filename: string;
+  ResultCode: Integer;
 begin
-  filename := ExpandConstant('{app}\XYNTService.ini');
-  SetIniString('Process0', 'CommandLine', ExpandConstant('pythonw.exe Scripts\paster-script.py serve "{userdocs}\nwrsc\nwrsc.ini"'), filename);
-  SetIniString('Process0', 'WorkingDir', ExpandConstant('{app}'), filename);
+  if CurStep = ssInstall then begin
+    Exec(ExpandConstant('{app}\XYNTService.exe'), '-k NWRSc', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
+  end;
 end;
 
 function InitializeSetup(): Boolean;
