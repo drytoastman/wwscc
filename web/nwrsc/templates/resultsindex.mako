@@ -57,6 +57,10 @@ padding: 0;
 <ul class='classlist'>
 <li><a href='${h.url_for(action='topindex')}'>Top Indexed Times</a></li>
 <li><a href='${h.url_for(action='topraw')}'>Top Raw Times</a></li>
+%if c.event.countedruns > 0 and c.event.countedruns < c.event.runs:
+<li><a href='${h.url_for(action='topindexall')}'>Top Indexed Times (All)</a></li>
+<li><a href='${h.url_for(action='toprawall')}'>Top Raw Times (All)</a></li>
+%endif
 %if c.event.getSegmentCount() > 0:
 <li><a href='${h.url_for(action='topseg')}'>Top Segment Times</a></li>
 %endif

@@ -16,10 +16,10 @@ class EventForm(forms.TableForm):
 		designer = forms.TextField(help_text='the course designer', size='40')
 		chair = forms.TextField(help_text='the event chair', size='40')
 		ispro = forms.CheckBox(help_text='check if a ProSolo', label_text='Is a Pro')
-		courses = forms.TextField(help_text='number of courses, usually 1', validator = Int(), size='4')
-		runs = forms.TextField(help_text='number of runs that are taken', validator = Int(), size='4')
+		courses = forms.TextField(help_text='number of courses, usually 1', validator = Int(), size='4', default=1)
+		runs = forms.TextField(help_text='number of runs that are taken', validator = Int(), size='4', default=4)
 		countedruns = forms.TextField(help_text='number of runs that are counted towards results',
-									validator = Int(), size='4', label_text='Runs Counted')
+									validator = Int(), size='4', label_text='Runs Counted', default=4)
 		segments = forms.TextField(help_text='comma separated list of minimum segment times',
 									size='40', label_text='Segment List')
 		regopened = forms.CalendarDateTimePicker(help_text='When prereg should open', label_text='Registration Opens')
@@ -27,11 +27,11 @@ class EventForm(forms.TableForm):
 		perlimit = forms.TextField(help_text='Preregistred cars allowed per person', 
 									validator = Int(), 
 									label_text='Per-Person Limit', 
-									size='4')
-		totlimit = forms.TextField(help_text='Preregistred cars allowed for the whole event', 
+									size='4', default=2)
+		totlimit = forms.TextField(help_text='Preregistred cars allowed for the whole event, 0 means unlimited', 
 									validator = Int(),
 									label_text='Event Limit',
-									size='4')
+									size='4', default=0)
 		paypal = forms.TextField(help_text='Enter a paypal email address to enable paypal payments',
 									label_text='Paypal Address',
 									size='40')

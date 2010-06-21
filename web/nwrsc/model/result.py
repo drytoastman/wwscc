@@ -115,27 +115,47 @@ def loadTopSegRawTimes(session, event, course, seg, classdata):
 	return [Result(row,classdata) for row in session.execute(topSegRaw, params={'eventid':event.id, 'course':course})]
 
 			
-topCourseRaw = top1 + ", (r.raw+2*r.cones+10*r.gates) as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
+topCourseRaw    = top1 + ", (r.raw+2*r.cones+10*r.gates) as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
+topCourseRawAll = top1 + ", (r.raw+2*r.cones+10*r.gates) as toptime " + top2 + " and r.course=:course and r.bnorder=1 order by toptime"
+topCourseNet    = top1 + ", r.net as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
+topCourseNetAll = top1 + ", r.net as toptime " + top2 + " and r.course=:course and r.bnorder=1 order by toptime"
+topRaw    = top1 + ", SUM(r.raw+2*r.cones+10*r.gates) as toptime " + top2 + " and r.norder=1 group by c.id order by toptime"
+topRawAll = top1 + ", SUM(r.raw+2*r.cones+10*r.gates) as toptime " + top2 + " and r.bnorder=1 group by c.id order by toptime"
+topNet    = top1 + ", SUM(r.net) as toptime " + top2 + " and r.norder=1 group by c.id order by toptime"
+topNetAll = top1 + ", SUM(r.net) as toptime " + top2 + " and r.bnorder=1 group by c.id order by toptime"
 
-def loadTopCourseRawTimes(session, event, course, classdata):
-	return [Result(row,classdata) for row in session.execute(topCourseRaw, params={'eventid':event.id, 'course':course})]
+def loadTopCourseRawTimes(session, event, course, classdata, all=False):
+	if all:
+		sql = topCourseRawAll
+	else:
+		sql = topCourseRaw
+	return [Result(row,classdata) for row in session.execute(sql, params={'eventid':event.id, 'course':course})]
 
 
-topCourseNet = top1 + ", r.net as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
 
-def loadTopCourseNetTimes(session, event, course, classdata):
-	return [Result(row,classdata) for row in session.execute(topCourseNet, params={'eventid':event.id, 'course':course})]
-
-
-topRaw = top1 + ", SUM(r.raw+2*r.cones+10*r.gates) as toptime " + top2 + " and r.norder=1 group by c.id order by toptime"
-
-def loadTopRawTimes(session, event, classdata):
-	return [Result(row,classdata) for row in session.execute(topRaw, params={'eventid':event.id})]
+def loadTopCourseNetTimes(session, event, course, classdata, all=False):
+	if all:
+		sql = topCourseNetAll
+	else:
+		sql = topCourseNet
+	return [Result(row,classdata) for row in session.execute(sql, params={'eventid':event.id, 'course':course})]
 
 
-topNet = top1 + ", SUM(r.net) as toptime " + top2 + " and r.norder=1 group by c.id order by toptime"
 
-def loadTopNetTimes(session, event, classdata):
-	return [Result(row,classdata) for row in session.execute(topNet, params={'eventid':event.id})]
+def loadTopRawTimes(session, event, classdata, all=False):
+	if all:
+		sql = topRawAll
+	else:
+		sql = topRaw
+	return [Result(row,classdata) for row in session.execute(sql, params={'eventid':event.id})]
 
+
+def loadTopNetTimes(session, event, classdata, all=False):
+	if all:
+		print "net all"
+		sql = topNetAll
+	else:
+		print "net limited"
+		sql = topNet
+	return [Result(row,classdata) for row in session.execute(sql, params={'eventid':event.id})]
 

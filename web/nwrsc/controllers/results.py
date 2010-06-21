@@ -116,9 +116,16 @@ class ResultsController(BaseController):
 		self._loadTopIndexTimes()
 		return render_mako('db:toptimes.mako')
 
+	def topindexall(self):
+		self._loadTopIndexTimes(True)
+		return render_mako('db:toptimes.mako')
 
 	def topraw(self):
 		self._loadTopTimes()
+		return render_mako('db:toptimes.mako')
+
+	def toprawall(self):
+		self._loadTopTimes(True)
 		return render_mako('db:toptimes.mako')
 
 	def topseg(self):
@@ -209,23 +216,23 @@ class ResultsController(BaseController):
 			
 		return render_mako('/challenge/dialins.mako')
 
-	def _loadTopTimes(self):
+	def _loadTopTimes(self, all=False):
 		c.toptimes = []
 		c.topsegtimes = None
 		c.topindextimes = None
-		c.toptimes.append(loadTopRawTimes(self.session, c.event, c.classdata))
+		c.toptimes.append(loadTopRawTimes(self.session, c.event, c.classdata, all))
 		if c.event.courses > 1:
 			for ii in range(1, c.event.courses+1):
-				c.toptimes.append(loadTopCourseRawTimes(self.session, c.event, ii, c.classdata))
+				c.toptimes.append(loadTopCourseRawTimes(self.session, c.event, ii, c.classdata, all))
 
-	def _loadTopIndexTimes(self):
+	def _loadTopIndexTimes(self, all=False):
 		c.toptimes = None
 		c.topsegtimes = None
 		c.topindextimes = []
-		c.topindextimes.append(loadTopNetTimes(self.session, c.event, c.classdata))
+		c.topindextimes.append(loadTopNetTimes(self.session, c.event, c.classdata, all))
 		if c.event.courses > 1:
 			for ii in range(1, c.event.courses+1):
-				c.topindextimes.append(loadTopCourseNetTimes(self.session, c.event, ii, c.classdata))
+				c.topindextimes.append(loadTopCourseNetTimes(self.session, c.event, ii, c.classdata, all))
 
 	def _loadTopSegTimes(self):
 		c.toptimes = None
