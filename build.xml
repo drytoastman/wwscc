@@ -65,6 +65,7 @@ Name: "{userdocs}\nwrsc\backup"; Permissions: users-modify; Flags: uninsneveruni
 
 [Files]
 Source: "wwsccapps.jar"; DestDir: "{app}\java"; Flags: ignoreversion; Components: java
+Source: "web\installer\dbDiscovery.py"; DestDir: "{app}"; Flags: ignoreversion; Components: python
 Source: "web\installer\python\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Components: python
 Source: "web\installer\XYNTService.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: python
 Source: "web\installer\XYNTService.ini"; DestDir: "{app}"; Flags: ignoreversion; Components: python
@@ -82,28 +83,21 @@ Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}\ja
 Root: HKCU; Subkey: "Software\JavaSoft\Prefs\org\wwscc\util"; ValueType: string; ValueName: "installroot"; ValueData: "{userdocs}\nwrsc"
 
 [INI]
-Filename: "{app}\XYNTService.ini"; Section: "Process0"; Key: "CommandLine"; String: "pythonw.exe Scripts\paster-script.py serve ""{userdocs}\nwrsc\nwrsc.ini"""
-Filename: "{app}\XYNTService.ini"; Section: "Process0"; Key: "WorkingDir"; String: """{app}"""
-Filename: "{userdocs}\nwrsc\nwrsc.ini"; Section: "handler_errorlog"; Key: "args"; String: "(r'{userdocs}\nwrsc\nwrsc.log', 'a')"
+Filename: "{app}\XYNTService.ini"; Section: "Process0"; Key: "CommandLine"; String: "pythonw.exe Scripts\paster-script.py serve ""{userdocs}\nwrsc\nwrsc.ini"""; Components: python
+Filename: "{app}\XYNTService.ini"; Section: "Process0"; Key: "WorkingDir"; String: """{app}"""; Components: python
+Filename: "{app}\XYNTService.ini"; Section: "Process1"; Key: "CommandLine"; String: "pythonw.exe dbDiscovery.py ""{userdocs}\nwrsc\nwrsc.ini"""; Components: python
+Filename: "{app}\XYNTService.ini"; Section: "Process1"; Key: "WorkingDir"; String: """{app}"""; Components: python
+Filename: "{userdocs}\nwrsc\nwrsc.ini"; Section: "handler_errorlog"; Key: "args"; String: "(r'{userdocs}\nwrsc\nwrsc.log', 'a')"; Components: python
 
 [Run]
-Filename: "{app}\XYNTService.exe"; Parameters: "-i"
-Filename: "{app}\XYNTService.exe"; Parameters: "-r NWRSc"
+Filename: "{app}\XYNTService.exe"; Parameters: "-i"; Components: python
+Filename: "{app}\XYNTService.exe"; Parameters: "-r NWRSc"; Components: python
 
 [UninstallRun]
-Filename: "{app}\XYNTService.exe"; Parameters: "-k NWRSc"
-Filename: "{app}\XYNTService.exe"; Parameters: "-u"
+Filename: "{app}\XYNTService.exe"; Parameters: "-k NWRSc"; Components: python
+Filename: "{app}\XYNTService.exe"; Parameters: "-u"; Components: python
 
 [Code]
-procedure CurStepChanged(CurStep: TSetupStep);
-var
-  ResultCode: Integer;
-begin
-  if CurStep = ssInstall then begin
-    Exec(ExpandConstant('{app}\XYNTService.exe'), '-k NWRSc', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
-  end;
-end;
-
 function InitializeSetup(): Boolean;
 var
  ErrorCode: Integer;
@@ -112,6 +106,9 @@ var
  Versions: TArrayOfString;
  I: Integer;
 begin
+  // Make sure service is stopped if its present so that files can be replaced
+ Exec('sc', 'stop NWRSc', '', SW_SHOW, ewWaitUntilTerminated, ErrorCode);
+
  if RegGetSubkeyNames(HKLM, 'SOFTWARE\JavaSoft\Java Runtime Environment', Versions) then
  begin
   for I := 0 to GetArrayLength(Versions)-1 do
