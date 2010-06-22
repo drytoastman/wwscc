@@ -22,6 +22,7 @@ import org.wwscc.storage.Entrant;
 import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.storage.Run;
 import org.wwscc.timercomm.ServiceFinder;
+import org.wwscc.timercomm.ServiceFinder.FoundService;
 import org.wwscc.timercomm.TimerClient;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
@@ -450,13 +451,13 @@ public class ChallengeModel implements MessageListener
 			case CONNECT_REQUEST:
 				try
 				{
-					InetSocketAddress newAddr;
-					if ((newAddr = ServiceFinder.dialogFind("ProTimer")) == null)
+					FoundService service;
+					if ((service = ServiceFinder.dialogFind("ProTimer")) == null)
 							return;
 					if (client != null)
 						client.close();
 					client = null;
-					client = new TimerClient(newAddr);
+					client = new TimerClient(new InetSocketAddress(service.host, service.port));
 					new Thread(client, "ProTimerClient").start();
 				}
 				catch (Exception e)

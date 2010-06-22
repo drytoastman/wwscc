@@ -9,8 +9,6 @@
 
 package org.wwscc.protimer;
 
-
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.Vector;
 import javax.swing.table.AbstractTableModel;

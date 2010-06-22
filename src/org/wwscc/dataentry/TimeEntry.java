@@ -58,6 +58,7 @@ import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.TimeTextField;
 import org.wwscc.timercomm.SerialDataInterface;
+import org.wwscc.timercomm.ServiceFinder.FoundService;
 import org.wwscc.timercomm.TimerClient;
 
 
@@ -234,6 +235,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		try
 		{
 			String newCommPort = "";
+			FoundService newService = null;
 			InetSocketAddress newAddr = null;
 
 			/* First see if they can provide the necessary details */
@@ -248,12 +250,14 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 						throw new Exception("cancel");
 					break;
 				case BWTIMER_NETWORK:
-					if ((newAddr = ServiceFinder.dialogFind("BWTimer")) == null)
+					if ((newService = ServiceFinder.dialogFind("BWTimer")) == null)
 						throw new Exception("cancel");
+					newAddr = new InetSocketAddress(newService.host, newService.port);
 					break;
 				case PROTIMER_NETWORK:
-					if ((newAddr = ServiceFinder.dialogFind("ProTimer")) == null)
+					if ((newService = ServiceFinder.dialogFind("ProTimer")) == null)
 						throw new Exception("cancel");
+					newAddr = new InetSocketAddress(newService.host, newService.port);
 					break;
 			}
 

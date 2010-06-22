@@ -31,7 +31,8 @@ public class TimerService implements Runnable
 	{
 		serversock = new ServerSocket(0);
 		log.info("Service " + name + " started on port " + serversock.getLocalPort());
-		announcer = new ServiceAnnouncer(name, serversock.getLocalPort());
+		announcer = new ServiceAnnouncer();
+		announcer.setDescription(name, serversock.getLocalPort());
 		clients = new Vector<TimerClient>();
 		marked = new Vector<TimerClient>();
 		new Thread(announcer).start();

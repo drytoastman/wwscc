@@ -10,6 +10,9 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -23,17 +26,19 @@ public class ServiceAnnouncer implements Runnable
 	protected boolean done = false;
 	protected MulticastSocket sock = null;
 	protected InetAddress group = null;
-	protected String serviceName;
-	protected int servicePort;
+	final protected Map<String, Integer> descriptions;
 
-
-	public ServiceAnnouncer(String sname, int sport) throws UnknownHostException, IOException
+	public ServiceAnnouncer() throws UnknownHostException, IOException
 	{
-		serviceName = sname;
-		servicePort = sport;
+		descriptions = Collections.synchronizedMap(new HashMap<String, Integer>());
 		group = InetAddress.getByName(MDNSAddr);
 		sock = new MulticastSocket(MDNSPort);
 		sock.joinGroup(group);
+	}
+
+	public void setDescription(String name, int port)
+	{
+		descriptions.put(name, port);
 	}
 
 	public void close() throws IOException
@@ -54,11 +59,18 @@ public class ServiceAnnouncer implements Runnable
 				DatagramPacket recv = new DatagramPacket(buf, buf.length);
 				sock.receive(recv);
 
-				if (new String(recv.getData()).startsWith("FIND " + serviceName))
+				String request[] = new String(recv.getData(), 0, recv.getLength()).split("\\s+");
+				if (request[0].equals("FIND"))
 				{
-					String msg = String.format("SERVICE %s %s", serviceName, servicePort);
-					DatagramPacket reply = new DatagramPacket(msg.getBytes(), msg.length(), group, MDNSPort);
-					sock.send(reply);
+					synchronized (descriptions) {
+						for (String name : descriptions.keySet()) {
+							if (name.equals(request[1])) {
+								String msg = String.format("SERVICE %s %s", name, descriptions.get(name));
+								DatagramPacket reply = new DatagramPacket(msg.getBytes(), msg.length(), group, MDNSPort);
+								sock.send(reply);
+							}
+						}
+					}
 				}
 			}
 			catch (Exception ioe)
@@ -71,7 +83,9 @@ public class ServiceAnnouncer implements Runnable
 
 	public static void main(String args[]) throws UnknownHostException, IOException
 	{
-		ServiceAnnouncer f = new ServiceAnnouncer("ProTimer", 666);
+		ServiceAnnouncer f = new ServiceAnnouncer();
+		f.setDescription("ProTimer", 62608);
+		f.setDescription("RemoteDatabase", 3332);
 		new Thread(f, "ServiceAnnouncer").start();
 	}
 }

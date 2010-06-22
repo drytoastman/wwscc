@@ -10,10 +10,18 @@ package org.wwscc.dialogs;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import net.miginfocom.swing.MigLayout;
+import org.wwscc.timercomm.ServiceFinder;
+import org.wwscc.timercomm.ServiceFinder.FoundService;
 import org.wwscc.util.FileChooser;
 
 
@@ -36,6 +44,8 @@ public class DatabaseDialog extends BaseDialog<Object>
 
 		JButton chooserOpen = new JButton("...");
 		chooserOpen.addActionListener(this);
+		JButton remoteFinder = new JButton("Find");
+		remoteFinder.addActionListener(this);
 
 		if (fileDefault != null)
 		{
@@ -59,7 +69,8 @@ public class DatabaseDialog extends BaseDialog<Object>
 			else
 				radio("Network");
 			mainPanel.add(label("Host", false), "");
-			mainPanel.add(entry("Host", split.length>0 ? split[0]:""), "wmin 200, grow, wrap");
+			mainPanel.add(entry("Host", split.length>0 ? split[0]:""), "wmin 200, grow");
+			mainPanel.add(remoteFinder, "wrap");
 			mainPanel.add(label("Name", false), "");
 			mainPanel.add(entry("Name", split.length>1 ? split[1]:""), "grow, wrap");
 		}
@@ -74,6 +85,24 @@ public class DatabaseDialog extends BaseDialog<Object>
     }
 	 
 
+	static class RemoteDBLabel
+	{
+		public InetAddress host;
+		public int port;
+		public String name;
+		public RemoteDBLabel(InetAddress h, int p, String n)
+		{
+			host = h;
+			port = p;
+			name = n.trim();
+		}
+		@Override
+		public String toString()
+		{
+			return host.getHostAddress() + ":" + port + " - " + name;
+		}
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent ae)
 	{
@@ -84,6 +113,30 @@ public class DatabaseDialog extends BaseDialog<Object>
 			File res = FileChooser.open("Select Database", "Database", "db", new File(getEntryText("File")));
 			if (res != null)
 				setEntryText("File", res.getAbsolutePath());
+		}
+		else if (cmd.equals("Find"))
+		{
+			try {
+				ServiceFinder finder = new ServiceFinder("RemoteDatabase");
+				List<RemoteDBLabel> labels = new ArrayList<RemoteDBLabel>();
+				for (FoundService fs : finder.find())
+					for (String db : fs.args)
+						labels.add(new RemoteDBLabel(fs.host, fs.port, db));
+
+				RemoteDBLabel select = (RemoteDBLabel)JOptionPane.showInputDialog(null,
+					"Remote Databases Found", "Find Service",
+					JOptionPane.PLAIN_MESSAGE, null, labels.toArray(), null);
+
+				if (select != null)
+				{
+					setSelectedRadio("Network");
+					setEntryText("Host", select.host.getHostAddress());  // assume port 80 for now
+					setEntryText("Name", select.name);
+				}
+
+			} catch (IOException ex) {
+				log.log(Level.SEVERE, "Service finder failed: " + ex, ex);
+			}
 		}
 		else
 		{
