@@ -52,7 +52,13 @@ public class Event implements Serializable
 
 	public int getId() { return id; }
 	public int getRuns() { return runs; }
-	public int getCountedRuns() { return countedruns; }
+	public int getCountedRuns()
+	{
+		if (countedruns <= 0)
+			return runs;
+		else
+			return countedruns;
+	}
 	public int getCourses() { return courses; }
 	public boolean isPro() { return ispro; }
 

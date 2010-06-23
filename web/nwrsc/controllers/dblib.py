@@ -138,7 +138,8 @@ def UpdateRunTotals(session, event, carid, course, index):
 		r.brorder = (ii+1)
 		r.rorder = -1
 
-	reduxruns = filter(lambda x: x.run <= event.countedruns, runs)
+	counted = event.getCountedRuns()
+	reduxruns = filter(lambda x: x.run <= counted, runs)
 
 	for ii, r in enumerate(sorted(reduxruns, netsort)):
 		r.norder = (ii+1)

@@ -61,7 +61,13 @@ class Event(object):
 
 	def getSegmentCount(self):
 		return len(self.getSegments())
+
+	def getCountedRuns(self):
+		if self.countedruns <= 0:
+			return self.runs
+		else:
+			return self.countedruns
+		
 			
-	
 mapper(Event, t_events)
 

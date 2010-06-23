@@ -160,9 +160,7 @@ public class Entrant
 		}
 
 		// reduce list to first x runs
-		int cnt = Database.d.getCurrentEvent().countedruns;
-		if (cnt <= 0)
-			cnt = Database.d.getCurrentEvent().runs;
+		int cnt = Database.d.getCurrentEvent().getCountedRuns();
 		Iterator<Run> iter = list.iterator();
 		while (iter.hasNext())
 		{
