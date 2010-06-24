@@ -32,6 +32,7 @@ class AdminController(BaseController):
 	def __before__(self):
 		c.stylesheets = ['/stylesheets/admin.css', '/stylesheets/adminmenu.css']
 		c.javascript = ['/js/admin.js', '/js/sortabletable.js']
+		c.isLocked = (int(self.settings['locked']) == 1)
 		if self.database is not None:
 			c.events = self.session.query(Event).all()
 		self.eventid = self.routingargs.get('eventid', None)
@@ -43,9 +44,17 @@ class AdminController(BaseController):
 		if self.eventid and self.routingargs.get('action', '') != 'login':
 			self._checkauth(self.eventid, c.event)
 
+		if int(self.settings['locked']):
+			action = self.routingargs.get('action', '')
+			if action not in ['index', 'printcards', 'paid', 'numbers', 'paypal', 'fees', 'allfees', 'printhelp', 'forceunlock']:
+				c.seriesname = self.settings.get('seriesname', 'Missing Name')
+				c.next = action
+				raise BeforePage(render_mako('/admin/locked.mako'))
+
 
 	def _checkauth(self, eventid, event):
 		if self.srcip == '127.0.0.1':
+			c.isAdmin = True
 			return
 	
 		if event is None and eventid != 's':
@@ -54,17 +63,25 @@ class AdminController(BaseController):
 	
 		ipsession = session.setdefault(self.srcip, {})
 		tokens = ipsession.setdefault('authtokens', set())
+		c.isAdmin = 'series' in tokens
 		if event is not None:
 			if int(eventid) in tokens or 'series' in tokens:
 				return
 			c.request = "Need authentication token for %s" % event.name
 			raise BeforePage(render_mako('/admin/login.mako'))
 		else:
-			if 'series' in tokens:
+			if c.isAdmin:
 				return
 			c.request = "Need authentication token for the series"
 			raise BeforePage(render_mako('/admin/login.mako'))
 	
+
+	def forceunlock(self):
+		locked = self.session.query(Setting).get('locked')
+		locked.val = '0'
+		self.session.commit()
+		redirect(url_for(action=request.GET.get('next', '')))
+
 
 	def login(self):
 		password = request.POST.get('password')
@@ -96,6 +113,7 @@ class AdminController(BaseController):
 	### Settings table editor ###
 	def seriessettings(self):
 		c.settings = self.settings
+		c.settings['locked'] = bool(int(c.settings['locked']))
 		c.action = 'updatesettings'
 		c.button = 'Update'
 		return render_mako('/admin/settings.mako')
@@ -103,6 +121,7 @@ class AdminController(BaseController):
 	@validate(form=settingsForm, error_handler='seriessettings')
 	def updatesettings(self):
 		""" Process settings form submission """
+		self.form_result['locked'] = int(self.form_result['locked'])
 		Setting.saveDict(self.session, self.form_result)
 		self.session.commit()
 		redirect(url_for(action='seriessettings'))

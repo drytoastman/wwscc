@@ -22,6 +22,27 @@
 </li>
 <li class='qmclear'>&nbsp;</li>
 </ul>
+%if c.isLocked:
+<div style='margin-top:5px; margin-left:30px; color:red; font-weight:bold;'>
+<span style='text-decoration: line-through;'>
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+</span>
+&nbsp;
+Locked
+&nbsp;
+<span style='text-decoration: line-through;'>
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+</span>
+</div>
+%endif
 <div class='body'>
 ${next.body()}
 </div>

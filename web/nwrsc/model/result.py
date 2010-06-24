@@ -152,10 +152,8 @@ def loadTopRawTimes(session, event, classdata, all=False):
 
 def loadTopNetTimes(session, event, classdata, all=False):
 	if all:
-		print "net all"
 		sql = topNetAll
 	else:
-		print "net limited"
 		sql = topNet
 	return [Result(row,classdata) for row in session.execute(sql, params={'eventid':event.id})]
 

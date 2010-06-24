@@ -15,6 +15,7 @@ class SettingsForm(forms.TableForm):
 									label_text='Best X Events', validator = Int(), size='4')
 		sponsorlink = forms.TextField(help_text='URL link for sponsor banner', label_text='Sponsor Link', size='40')
 		ppoints = forms.TextField(help_text='Ordering of points if using static points', label_text='Points', size='40')
+		locked = forms.CheckBox(help_text='Lock the database manually, not recommended', label_text='Locked')
 
 		
 settingsForm = SettingsForm("settingsForm")
