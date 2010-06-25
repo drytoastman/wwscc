@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -165,13 +167,11 @@ public class EntryPanel extends DriverCarPanel
 		}
 	}
 
-	class RegListRenderer extends DefaultListCellRenderer
+	static class RegListRenderer extends DefaultListCellRenderer
 	{
-		private Color mygray = new Color(150,150,150);
-		private Color mygraybackground = new Color(50,50,50);
-
-		private Color myred = new Color(220, 60, 60);
-		private Color myredbackground = new Color(90,10,10);
+		private Icon runs = new ImageIcon(getClass().getResource("/org/wwscc/images/run.gif"));
+		private Icon reg = new ImageIcon(getClass().getResource("/org/wwscc/images/reg.gif"));
+		private Icon blank = new ImageIcon(getClass().getResource("/org/wwscc/images/blank.gif"));
 
 		@Override
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean iss, boolean chf)
@@ -188,24 +188,13 @@ public class EntryPanel extends DriverCarPanel
 					myclass += " ("+c.getIndexCode()+")";
 				
 				String data = myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor();
+				setText(data);
 				if (c.isInRunOrder)
-				{
-					setText("X - " + data);
-					setForeground(myred);
-					//if (iss)
-					//	setBackground(myredbackground);
-				}
+					setIcon(runs);
 				else if (c.isRegistered)
-				{
-					setText("R - " + data);
-					//setForeground(mygray);
-					//if (iss)
-					//	setBackground(mygraybackground);
-				}
+					setIcon(reg);
 				else
-				{
-					setText("     " + data);
-				}
+					setIcon(blank);
 			}
 			else if (value instanceof Driver)
 			{
