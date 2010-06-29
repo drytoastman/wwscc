@@ -11,7 +11,7 @@
 	<input type='hidden' name='custom' value='${event.id}.${c.driverid}' />
 	<input type='hidden' name='amount' value='${event.cost}' />
 	<input type='hidden' name='currency_code' value='USD' />
-	<input type='hidden' name='notify_url' value='${h.url_for(action='ipn')}'>
+	<input type='hidden' name='notify_url' value='${h.url_for(action='ipn', protocol='http')}'>
 	<input type='image' src='https://www.paypal.com/en_US/i/btn/x-click-but3.gif' name='submit'
 						alt='Make payments with payPal - it&#039;s fast, free and secure!' />
 	</span>
