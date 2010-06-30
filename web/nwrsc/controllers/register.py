@@ -220,11 +220,11 @@ class RegisterController(BaseController):
 		args.update(dict(request.POST.items()))
 		log.debug("Paypal IPN sends: %s" % args)
 
-		result = urllib.urlopen("https://www.paypal.com/cgi-bin/webscr", urllib.urlencode(args)).read()
-		log.debug("Paypal IPN: %s" % result)
+		result = urllib.urlopen("https://www.paypal.com/cgi-bin/webscr", urllib.urlencode(args)).read().strip()
 		if result == 'VERIFIED':
 			## txid is a unique key, if a previous exists, this one will overwrite
 			## the only time this would concievably happen is when an echeck clears
+			log.info("Paypal IPN: %s" % result)
 			tx = self.session.query(Payment).get(data.get('txn_id'))
 			if tx is None:
 				tx = Payment()
@@ -238,7 +238,9 @@ class RegisterController(BaseController):
 			if len(parts) != 2:
 				log.error("Paypal IPN: invalid custom: %s" % data.get('custom'))
 			else:
-				tx.driverid = parts[0]
-				tx.eventid = parts[1]
+				tx.eventid = parts[0]
+				tx.driverid = parts[1]
 				self.session.commit()
+		else:
+			log.error("Paypal result not verified: '%s'", result)
 

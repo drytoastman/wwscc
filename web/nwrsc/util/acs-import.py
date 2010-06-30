@@ -50,64 +50,63 @@ metadata.create_all()
 session = Session()
 
 olddb = pyodbc.connect('DRIVER={Microsoft Access Driver (*.mdb)};DBQ='+old, autocommit=True)
-cursor = olddb.cursor()
+getcur = olddb.cursor()
 
 # Create classes and indexes manually 
 
 # Drivers
-getcur.execute("select * from drivers")
+getcur.execute("select * from Drivers")
 for old in getcur:
 	nd = Driver()
-	nd.id = old['DrID']
-	nd.firstname = old['FirstName']
-	nd.lastname = old['LastName']
-	nd.email = old['Email']
-	nd.address = old['Address']
-	nd.city = old['City']
-	nd.state = old['State']
-	nd.zip = old['Zip']
-	nd.homephone = old['HomePhone']
-	nd.workphone = old['WorkPhone']
-	nd.brag = old['Brag']
-	nd.sponsor = old['Sponsor']
-	nd.membership = old['MemberNumber']
+	nd.id = old.DrID
+	nd.firstname = old.FirstName
+	nd.lastname = old.LastName
+	nd.email = old.Email
+	nd.address = old.Address
+	nd.city = old.City
+	nd.state = old.State
+	nd.zip = old.Zip
+	nd.homephone = old.HomePhone
+	nd.workphone = old.WorkPhone
+	nd.brag = old.Brag
+	nd.sponsor = old.Sponsor
+	nd.membership = old.MemberNumber
 	session.add(nd)
 
 # Cars
-getcur.execute("select * from cars")
+getcur.execute("select * from Cars")
 for old in getcur:
 	nc = Car()
-	nc.id = old['CarID']
-	nc.year = old['CarYear']
-	nc.make = old['Make']
-	nc.model = old['Model']
-	nc.color = old['Color']
-	nc.number = old['CarNumber']
-	nc.driverid = old['DrID']
-	nc.classcode = old['ClassName']
-	nc.indexcode = old['IndexClass']
+	nc.id = old.CarID
+	nc.year = old.CarYear
+	nc.make = old.Make
+	nc.model = old.Model
+	nc.color = old.Color
+	nc.number = old.CarNumber
+	nc.driverid = old.DrID
+	nc.classcode = old.ClassName
+	nc.indexcode = old.IndexClass
 	session.add(nc)
 
-"""
 # Events
-getcur.execute("select * from events")
+getcur.execute("select * from Event_Info")
 for old in getcur:
 	ne = Event()
-	ne.id = 
-	ne.password = ""
-	ne.name = 
-	ne.date = 
-	ne.location = 
-	ne.sponsor = 
-	ne.host = 
-	ne.chair = 
-	ne.designer = 
+	ne.id = old.Event_ID
+	ne.password = "scca"
+	ne.name = old.Event_Name
+	ne.date = old.Event_Date
+	ne.location = old.Event_Host
+	ne.sponsor = old.Event_Sponsors
+	ne.host = ""
+	ne.chair = old.Event_Chair
+	ne.designer = old.Event_CourseDesigner
 	ne.ispro = False
-	ne.courses =
-	ne.runs = 
-	ne.regopened = 
-	ne.regclosed = 
-	ne.perlimit = 0
+	ne.courses = old.Event_NumCourses
+	ne.runs = old.Event_NumRuns
+	ne.regopened = old.Event_Date
+	ne.regclosed = old.Event_Date 
+	ne.perlimit = 2
 	ne.totlimit = 0
 	ne.paypal = ""
 	ne.snail = ""
@@ -116,16 +115,16 @@ for old in getcur:
 	session.add(ne)
 
 # Runs
-getcur.execute("select * from runs")
+getcur.execute("select * from Event_Times")
 for old in getcur:
 	nr = Run()
-	nr.eventid =
-	nr.carid =
-	nr.course =
-	nr.run =
-	nr.cones = 
-	nr.gates = 
-	nr.status = 
+	nr.eventid = old.Tm_Event_ID
+	nr.carid = old.Tm_Car_ID
+	nr.course = old.Tm_Course
+	nr.run = old.Tm_Run_Nbr
+	nr.cones = old.Tm_Cones
+	nr.gates = old.Tm_Gates
+	nr.status = old.Tm_Run_Status
 	nr.reaction = 0.0
 	nr.sixty = 0.0
 	nr.seg1 = 0.0
@@ -133,15 +132,38 @@ for old in getcur:
 	nr.seg3 = 0.0
 	nr.seg4 = 0.0
 	nr.seg5 = 0.0
-	nr.raw = 
+	nr.raw = old.Tm_Raw_Time
 	nr.net = 0.0 # Recalc later
 	nr.rorder = 1 # Recalc later
 	nr.norder = 1 # Recalc later
+	session.add(nr)
 
 # RunOrder
-putcur.execute("insert into new.runorder (eventid, course, rungroup, carid, row) select eventid,course,rungroup,carid,row from old.runorder")
-"""
+getcur.execute("select * from RunOrder")
+for old in getcur:
+	no = RunOrder()
+	no.eventid = old.EventID
+	no.course = 1
+	no.rungroup = old.RunGroup
+	no.carid = old.CarID
+	no.row = old.RunOrder
+	session.add(no)
 
+# Classes/Indexes
+getcur.execute("select * from Classes")
+for old in getcur:
+	if True: #old.IndexValue == 1:
+		nc = Class()
+		nc.code = old.Designation
+		nc.descrip = old.Name
+		nc.carindexed = 1
+		nc.classindexed = 0
+		nc.classmultiplier = 1.0
+		nc.eventtrophy = 1
+		nc.champtrophy = 1
+		nc.numorder = old.SortOrder
+		session.add(nc)
+		
 # Save (commit) the changes
 getcur.close()
 olddb.close()

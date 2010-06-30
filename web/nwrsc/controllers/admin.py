@@ -32,7 +32,7 @@ class AdminController(BaseController):
 	def __before__(self):
 		c.stylesheets = ['/stylesheets/admin.css', '/stylesheets/adminmenu.css']
 		c.javascript = ['/js/admin.js', '/js/sortabletable.js']
-		c.isLocked = (int(self.settings['locked']) == 1)
+		c.isLocked = (int(self.settings.get('locked', 1)) == 1)
 		if self.database is not None:
 			c.events = self.session.query(Event).all()
 		self.eventid = self.routingargs.get('eventid', None)
@@ -44,7 +44,7 @@ class AdminController(BaseController):
 		if self.eventid and self.routingargs.get('action', '') != 'login':
 			self._checkauth(self.eventid, c.event)
 
-		if int(self.settings['locked']):
+		if int(self.settings.get('locked', 0)):
 			action = self.routingargs.get('action', '')
 			if action not in ['index', 'printcards', 'paid', 'numbers', 'paypal', 'fees', 'allfees', 'printhelp', 'forceunlock']:
 				c.seriesname = self.settings.get('seriesname', 'Missing Name')
