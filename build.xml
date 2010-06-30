@@ -87,7 +87,7 @@ Filename: "{app}\XYNTService.ini"; Section: "Process0"; Key: "CommandLine"; Stri
 Filename: "{app}\XYNTService.ini"; Section: "Process0"; Key: "WorkingDir"; String: """{app}"""; Components: python
 Filename: "{app}\XYNTService.ini"; Section: "Process1"; Key: "CommandLine"; String: "pythonw.exe dbDiscovery.py ""{userdocs}\nwrsc\nwrsc.ini"""; Components: python
 Filename: "{app}\XYNTService.ini"; Section: "Process1"; Key: "WorkingDir"; String: """{app}"""; Components: python
-Filename: "{userdocs}\nwrsc\nwrsc.ini"; Section: "handler_errorlog"; Key: "args"; String: "(r'{userdocs}\nwrsc\nwrsc.log', 'a')"; Components: python
+Filename: "{userdocs}\nwrsc\nwrsc.ini"; Section: "handler_errorlog"; Key: "args"; String: "(r'{userdocs}\nwrsc\nwrsc.log', 'a', 1000000, 10)"; Components: python
 
 [Run]
 Filename: "{app}\XYNTService.exe"; Parameters: "-i"; Components: python
