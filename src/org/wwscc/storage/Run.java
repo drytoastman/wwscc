@@ -22,6 +22,8 @@ public class Run implements Serial
 	public static final int LEFT = 1;
 	public static final int RIGHT = 2;
 	public static final int SEGMENTS = 5;
+	public static final int CONE_PENALTY = 2;
+	public static final int GATE_PENALTY = 10;
 
 	protected int id;
 	protected int carid, eventid, course, run; 
@@ -32,10 +34,20 @@ public class Run implements Serial
 
 	public static class RawOrder implements Comparator<Run>
 	{
-		public int compare(Run o1, Run o2) { return (int)(o1.raw*1000 - o2.raw*1000);}
+		public int compare(Run a, Run b)
+		{
+			if (!a.isOK() && !b.isOK())
+				return 0;
+			if (!a.isOK())
+				return 1;
+			if (!b.isOK())
+				return -1;
+			return (int)(a.raw*1000 - b.raw*1000);
+		}
 	}
 	public static class NetOrder implements Comparator<Run>
 	{
+		// net time already incorporates non-OK status 
 		public int compare(Run o1, Run o2) { return (int)(o1.net*1000 - o2.net*1000);}
 	}
 
@@ -70,15 +82,8 @@ public class Run implements Serial
 		this.brorder = -1;
 		this.bnorder = -1;
 
-		if (!status.equals("OK"))
-		{
-			this.net = 999.999;
-		}
-		else
-		{
-			/* Just assume 1.000 index for now */
-			this.net = raw + (2*cones) + (10*gates);
-		}
+		/* Just assume 1.000 index for now */
+		compute(1.0);
 	}
 
 
@@ -112,7 +117,10 @@ public class Run implements Serial
 	
 	public void setReaction(double d) { reaction = d; }
 	public void setSixty(double d) { sixty = d; }
-	public void setRaw(double d) { raw = d; }
+	public void setRaw(double d) { raw = d; compute(1.0); }
+	public void setCones(int c) { cones = c; compute(1.0); }
+	public void setGates(int g) { gates = g; compute(1.0); }
+	public void setStatus(String s) { status = s; compute(1.0); }
 
 	public double getSegment(int s)
 	{
@@ -145,10 +153,6 @@ public class Run implements Serial
 		this.carid = carid;
 	}
 
-	public void setStatus(String s)
-	{
-		status = s;
-	}
 
 	public void setId(int eventid, int course, int run)
 	{
@@ -175,9 +179,9 @@ public class Run implements Serial
 	public void compute(double index)
 	{
 		if (status.equals("OK"))
-		{
-			net = (raw * index) + (2*cones) + (10*gates);
-		}
+			net = (raw * index) + (CONE_PENALTY * cones) + (GATE_PENALTY * gates);
+		else
+			net = 999.999;
 	}
 
 	@Override

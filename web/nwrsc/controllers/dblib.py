@@ -98,8 +98,9 @@ def netsort(a, b):
 	return int(a.net*1000 - b.net*1000)
 
 def rawsort(a, b):
-	if b.status != "OK": return -1
+	if a.status != "OK" and b.status != "OK": return 0
 	if a.status != "OK": return 1
+	if b.status != "OK": return -1
 	return int(a.raw*1000 - b.raw*1000)
 
 

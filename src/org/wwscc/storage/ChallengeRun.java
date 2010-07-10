@@ -2,13 +2,12 @@
  * This software is licensed under the GPLv3 license, included as
  * ./GPLv3-LICENSE.txt in the source distribution.
  *
- * Portions created by Brett Wilson are Copyright 2008 Brett Wilson.
+ * Portions created by Brett Wilson are Copyright 2010 Brett Wilson.
  * All rights reserved.
  */
 
 package org.wwscc.storage;
 
-import java.util.logging.Logger;
 import org.wwscc.challenge.Id;
 
 /**
@@ -17,8 +16,6 @@ import org.wwscc.challenge.Id;
  */
 public class ChallengeRun extends Run
 {
-	private static Logger log = Logger.getLogger("org.wwscc.storage.ChallengeRun");
-
 	private int challengeid; // comes from eventid mux
 	private int round;  // comes from eventid mux
 
@@ -44,18 +41,17 @@ public class ChallengeRun extends Run
 		raw = r.raw;
 		net = r.net;
 		fixids();
-		calc();
+		compute(1.0);
+	}
+
+	public ChallengeRun(double reaction, double sixty , double time, int cones, int gates, String status)
+	{
+		super(reaction, sixty, time, cones, gates, status);
+		fixids();
 	}
 
 	protected void fixids()
 	{
-		challengeid = (eventid >> 16) & 0x0FFFF;
-		round = eventid & 0x0FFF;
-	}
-	
-	public ChallengeRun(double reaction, double sixty , double time, int cones, int gates, String status)
-	{
-		super(reaction, sixty, time, cones, gates, status);
 		challengeid = (eventid >> 16) & 0x0FFFF;
 		round = eventid & 0x0FFF;
 	}
@@ -66,34 +62,6 @@ public class ChallengeRun extends Run
 		round = id.round;
 		course = id.isLeft() ? Run.LEFT : Run.RIGHT;
 		eventid = ((challengeid & 0x0FFFF) << 16) + (round & 0x0FFFF);
-	}
-
-	private void calc()
-	{		
-		if (!status.equals("OK"))
-			this.net = 999.999;
-		else
-			this.net = raw + (2*cones);
-	}
-
-	@Override
-	public void setRaw(double val)
-	{
-		raw = val;
-		calc();
-	}
-
-	public void setCones(int inCones)
-	{
-		cones = inCones;
-		calc();
-	}
-	
-	@Override
-	public void setStatus(String inStatus)
-	{
-		status = inStatus;
-		calc();
 	}
 	
 	public int getChallengeId() { return challengeid; }
