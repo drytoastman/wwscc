@@ -15,6 +15,8 @@ public class AUTO
 		o.courses = rs.getInt("courses");
 		o.runs = rs.getInt("runs");
 		o.countedruns = rs.getInt("countedruns");
+		o.conepen = rs.getDouble("conepen");
+		o.gatepen = rs.getDouble("gatepen");
 		o.segments = rs.getString("segments");
 		o.password = rs.getString("password");
 		o.name = rs.getString("name");
@@ -36,17 +38,17 @@ public class AUTO
 	
 	public static String getEventVarStr()
 	{
-		return "ispro,courses,runs,countedruns,segments,password,name,date,location,sponsor,host,designer,regopened,regclosed,perlimit,totlimit,cost,paypal,snail,notes";
+		return "ispro,courses,runs,countedruns,conepen,gatepen,segments,password,name,date,location,sponsor,host,designer,regopened,regclosed,perlimit,totlimit,cost,paypal,snail,notes";
 	}
 	
 	public static String getEventArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getEventSetStr()
 	{
-		return "ispro=?,courses=?,runs=?,countedruns=?,segments=?,password=?,name=?,date=?,location=?,sponsor=?,host=?,designer=?,regopened=?,regclosed=?,perlimit=?,totlimit=?,cost=?,paypal=?,snail=?,notes=?";
+		return "ispro=?,courses=?,runs=?,countedruns=?,conepen=?,gatepen=?,segments=?,password=?,name=?,date=?,location=?,sponsor=?,host=?,designer=?,regopened=?,regclosed=?,perlimit=?,totlimit=?,cost=?,paypal=?,snail=?,notes=?";
 	}
 	
 	public static void addEventValues(org.wwscc.storage.Event o, List<Object> l)
@@ -55,6 +57,8 @@ public class AUTO
 		l.add(o.courses);
 		l.add(o.runs);
 		l.add(o.countedruns);
+		l.add(o.conepen);
+		l.add(o.gatepen);
 		l.add(o.segments);
 		l.add(o.password);
 		l.add(o.name);

@@ -126,7 +126,7 @@ def UpdateRunTotals(session, event, carid, course, index):
 			r.sixty = 0.0
 
 		if r.status == "OK":
-			r.net = (r.raw * index) + (2 * r.cones) + (10 * r.gates)
+			r.net = (r.raw * index) + (event.conepen * r.cones) + (event.gatepen * r.gates)
 		else:
 			r.net = 999.999
 

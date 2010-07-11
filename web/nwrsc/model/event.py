@@ -1,6 +1,6 @@
 from sqlalchemy import Table, Column
 from sqlalchemy.orm import mapper, object_session
-from sqlalchemy.types import Integer, SmallInteger, String, Boolean, Date, DateTime
+from sqlalchemy.types import Integer, SmallInteger, String, Boolean, Date, DateTime, Float
 from sqlalchemy.sql import func
 
 from meta import metadata
@@ -21,6 +21,8 @@ t_events = Table('events', metadata,
 	Column('courses', SmallInteger),
 	Column('runs', SmallInteger),
 	Column('countedruns', SmallInteger),
+	Column('conepen', Float, default=2.0),
+	Column('gatepen', Float, default=10.0),
 	Column('segments', String(64)),
 	Column('regopened', DateTime),
 	Column('regclosed', DateTime),	

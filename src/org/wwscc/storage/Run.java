@@ -22,8 +22,6 @@ public class Run implements Serial
 	public static final int LEFT = 1;
 	public static final int RIGHT = 2;
 	public static final int SEGMENTS = 5;
-	public static final int CONE_PENALTY = 2;
-	public static final int GATE_PENALTY = 10;
 
 	protected int id;
 	protected int carid, eventid, course, run; 
@@ -179,7 +177,7 @@ public class Run implements Serial
 	public void compute(double index)
 	{
 		if (status.equals("OK"))
-			net = (raw * index) + (CONE_PENALTY * cones) + (GATE_PENALTY * gates);
+			net = (raw * index) + (Database.d.currentEvent.conepen * cones) + (Database.d.currentEvent.gatepen * gates);
 		else
 			net = 999.999;
 	}

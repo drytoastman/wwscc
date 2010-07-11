@@ -20,6 +20,8 @@ public class Event implements Serializable
 	protected int courses;
 	protected int runs;
 	protected int countedruns;
+	protected double conepen;
+	protected double gatepen;
 	protected String segments;
 
 	protected String password;
@@ -61,6 +63,8 @@ public class Event implements Serializable
 	}
 	public int getCourses() { return courses; }
 	public boolean isPro() { return ispro; }
+	public double getConePenalty() { return conepen; }
+	public double getGatePenalty() { return gatepen; }
 
 	public void setRuns(int r) { runs = r; }
 }

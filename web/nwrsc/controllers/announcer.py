@@ -137,7 +137,7 @@ class AnnouncerController(BaseController):
 		if c.rdiff > 0 or last.cones == 0:
 			return
 
-		newnet = last.net - (2 * last.cones)
+		newnet = last.net - (c.event.conepen * last.cones)
 		tpos = origpos;
 		for r in c.results:
 			if newnet < r.sum:

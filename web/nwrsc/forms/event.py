@@ -1,7 +1,11 @@
 
 from tw import forms
-from tw.forms.validators import Int
+from tw.forms.validators import Int, Number
 from tw.api import WidgetsList
+
+class SmDecimal(Number):
+	def _from_python(self, value, state):
+		return "%0.1f" % (value)
 
 class EventForm(forms.TableForm):
 	template = "nwrsc.forms.table_form"
@@ -20,6 +24,8 @@ class EventForm(forms.TableForm):
 		runs = forms.TextField(help_text='number of runs that are taken', validator = Int(), size='4', default=4)
 		countedruns = forms.TextField(help_text='number of runs that are counted towards results, 0 or less means all runs are counted',
 									validator=Int(), size='4', label_text='Runs Counted')
+		conepen = forms.TextField(label_text='Cone Penalty', help_text='Penalty for hitting cones', validator = SmDecimal(), size='4', default=2.0)
+		gatepen = forms.TextField(label_text='Gate Penalty', help_text='Penalty for missing gates', validator = SmDecimal(), size='4', default=10.0)
 		segments = forms.TextField(help_text='comma separated list of minimum segment times',
 									size='40', label_text='Segment List')
 		regopened = forms.CalendarDateTimePicker(help_text='When prereg should open', label_text='Registration Opens')
