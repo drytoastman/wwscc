@@ -62,7 +62,8 @@ t_rungroups = Table('rungroups', metadata,
 	Column('eventid', Integer, ForeignKey('events.id')),
 	Column('classcode', String(16), ForeignKey('classlist.code')),
 	Column('rungroup', SmallInteger),
-	UniqueConstraint('eventid', 'classcode', name='rungroupindex_1'))
+	Column('gorder', SmallInteger),
+	UniqueConstraint('eventid', 'classcode', 'rungroup', name='rungroupindex_1'))
 
 class RunGroup(object):
 	pass

@@ -30,8 +30,8 @@ def insertfile(cur, name, type, path):
 class AdminController(BaseController):
 
 	def __before__(self):
-		c.stylesheets = ['/stylesheets/admin.css', '/stylesheets/adminmenu.css']
-		c.javascript = ['/js/admin.js', '/js/sortabletable.js']
+		c.stylesheets = ['/css/admin.css', '/css/redmond/jquery-ui-1.8.2.custom.css']
+		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.4.2.min.js', '/js/jquery-ui-1.8.2.custom.min.js', '/js/superfish.js']
 		c.isLocked = (int(self.settings.get('locked', 1)) == 1)
 		if self.database is not None:
 			c.events = self.session.query(Event).all()
@@ -271,6 +271,42 @@ class AdminController(BaseController):
 		c.button = 'Update'
 		return render_mako('/admin/eventedit.mako')
 
+	### RunGroup Editor ###
+	def rungroups(self):
+		c.action = 'setRunGroups'
+		c.groups = {0:[]}
+		allcodes = set([res[0] for res in self.session.query(Class.code)])
+		for group in self.session.query(RunGroup).order_by(RunGroup.rungroup, RunGroup.gorder).filter(RunGroup.eventid==self.eventid).all():
+			c.groups.setdefault(group.rungroup, list()).append(group.classcode)
+			allcodes.discard(group.classcode)
+		for code in sorted(allcodes):
+			c.groups[0].append(code)
+		return render_mako('/admin/editrungroups.mako')
+
+
+	def setRunGroups(self):
+		try:
+			for group in self.session.query(RunGroup).filter(RunGroup.eventid==self.eventid):
+				self.session.delete(group)
+			self.session.flush()
+			for k in request.POST:
+				if k[:5] == 'group':
+					if int(k[5]) == 0:  # not recorded means group 0
+						continue
+					for ii, code in enumerate(request.POST[k].split(',')):
+						g = RunGroup()
+						g.eventid = self.eventid
+						g.rungroup = int(k[5])
+						g.classcode = str(code)
+						g.gorder = ii
+						self.session.add(g)
+			self.session.commit()
+		except Exception, e:
+			logging.error("setRunGroups failed: %s" % e)
+			self.session.rollback()
+		redirect(url_for(action='rungroups'))
+		
+
 	@validate(form=eventForm, error_handler='edit')
 	def updateevent(self):
 		""" Process edit event form submission """
@@ -356,7 +392,6 @@ class AdminController(BaseController):
 				self.session.add(Index(**obj))
 		self.session.commit()
 		redirect(url_for(action='indexlist'))
-
 
 	### Clean Series ###
 

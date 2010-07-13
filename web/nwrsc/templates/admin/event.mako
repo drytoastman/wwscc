@@ -9,6 +9,7 @@
 <ol>
 <li><a href='${h.url_for(action='edit')}'>Edit Event Details</a></li>
 <li><a href='${h.url_for(action='list')}'>Entry Admin</a></li>
+<li><a href='${h.url_for(action='rungroups')}'>Grid Order</a></li>
 </ol>
 
 <h3>Before The Event</h3>

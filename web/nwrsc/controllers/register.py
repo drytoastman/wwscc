@@ -22,7 +22,7 @@ class RegisterController(BaseController):
 			return
 
 		c.title = 'Scorekeeper Registration'
-		c.stylesheets = ['/stylesheets/register.css']
+		c.stylesheets = ['/css/register.css']
 		c.javascript = ['/js/register.js', '/js/jquery-1.4.1.min.js']
 		c.tabflags = {}
 		c.sponsorlink = self.settings.get('sponsorlink', None)

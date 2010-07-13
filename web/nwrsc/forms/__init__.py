@@ -8,6 +8,7 @@ from person import personForm, personFormValidated
 from settings import settingsForm
 from series import seriesCopyForm
 from classlist import classEditForm, indexEditForm
+from rungroups import runGroupEditForm
 
-__all__ = [ 'eventForm', 'loginForm', 'personForm', 'personFormValidated', 'settingsForm', 'seriesCopyForm', 'classEditForm', 'indexEditForm' ]
+__all__ = [ 'eventForm', 'loginForm', 'personForm', 'personFormValidated', 'settingsForm', 'seriesCopyForm', 'classEditForm', 'indexEditForm', 'runGroupEditForm' ]
 

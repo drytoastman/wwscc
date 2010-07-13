@@ -1,13 +1,35 @@
 <%inherit file="/base.mako" />
-<ul id='qm0' class='qmmc'>
-<li><a class='qmparent' href='javascript:void(0);'>Event Admin</a>
+
+<script type="text/javascript"> 
+    $(document).ready(function(){ 
+        $("ul.sf-menu").supersubs({
+			minWidth:    10,
+            maxWidth:    100,
+            extraWidth:  5 
+		}).superfish({
+			disableHI: true,
+			animation:   {height:'show'}, 
+			speed: 'fast',
+			autoArrows: false,
+			delay: 200
+		}).addClass('ui-widget-header ui-corner-all').width('100%'); 
+		$("ul.sf-menu a").button();
+    }); 
+</script>
+
+<style>
+.sf-menu { float: left; }
+</style>
+
+<ul id='adminmenu' class='sf-menu'>
+<li><a href='javascript:void(0);'>Event Admin</a>
 	<ul>
 	%for event in sorted(c.events, key=lambda obj: obj.date):
 		<li><a href='${h.url_for(eventid=event.id, action='')}'>${event.name}</a></li>
 	%endfor
 	</ul>
 </li>
-<li><a class='qmparent' href='javascript:void(0);'>Series Admin</a>
+<li><a href='javascript:void(0);'>Series Admin</a>
 	<ul>
 	<li><a href='${h.url_for(eventid='s', action='create')}'>Create Event</a></li>
 	<li><a href='${h.url_for(eventid='s', action='classlist')}'>Series Classes</a></li>
@@ -20,8 +42,10 @@
 	<li><a href='${h.url_for(eventid='s', action='copyseries')}'>Create New Series From</a></li>
 	</ul>
 </li>
-<li class='qmclear'>&nbsp;</li>
 </ul>
+<br clear='both'/>
+
+
 %if c.isLocked:
 <div style='margin-top:5px; margin-left:30px; color:red; font-weight:bold;'>
 <span style='text-decoration: line-through;'>
@@ -43,6 +67,6 @@ Locked
 </span>
 </div>
 %endif
-<div class='body'>
+<div class='body ui-widget'>
 ${next.body()}
 </div>
