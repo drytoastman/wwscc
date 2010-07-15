@@ -69,7 +69,7 @@ class RegisterController(BaseController):
 		query = query.filter(Driver.firstname.like(self.form_result['firstname']+'%'))
 		query = query.filter(Driver.lastname.like(self.form_result['lastname']+'%'))
 		for d in query.all():
-			if d.email.lower() == self.form_result['email'].lower():
+			if d.email.lower().strip() == self.form_result['email'].lower().strip():
 				self.user['driverid'] = d.id
 				self.user['firstname'] = d.firstname
 				self.user['lastname'] = d.lastname
@@ -161,9 +161,9 @@ class RegisterController(BaseController):
 	@validate(form=personFormValidated, error_handler='profile')
 	def newprofile(self):
 		query = self.session.query(Driver)
-		query = query.filter(Driver.firstname == self.form_result['firstname'])
-		query = query.filter(Driver.lastname == self.form_result['lastname'])
-		query = query.filter(Driver.email == self.form_result['email'])
+		query = query.filter(Driver.firstname.like(self.form_result['firstname'])) # no case compare
+		query = query.filter(Driver.lastname.like(self.form_result['lastname'])) # no case compare
+		query = query.filter(Driver.email.like(self.form_result['email'])) # no case compare
 		for d in query.all():
 			self.user['previouserror'] =  "Name and unique ID already exist, please login instead"
 			redirect(url_for(action='login'))
