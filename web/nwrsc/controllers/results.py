@@ -12,7 +12,7 @@ from pylons.controllers.util import url_for
 from pylons.templating import render_mako, render_mako_def
 from nwrsc.lib.base import BaseController
 from nwrsc.lib.bracket import Bracket
-#from nwrsc.lib.rungroups import GridOrder
+from nwrsc.lib.rungroups import *
 from nwrsc.model import *
 
 log = logging.getLogger(__name__)
@@ -108,8 +108,16 @@ class ResultsController(BaseController):
 
 
 	def grid(self):
-		GridOrder(self.session, c.event)
-		return "grid "# + request.GET['order']
+		classmap = dict()
+		c.groups = [RunGroupList(0)]
+		for item in self.session.query(RunGroup).order_by(RunGroup.rungroup, RunGroup.gorder).filter(RunGroup.eventid==self.eventid):
+			if c.groups[-1].groupnum != item.rungroup:
+				c.groups.append(RunGroupList(item.rungroup))
+			classmap[item.classcode] = ClassOrder(item.classcode)
+			c.groups[-1].addClass(classmap[item.classcode])
+		for (driver,car,reg) in self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==self.eventid):
+			classmap[car.classcode].add(driver,car)
+		return render_mako('/grid.mako')
 
 
 	def topindex(self):
