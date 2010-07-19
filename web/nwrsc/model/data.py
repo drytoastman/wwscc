@@ -196,7 +196,7 @@ Index('eridx_1', t_eventresults.c.eventid)
 class EventResult(object):
 	pass
 
-mapper(EventResult, t_eventresults, properties = {'car':relation(Car), 'class':relation(Class)})
+mapper(EventResult, t_eventresults, properties = {'car':relation(Car, backref='results'), 'class':relation(Class)})
 
 
 ## Previous table

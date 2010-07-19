@@ -115,8 +115,17 @@ class ResultsController(BaseController):
 				c.groups.append(RunGroupList(item.rungroup))
 			classmap[item.classcode] = ClassOrder(item.classcode)
 			c.groups[-1].addClass(classmap[item.classcode])
-		for (driver,car,reg) in self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==self.eventid):
-			classmap[car.classcode].add(driver,car)
+
+		if request.GET.get('order', 'number') == 'position':
+			for (driver,car,res) in self.session.query(Driver,Car,EventResult).join('cars', 'results').filter(EventResult.eventid==self.eventid):
+				if car.classcode in classmap:
+					car.position = res.position
+					classmap[car.classcode].add(driver,car, 'position')
+		else:
+			for (driver,car,reg) in self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==self.eventid):
+				if car.classcode in classmap:
+					classmap[car.classcode].add(driver,car, 'number')
+
 		return render_mako('/grid.mako')
 
 

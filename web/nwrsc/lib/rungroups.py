@@ -17,25 +17,16 @@ class ClassOrder(object):
 
 	def __init__(self, code):
 		self.code = code
+		self.ones = set()
 		self.first = list()
 		self.second = list()
 
-	def add(self, driver, car):
-		if (car.number >= 100):
-			self.second.append(Entrant(driver, car))
-		else:
+	def add(self, driver, car, ckey):
+		if car.number+100 not in self.ones and car.number-100 not in self.ones:
 			self.first.append(Entrant(driver, car))
-
-	def getFirstByNum(self):
-		return sorted(self.first, key=attrgetter('car.number'))
-
-	def getFirstByResult(self):
-		return sorted(self.first, key=attrgetter('net'))
-
-	def getSecondByNum(self):
-		return sorted(self.second, key=attrgetter('car.number'))
-
-	def getSecondByResult(self):
-		return sorted(self.second, key=attrgetter('net'))
-
+			self.first.sort(key=lambda e: getattr(e.car, ckey))
+			self.ones.add(car.number)
+		else:
+			self.second.append(Entrant(driver, car))
+			self.second.sort(key=lambda e: getattr(e.car, ckey))
 
