@@ -43,3 +43,8 @@ class DatabaseLookup(TemplateLookup):
 		return TemplateLookup.get_template(self, uri)
 
 
+	def adjust_uri(self, uri, relativeto):
+		if uri.startswith('db:'):
+			return uri
+		return TemplateLookup.adjust_uri(self, uri, relativeto)
+

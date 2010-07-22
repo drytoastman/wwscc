@@ -82,8 +82,7 @@ class ResultsController(BaseController):
 	def post(self):
 		c.results = getClassResults(self.session, c.event, c.classdata, [cls.code for cls in c.active])
 		c.entrantcount = sum([len(data) for code,data in c.results.iteritems()])
-		self._loadTopIndexTimes()
-		self._loadTopTimes()
+		c.toptimes = self._loadTopIndexTimes() + self._loadTopTimes()
 		return render_mako('db:event.mako')
 
 
@@ -129,34 +128,30 @@ class ResultsController(BaseController):
 		return render_mako('/grid.mako')
 
 
+	def topreport(self):
+		c.toptimes = self._loadTopTimes() + self._loadTopIndexTimes()
+		if c.event.getCountedRuns() < c.event.runs:
+			c.toptimes += self._loadTopTimes(True) + self._loadTopIndexTimes(True)
+		return render_mako('db:toptimes.mako')
+
 	def topindex(self):
-		c.toptimes = None
-		c.topsegtimes = None
-		self._loadTopIndexTimes()
+		c.toptimes = self._loadTopIndexTimes()
 		return render_mako('db:toptimes.mako')
 
 	def topindexall(self):
-		c.toptimes = None
-		c.topsegtimes = None
-		self._loadTopIndexTimes(True)
+		c.toptimes = self._loadTopIndexTimes(True)
 		return render_mako('db:toptimes.mako')
 
 	def topraw(self):
-		c.topsegtimes = None
-		c.topindextimes = None
-		self._loadTopTimes()
+		c.toptimes = self._loadTopTimes()
 		return render_mako('db:toptimes.mako')
 
 	def toprawall(self):
-		c.topsegtimes = None
-		c.topindextimes = None
-		self._loadTopTimes(True)
+		c.toptimes = self._loadTopTimes(True)
 		return render_mako('db:toptimes.mako')
 
 	def topseg(self):
-		c.toptimes = None
-		c.topindextimes = None
-		self._loadTopSegTimes()
+		c.toptimes = self._loadTopSegTimes()
 		return render_mako('db:toptimes.mako')
 
 
@@ -243,25 +238,30 @@ class ResultsController(BaseController):
 			
 		return render_mako('/challenge/dialins.mako')
 
+
 	def _loadTopTimes(self, all=False):
-		c.toptimes = []
-		c.toptimes.append(loadTopRawTimes(self.session, c.event, c.classdata, all))
+		times = []
+		times.append(loadTopRawTimes(self.session, c.event, c.classdata, all))
 		if c.event.courses > 1:
-			for ii in range(1, c.event.courses+1):
-				c.toptimes.append(loadTopCourseRawTimes(self.session, c.event, ii, c.classdata, all))
+			for ii in range(c.event.courses):
+				times.append(loadTopCourseRawTimes(self.session, c.event, ii+1, c.classdata, all))
+		return times
 
 	def _loadTopIndexTimes(self, all=False):
-		c.topindextimes = []
-		c.topindextimes.append(loadTopNetTimes(self.session, c.event, c.classdata, all))
+		times = []
+		times.append(loadTopNetTimes(self.session, c.event, c.classdata, all))
 		if c.event.courses > 1:
-			for ii in range(1, c.event.courses+1):
-				c.topindextimes.append(loadTopCourseNetTimes(self.session, c.event, ii, c.classdata, all))
+			for ii in range(c.event.courses):
+				times.append(loadTopCourseNetTimes(self.session, c.event, ii+1, c.classdata, all))
+		return times
+
 
 	def _loadTopSegTimes(self):
-		c.topsegtimes = []
-		for ii in range(1, c.event.courses+1):
-			for jj in range(1, c.event.getSegmentCount()+1):
-				c.topsegtimes.append(loadTopSegRawTimes(self.session, c.event, ii, jj, c.classdata))
+		times = []
+		for ii in range(c.event.courses):
+			for jj in range(c.event.getSegmentCount()):
+				times.append(loadTopSegRawTimes(self.session, c.event, ii+1, jj+1, c.classdata))
+		return times
 
 
 	def _classresults(self, codes):

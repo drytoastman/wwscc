@@ -55,6 +55,7 @@ padding: 0;
 
 <h3>Top Times Lists</h3>
 <ul class='classlist'>
+<li><a href='${h.url_for(action='topreport')}'>All Top Times</a></li>
 <li><a href='${h.url_for(action='topindex')}'>Top Indexed Times</a></li>
 <li><a href='${h.url_for(action='topraw')}'>Top Raw Times</a></li>
 %if c.event.getCountedRuns() < c.event.runs:

@@ -124,23 +124,41 @@ topRawAll = top1 + ", SUM(r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " 
 topNet    = top1 + ", SUM(r.net) as toptime " + top2 + " and r.norder=1 group by c.id order by toptime"
 topNetAll = top1 + ", SUM(r.net) as toptime " + top2 + " and r.bnorder=1 group by c.id order by toptime"
 
+
+class TopTimesList(object):
+	def __init__(self, title, *cols):
+		self.title = title
+		self.cols = cols
+		self.rows = list()
+
+	def add(self, *vals):
+		self.rows.append(vals)
+
+
 def loadTopCourseRawTimes(session, event, course, classdata, all=False):
 	if all:
 		sql = topCourseRawAll
 	else:
 		sql = topCourseRaw
-	return [Result(row,classdata) for row in session.execute(sql,
-			params={'eventid':event.id, 'course':course, 'conepen':event.conepen, 'gatepen':event.gatepen})]
 
-
+	ttl = TopTimesList("Top Times (Course %d)" % course, "Name", "Class", "Time")
+	for row in session.execute(sql, params={'eventid':event.id, 'course':course, 'conepen':event.conepen, 'gatepen':event.gatepen}):
+		ttl.add(row.firstname + " " + row.lastname, row.classcode, "%0.3f" % row.toptime)
+	return ttl
+		
 
 def loadTopCourseNetTimes(session, event, course, classdata, all=False):
 	if all:
 		sql = topCourseNetAll
 	else:
 		sql = topCourseNet
-	return [Result(row,classdata) for row in session.execute(sql, params={'eventid':event.id, 'course':course})]
 
+	ttl = TopTimesList("Top Index Times (Course %d)" % course, "Name", "Index", "", "Time")
+	for row in session.execute(sql, params={'eventid':event.id, 'course':course}):
+		eis = classdata.getIndexStr(row.classcode, row.indexcode)
+		eiv = classdata.getEffectiveIndex(row.classcode, row.indexcode)
+		ttl.add(row.firstname + " " + row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
+	return ttl
 
 
 def loadTopRawTimes(session, event, classdata, all=False):
@@ -148,8 +166,13 @@ def loadTopRawTimes(session, event, classdata, all=False):
 		sql = topRawAll
 	else:
 		sql = topRaw
-	return [Result(row,classdata) for row in session.execute(sql,
-			params={'eventid':event.id,'conepen':event.conepen,'gatepen':event.gatepen})]
+
+	title = "Top Times"
+	if all: title += " (All Runs)"
+	ttl = TopTimesList(title, "Name", "Class", "Time")
+	for row in session.execute(sql, params={'eventid':event.id,'conepen':event.conepen,'gatepen':event.gatepen}):
+		ttl.add(row.firstname + " " + row.lastname, row.classcode, "%0.3f" % row.toptime)
+	return ttl
 
 
 def loadTopNetTimes(session, event, classdata, all=False):
@@ -157,5 +180,13 @@ def loadTopNetTimes(session, event, classdata, all=False):
 		sql = topNetAll
 	else:
 		sql = topNet
-	return [Result(row,classdata) for row in session.execute(sql, params={'eventid':event.id})]
+
+	title = "Top Index Times"
+	if all: title += " (All Runs)"
+	ttl = TopTimesList(title, "Name", "Index", "", "Time")
+	for row in session.execute(sql, params={'eventid':event.id}):
+		eis = classdata.getIndexStr(row.classcode, row.indexcode)
+		eiv = classdata.getEffectiveIndex(row.classcode, row.indexcode)
+		ttl.add(row.firstname + " " + row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
+	return ttl
 
