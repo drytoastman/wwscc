@@ -78,20 +78,14 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		JMenu results = new JMenu("Reports");
 		add(results);
 
-		results.add(createItem("Multiple Group Results", null));
-
-		JMenu dialins = new JMenu("Dialins");
-		results.add(dialins);
-		dialins.add(createItem("All By Net", null));
-		dialins.add(createItem("All By Diff", null));
-		dialins.add(createItem("Ladies By Net", null));
-		dialins.add(createItem("Ladies By Diff", null));
-		
 		JMenu audit = new JMenu("Current Group Audit");
-		results.add(audit);
 		audit.add(createItem("In Run Order", null));
 		audit.add(createItem("Order By First Name", null));
 		audit.add(createItem("Order By Last Name", null));
+		
+		results.add(createItem("Multiple Group Results", null));
+		results.add(audit);
+		results.add(createItem("Results Page", null));
 	}
 
 	protected JMenuItem createItem(String title, KeyStroke ks)
@@ -126,10 +120,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		else if (cmd.startsWith("Order By First Name")) BrowserControl.openAuditReport("firstname");
 		else if (cmd.startsWith("Order By Last Name")) BrowserControl.openAuditReport("lastname");
 		else if (cmd.startsWith("In Run Order")) BrowserControl.openAuditReport("runorder");
-		else if (cmd.startsWith("All By Net")) BrowserControl.openDialinReport(null, "Net");
-		else if (cmd.startsWith("All By Diff")) BrowserControl.openDialinReport(null, "Diff");
-		else if (cmd.startsWith("Ladies By Net")) BrowserControl.openDialinReport("Ladies", "Net");
-		else if (cmd.startsWith("Ladies By Diff")) BrowserControl.openDialinReport("Ladies", "Diff");
+		else if (cmd.startsWith("Results Page")) BrowserControl.openResults("");
 		else if (cmd.endsWith("Runs"))
 		{
 			int runs = Integer.parseInt(cmd.split(" ")[0]);

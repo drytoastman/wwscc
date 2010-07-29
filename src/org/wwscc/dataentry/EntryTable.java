@@ -56,8 +56,10 @@ public class EntryTable extends JTable implements MessageListener
 		setDefaultRenderer(Entrant.class, new EntrantRenderer());
 		setRowHeight(36);
 		
-		/* let Enter fall to default, so it goes to one default button */
-		getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "none");
+		
+		InputMap im = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "cut"); // delete is same as Ctl+X
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "none"); // let Enter fall to default, so it goes to one default button
 
 		addMouseListener(new DClickWatch());
 		
@@ -586,7 +588,7 @@ class EntryTableTransferHandler extends TransferHandler
 
 				for (int ii = 0; ii < newdata.length; ii++)
 					for (int jj = 0; jj < newdata[0].length; jj++)
-						model.setValueAt(newdata[ii][jj], dr+ii, dc+jj);
+						model.setValueAt(((Run)newdata[ii][jj]).clone(), dr+ii, dc+jj);
 			}
 
 			return true;

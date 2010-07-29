@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  * This represents a single run in an event.  Note that for simplicity we represent a ProSolo
  * run as default (reaction, sixty) and then use it for regular runs as well
  */
-public class Run implements Serial
+public class Run implements Serial, Cloneable
 {
 	private static Logger log = Logger.getLogger("org.wwscc.storage.Run");
 	public static final int LEFT = 1;
@@ -91,7 +91,13 @@ public class Run implements Serial
 		this.reaction = reaction;
 		this.sixty = sixty;
 	}
-	
+
+	@Override
+	public Object clone() throws CloneNotSupportedException
+	{
+		return super.clone();
+	}
+
 	public int getId() { return id; }
 	public int run() { return run; }
 	public int course() { return course; }
