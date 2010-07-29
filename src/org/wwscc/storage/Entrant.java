@@ -47,6 +47,7 @@ public class Entrant
 	public String getCarDesc() { return car.year + " " + car.model + " " + car.color; }
 	public String getClassCode() { return car.classcode; }
 	public String getIndexCode() { return car.indexcode; }
+	public double getIndex() { return index; }
 	public int getNumber() { return car.number; }
 
 	public boolean isInRunOrder() { return car.isInRunOrder; }
@@ -108,6 +109,7 @@ public class Entrant
 			runs.put(r.run, r);
 		}
 
+		sortRuns(runs);  // just in case
 		Database.d.setEntrantRuns(car, runs.values());
 	}
 	

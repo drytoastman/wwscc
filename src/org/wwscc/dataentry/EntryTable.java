@@ -2,25 +2,64 @@
  * This software is licensed under the GPLv3 license, included as
  * ./GPLv3-LICENSE.txt in the source distribution.
  *
- * Portions created by Brett Wilson are Copyright 2008 Brett Wilson.
+ * Portions created by Brett Wilson are Copyright 2010 Brett Wilson.
  * All rights reserved.
  */
 
 package org.wwscc.dataentry;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
-import java.util.logging.*;
-import java.text.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.datatransfer.*;
+import java.text.NumberFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+import javax.swing.DefaultListSelectionModel;
+import javax.swing.DropMode;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
+import javax.swing.border.LineBorder;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import org.wwscc.dialogs.TextRunsDialog;
+import org.wwscc.storage.Database;
+import org.wwscc.storage.Entrant;
+import org.wwscc.storage.Run;
+import org.wwscc.util.MT;
+import org.wwscc.util.MessageListener;
+import org.wwscc.util.Messenger;
 
-import org.wwscc.storage.*;
-import org.wwscc.util.*;
 
 
 /**
@@ -70,8 +109,30 @@ public class EntryTable extends JTable implements MessageListener
 	}
 
 
-	class DClickWatch extends MouseAdapter
+	class DClickWatch extends MouseAdapter implements ActionListener
 	{
+		JPopupMenu driverPopup;
+		JPopupMenu runPopup;
+		Entrant selectedE;
+
+		public DClickWatch()
+		{
+			driverPopup = new JPopupMenu("");
+			driverPopup.add(createItem("Cut", KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK)));
+			driverPopup.add(createItem("Add Text Runs", null));
+			selectedE = null;
+			//copy = createItem("Copy", KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+			//paste = createItem("Paste", KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+		}
+
+		protected JMenuItem createItem(String title, KeyStroke ks)
+		{
+			JMenuItem item = new JMenuItem(title);
+			item.addActionListener(this);
+			if (item != null) item.setAccelerator(ks);
+			return item;
+		}
+
 		protected Object getObject()
 		{
 			int row = rowSel.getMinSelectionIndex();
@@ -79,23 +140,81 @@ public class EntryTable extends JTable implements MessageListener
 			return getValueAt(row, col);
 		}
 
+		public void doPopup(MouseEvent e)
+		{
+			int row = rowAtPoint(e.getPoint());
+			int col = columnAtPoint(e.getPoint());
+			if ((row == -1) || (col == -1)) return;
+			if (!rowSel.isSelectedIndex(row)) return;
+			if (!colSel.isSelectedIndex(col)) return;
+			
+			Object sel = getValueAt(row, col);
+			if (sel instanceof Entrant)
+			{
+				selectedE = (Entrant)sel;
+				driverPopup.show(EntryTable.this, e.getX(), e.getY());
+			}
+			//else if (sel instanceof Run)
+		}
+		
 		@Override
 		public void mousePressed(MouseEvent e)
 		{
 			Messenger.sendEvent(MT.OBJECT_CLICKED, getObject());
+			if (e.isPopupTrigger())
+				doPopup(e);
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e)
+		{
+			if (e.isPopupTrigger())
+				doPopup(e);
 		}
 
 		@Override
 		public void mouseClicked(MouseEvent e)
 		{
-			if (e.getButton() == 3)
+			if (e.getClickCount() == 2)
+				Messenger.sendEvent(MT.OBJECT_DCLICKED, getObject());
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			String cmd = e.getActionCommand();
+			if (cmd.equals("Add Text Runs"))
 			{
-				// Right click: e.getPoint();
+				TextRunsDialog trd = new TextRunsDialog();
+				trd.doDialog("Textual Run Input", null);
+				List<Run> runs = trd.getResult();
+				if (runs == null) return;
+				Map<Integer, Run> course1, course2;
+				course1 = new HashMap<Integer,Run>();
+				course2 = new HashMap<Integer,Run>();
+
+				Database.d.setCurrentCourse(1);
+				Entrant ent = Database.d.loadEntrant(selectedE.getCarId(), false);
+				for (Run r : trd.getResult())
+				{
+					r.updateTo(Database.d.getCurrentEvent().getId(), r.course(), r.run(), selectedE.getCarId(), ent.getIndex());
+					if (r.course() == 2) course2.put(r.run(), r); else course1.put(r.run(), r);
+				}
+
+				ent.setRuns(course1);
+				if (course2.size() > 0)
+				{
+					Database.d.setCurrentCourse(2);
+					ent = Database.d.loadEntrant(selectedE.getCarId(), false);
+					ent.setRuns(course2);
+				}
+
+				Database.d.setCurrentCourse(1);
 			}
-			else
+			else if (cmd.equals("Cut"))
 			{
-				if (e.getClickCount() == 2)
-					Messenger.sendEvent(MT.OBJECT_DCLICKED, getObject());
+				e.setSource(EntryTable.this); // redirect as cut action on Table
+				TransferHandler.getCutAction().actionPerformed(e);
 			}
 		}
 	}
