@@ -71,12 +71,14 @@ public class EntryTable extends JTable implements MessageListener
 	ListSelectionModel rowSel;
 
 	EntryModel model;
+	String activeSearch;
 	
 	public EntryTable(EntryModel m)
 	{
 		super(m);
 
 		model = m;
+		activeSearch = "";
 
 		colSel = new LimitedColSelectionModel();
 		rowSel = getSelectionModel();
@@ -106,6 +108,7 @@ public class EntryTable extends JTable implements MessageListener
 		Messenger.register(MT.CAR_ADD, this);
 		Messenger.register(MT.CAR_CHANGE, this);
 		Messenger.register(MT.COURSE_CHANGED, this);
+		Messenger.register(MT.FIND_ENTRANT, this);
 	}
 
 
@@ -210,6 +213,7 @@ public class EntryTable extends JTable implements MessageListener
 				}
 
 				Database.d.setCurrentCourse(1);
+				Messenger.sendEvent(MT.RUNGROUP_CHANGED, 1);
 			}
 			else if (cmd.equals("Cut"))
 			{
@@ -357,6 +361,11 @@ public class EntryTable extends JTable implements MessageListener
 					h.setBorder(new LineBorder(Color.GRAY, 1));
 				}
 				break;
+
+			case FIND_ENTRANT:
+				activeSearch = (String)o;
+				repaint();
+				break;
 		}
 	}
 }
@@ -446,6 +455,8 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 {
 	private Color background;
 	private Color backgroundSelect;
+	private Color backgroundFound;
+	private Color backgroundFoundSelect;
 	private String topLine;
 	private String bottomLine;
 	private Font topFont;
@@ -456,6 +467,8 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 		super();
 		background = new Color(240, 240, 240);
 		backgroundSelect = new Color(120, 120, 120);
+		backgroundFound = new Color(255, 255, 220);
+		backgroundFoundSelect = new Color(255, 255, 120);
 		topLine = null;
 		bottomLine = null;
 		
@@ -493,6 +506,9 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 					bottomLine = null;
 					break;
 			}
+
+			if (matchMe(topLine, bottomLine, ((EntryTable)table).activeSearch))
+				setBackground((isSelected) ?  backgroundFoundSelect : backgroundFound);
 		}
 		else if (value != null)
 		{
@@ -506,6 +522,17 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 			bottomLine = "No data for this cell";
 		}
 		return this;
+	}
+
+	protected boolean matchMe(String top, String bottom, String search)
+	{
+		if (search.equals("")) return false;
+		for (String p : search.toLowerCase().split("\\s+"))
+		{
+			if ((!top.toLowerCase().contains(p)) &&
+				(!bottom.toLowerCase().contains(p))) return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -534,9 +561,13 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 	}
 	
 	// The following methods override the defaults for performance reasons
+	@Override
 	public void validate() {}
+	@Override
 	public void revalidate() {}
+	@Override
 	protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {}
+	@Override
 	public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {}
 }
 
@@ -553,6 +584,7 @@ class LimitedColSelectionModel extends DefaultListSelectionModel
 		drags.  We intercept so that the user can't select both col0 and the other cols
 		at the same time.
 	*/
+	@Override
 	public void setSelectionInterval(int index0, int index1)
 	{
 		if ((index0 == 0) && (index1 != 0)) return;
@@ -560,10 +592,6 @@ class LimitedColSelectionModel extends DefaultListSelectionModel
 		super.setSelectionInterval(index0, index1);
 	}
 }
-
-
-
-
 
 
 
@@ -580,12 +608,14 @@ class EntryTableTransferHandler extends TransferHandler
 	private boolean isCut = false;
 
 
+	@Override
 	public int getSourceActions(JComponent c)
 	{
 		return COPY_OR_MOVE;
 	}
 
 
+	@Override
 	public void exportAsDrag(JComponent comp, InputEvent e, int action)
 	{
 		log.fine("export as drag");
@@ -602,6 +632,7 @@ class EntryTableTransferHandler extends TransferHandler
 			super.exportAsDrag(comp, e, action);
 	}
 
+	@Override
 	public void exportToClipboard(JComponent comp, Clipboard cb, int action)
 	{
 		isCut = true;
@@ -612,6 +643,7 @@ class EntryTableTransferHandler extends TransferHandler
 	/******* Export Side *******/
 
 	/* Create data from the selected rows and columns */
+	@Override
 	protected Transferable createTransferable(JComponent c)
 	{
 		JTable table = (JTable)c;
@@ -627,6 +659,7 @@ class EntryTableTransferHandler extends TransferHandler
 	}
 
 	
+	@Override
 	protected void exportDone(JComponent c, Transferable data, int action)
 	{
 		if ((colsidx == null) || (rowsidx == null))
@@ -661,6 +694,7 @@ class EntryTableTransferHandler extends TransferHandler
 	/******* Import Side *******/
 
 	/* Called to allow drop operations */
+	@Override
 	public boolean canImport(TransferHandler.TransferSupport support)
 	{
 		JTable.DropLocation dl = (JTable.DropLocation)support.getDropLocation();
@@ -676,6 +710,7 @@ class EntryTableTransferHandler extends TransferHandler
 
 
 	/* Called for drop and paste operations */
+	@Override
 	public boolean importData(TransferHandler.TransferSupport support)
 	{
 		try
@@ -752,6 +787,7 @@ class DataTransfer implements Transferable, ClipboardOwner
 		}
 	}
 
+	@Override
 	public DataFlavor[] getTransferDataFlavors()
 	{
 		DataFlavor[] flavors = new DataFlavor[2];
@@ -760,11 +796,13 @@ class DataTransfer implements Transferable, ClipboardOwner
 		return flavors;
 	}
 
+	@Override
 	public boolean isDataFlavorSupported(DataFlavor flavor)
 	{
 		return (flavor.equals(myFlavor) || flavor.equals(DataFlavor.stringFlavor));
 	}
 
+	@Override
 	public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException
 	{
 		if (flavor.equals(myFlavor))
@@ -772,6 +810,7 @@ class DataTransfer implements Transferable, ClipboardOwner
 		return string;
 	}
 
+	@Override
 	public void lostOwnership(Clipboard clipboard, Transferable contents)
 	{
 	}

@@ -10,6 +10,7 @@ package org.wwscc.dataentry;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -21,7 +22,6 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.dialogs.GroupDialog;
-import org.wwscc.dialogs.RunGroupDialog;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
 import org.wwscc.util.BrowserControl;
@@ -53,11 +53,10 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		file.add(createItem("Upload and Unlock Database", null));
 		file.add(createItem("Quit", null));
 
-		/* Edit Menu *
+		/* Edit Menu */
 		JMenu edit = new JMenu("Edit");
 		add(edit);
-		
-		edit.add(createItem("Find", KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK))); */
+		edit.add(createItem("Find", KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK)));
 
 		/* Event Menu */
 		JMenu event = new JMenu("Event");
@@ -71,8 +70,6 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		dcMode = new JCheckBoxMenuItem("Use Double Course Mode", Prefs.useDoubleCourseMode());
 		dcMode.addActionListener(this);
 		event.add(dcMode);
-		event.add(createItem("Set Assigned RunGroups", null));
-		event.add(createItem("Grid Order Test", null));
 
 		/* Results Menu */
 		JMenu results = new JMenu("Reports");
@@ -135,16 +132,6 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 					event.setRuns(save); // We bombed
 			}
 		}
-		else if (cmd.equals("Set Assigned RunGroups"))
-		{
-			new RunGroupDialog(Database.d.getClass2RunGroupMapping()).doDialog("Set Groups", new DialogFinisher<Map<String,Integer>>() {
-				@Override
-				public void dialogFinished(Map<String,Integer> result) {
-					if (result != null)
-						Database.d.setClass2RunGroupMapping(result);
-				}
-			});
-		}
 		else if (cmd.equals("Open Database"))
 		{
 			Database.open();
@@ -169,6 +156,10 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		else if (cmd.equals("Use Double Course Mode"))
 		{
 			Prefs.setDoubleCourseMode(dcMode.getState());
+		}
+		else if (cmd.equals("Find"))
+		{
+			Messenger.sendEvent(MT.OPEN_FIND, null);
 		}
 		else
 		{ 

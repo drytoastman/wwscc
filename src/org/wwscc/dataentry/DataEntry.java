@@ -46,6 +46,7 @@ public class DataEntry extends JFrame implements MessageListener
 	DriverEntry driverEntry;
 	ClassTree  numberTree;
 	ResultsPane announcer;
+	FindEntry finder;
 	EntryTable table;
 	JScrollPane tableScroll;
 
@@ -98,7 +99,7 @@ public class DataEntry extends JFrame implements MessageListener
 		numberTree = new ClassTree();
 		driverEntry = new DriverEntry();
 		announcer = new ResultsPane();
-
+		finder = new FindEntry();
 
 		tabs = new JTabbedPane();
 		tabs.setMinimumSize(new Dimension(250, 400));
@@ -110,14 +111,9 @@ public class DataEntry extends JFrame implements MessageListener
 		tableScroll = new JScrollPane(table);
 		tableScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		tableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		
-		BorderLayout layout = new BorderLayout();
-		layout.setHgap(5);
-		layout.setVgap(5);
 
 		timeEntry = new TimeEntry();
 		menus.add(timeEntry.getTimerMenu());
-
 
 		CurrentDatabaseLabel curdb = new CurrentDatabaseLabel();
 		HelpPanel help = new HelpPanel();
@@ -131,12 +127,15 @@ public class DataEntry extends JFrame implements MessageListener
 		infoBoxes.add(help, "grow, hmin 20");
 		infoBoxes.add(myip, "grow");
 
-		JPanel content = new JPanel(layout);
-		content.add(setupBar, BorderLayout.NORTH);
-		content.add(tabs, BorderLayout.WEST);
-		content.add(tableScroll, BorderLayout.CENTER);
-		content.add(timeEntry, BorderLayout.EAST);
-		content.add(infoBoxes, BorderLayout.SOUTH);
+		JPanel content = new JPanel(new MigLayout("fill, ins 1, gap 2",
+				"[grow 0][fill][grow 0]",
+				"[grow 0][grow 0][]"));
+		content.add(setupBar, "spanx 3, growx, wrap");
+		content.add(tabs, "spany 2, growx 0, growy");
+		content.add(finder, "growx, growy 0, hidemode 2");
+		content.add(timeEntry, "spany 2, growx 0, growy, wrap");
+		content.add(tableScroll, "grow, wrap");
+		content.add(infoBoxes, "spanx 3, growx, wrap");
 		
 		setContentPane(content);
 		setSize(1024,768);
