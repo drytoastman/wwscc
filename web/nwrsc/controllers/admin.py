@@ -13,6 +13,7 @@ from datetime import datetime
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako
 from pylons.controllers.util import redirect, url_for
+from pylons.decorators import jsonify
 from tw.mods.pylonshf import validate
 from nwrsc.lib.base import BaseController, BeforePage
 from nwrsc.model import *
@@ -306,6 +307,27 @@ class AdminController(BaseController):
 			self.session.rollback()
 		redirect(url_for(action='rungroups'))
 		
+
+
+	### Entrant editor ####
+
+	def drivers(self):
+		c.drivers = self.session.query(Driver).order_by(Driver.firstname, Driver.lastname).all()
+		return render_mako('/admin/drivers.mako')
+
+		
+	@jsonify
+	def getitems(self):
+		txt = ""
+		for id in map(int, request.GET.get('driverids', "").split(',')):
+			c.d = self.session.query(Driver).filter(Driver.id==id).first();
+			c.cars = self.session.query(Car).filter(Car.driverid==id).all();
+			txt += render_mako('/admin/driverinfo.mako')
+		return txt
+
+
+
+	### other ###
 
 	@validate(form=eventForm, error_handler='edit')
 	def updateevent(self):

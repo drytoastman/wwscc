@@ -52,6 +52,12 @@ public class BrowserControl
 				Database.d.getCurrentSeries(), Database.d.getCurrentEvent().getId(), selection));
 	}
 
+	public static void openAdmin(String selection)
+	{
+		openURL(String.format("http://%s/admin/%s/%s/%s", Database.d.getCurrentHost(),
+				Database.d.getCurrentSeries(), Database.d.getCurrentEvent().getId(), selection));
+	}
+
 	public static void openURL(String url)
 	{
 		try

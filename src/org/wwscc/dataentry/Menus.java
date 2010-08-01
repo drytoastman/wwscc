@@ -83,6 +83,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		results.add(createItem("Multiple Group Results", null));
 		results.add(audit);
 		results.add(createItem("Results Page", null));
+		results.add(createItem("Admin Page", null));
 	}
 
 	protected JMenuItem createItem(String title, KeyStroke ks)
@@ -118,6 +119,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		else if (cmd.startsWith("Order By Last Name")) BrowserControl.openAuditReport("lastname");
 		else if (cmd.startsWith("In Run Order")) BrowserControl.openAuditReport("runorder");
 		else if (cmd.startsWith("Results Page")) BrowserControl.openResults("");
+		else if (cmd.startsWith("Admin Page")) BrowserControl.openAdmin("");
 		else if (cmd.endsWith("Runs"))
 		{
 			int runs = Integer.parseInt(cmd.split(" ")[0]);
