@@ -86,6 +86,9 @@ public class CachingData extends DataInterface
 	public List<Event> getEvents() { return wrapped.getEvents(); }
 
 	@Override
+	public String getSetting(String key) { return wrapped.getSetting(host); }
+	
+	@Override
 	public void clearChanges() { wrapped.clearChanges(); }
 
 	@Override

@@ -183,6 +183,19 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
+	public String getSetting(String key)
+	{
+		try
+		{
+			ResultData setting = executeSelect("GETSETTING", newList(key));
+			return setting.get(0).getString("val");
+		} catch (IOException ioe) {
+			logError("getSetting", ioe);
+			return "";
+		}
+	}
+
+	@Override
 	public void clearChanges()
 	{
 		try {

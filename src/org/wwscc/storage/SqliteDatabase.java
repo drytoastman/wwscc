@@ -124,6 +124,10 @@ public class SqliteDatabase extends SQLDataInterface
 		begin = new Prepared("begin");
 		commit = new Prepared("commit");
 		rollback = new Prepared("rollback");
+
+		String ver = getSetting("schema");
+		if (!ver.equals("661"))
+			throw new IOException("Database schema version is " + ver + " but software is 661");
 	}
 
 	@Override
