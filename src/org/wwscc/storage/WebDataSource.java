@@ -221,7 +221,8 @@ public class WebDataSource extends SQLDataInterface
 				throw new IOException(b.toString());
 				
 			default:
-				throw new IOException("Invalid return value from server: " + type);
+				throw new IOException("Invalid return value from server: " + type + "\n" +
+								"String Value: (" + new String(data) + ")");
 		}
 	}
 
