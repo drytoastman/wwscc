@@ -12,7 +12,7 @@ from datetime import datetime
 
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako
-from pylons.controllers.util import redirect, url_for
+from pylons.controllers.util import redirect, url_for, abort
 from pylons.decorators import jsonify
 from tw.mods.pylonshf import validate
 from nwrsc.lib.base import BaseController, BeforePage
@@ -312,18 +312,83 @@ class AdminController(BaseController):
 	### Entrant editor ####
 
 	def drivers(self):
-		c.drivers = self.session.query(Driver).order_by(Driver.firstname, Driver.lastname).all()
 		return render_mako('/admin/drivers.mako')
 
 		
+	class DriverInfo(object):
+		def __init__(self, d, c):
+			self.driver = d
+			self.cars = c
+
+	@jsonify
+	def getdrivers(self):
+		return {'data': self.session.query(Driver.id,Driver.firstname,Driver.lastname).order_by(Driver.firstname, Driver.lastname).all()}
+
+	def mergedriver(self):
+		try:
+			driverid = int(request.POST.get('driverid', None))
+			allids = map(int, request.POST.get('allids', '').split(','))
+			allids.remove(driverid)
+			for tomerge in allids:
+				log.info("merge %s into %s" % (tomerge, driverid))
+				# update car id maps
+				for car in self.session.query(Car).filter(Car.driverid==tomerge):
+					car.driverid = driverid 
+				# delete old driver
+				dr = self.session.query(Driver).filter(Driver.id==tomerge).first()
+				self.session.delete(dr)
+				
+			self.session.commit()
+			return "";
+		except Exception, e:
+			log.info('merge driver failed: %s' % e)
+			abort(400);
+
+
+	def deletedriver(self):
+		try:
+			driverid = request.POST.get('driverid', None)
+			log.info('request to delete driver %s' % driverid)
+			for car in self.session.query(Car).filter(Car.driverid==driverid):
+				if len(self.session.query(Run.eventid).distinct().filter(Run.carid==car.id).all()) > 0:
+					raise Exception("driver car has runs")
+				self.session.delete(car)
+			dr = self.session.query(Driver).filter(Driver.id==driverid).first()
+			self.session.delete(dr)
+			self.session.commit()
+			return "";
+		except Exception, e:
+			log.info('delete driver failed: %s' % e)
+			abort(400);
+
+
+	def deletecar(self):
+		try:
+			carid = request.POST.get('carid', None)
+			log.info('request to delete car %s' % carid)
+			car = self.session.query(Car).filter(Car.id==carid).first()
+			if len(self.session.query(Run.eventid).distinct().filter(Run.carid==car.id).all()) > 0:
+				raise Exception("car has runs")
+			self.session.delete(car)
+			self.session.commit()
+			return "";
+		except Exception, e:
+			log.info('delete car failed: %s' % e)
+			abort(400);
+
+
+	
 	@jsonify
 	def getitems(self):
-		txt = ""
+		c.items = list()
 		for id in map(int, request.GET.get('driverids', "").split(',')):
-			c.d = self.session.query(Driver).filter(Driver.id==id).first();
-			c.cars = self.session.query(Car).filter(Car.driverid==id).all();
-			txt += render_mako('/admin/driverinfo.mako')
-		return txt
+			dr = self.session.query(Driver).filter(Driver.id==id).first();
+			cars = self.session.query(Car).filter(Car.driverid==id).all();
+			for car in cars:
+				car.runs = len(self.session.query(Run.eventid).distinct().filter(Run.carid==car.id).filter(Run.eventid<100).all())
+			c.items.append(self.DriverInfo(dr, cars))
+
+		return {'data': str(render_mako('/admin/driverinfo.mako'))}
 
 
 
@@ -352,20 +417,20 @@ class AdminController(BaseController):
 		self.session.commit()
 		redirect(url_for(eventid=ev.id, action=''))
 
-	def list(self):
-		class RegObj(object):
-			def __init__(self, d, c, r):
-				self.driver = d
-				self.car = c
-				self.reg = r
+	class RegObj(object):
+		def __init__(self, d, c, r):
+			self.driver = d
+			self.car = c
+			self.reg = r
 
+	def list(self):
 		query = self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==self.eventid)
 		c.classdata = ClassData(self.session)
 		c.registered = {}
 		for (driver, car, reg) in query.all():
 			if car.classcode not in c.registered:
 				c.registered[car.classcode] = []
-			c.registered[car.classcode].append(RegObj(driver, car, reg))
+			c.registered[car.classcode].append(self.RegObj(driver, car, reg))
 		return render_mako('/admin/entrylist.mako')
 
 	def delreg(self):

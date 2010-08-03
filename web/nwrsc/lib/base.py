@@ -76,12 +76,10 @@ class BaseController(WSGIController):
 		self.settings = dict()
 		if self.database is not None:
 			self.settings.update(Setting.loadDict(self.session))
-
-		print self.settings
-		if self.settings.get('schema', '0') != '661':
-			start_response('200 OK', [('content-type', 'text/html')], None)
-			return "Software schema verison is 661 but series database is " + self.settings.get('schema', '0') +  \
-				", database schema or software needs to be updated to match"
+			if self.settings.get('schema', '0') != '661':
+				start_response('200 OK', [('content-type', 'text/html')], None)
+				return "Software schema verison is 661 but series database is " + self.settings.get('schema', '0') +  \
+					", database schema or software needs to be updated to match"
 
 		try:
 			try:
