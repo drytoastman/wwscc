@@ -37,6 +37,7 @@ class Entrant(object):
 		self.carid = row.carid
 		self.points = Points()
 		self.ppoints = Points()
+		self.events = -1
 
 	def setPoints(self, eventid, points):
 		self.points.set(eventid, points)
@@ -59,6 +60,7 @@ def getChampResults(session, codeglob = '%'):
 
 	try:
 		bestof = int(session.query(Setting).get('useevents').val)
+		minevent = int(session.query(Setting).get('minevents').val)
 		results = session.execute(champResult, params={'codeglob':codeglob}).fetchall()
 	except Exception, e:
 		log.warning("Failed to load champ results: %s" % e)
@@ -76,9 +78,11 @@ def getChampResults(session, codeglob = '%'):
 
 	ret = {}
 	for code, cls in store.iteritems():
-		ret[code] = cls.values()
-		for entrant in ret[code]:
+		toadd = list()
+		for entrant in cls.values():
 			entrant.calc(bestof)
-
+			if entrant.events >= minevent:
+				toadd.append(entrant)
+		ret[code] = toadd
 	return ret
 
