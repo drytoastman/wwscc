@@ -129,9 +129,11 @@ class TopTimesList(object):
 	def __init__(self, title, *cols):
 		self.title = title
 		self.cols = cols
+		self.carids = list()
 		self.rows = list()
 
-	def add(self, *vals):
+	def add(self, carid, *vals):
+		self.carids.append(carid)
 		self.rows.append(vals)
 
 
@@ -143,7 +145,7 @@ def loadTopCourseRawTimes(session, event, course, classdata, all=False):
 
 	ttl = TopTimesList("Top Times (Course %d)" % course, "Name", "Class", "Time")
 	for row in session.execute(sql, params={'eventid':event.id, 'course':course, 'conepen':event.conepen, 'gatepen':event.gatepen}):
-		ttl.add(row.firstname + " " + row.lastname, row.classcode, "%0.3f" % row.toptime)
+		ttl.add(row.carid, row.firstname + " " + row.lastname, row.classcode, "%0.3f" % row.toptime)
 	return ttl
 		
 
@@ -157,7 +159,7 @@ def loadTopCourseNetTimes(session, event, course, classdata, all=False):
 	for row in session.execute(sql, params={'eventid':event.id, 'course':course}):
 		eis = classdata.getIndexStr(row.classcode, row.indexcode)
 		eiv = classdata.getEffectiveIndex(row.classcode, row.indexcode)
-		ttl.add(row.firstname + " " + row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
+		ttl.add(row.carid, row.firstname + " " + row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
 	return ttl
 
 
@@ -171,7 +173,7 @@ def loadTopRawTimes(session, event, classdata, all=False):
 	if all: title += " (All Runs)"
 	ttl = TopTimesList(title, "Name", "Class", "Time")
 	for row in session.execute(sql, params={'eventid':event.id,'conepen':event.conepen,'gatepen':event.gatepen}):
-		ttl.add(row.firstname + " " + row.lastname, row.classcode, "%0.3f" % row.toptime)
+		ttl.add(row.carid, row.firstname + " " + row.lastname, row.classcode, "%0.3f" % row.toptime)
 	return ttl
 
 
@@ -187,6 +189,6 @@ def loadTopNetTimes(session, event, classdata, all=False):
 	for row in session.execute(sql, params={'eventid':event.id}):
 		eis = classdata.getIndexStr(row.classcode, row.indexcode)
 		eiv = classdata.getEffectiveIndex(row.classcode, row.indexcode)
-		ttl.add(row.firstname + " " + row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
+		ttl.add(row.carid, row.firstname + " " + row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
 	return ttl
 

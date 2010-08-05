@@ -60,7 +60,7 @@ class AnnouncerController(BaseController):
 
 		c.title = "Net"
 		c.toptimes = loadTopNetTimes(self.session, c.event, c.classdata)
-		ret['topnet'] = render_mako('/announcer/topindextimes.mako').replace('\n', '')
+		ret['topnet'] = render_mako('/announcer/toptimes.mako').replace('\n', '')
 
 		if c.event.getSegmentCount() > 0:
 			for ii in range(1, c.event.getSegmentCount()+1):
