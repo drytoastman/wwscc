@@ -6,7 +6,7 @@ th { text-align: left; }
 </style>
 </%def>
 
-<h2>Fees Collected</h2>
+<h2>All Fees Collected</h2>
 <table>
 <% from math import ceil %>
 %for f in c.feelists:

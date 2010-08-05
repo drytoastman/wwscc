@@ -6,7 +6,6 @@ th { text-align: left; }
 </style>
 </%def>
 
-<h2>${c.header}</h2>
 <table>
 <%
 	from math import ceil

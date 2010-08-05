@@ -40,14 +40,14 @@
 	<li><a href='${h.url_for(action='printcards', type='blank', page='letter')}'>8x11 Letter Paper</a></li>
 	</ul>
 </li>
-<li><a href='${h.url_for(action='numbers')}'>Used Car Number List</a></li>
-<li><a href='${h.url_for(action='paid')}'>Series Fee Paid List</a></li>
-<li><a href='${h.url_for(action='paypal')}'>Paypal Transaction List</a></li>
+<li><a href='${h.url_for(action='numbers')}' target='_blank'>Used Car Number List</a></li>
+<li><a href='${h.url_for(action='paid')}' target='_blank'>Series Fee Paid List</a></li>
+<li><a href='${h.url_for(action='paypal')}' target='_blank'>Paypal Transaction List</a></li>
 </ol>
 
 <h3>After The Event</h3>
 <ol>
-<li><a href='${h.url_for(action='fees')}'>Collected Fee List</a></li>
+<li><a href='${h.url_for(action='fees')}' target='_blank'>Collected Fee List</a></li>
 </ol>
 </div>
 

@@ -35,11 +35,12 @@
 	<li><a href='${h.url_for(eventid='s', action='classlist')}'>Series Classes</a></li>
 	<li><a href='${h.url_for(eventid='s', action='indexlist')}'>Series Indexes</a></li>
 	<li><a href='${h.url_for(eventid='s', action='seriessettings')}'>Series Settings</a></li>
+	<li><a href='${h.url_for(eventid='s', action='drivers')}'>Driver/Car Editor</a></li>
 	<li><a href='${h.url_for(eventid='s', action='recalc')}'>Recalculate Results</a></li>
 	<li><a href='${h.url_for(eventid='s', action='cleanup')}'>Remove Unused Registration</a></li>
-	<li><a href='${h.url_for(eventid='s', action='allfees')}'>All Event 'Fees'</a></li>
 	<li><a href='${h.url_for(eventid='s', action='purge')}'>Purge Old Drivers and Cars</a></li>
 	<li><a href='${h.url_for(eventid='s', action='copyseries')}'>Create New Series From</a></li>
+	<li><a href='${h.url_for(eventid='s', action='allfees')}' target='_blank'>All Event 'Fees'</a></li>
 	</ul>
 </li>
 </ul>
