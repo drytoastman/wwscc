@@ -1,17 +1,34 @@
 <%inherit file="base.mako" />
+<%namespace file="/careditor.mako" import="careditor"/>
+<%namespace file="/drivereditor.mako" import="drivereditor"/>
+
 <h3>Driver Editor</h3>
+
+<style>
+.ui-dialog { font-size: 0.75em !important; }
+table.editor td { border: 1px solid #999; height: 20px; }
+table.editor th { border: 1px solid #999; font-size: 10px; text-align: right; padding-right: 4px; width: 20px;}
+table.editor { border-collapse: collapse; width: 600px;  }
+button.editor { font-size: 11px !important; margin-bottom: 3px; }
+button.ceditor { font-size: 9px !important; margin-bottom: 3px; margin-top: 2px; }
+div.editor { margin-left: 10px; margin-bottom: 15px; }
+</style>
 
 <select multiple='multiple' size='30' name='driver' id='driverlist' style='float: left'>
 </select>
 
-<div id='sel' style='float: left'>
+<div id='driverinfo' style='float: left'>
 </div>
 
 <br style='clear:both'/>
 
-<script>
+${drivereditor()}
+${careditor()}
 
+<script>
 var saveids = Array();
+var cars = Array();
+var drivers = Array();
 
 function buildselect(json)
 {
@@ -29,19 +46,9 @@ function buildselect(json)
 		select.val(saveids);
 		select.change();
 	} else {
-		$("#sel").html("");
+		$("#driverinfo").html("");
 	}
 
-}
-
-function editdriver(did)
-{
-	// open editor
-}
-
-function editcar(cid)
-{
-	// open editor
 }
 
 function deletedriver(did)
@@ -76,15 +83,31 @@ function mergedriver(did, allids)
 	});
 }
 
+function driveredited()
+{
+	$.post('${h.url_for(action='editdriver')}', $("#drivereditor").serialize(), function() {
+		$("#driverlist").change(); // force reload of driver info
+	});
+}
 
-$.ajaxSetup({ cache: false });
+function caredited()
+{
+	$.post('${h.url_for(action='editcar')}', $("#careditor").serialize(), function() {
+		$("#driverlist").change(); // force reload of driver info
+	});
+}
 
-$.getJSON('${h.url_for(action='getdrivers')}', {}, buildselect);
 
 $('#driverlist').change(function () {
 		var ids = Array();
 		$("#driverlist option:selected").each(function () { ids.push($(this).attr('value')); });
-		$.getJSON('${h.url_for(action='getitems')}', { driverids: ids.join(',') }, function(json) {$("#sel").html(json.data)} );
+		$.getJSON('${h.url_for(action='getitems')}', { driverids: ids.join(',') }, function(json) {$("#driverinfo").html(json.data)} );
  });
 
+
+$(document).ready(function() { 
+	$.ajaxSetup({ cache: false });
+	$.getJSON('${h.url_for(action='getdrivers')}', {}, buildselect);
+});
+		
 </script>

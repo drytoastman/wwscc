@@ -13,7 +13,7 @@ from datetime import datetime
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako
 from pylons.controllers.util import redirect, url_for, abort
-from pylons.decorators import jsonify
+from pylons.decorators import jsonify, validate as xvalidate
 from tw.mods.pylonshf import validate
 from nwrsc.lib.base import BaseController, BeforePage
 from nwrsc.model import *
@@ -32,7 +32,7 @@ class AdminController(BaseController):
 
 	def __before__(self):
 		c.stylesheets = ['/css/admin.css', '/css/redmond/jquery-ui-1.8.2.custom.css']
-		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.4.2.min.js', '/js/jquery-ui-1.8.2.custom.min.js', '/js/superfish.js']
+		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.4.2.min.js', '/js/jquery-ui-1.8.2.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js']
 		c.isLocked = (int(self.settings.get('locked', 1)) == 1)
 		if self.database is not None:
 			c.events = self.session.query(Event).all()
@@ -159,7 +159,8 @@ class AdminController(BaseController):
 
 	def cleanup(self):
 		updateFromRuns(self.session)
-		return "cleaned"
+		c.adminheader = "Cleaned"
+		return render_mako('/admin/title.mako')
 
 
 	def recalc(self):
@@ -173,18 +174,11 @@ class AdminController(BaseController):
 
 
 	def printcards(self):
-		from reportlab.pdfgen import canvas
-		from reportlab.lib.units import inch
 
 		drawCard = self.loadPythonFunc('drawCard', self.session.query(Data).get('card.py').data)
 
 		page = request.GET.get('page', 'card')
 		type = request.GET.get('type', 'blank')
-
-		if page == 'letter': # Letter has an additional 72 points Y to space out
-			size = (8*inch, 11*inch)
-		else:
-			size = (8*inch, 5*inch)
 
 		query = self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==self.eventid)
 		if type == 'blank':
@@ -203,6 +197,18 @@ class AdminController(BaseController):
 			return render_mako('/admin/csv.mako')
 
 		# Otherwise we are are PDF
+		try:
+			from reportlab.pdfgen import canvas
+			from reportlab.lib.units import inch
+		except:
+			c.adminheader = "PDFGen not installed, can't create timing card PDF files from this system"
+			return render_mako("/admin/title.mako")
+
+		if page == 'letter': # Letter has an additional 72 points Y to space out
+			size = (8*inch, 11*inch)
+		else:
+			size = (8*inch, 5*inch)
+
 		if page == 'letter' and len(registered)%2 != 0:
 			registered.append((None,None,None)) # Pages are always two cards per so make it divisible by 2
 
@@ -243,14 +249,14 @@ class AdminController(BaseController):
 	def paid(self):
 		""" Return the list of fees paid before this event """
 		f = FeeList.get(self.session, self.eventid)
-		c.adminheader = 'Fees Collected Before %s' % c.event.name
+		c.header = '<h2>Fees Collected Before %s</h2>' % c.event.name
 		c.feelist = f.before
 		return render_mako('/admin/feelist.mako')
 
 	def fees(self):
 		""" Return the list of fees collected at a single event """
 		f = FeeList.get(self.session, self.eventid)
-		c.adminheader = 'Fees Collected During %s (%d)' % (c.event.name, len(f.during))
+		c.header = '<h2>Fees Collected During %s (%d)</h2>' % (c.event.name, len(f.during))
 		c.feelist = f.during
 		return render_mako('/admin/feelist.mako')
 
@@ -311,19 +317,16 @@ class AdminController(BaseController):
 
 	### Entrant editor ####
 
-	def drivers(self):
-		return render_mako('/admin/drivers.mako')
-
-		
 	class DriverInfo(object):
 		def __init__(self, d, c):
 			self.driver = d
 			self.cars = c
 
-	@jsonify
-	def getdrivers(self):
-		return {'data': self.session.query(Driver.id,Driver.firstname,Driver.lastname).order_by(Driver.firstname, Driver.lastname).all()}
+	def drivers(self):
+		c.classdata = ClassData(self.session)
+		return render_mako('/admin/drivers.mako')
 
+		
 	def mergedriver(self):
 		try:
 			driverid = int(request.POST.get('driverid', None))
@@ -362,11 +365,25 @@ class AdminController(BaseController):
 			abort(400);
 
 
+	def editdriver(self):
+		try:
+			driverid = request.POST.get('driverid', None)
+			log.info('request to edit driver %s' % driverid)
+			driver = self.session.query(Driver).get(driverid)
+			for attr in request.POST:
+				if hasattr(driver, attr):
+					setattr(driver, attr, request.POST[attr])
+			self.session.commit()
+		except Exception, e:
+			log.info('edit driver failed: %s' % e)
+			abort(400);
+
+
 	def deletecar(self):
 		try:
 			carid = request.POST.get('carid', None)
 			log.info('request to delete car %s' % carid)
-			car = self.session.query(Car).filter(Car.id==carid).first()
+			car = self.session.query(Car).get(carid)
 			if len(self.session.query(Run.eventid).distinct().filter(Run.carid==car.id).all()) > 0:
 				raise Exception("car has runs")
 			self.session.delete(car)
@@ -376,6 +393,25 @@ class AdminController(BaseController):
 			log.info('delete car failed: %s' % e)
 			abort(400);
 
+
+	def editcar(self):
+		try:
+			carid = request.POST.get('carid', None)
+			log.info('request to edit car %s' % carid)
+			car = self.session.query(Car).get(carid)
+			for attr in ('year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode'):
+				if attr in request.POST:
+					setattr(car, attr, request.POST[attr])
+			self.session.commit()
+			return ""
+		except Exception, e:
+			log.info('edit car failed: %s' % e)
+			abort(400);
+
+
+	@jsonify
+	def getdrivers(self):
+		return {'data': self.session.query(Driver.id,Driver.firstname,Driver.lastname).order_by(Driver.firstname, Driver.lastname).all()}
 
 	
 	@jsonify

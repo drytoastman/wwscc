@@ -1,0 +1,57 @@
+<%inherit file="base.mako" />
+<h3>Index Editor</h3>
+
+<script>
+  $(document).ready(function(){
+    $("#indexEditForm").validate({
+		invalidHandler: function(e, validator) {
+			var errors = validator.numberOfInvalids();
+			if (errors) {
+				var message = 'All fields are required, indexes must be valid numbers'
+				$("div.error span").html(message);
+				$("div.error").show();
+			} else {
+				$("div.error").hide();
+			}
+		}
+	});
+  });
+</script>
+
+<style>
+input.error {
+	border: 2px solid red;
+}
+label.error {
+	display: none !important;
+}
+</style>
+
+<form id="indexEditForm" action="${c.action}" method="post" class="indexlisttableform">
+<div class="error" style='display:none;'>
+<span></span>
+</div>
+
+<table border="0" cellspacing="0" cellpadding="2" py:attrs="table_attrs">
+<tr>
+<th title="None">Code</th>
+<th title="None">Description</th>
+<th title="None">Value</th>
+<th title="None"></th>
+</tr>
+
+%for ii, idx in enumerate(c.indexlist):
+	<tr>
+	<td class='field'><input type="text" name="idxlist-${ii}.code" class="required" value="${idx.code}" size="6" /></td>
+	<td class='field'><input type="text" name="idxlist-${ii}.descrip" class="required" value="${idx.descrip}" size="50"/></td>
+	<td class='field'><input type="text" name="idxlist-${ii}.value" class="required number" value="${"%0.3f"%idx.value}" size="5" /></td>
+	</tr>
+%endfor
+
+</table>
+<input type='submit' value='Submit'/>
+</form>
+
+<button>Add</button>
+
+
