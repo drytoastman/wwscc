@@ -14,7 +14,7 @@ button.ceditor { font-size: 9px !important; margin-bottom: 3px; margin-top: 2px;
 div.editor { margin-left: 10px; margin-bottom: 15px; }
 </style>
 
-<select multiple='multiple' size='30' name='driver' id='driverlist' style='float: left'>
+<select multiple='multiple' size='25' name='driver' id='driverlist' style='float: left'>
 </select>
 
 <div id='driverinfo' style='float: left'>
@@ -93,6 +93,21 @@ function driveredited()
 function caredited()
 {
 	$.post('${h.url_for(action='editcar')}', $("#careditor").serialize(), function() {
+		$("#driverlist").change(); // force reload of driver info
+	});
+}
+
+function titlecasedriver(did)
+{
+	$.post('${h.url_for(action='titlecasedriver')}', { driverid: did }, function() {
+		saveids = [""+did];
+		$.getJSON('${h.url_for(action='getdrivers')}', {}, buildselect);
+	});
+}
+
+function titlecasecar(cid)
+{
+	$.post('${h.url_for(action='titlecasecar')}', { carid: cid }, function() {
 		$("#driverlist").change(); // force reload of driver info
 	});
 }
