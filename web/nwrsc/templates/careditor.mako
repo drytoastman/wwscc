@@ -3,37 +3,37 @@
 <script>
 function classchange()
 {
-	indexbox = $("#indexcode");
-	$("#number").val('');
-	$("#displaynumber").html('');
-
 	if ($("#classcode option:selected").attr('indexed'))
 	{
 		$('#indexcode').removeAttr('disabled');
-		$("#myselect option:eq(0)").attr("selected", "selected");
 	}
 	else
 	{
+		$('#indexcode').val(0);
 		$('#indexcode').attr('disabled', 'disabled');
 	}
 
-	//adjustAvailableLink();
 }
 
 function editcar(cid, action)
 {
-	$('#careditor #carid').val(cid);
-	$('#careditor #year').val(cars[cid].year);
-	$('#careditor #make').val(cars[cid].make);
-	$('#careditor #model').val(cars[cid].model);
-	$('#careditor #color').val(cars[cid].color);
-	$('#careditor #classcode').val(cars[cid].classcode);
-	$('#careditor #indexcode').val(cars[cid].indexcode);
+	$('#careditor [name=carid]').val(cid);
+	$('#careditor [name=year]').val(cars[cid].year);
+	$('#careditor [name=make]').val(cars[cid].make);
+	$('#careditor [name=model]').val(cars[cid].model);
+	$('#careditor [name=color]').val(cars[cid].color);
+	$('#careditor [name=classcode]').val(cars[cid].classcode);
+	$('#careditor [name=indexcode]').val(cars[cid].indexcode);
 	classchange();
-	$('#careditor #number').val(cars[cid].number);
-	$('#careditor #displaynumber').html(cars[cid].number);
+	$('#careditor [name=number]').val(cars[cid].number);
 	$('#careditor').dialog('open');
 	// open editor
+}
+
+function selectnumber()
+{
+	//$('#availablelink').attr('href', 'available?code='+$('#classcode option:selected').val())
+	$('#numberselection').dialog('open');
 }
 
 $(document).ready(function(){
@@ -41,6 +41,11 @@ $(document).ready(function(){
 		rules: {
 			indexcode: {
 				required: function(element) { return ($("#classcode option:selected").attr('indexed') == '1'); },
+			},
+			'number': {
+				required: true,
+				min: 1,
+				max: 1999,
 			}
 		},
 		messages: { 
@@ -66,6 +71,15 @@ $(document).ready(function(){
 		close: function() {
 		}
 	});
+
+	$("#numberselection").dialog({
+		autoOpen: false,
+		height: 400,
+		width: 500,
+		modal: true,
+		title: 'Available Numbers',
+		close: function() {}
+	});
 });
 </script>
 
@@ -74,10 +88,10 @@ $(document).ready(function(){
 <input id='carid' name='carid' type='hidden'/>
 <table class='careditor'>
 <tbody>
-<tr><th>Year</th>  <td><input id='year'   name='year'   type='text'/></td></tr>
-<tr><th>Make</th>  <td><input id='make'   name='make'   type='text'/></td></tr>
-<tr><th>Model</th> <td><input id='model'  name='model'  type='text'/></td></tr>
-<tr><th>Color</th> <td><input id='color'  name='color'  type='text'/></td></tr>
+<tr><th>Year</th>  <td><input name='year'   type='text'/></td></tr>
+<tr><th>Make</th>  <td><input name='make'   type='text'/></td></tr>
+<tr><th>Model</th> <td><input name='model'  type='text'/></td></tr>
+<tr><th>Color</th> <td><input name='color'  type='text'/></td></tr>
 <tr><th>Class</th> <td>
 <select id='classcode' name='classcode' onchange='classchange();'>
 <%
@@ -98,14 +112,16 @@ for code in sorted(c.classdata.classlist):
 %endfor
 </select>
 </td></tr>
-<tr><th>Number</th><td>
-	<input id='number' name='number' type='hidden'/> 
-	<span id='displaynumber'></span>
-	<span id='numselector'><a id='availablelink' href='${h.url_for(action='available', code='XX')}' target='numberselection'>Select Number</a></span>
-	</td></tr>
+<tr><th>Number</th><td><input name='number' type='text'/></td></tr>
 </tbody>
 </table>
+<button onclick='selectnumber();' style='font-size:0.8em;'>Available Numbers</button>
 </form>
+
+
+<div id='numberselection'>
+</div>
+
 
 </%def>
 

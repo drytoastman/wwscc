@@ -121,8 +121,7 @@ class EntrantEditor(object):
 			log.info('request to edit car %s' % carid)
 			car = self.session.query(Car).get(carid)
 			for attr in ('year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode'):
-				if attr in request.POST:
-					setattr(car, attr, request.POST[attr])
+				setattr(car, attr, request.POST.get(attr, ''))
 			self.session.commit()
 			return ""
 		except Exception, e:

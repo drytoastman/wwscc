@@ -1,11 +1,12 @@
 <%inherit file="base.mako" />
+
 <h2>${c.event.name} Entrants</h2>
 Click on column header to change sort.
 <P/>
 <form method='post' action='${h.url_for(action='delreg')}'>
 <input type='hidden' name='regid' value='-1'>
 <table class='reglist sortable'>
-<thead>
+<thead class='ui-widget-header'>
 <tr>
 <th>Id</th>
 <th>Class</th>
@@ -32,7 +33,9 @@ Click on column header to change sort.
 <td>${e.driver.email}</td>
 <td>${e.car.make} ${e.car.model} ${e.car.color}</td>
 <td><input type='submit' value='unreg' onClick='this.form.regid.value=${e.reg.id};'></td>
-<%doc><td><a href='${h.url_for(action='print', carid=e.car.id)}'>Card</a></td></%doc>
+<%doc>
+<td><input type='button' value='edit'></td>
+</%doc>
 </tr>
 
 %endfor
@@ -41,4 +44,13 @@ Click on column header to change sort.
 </tbody>
 </table>
 </form>
+
+<style>
+.reglist { font-size: 0.8em; border-collapse: collapse; }
+.reglist th, .reglist td { border: 1px solid #ddd; padding: 2px; }
+</style>
+
+<script>
+$('input').button();
+</script>
 

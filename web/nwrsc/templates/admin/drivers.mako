@@ -6,12 +6,13 @@
 
 <style>
 .ui-dialog { font-size: 0.75em !important; }
-table.editor td { border: 1px solid #999; height: 20px; }
-table.editor th { border: 1px solid #999; font-size: 10px; text-align: right; padding-right: 4px; width: 20px;}
-table.editor { border-collapse: collapse; width: 600px;  }
+table.editor { border-collapse: collapse; }
+table.editor td, table.editor th { border: 1px solid #999; height: 20px; font-size: 0.8em; }
+table.editor th { text-align: right; padding-right: 5px; width: 100px; }
+table.editor th+td { width: 600px; }
 button.editor { font-size: 11px !important; margin-bottom: 3px; }
 button.ceditor { font-size: 9px !important; margin-bottom: 3px; margin-top: 2px; }
-div.editor { margin-left: 10px; margin-bottom: 15px; }
+div.editor { margin-left: 10px; margin-bottom: 15px; width: 650px;}
 </style>
 
 <select multiple='multiple' size='25' name='driver' id='driverlist' style='float: left'>
@@ -100,6 +101,7 @@ function caredited()
 function titlecasedriver(did)
 {
 	$.post('${h.url_for(action='titlecasedriver')}', { driverid: did }, function() {
+		$('option', $('#driverlist')).remove(); // fix for IE bug
 		saveids = [""+did];
 		$.getJSON('${h.url_for(action='getdrivers')}', {}, buildselect);
 	});

@@ -1,14 +1,3 @@
-
-table.reglist thead {
-background-color:#888;
-color: white;
-font-weight: bold;
-}
-	
-table.reglist tbody td {
-background-color:#eee;
-padding: 1px 5px 1px 5px;
-}
 	
 ol li { padding-bottom: 5px; }
 ol li li { padding-bottom: 0px; }

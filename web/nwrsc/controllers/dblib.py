@@ -69,7 +69,7 @@ def RecalculateResults(session):
 		classdata = ClassData(session)
 		for event in session.query(Event).all():
 			yield "Event: %d\n" % (event.id)
-			time.sleep(1)
+			session.execute("delete from eventresults where eventid=%d" % event.id) # If admin changes car class, this is needed
 	
 			for car in session.query(Run.carid).distinct().filter(Run.eventid==event.id):
 				codes = session.query(Car.classcode,Car.indexcode).filter(Car.id==car.carid).first()

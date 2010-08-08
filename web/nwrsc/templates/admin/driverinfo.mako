@@ -10,13 +10,14 @@ drivers[${info.driver.id}] = ${dumps(info.driver.__dict__, default=lambda x: str
 <% anyruns = sum([x.runs for x in info.cars]) %>
 
 <div class='editor' id='driver${info.driver.id}'>
-
 <button class='editor' onclick='editdriver(${info.driver.id});'>Edit</button>
 %if len(c.items) > 1:
 <button class='editor' onclick='mergedriver(${info.driver.id}, ${allids});'>Merge Into This</button>
 %endif
 <button class='editor' onclick='deletedriver(${info.driver.id});' ${anyruns and "disabled='disabled'"}>Delete</button>
 <button class='editor' onclick='titlecasedriver(${info.driver.id});'>TitleCase</button><br/>
+
+
 <table class='editor'>
 <tbody>
 <tr><th>Id</th><td>${info.driver.id}</td></tr>
@@ -35,7 +36,7 @@ drivers[${info.driver.id}] = ${dumps(info.driver.__dict__, default=lambda x: str
 cars[${car.id}] = ${dumps(car.__dict__, default=lambda x: str(x))|n} 
 </script>
 <tr>
-<td colspan='2'>
+<td class='carcell' colspan='2'>
 <button class='ceditor' onclick='editcar(${car.id});'>Edit</button>
 <button class='ceditor' onclick='deletecar(${car.id});' ${car.runs and "disabled='disabled'"}>Delete</button>
 <button class='ceditor' onclick='titlecasecar(${car.id});'>TitleCase</button>
@@ -45,7 +46,6 @@ ${car.classcode}(${car.indexcode}) #${car.number} ${car.year} ${car.make} ${car.
 %endfor
 </tbody>
 </table>
-
 </div>
 
 %endfor
