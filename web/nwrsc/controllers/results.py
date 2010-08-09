@@ -108,22 +108,47 @@ class ResultsController(BaseController):
 
 	def grid(self):
 		classmap = dict()
-		c.groups = [RunGroupList(0)]
+		groups = [RunGroupList(0)]
 		for item in self.session.query(RunGroup).order_by(RunGroup.rungroup, RunGroup.gorder).filter(RunGroup.eventid==self.eventid):
-			if c.groups[-1].groupnum != item.rungroup:
-				c.groups.append(RunGroupList(item.rungroup))
+			if groups[-1].groupnum != item.rungroup:
+				groups.append(RunGroupList(item.rungroup))
 			classmap[item.classcode] = ClassOrder(item.classcode)
-			c.groups[-1].addClass(classmap[item.classcode])
+			groups[-1].addClass(classmap[item.classcode])
 
 		if request.GET.get('order', 'number') == 'position':
-			for (driver,car,res) in self.session.query(Driver,Car,EventResult).join('cars', 'results').filter(EventResult.eventid==self.eventid):
+			for (driver,car,res) in self.session.query(Driver,Car,EventResult).join('cars', 'results').filter(EventResult.eventid==self.eventid).order_by(EventResult.position):
 				if car.classcode in classmap:
 					car.position = res.position
 					classmap[car.classcode].add(driver,car, 'position')
 		else:
-			for (driver,car,reg) in self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==self.eventid):
+			for (driver,car,reg) in self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==self.eventid).order_by(Car.number):
 				if car.classcode in classmap:
 					classmap[car.classcode].add(driver,car, 'number')
+
+		# Create the actual list of matched left,right cars
+		c.groups = list()
+		for group in groups[1:]:
+			index = 1
+			list1 = []
+			list2 = []
+			for cls in group.classes:
+				if len(cls.first) > 0:
+					xiter = iter(cls.first + [None])
+					list1.extend(zip(xiter, xiter))
+				if len(cls.second) > 0:
+					xiter = iter(cls.second + [None])
+					list2.extend(zip(xiter, xiter))
+			c.groups.append((list1, list2))
+
+		# Collapse back/back rows of single drivers
+		for group in c.groups:
+			for subgroup in group:
+				jj = 0
+				while jj < len(subgroup)-1: 
+					if subgroup[jj][1] is None and subgroup[jj+1][1] is None:
+						subgroup[jj] = (subgroup[jj][0], subgroup[jj+1][0])
+						del subgroup[jj+1]
+					jj += 1
 
 		return render_mako('/grid.mako')
 

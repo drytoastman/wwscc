@@ -1,43 +1,57 @@
 <%inherit file="base.mako" />
 
 <style>
-table { width: 600px; }
+table {
+	width: 600px;
+	border-collapse: collapse;
+}
+th, td {
+	border: 1px solid #777;
+}
+td {
+	padding-left: 8px;
+}
 </style>
+
 <%def name="entry(e)">
 %if e is not None:
 ${e.car.classcode}/${e.car.number} - ${e.driver.firstname} ${e.driver.lastname}
 %endif
 </%def>
 
-<%def name="entries(code, myiter)">
-%for e1, e2 in zip(myiter, myiter):
-<tr><td>${c.index}</td> <td>${entry(e1)}</td> <td>${c.index+1}</td> <td>${entry(e2)}</td></tr>
+<%def name="entries(e1, e2)">
+<tr>
+<th>${c.index}</th><td>${entry(e1)}</td>
+<th>${c.index+1}</th><td>${entry(e2)}</td>
+</tr>
 <% c.index += 2 %>
-%endfor
 </%def>
 
+<%
+index1 = 1
+index2 = 101
+%>
 
-%for group in c.groups[1:]:
-<h3>Group ${group.groupnum}</h3>
-
-<table border=1>
-<% c.index = 1 %>
-%for cls in group.classes:
-%if len(cls.first) > 0:
-${entries(cls.code, iter(cls.first + [None]))}
-%endif
+%for groupnum, group in enumerate(c.groups):
+<h3>Group ${groupnum+1}</h3>
+<table>
+<% c.index = index1 %>
+%for lft,rht in group[0]:
+${entries(lft, rht)}
 %endfor
+<% index1 = c.index %>
 </table>
 
-<h4>Group ${group.groupnum} Dual</h4>
-<table border=1>
-<% c.index = 100 %>
-%for cls in group.classes:
-%if len(cls.second) > 0:
-${entries(cls.code, iter(cls.second + [None]))}
-%endif
+<h4>Group ${groupnum+1} Dual</h4>
+<table>
+<% c.index = index2 %>
+%for lft,rht in group[1]:
+${entries(lft, rht)}
 %endfor
+<% index2 = c.index %>
 </table>
+
+<p style='page-break-before: always'/>
 
 %endfor
 
