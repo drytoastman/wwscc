@@ -79,10 +79,12 @@ padding: 0;
 	<li><a href='${h.url_for(action='grid', order='position')}'>Grid By Position</a></li>
 	<li>Dialins &darr;
 	<ul>
-	<li><a href='${h.url_for(action='dialins')}'>All by Net</a></li>
-	<li><a href='${h.url_for(action='dialins', order='Diff')}'>All by Diff</a></li>
-	<li><a href='${h.url_for(action='dialins', filter='Ladies')}'>Ladies by Net</a></li>
-	<li><a href='${h.url_for(action='dialins', filter='Ladies', order='Diff')}'>Ladies by Diff</a></li>
+	<li>Ladies by <a href='${h.url_for(action='dialins', filter='Ladies')}'>Net</a>,
+			<a href='${h.url_for(action='dialins', filter='Ladies', order='Diff')}'>Diff</a></li>
+	<li>Open by <a href='${h.url_for(action='dialins', filter='Open')}'>Net</a>,
+			<a href='${h.url_for(action='dialins', filter='Open', order='Diff')}'>Diff</a></li>
+	<li>All by <a href='${h.url_for(action='dialins')}'>Net</a>,
+			<a href='${h.url_for(action='dialins', order='Diff')}'>Diff</a></li>
 	</ul>
 	</li>
 %endif
