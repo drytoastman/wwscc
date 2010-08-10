@@ -13,10 +13,15 @@ table.editor th+td { width: 600px; }
 button.editor { font-size: 11px !important; margin-bottom: 3px; }
 button.ceditor { font-size: 9px !important; margin-bottom: 3px; margin-top: 2px; }
 div.editor { margin-left: 10px; margin-bottom: 15px; width: 650px;}
+#driverregex { display: block; margin-bottom: 10px; width: 97%; }
+#driverlist { width: 100; }
 </style>
 
-<select multiple='multiple' size='25' name='driver' id='driverlist' style='float: left'>
+<div id='selectors' style='float:left'>
+<input type='text' id='driverregex' onkeyup='filterlist()'>
+<select multiple='multiple' size='25' name='driver' id='driverlist'>
 </select>
+</div>
 
 <div id='driverinfo' style='float: left'>
 </div>
@@ -30,6 +35,7 @@ ${careditor()}
 var saveids = Array();
 var cars = Array();
 var drivers = Array();
+
 
 function buildselect(json)
 {
@@ -50,7 +56,24 @@ function buildselect(json)
 		$("#driverinfo").html("");
 	}
 
+	filterlist();
 }
+
+
+function filterlist()
+{
+	var v = $('#driverregex').val().toLowerCase();
+
+	$("#driverlist option").each( function()
+	{
+		if ((v == '') || ($(this).text().toLowerCase().indexOf(v) >= 0)) {
+			$(this).show();
+		} else {
+			$(this).hide();
+		}
+	});
+}
+
 
 function deletedriver(did)
 {
