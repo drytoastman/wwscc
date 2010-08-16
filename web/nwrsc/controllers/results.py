@@ -119,10 +119,12 @@ class ResultsController(BaseController):
 			for (driver,car,res) in self.session.query(Driver,Car,EventResult).join('cars', 'results').filter(EventResult.eventid==self.eventid).order_by(EventResult.position):
 				if car.classcode in classmap:
 					car.position = res.position
+					car.sum = res.sum
 					classmap[car.classcode].add(driver,car, 'position')
 		else:
 			for (driver,car,reg) in self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==self.eventid).order_by(Car.number):
 				if car.classcode in classmap:
+					car.sum = 0.0
 					classmap[car.classcode].add(driver,car, 'number')
 
 		# Create the actual list of matched left,right cars

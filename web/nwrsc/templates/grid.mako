@@ -15,7 +15,11 @@ td {
 
 <%def name="entry(e)">
 %if e is not None:
-${e.car.classcode}/${e.car.number} - ${e.driver.firstname} ${e.driver.lastname}
+%if e.car.sum > 0:
+	${e.car.classcode}/${e.car.number} - ${e.driver.firstname} ${e.driver.lastname} (${"%0.3lf"%e.car.sum})
+%else:
+	${e.car.classcode}/${e.car.number} - ${e.driver.firstname} ${e.driver.lastname}
+%endif
 %endif
 </%def>
 
