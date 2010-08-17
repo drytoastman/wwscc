@@ -16,7 +16,7 @@ sqlmap = {
 'GETCHALLENGESFOREVENT':'select * from challenges where eventid = :h1',
 'GETCHANGES':'select * from changes',
 'GETCLASSES':'select * from classlist',
-'GETCLASSGROUPMAPPING':'select classcode,rungroup from rungroups where eventid=:h1',
+'GETCLASSGROUPMAPPING':'select classcode,rungroup,gorder from rungroups where eventid=:h1',
 'GETCLASSRESULTS':'select r.carid as carid,SUM(r.net) as sum, COUNT(r.net) as coursecnt from runs as r, cars as c where r.norder=1 and r.carid=c.id and c.classcode=:h1 and r.eventid=:h2 group by r.carid order by coursecnt DESC,sum',
 'GETDIALINS':'select d.firstname as firstname, d.lastname as lastname, c.classcode as classcode, c.indexcode as indexcode, c.id as carid, SUM(r.raw) as myraw, f.position as position, f.sum as mynet from runs as r, cars as c, drivers as d, eventresults as f where r.carid=c.id and c.driverid=d.id and r.eventid=:h1 and r.rorder=1 and f.eventid=:h2 and f.carid=c.id group by d.id order by position',
 'GETDRIVERSBY':'select * from drivers where firstname like :h1 and lastname like :h2 order by firstname,lastname',

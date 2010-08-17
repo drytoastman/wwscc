@@ -26,7 +26,12 @@ table.input th {
 	padding-right: 10px;
 }
 
-div.error { 
+table.form th, table.form td { padding: 2px 2px 4px 2px; }
+table.form th { text-align: right; }
+
+button.small { font-size: 0.7em !important; }
+
+div.error, .error-message { 
 	color: #FF0000; 
 	font-weight: bold;
 }

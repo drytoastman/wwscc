@@ -31,7 +31,7 @@
 </li>
 <li><a href='javascript:void(0);'>Series Admin</a>
 	<ul>
-	<li><a href='${h.url_for(eventid='s', action='create')}'>Create Event</a></li>
+	<li><a href='${h.url_for(eventid='s', action='createevent')}'>Create Event</a></li>
 	<li><a href='${h.url_for(eventid='s', action='classlist')}'>Series Classes</a></li>
 	<li><a href='${h.url_for(eventid='s', action='indexlist')}'>Series Indexes</a></li>
 	<li><a href='${h.url_for(eventid='s', action='seriessettings')}'>Series Settings</a></li>
@@ -71,3 +71,9 @@ Locked
 <div class='body ui-widget'>
 ${next.body()}
 </div>
+<script>
+$(':submit').button();
+$('button').button();
+$('button.deleterow').click(function () { $(this).closest('tr').remove(); return false; });
+</script>
+

@@ -13,13 +13,11 @@ from datetime import datetime
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako
 from pylons.controllers.util import redirect, url_for, abort
-from pylons.decorators import jsonify, validate as xvalidate
-from tw.mods.pylonshf import validate
+from pylons.decorators import jsonify, validate
 from nwrsc.lib.base import BaseController, BeforePage
 from nwrsc.lib.entranteditor import EntrantEditor
+from nwrsc.lib.schema import *
 from nwrsc.model import *
-from nwrsc.forms import *
-import nwrsc
 
 log = logging.getLogger(__name__)
 
@@ -118,9 +116,9 @@ class AdminController(BaseController, EntrantEditor):
 		c.settings['locked'] = bool(int(c.settings['locked']))
 		c.action = 'updatesettings'
 		c.button = 'Update'
-		return render_mako('/admin/settings.mako')
+		return render_mako('/forms/seriessettings.mako')
 
-	@validate(form=settingsForm, error_handler='seriessettings')
+	@validate(schema=SettingsSchema(), form='seriessettings', prefix_error=False)
 	def updatesettings(self):
 		""" Process settings form submission """
 		self.form_result['locked'] = int(self.form_result['locked'])
@@ -272,13 +270,6 @@ class AdminController(BaseController, EntrantEditor):
 		c.payments.sort(key=lambda obj: obj.driver.lastname)
 		return render_mako('/admin/paypal.mako')	
 
-	def edit(self):
-		""" Present form to edit event details """
-		c.editpassword = True
-		c.action = 'updateevent'
-		c.button = 'Update'
-		return render_mako('/admin/eventedit.mako')
-
 	### RunGroup Editor ###
 	def rungroups(self):
 		c.action = 'setRunGroups'
@@ -316,29 +307,42 @@ class AdminController(BaseController, EntrantEditor):
 		
 
 	### other ###
+	def editevent(self):
+		""" Present form to edit event details """
+		c.action = 'updateevent'
+		c.button = 'Update'
+		return render_mako('/forms/eventedit.mako')
 
-	@validate(form=eventForm, error_handler='edit')
+	@validate(schema=EventSchema(), form='editevent', prefix_error=False)
 	def updateevent(self):
 		""" Process edit event form submission """
 		self.copyvalues(self.form_result, c.event)
 		self.session.commit()
 		redirect(url_for(action='edit'))
 
-	def create(self):
+	def createevent(self):
 		""" Present form to create a new event """
-		c.editpassword = True
 		c.action = 'newevent'
 		c.button = 'New'
-		return render_mako('/admin/eventcreate.mako')
+		c.event = Event()
+		c.event.conepen = 2.0
+		c.event.gatepen = 10.0
+		c.event.courses = 1
+		c.event.runs = 4
+		c.event.perlimit = 2
+		c.event.totlimit = 0
+		return render_mako('/forms/eventedit.mako')
 
-	@validate(form=eventForm, error_handler='create')
+	@validate(schema=EventSchema(), form='createevent', prefix_error=False)
 	def newevent(self):
 		""" Process new event form submission """
 		ev = Event()
+		print self.form_result
 		self.copyvalues(self.form_result, ev)
 		self.session.add(ev)
 		self.session.commit()
 		redirect(url_for(eventid=ev.id, action=''))
+
 
 	class RegObj(object):
 		def __init__(self, d, c, r):
@@ -371,11 +375,11 @@ class AdminController(BaseController, EntrantEditor):
 	def classlist(self):
 		c.action = 'processClassList'
 		c.classlist = self.session.query(Class).order_by(Class.code).all()
-		return render_mako('/admin/editclasses.mako')
+		return render_mako('/forms/classlist.mako')
 
-	@validate(form=classEditForm, error_handler='classlist')
+	@validate(schema=ClassListSchema(), form='classlist')
 	def processClassList(self):
-		data = self.form_result['grow']
+		data = self.form_result['clslist']
 		if len(data) > 0:
 			# delete classes, then add new submitted ones
 			for cls in self.session.query(Class):
@@ -389,11 +393,11 @@ class AdminController(BaseController, EntrantEditor):
 	def indexlist(self):
 		c.action = 'processIndexList'
 		c.indexlist = self.session.query(Index).order_by(Index.code).all()
-		return render_mako('/admin/editindexes.mako')
+		return render_mako('/forms/indexlist.mako')
 
-	@validate(form=indexEditForm, error_handler='indexlist')
+	@validate(schema=IndexListSchema(), form='indexlist')
 	def processIndexList(self):
-		data = self.form_result['grow']
+		data = self.form_result['idxlist']
 		if len(data) > 0:
 			# delete indexes, then add new submitted ones
 			for idx in self.session.query(Index):
@@ -451,13 +455,12 @@ class AdminController(BaseController, EntrantEditor):
 
 
 	### Series Copying ###
-
 	def copyseries(self):
 		c.action = 'processCopySeries'
-		return render_mako('/admin/copyseries.mako')
+		return render_mako('/forms/copyseries.mako')
 
 
-	@validate(form=seriesCopyForm, error_handler='copyseries')
+	@validate(schema=CopySeriesSchema(), form='copyseries')
 	def processCopySeries(self):
 		try:
 			import sqlite3
@@ -467,6 +470,7 @@ class AdminController(BaseController, EntrantEditor):
 		""" Process settings form submission """
 		log.debug("copyseriesform: %s", self.form_result)
 		name = self.form_result['name']
+		import nwrsc
 		root = nwrsc.__path__[0]
 
 		if not os.path.exists(self.databasePath(name)):

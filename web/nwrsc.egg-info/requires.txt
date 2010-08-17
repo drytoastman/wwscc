@@ -12,9 +12,6 @@ Routes==1.10.3
 simplejson==2.0.8
 SQLAlchemy==0.5.8
 Tempita==0.2
-ToscaWidgets==0.9.9
-tw.dynforms==0.9.1
-tw.forms==0.9.9
 WebError==0.10.1
 WebHelpers==0.6.4
 WebOb==0.9.6.1

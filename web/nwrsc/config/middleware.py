@@ -8,7 +8,6 @@ from pylons import config
 from pylons.middleware import ErrorHandler, StatusCodeRedirect
 from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
-from tw.api import make_middleware
 
 from nwrsc.config.environment import load_environment
 from nwrsc.lib.gzipmiddleware import GzipMiddleware
@@ -57,14 +56,6 @@ def make_app(global_conf, full_stack=True, **app_conf):
 
 	# The Pylons WSGI app
 	app = PylonsApp()
-	
-	# CUSTOM MIDDLEWARE HERE (filtered by error handling middlewares)
-	app = make_middleware(app, {
-		'toscawidgets.framework' : 'pylons',
-		'toscawidgets.framework.default_view' : 'mako',
-		'toscawidgets.middleware.inject_resources' : True,
-		})
-
 	
 	# Routing/Session/Cache Middleware
 	app = RoutesMiddleware(app, config['routes.map'])
