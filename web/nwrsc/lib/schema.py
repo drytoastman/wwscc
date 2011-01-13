@@ -90,3 +90,18 @@ class CopySeriesSchema(Schema):
 	cars = Bool()
 	prevlist = Bool()
 
+
+class LoginSchema(Schema):
+	allow_extra_fields = True
+	filter_extra_fields = True
+	firstname = String(not_empty=True)
+	lastname = String(not_empty=True)
+	email = String(not_empty=True)
+
+class DriverSchema(Schema):
+	allow_extra_fields = True
+	filter_extra_fields = True
+	firstname = String(not_empty=True)
+	lastname = String(not_empty=True)
+	email = String(not_empty=True)
+

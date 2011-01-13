@@ -17,7 +17,7 @@
 		
 <tr title="Largest car number to be available during preregistration">  
 <th>Largest Car Number</th>
-<td><input type="text" name="largestcarnumber" value="${c.settings['largestcarnumber']}" size="4"/></td>
+<td><input type="text" name="largestcarnumber" value="${c.settings.get(largestcarnumber, 1999)}" size="4"/></td>
 </tr>
 
 <tr title="Number of events required to be included in champ report">            

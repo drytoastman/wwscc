@@ -22,8 +22,8 @@ class RegisterController(BaseController):
 			return
 
 		c.title = 'Scorekeeper Registration'
-		c.stylesheets = ['/css/register.css']
-		c.javascript = ['/js/register.js', '/js/jquery-1.4.2.min.js']
+		c.stylesheets = ['/css/register.css', '/css/redmond/jquery-ui-1.8.2.custom.css']
+		c.javascript = ['/js/register.js', '/js/jquery-1.4.2.min.js', '/js/jquery-ui-1.8.2.custom.min.js', '/js/jquery.validate.min.js']
 		c.tabflags = {}
 		c.sponsorlink = self.settings.get('sponsorlink', None)
 		c.seriesname = self.settings.get('seriesname', 'Missing Name')
@@ -63,7 +63,7 @@ class RegisterController(BaseController):
 	def login(self):
 		return render_mako('/register/login.mako')
 
-	@validate(form=loginForm, error_handler='login')
+	@validate(schema=LoginSchema(), form='login', prefix_error=False)
 	def checklogin(self):
 		query = self.session.query(Driver)
 		query = query.filter(Driver.firstname.like(self.form_result['firstname']+'%'))
@@ -149,7 +149,7 @@ class RegisterController(BaseController):
 		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
 		return render_mako('/register/profile.mako')
 
-	@validate(form=personForm, error_handler='profile')
+	@validate(schema=DriverSchema(), form='profile', prefix_error=False)
 	def editprofile(self):
 		driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
 		for k, v in self.form_result.iteritems():
@@ -158,7 +158,7 @@ class RegisterController(BaseController):
 		self.session.commit()
 		redirect(url_for(action='profile'))
 
-	@validate(form=personFormValidated, error_handler='profile')
+	@validate(schema=DriverSchema(), form='profile', prefix_error=False)
 	def newprofile(self):
 		query = self.session.query(Driver)
 		query = query.filter(Driver.firstname.like(self.form_result['firstname'])) # no case compare

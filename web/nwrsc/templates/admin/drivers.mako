@@ -1,6 +1,6 @@
 <%inherit file="base.mako" />
-<%namespace file="/careditor.mako" import="careditor"/>
-<%namespace file="/drivereditor.mako" import="drivereditor"/>
+<%namespace file="/forms/careditor.mako" import="careditor"/>
+<%namespace file="/forms/drivereditor.mako" import="drivereditor"/>
 
 <h3>Driver Editor</h3>
 

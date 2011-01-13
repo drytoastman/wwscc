@@ -18,7 +18,7 @@ Current: ${c.firstname} ${c.lastname}
 <div id='contentpane'>
 <div id='sponser'>
 
-%if c.sponsorlink is not None:
+%if c.sponsorlink is not None and c.sponsorlink.strip() != "":
   <a href='${c.sponsorlink}' target='_blank'>
   <img src='${h.url_for(controller='db', name='sponsorimage')}' alt='Sponsor Image'/>
   </a>

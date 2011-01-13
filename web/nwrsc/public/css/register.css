@@ -1,4 +1,8 @@
 
+table.form th, table.form td { padding: 2px 2px 4px 2px; }
+table.form th { text-align: right; }
+.error { color: red; }
+
 /****** car table ******/
 
 table.carlist, table.careditor { 

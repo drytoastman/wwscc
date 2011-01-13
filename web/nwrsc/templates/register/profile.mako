@@ -1,5 +1,7 @@
 <%inherit file="base.mako" />
-<% from nwrsc.forms import personForm, personFormValidated %>
+<%namespace file="/forms/drivereditor.mako" import="drivereditor"/>
+<%namespace file="/forms/driverform.mako" import="driverform"/>
+<% from simplejson import dumps %>
 <%def name="extrahead()">
 <style type="text/css">
 input.closebutton
@@ -20,23 +22,18 @@ input.closebutton
 }
 </style>
 </%def>
-<%def name="delete(val)">
-<%doc>
-<input type="button" name="${val}" class="closebutton" value="X" title="Delete ${val}"
-	onMouseOver="this.style.backgroundColor='#FFF'; this.style.color='#B88';"
-	onMouseOut="this.style.backgroundColor='#FFF'; this.style.color='#555';">
-</%doc>
-</%def>
 
 %if not c.driver:
 <h2>Create Profile</h2>
 <div class='infobox'>
 <ul>
-<li>First name, last name and email are required
+<li>First name, last name and email/uniqueid are required
 </ul>
 </div>
 
-${personFormValidated(action=h.url_for(action='newprofile'))|n}
+<% from nwrsc.model import Driver %>
+${driverform(Driver(), h.url_for(action='newprofile'))}
+<button onclick="$('#drivereditor').submit();">Create</button>
 
 %else:
 
@@ -45,22 +42,21 @@ ${personFormValidated(action=h.url_for(action='newprofile'))|n}
 <div>${c.driver.firstname} ${c.driver.lastname}</div>
 <div>${c.driver.email}</div>
 <br/>
-<div>${delete('address')} ${h.hide(c.driver.address, 4)|n}</div>
-<div>${delete('czx')} ${c.driver.city} ${c.driver.state} ${c.driver.zip}</div>
-<div>${delete('phone')} ${h.hide(c.driver.homephone, 6)|n}</div>
+<div>${h.hide(c.driver.address, 4)|n}</div>
+<div>${c.driver.city} ${c.driver.state} ${c.driver.zip}</div>
+<div>${h.hide(c.driver.homephone, 6)|n}</div>
 <br/>
-<div>${delete('brag')} Brag: ${c.driver.brag}</div>
-<div>${delete('sponsor')} Sponsor: ${c.driver.sponsor}</div>
-<div>${delete('membership')} Membership: ${c.driver.membership}</div>
+<div>Brag: ${c.driver.brag}</div>
+<div>Sponsor: ${c.driver.sponsor}</div>
+<div>Membership: ${c.driver.membership}</div>
 </div>
 
-<h3>Update Data</h3>
-<div class='infobox'>
-<ul>
-<li>To change information, enter any new information and click update.</li>
-</ul>
-</div>
+<button class='editor' onclick='editdriver(${c.driver.id});'>Edit</button>
 
-${personForm(action=h.url_for(action='editprofile'))|n}
+<script>
+var drivers = Array();
+drivers[${c.driver.id}] = ${dumps(c.driver.__dict__, default=lambda x: str(x))|n} 
+</script>
+${drivereditor()}
 
 %endif
