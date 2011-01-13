@@ -72,7 +72,7 @@ public class SQLMap
 
 		sql.put("GETRUNORDERROWS", "select row from runorder where eventid=? AND course=? AND carid=?");
 		sql.put("GETRUNCOUNT", "select count(run) as count from runs where carid=? and eventid=? and course=?");
-		sql.put("GETCLASSGROUPMAPPING", "select classcode,rungroup from rungroups where eventid=?");
+		sql.put("GETRUNGROUPMAPPING", "select classcode from rungroups where eventid=? and rungroup=? order by gorder");
 		sql.put("GETRUNSBYCARID", "select * from runs where carid=? and eventid=? and course=?");
 		sql.put("GETRUNSBYGROUP", "select * from runs where eventid=? and course=? and carid in " +
 						"(select carid from runorder where eventid=? AND course=? AND rungroup=?)");

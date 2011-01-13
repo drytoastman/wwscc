@@ -608,14 +608,14 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public Map<String, Integer> getClass2RunGroupMapping() // return the class codes assigned to the current event
+	public List<String> getRunGroupMapping() // return the class codes assigned to the current event
 	{
 		try
 		{
-			ResultData d = executeSelect("GETCLASSGROUPMAPPING", newList(currentEvent.id));
-			Map<String, Integer> ret = new HashMap<String, Integer>();
+			ResultData d = executeSelect("GETRUNGROUPMAPPING", newList(currentEvent.id, currentRunGroup));
+			List<String> ret = new ArrayList<String>();
 			for (ResultRow r : d)
-				ret.put(r.getString("classcode"), r.getInt("rungroup"));
+				ret.add(r.getString("classcode"));
 			return ret;
 		}
 		catch (Exception ioe)
@@ -624,30 +624,6 @@ public abstract class SQLDataInterface extends DataInterface
 			return null;
 		}
 	}
-
-	@Override
-	public void setClass2RunGroupMapping(Map<String,Integer> list)  // set the classes/run group match ups for the current event
-	{
-		try
-		{
-			start();
-			executeUpdate("DELETECLASSGROUPMAPPING", newList(currentEvent.id));
-			List<Object> vals = newList(currentEvent.id, 0, 0);
-			for (String code : list.keySet())
-			{
-				vals.set(1, code);
-				vals.set(2, list.get(code));
-				executeUpdate("INSERTCLASSGROUPMAPPING", vals);
-			}
-			commit();
-		}
-		catch (Exception ioe)
-		{
-			rollback();
-			logError("setClass2RunGroupMapping", ioe);
-		}
-	}
-
 
 	@Override
 	public void newDriver(Driver d) throws IOException

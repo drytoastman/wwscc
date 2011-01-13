@@ -70,8 +70,7 @@ public abstract class DataInterface
 	public abstract boolean hasRuns(int carid);  // return true if car has runs recorded
 	public abstract boolean hasRunsOpposite(int carid); // return true if car has runs recorded opposite
 
-	public abstract Map<String, Integer> getClass2RunGroupMapping(); // return the class codes assigned to the current event
-	public abstract void setClass2RunGroupMapping(Map<String, Integer> l);  // set the classes/run group match ups for the current event
+	public abstract List<String> getRunGroupMapping(); // return the class codes assigned to the current run group
 
 	public abstract void newDriver(Driver d) throws IOException; // create a new driver from data in d and set the id variable
 	public abstract void updateDriver(Driver d) throws IOException; // update the driver values in the database

@@ -33,6 +33,7 @@ public class ClassTree extends CarTree implements MessageListener
 		addMouseListener(new DClickWatch());
 		Messenger.register(MT.ENTRANTS_CHANGED, this);
 		Messenger.register(MT.COURSE_CHANGED, this);
+		Messenger.register(MT.RUNGROUP_CHANGED, this);
 	}
 
 	class DClickWatch extends MouseAdapter
@@ -70,6 +71,10 @@ public class ClassTree extends CarTree implements MessageListener
 				List<Entrant> reg = Database.d.getRegisteredEntrants();
 				Set<Integer> runorder = Database.d.getCarIdsForCourse();
 				makeTree(reg, runorder);
+				break;
+
+			case RUNGROUP_CHANGED:
+				System.out.println(Database.d.getRunGroupMapping());
 				break;
 		}
 	}
