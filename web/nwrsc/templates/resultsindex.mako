@@ -53,20 +53,31 @@ padding: 0;
 	%endfor
 %endif
 
-<h3>Top Times Lists</h3>
+<h3>Top Times Lists (All Runs)</h3>
 <ul class='classlist'>
-<li><a href='${h.url_for(action='topindex')}'>Top Indexed Times</a></li>
-<li><a href='${h.url_for(action='topraw')}'>Top Raw Times</a></li>
-%if c.event.getCountedRuns() < c.event.runs:
-<li><a href='${h.url_for(action='topindexall')}'>Top Indexed Times (All)</a></li>
-<li><a href='${h.url_for(action='toprawall')}'>Top Raw Times (All)</a></li>
-%endif
-%if c.event.getSegmentCount() > 0:
-<li><a href='${h.url_for(action='topseg')}'>Top Segment Times</a></li>
-%endif
-<li><a href='${h.url_for(action='topreport')}'>All Top Times</a></li>
+<li><a href='${h.url_for(action='topindexall')}'>Indexed</a></li>
+<li><a href='${h.url_for(action='toprawall')}'>Raw</a></li>
 </ul>
 <br style='clear:both;'/>
+
+
+<h3>Top Times Lists (Counted Runs)</h3>
+<ul class='classlist'>
+<li><a href='${h.url_for(action='topindex')}'>Indexed</a></li>
+<li><a href='${h.url_for(action='topraw')}'>Raw</a></li>
+</ul>
+<br style='clear:both;'/>
+
+
+<h3>Other Top Times Lists</h3>
+<ul class='classlist'>
+%if c.event.getSegmentCount() > 0:
+<li><a href='${h.url_for(action='topseg')}'>Segment</a></li>
+%endif
+<li><a href='${h.url_for(action='topreport')}'>All Lists</a></li>
+</ul>
+<br style='clear:both;'/>
+
 
 <h3>Other</h3>
 <ul>

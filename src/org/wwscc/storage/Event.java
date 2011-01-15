@@ -57,7 +57,7 @@ public class Event implements Serializable
 	public int getCountedRuns()
 	{
 		if (countedruns <= 0)
-			return runs;
+			return Integer.MAX_VALUE;
 		else
 			return countedruns;
 	}

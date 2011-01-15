@@ -77,11 +77,12 @@ def RecalculateResults(session):
 					yield "\tId: %s **** Missing car ****\n" % car.carid
 					continue
 				val = classdata.getEffectiveIndex(codes.classcode, codes.indexcode)
-				str = classdata.getIndexStr(codes.classcode, codes.indexcode)
-				yield "\tId: %s (%s, %s)\n" % (car.carid, val, str)
+				counted = min(classdata.getCountedRuns(codes.classcode), event.getCountedRuns())
+				istr = classdata.getIndexStr(codes.classcode, codes.indexcode)
+				yield "\tId: %s (%s, %s, %s)\n" % (car.carid, val, istr, (counted < 100 and counted or "all"))
 
 				for course in range(1, event.courses+1):
-					UpdateRunTotals(session, event, car.carid, course, val)
+					UpdateRunTotals(session, event, car.carid, course, val, counted)
 			session.commit()
 
 			for cls in session.query(Car.classcode).distinct().join(Run).filter(Run.eventid==event.id):
@@ -111,7 +112,7 @@ def total(*args):
 			tot += a
 	return tot
 
-def UpdateRunTotals(session, event, carid, course, index):
+def UpdateRunTotals(session, event, carid, course, index, counted):
 	min = 10
 	runs = session.query(Run).filter(Run.eventid==event.id).filter(Run.carid==carid).filter(Run.course==course).all()
 	for r in runs:
@@ -139,9 +140,7 @@ def UpdateRunTotals(session, event, carid, course, index):
 		r.brorder = (ii+1)
 		r.rorder = -1
 
-	counted = event.getCountedRuns()
 	reduxruns = filter(lambda x: x.run <= counted, runs)
-
 	for ii, r in enumerate(sorted(reduxruns, netsort)):
 		r.norder = (ii+1)
 

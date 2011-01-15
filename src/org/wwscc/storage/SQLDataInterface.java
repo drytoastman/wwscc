@@ -1279,6 +1279,9 @@ public abstract class SQLDataInterface extends DataInterface
 	@Override
 	public ClassData getClassData()
 	{
+		//if (classCache != null)
+		//	return classCache;
+		
 		try
 		{
 			ClassData ret = new ClassData();
@@ -1301,7 +1304,6 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
-	//static HashMap<String,Double> cache = new HashMap<String,Double>();
 	ClassData classCache = null;
 	double getEffectiveIndex(String classcode, String indexcode)
 	{

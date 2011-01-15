@@ -15,6 +15,7 @@ class ClassSchema(Schema):
 	classindexed = Bool()
 	classmultiplier = Number(not_empty=True)
 	numorder = Int()
+	countedruns = Int(if_empty=0)
 	
 class ClassListSchema(Schema):
 	pre_validators = [NestedVariables()] 

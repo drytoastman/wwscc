@@ -21,7 +21,7 @@ import java.util.Set;
  */
 public class SQLMap
 {
-	static private HashMap<String,String> sql = new HashMap<String,String>();
+	static final private HashMap<String,String> sql = new HashMap<String,String>();
 	static public String get(String key) { return sql.get(key); }
 	static public Set<String> keys() { return sql.keySet(); }
 	

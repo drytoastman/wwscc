@@ -89,6 +89,7 @@ public class ClassData
 		protected boolean eventtrophy;
 		protected boolean champtrophy;
 		protected int numorder;
+		protected int countedruns;
 
 		public Class()
 		{
@@ -106,6 +107,14 @@ public class ClassData
 			return descrip;
 		}
 
+		public int getCountedRuns()
+		{
+			if (countedruns <= 0)
+				return Integer.MAX_VALUE;
+			else
+				return countedruns;
+		}
+		
 		public boolean carsNeedIndex() {
 			return carindexed;
 		}

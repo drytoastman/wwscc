@@ -25,6 +25,9 @@
 <td title="This multiplier is applied to entire class, i.e. street tire factor">
 	<input type="text" name="clslist-${ii}.classmultiplier" value="${"%0.3f" % (cls.classmultiplier or 1.000)}" size="5" />
 </td>
+<td title="Limit number of counted runs for this class">
+	<input type="text" name="clslist-${ii}.countedruns" value="${cls.countedruns or 0}" size="3" />
+</td>
 <td>
 	<button class="small deleterow">Del</button>
 </td>
@@ -43,9 +46,10 @@
 <th>Description</th>
 <th>Event<br/>Trophy</th>
 <th>Champ<br/>Trophy</th>
-<th>Carse<br/>Indexed</th>
-<th>Class<br/>Is Index</th>
-<th>Multiplier</th>
+<th>Cars<br/>Indexed</th>
+<th>Class<br/>Indexed</th>
+<th>Addl<br/>Multiplier</th>
+<th>Counted<br/>Runs</th>
 </tr>
 
 %for ii, cls in enumerate(c.classlist):

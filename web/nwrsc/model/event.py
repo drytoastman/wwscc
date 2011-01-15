@@ -6,6 +6,8 @@ from sqlalchemy.sql import func
 from meta import metadata
 from registration import Registration
 
+import sys
+
 ## Events table
 t_events = Table('events', metadata,
 	Column('id', Integer, primary_key=True, autoincrement=True),
@@ -66,7 +68,7 @@ class Event(object):
 
 	def getCountedRuns(self):
 		if self.countedruns <= 0:
-			return self.runs
+			return sys.maxint
 		else:
 			return self.countedruns
 		

@@ -11,14 +11,18 @@ package org.wwscc.dataentry;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.dialogs.GroupDialog;
@@ -33,16 +37,18 @@ import org.wwscc.util.Prefs;
 
 public class Menus extends JMenuBar implements ActionListener, MessageListener
 {
-	private static Logger log = Logger.getLogger("org.wwscc.dataentry.Menus");
+	private static final Logger log = Logger.getLogger("org.wwscc.dataentry.Menus");
 
 	Map <String,JMenuItem> items;
 	JCheckBoxMenuItem dcMode;
 	JFileChooser chooser;
+	ButtonGroup runGrouping;
 
 	public Menus()
 	{
 		items = new HashMap <String,JMenuItem>();
 		Messenger.register(MT.DATABASE_CHANGED, this);
+		Messenger.register(MT.EVENT_CHANGED, this);
 
 		/* File Menu */
 		JMenu file = new JMenu("File");
@@ -62,10 +68,17 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		JMenu event = new JMenu("Event");
 		add(event);	
 
+		/* Runs Submenu */
+		runGrouping = new ButtonGroup();
 		JMenu runs = new JMenu("Set Runs");
 		event.add(runs);
-		for (int ii = 2; ii <= 10; ii++)
-			runs.add(createItem(ii + " Runs", null));
+		for (int ii = 2; ii <= 20; ii++)
+		{
+			JRadioButtonMenuItem m = new JRadioButtonMenuItem(ii + " Runs");
+			m.addActionListener(this);
+			runGrouping.add(m);
+			runs.add(m);
+		}
 
 		dcMode = new JCheckBoxMenuItem("Use Double Course Mode", Prefs.useDoubleCourseMode());
 		dcMode.addActionListener(this);
@@ -123,7 +136,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		else if (cmd.endsWith("Runs"))
 		{
 			int runs = Integer.parseInt(cmd.split(" ")[0]);
-			if ((runs > 1) && (runs < 20))
+			if ((runs > 1) && (runs < 100))
 			{
 				Event event = Database.d.getCurrentEvent();
 				int save = event.getRuns();
@@ -178,6 +191,17 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 			case DATABASE_CHANGED:
 				items.get("Upload and Unlock Database").setEnabled(Database.file != null);
 				break;
+
+			case EVENT_CHANGED:
+				/* when we first start or the a new event is selected, will also double when selecting via menu */
+				Enumeration<AbstractButton> e = runGrouping.getElements();
+				while (e.hasMoreElements())
+				{
+					AbstractButton b = e.nextElement();
+					int run = Integer.parseInt(b.getActionCommand().split(" ")[0]);
+					if (run == Database.d.getCurrentEvent().getRuns())
+						b.setSelected(true);
+				}
 		}
 	}
 }

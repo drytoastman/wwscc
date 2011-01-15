@@ -4,6 +4,7 @@ from sqlalchemy.types import Integer, String, Boolean, Float
 
 from meta import metadata
 import logging
+import sys
 
 log = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ t_classlist = Table('classlist', metadata,
 	Column('eventtrophy', Boolean, default=True),
 	Column('champtrophy', Boolean, default=True),
 	Column('numorder', Integer),
+	Column('countedruns', Integer),
 	UniqueConstraint('code', name='classidx_1')
 	)
 
@@ -27,11 +29,18 @@ class Class(object):
 			if hasattr(self, k):
 				setattr(self, k, v)
 
+	def getCountedRuns(self):
+		if self.countedruns <= 0:
+			return sys.maxint
+		else:
+			return self.countedruns
+
 	@classmethod
 	def activeClasses(cls, session, eventid):
 		sql = "select distinct x.* from classlist as x, cars as c, runs as r " + \
 				"where r.eventid=:id and r.carid=c.id and c.classcode=x.code"
 		return list(session.execute(sql, params={'id':eventid}, mapper=Class))
+
 
 mapper(Class, t_classlist)
 
@@ -64,6 +73,12 @@ class ClassData(object):
 			self.indexlist[idx.code] = idx
 
 
+	def getCountedRuns(self, classcode):
+		try:
+			return self.classlist[classcode].getCountedRuns()
+		except:
+			return sys.maxint
+		
 	def getIndexStr(self, classcode, indexcode):
 		indexstr = indexcode
 		try:
@@ -94,4 +109,5 @@ class ClassData(object):
 			log.warning("getEffectiveIndex(%s,%s) failed: %s" % (classcode, indexcode, e))
 
 		return indexval
+
 

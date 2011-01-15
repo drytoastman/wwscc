@@ -21,11 +21,11 @@ public class Entrant
 {
 	private static Logger log = Logger.getLogger("org.wwscc.storage.Entrant");
 
-	protected String firstname;
-	protected String lastname;
-	protected Car car;
-	protected Map<Integer, Run> runs;
-	protected double index = 1.000;  // TODO load index when loading entrant
+	String firstname;
+	String lastname;
+	Car car;
+	Map<Integer, Run> runs;
+	double index = 1.000;  // TODO load index when loading entrant
 
 	public Entrant()
 	{
@@ -162,7 +162,7 @@ public class Entrant
 		}
 
 		// reduce list to first x runs
-		int cnt = Database.d.getCurrentEvent().getCountedRuns();
+		int cnt = Math.min(Database.d.getCurrentEvent().getCountedRuns(), Database.d.getClassData().getClass(car.classcode).getCountedRuns());
 		Iterator<Run> iter = list.iterator();
 		while (iter.hasNext())
 		{

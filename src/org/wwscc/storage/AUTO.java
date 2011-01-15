@@ -348,22 +348,23 @@ public class AUTO
 		o.eventtrophy = rs.getBoolean("eventtrophy");
 		o.champtrophy = rs.getBoolean("champtrophy");
 		o.numorder = rs.getInt("numorder");
+		o.countedruns = rs.getInt("countedruns");
 		return o;
 	}
 	
 	public static String getClassVarStr()
 	{
-		return "code,descrip,carindexed,classindexed,classmultiplier,eventtrophy,champtrophy,numorder";
+		return "code,descrip,carindexed,classindexed,classmultiplier,eventtrophy,champtrophy,numorder,countedruns";
 	}
 	
 	public static String getClassArgStr()
 	{
-		return "?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getClassSetStr()
 	{
-		return "code=?,descrip=?,carindexed=?,classindexed=?,classmultiplier=?,eventtrophy=?,champtrophy=?,numorder=?";
+		return "code=?,descrip=?,carindexed=?,classindexed=?,classmultiplier=?,eventtrophy=?,champtrophy=?,numorder=?,countedruns=?";
 	}
 	
 	public static void addClassValues(org.wwscc.storage.ClassData.Class o, List<Object> l)
@@ -376,6 +377,7 @@ public class AUTO
 		l.add(o.eventtrophy);
 		l.add(o.champtrophy);
 		l.add(o.numorder);
+		l.add(o.countedruns);
 	}
 	
 	public static org.wwscc.storage.ClassData.Index loadIndex(ResultRow rs) throws IOException
