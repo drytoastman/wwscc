@@ -11,7 +11,7 @@ x = setup(
     description='NWR Scorekeeper Web Portion',
     author='Brett Wilson',
     author_email='N/A',
-    url='http://trac.bw.homdns.org/wwscc',
+    url='https://github.com/drytoastman/wwscc',
 	# Make specific requests here so that everything is the same in each install (debugging, etc)
     install_requires=[
 		"Beaker==1.4.2",
