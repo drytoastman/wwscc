@@ -23,21 +23,14 @@
 
 
     <target depends="init" name="makedist">
-
-		<loadfile property="dist.revision" srcFile="./.svn/entries">
-			<filterchain>
-				<headfilter lines="1" skip="3"/>
-				<deletecharacters chars="\n"/>
-			</filterchain>
-		</loadfile>
-
+    	<tstamp/>
 		<property name="filehome" value="scorekeeper.wwscc.org" />
-		<property name="exename" value="WWSCCSetup-r${dist.revision}" />
+		<property name="exename" value="WWSCCSetup-${DSTAMP}" />
 		<property name="issname" value="java.iss" />
 
         <echo file="${issname}"><![CDATA[[Setup]
 AppName=WWSCC Applications
-AppVerName=WWSCC Applications r${dist.revision}
+AppVerName=WWSCC Applications ${DSTAMP}
 OutputDir=.
 OutputBaseFilename=${exename}
 AppPublisher=Brett Wilson
