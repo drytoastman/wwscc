@@ -30,14 +30,13 @@ class DbserveController(BaseController):
 			return
 
 		password = request.environ.get('HTTP_X_SCOREKEEPER', '')
-		if password != self.settings['password']:
+		if password != self.settings.password:
 			log.warning("Incorrect password used for %s" % (self.database))
 			abort(401)
 
 
 	def download(self):
-		locked = self.session.query(Setting).get('locked')
-		if int(locked.val):
+		if self.settings.locked:
 			log.warning("Download request for %s, but it is locked" % (self.database))
 			abort(404)
 		locked.val = '1'
@@ -64,8 +63,8 @@ class DbserveController(BaseController):
 		engine = create_engine('sqlite:///%s' % self.databasePath(self.database), poolclass=NullPool)
 		self.session.bind = engine
 		metadata.bind = engine
-		locked = self.session.query(Setting).get('locked')
-		locked.val = '0'
+		self.settings.locked = False
+		self.settings.save(self.session)
 		self.session.commit()
 		return ""
 

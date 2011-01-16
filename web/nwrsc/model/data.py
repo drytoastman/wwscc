@@ -7,34 +7,6 @@ from classlist import Class
 import datetime
 #from event import Event
 
-## Settings table
-t_settings = Table('settings', metadata,
-	Column('name', String(32), primary_key=True),
-	Column('val', String(128)),
-	)
-
-class Setting(object):
-	@classmethod
-	def loadDict(cls, session):
-		d = dict()
-		for s in session.query(Setting):
-			d[s.name] = s.val
-		return d
-
-	@classmethod
-	def saveDict(cls, session, d):
-		for k, v in d.iteritems():
-			K = str(k)
-			V = str(v)
-			s = session.query(Setting).get(K)
-			if s is None:
-				s = Setting()
-				s.name = K
-				session.add(s)
-			s.val = V
-			
-mapper(Setting, t_settings)
-
 
 ## Formats table
 t_data = Table('data', metadata,

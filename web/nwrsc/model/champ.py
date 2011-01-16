@@ -1,4 +1,3 @@
-from data import Setting
 from event import Event
 import logging
 
@@ -56,11 +55,11 @@ champResult = """select r.points,r.ppoints,r.eventid,r.classcode,r.carid,d.id,d.
 				where r.carid=c.id and c.driverid=d.id and r.classcode like :codeglob
 				order by r.classcode,d.firstname COLLATE NOCASE,d.lastname COLLATE NOCASE,r.eventid"""
 
-def getChampResults(session, codeglob = '%'):
+def getChampResults(session, settings, codeglob = '%'):
 
 	try:
-		bestof = int(session.query(Setting).get('useevents').val)
-		minevent = int(session.query(Setting).get('minevents').val)
+		bestof = settings.useevents
+		minevent = settings.minevents
 		results = session.execute(champResult, params={'codeglob':codeglob}).fetchall()
 	except Exception, e:
 		log.warning("Failed to load champ results: %s" % e)

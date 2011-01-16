@@ -7,42 +7,47 @@
 		
 <tr title="the name of the series">            
 <th>Series Name</th>
-<td><input type="text" name="seriesname" value="${c.settings['seriesname']}" size="40" /></td>
+<td><input type="text" name="seriesname" value="${c.settings.seriesname}" size="40" /></td>
 </tr>
 		
 <tr title="the series password">            
 <th>Password</th>
-<td><input type="text" name="password" value="${c.settings['password']}" size="40" /></td>
+<td><input type="text" name="password" value="${c.settings.password}" size="40" /></td>
 </tr>
 		
 <tr title="Largest car number to be available during preregistration">  
 <th>Largest Car Number</th>
-<td><input type="text" name="largestcarnumber" value="${c.settings.get(largestcarnumber, 1999)}" size="4"/></td>
+<td><input type="text" name="largestcarnumber" value="${c.settings.largestcarnumber}" size="4"/></td>
 </tr>
 
 <tr title="Number of events required to be included in champ report">            
 <th>Min Events</th>
-<td><input type="text" name="minevents" value="${c.settings['minevents']}" size="4"/></td>
+<td><input type="text" name="minevents" value="${c.settings.minevents}" size="4"/></td>
 </tr>
 		
 <tr title="Number of events to use in championship calculation">            
 <th>Best X Events</th>
-<td><input type="text" name="useevents" value="${c.settings['useevents']}" size="4" /></td>
+<td><input type="text" name="useevents" value="${c.settings.useevents}" size="4" /></td>
 </tr>
 		
 <tr title="URL link for sponsor banner">            
 <th>Sponsor Link</th>
-<td><input type="text" name="sponsorlink" value="${c.settings['sponsorlink']}" size="40" /></td>
+<td><input type="text" name="sponsorlink" value="${c.settings.sponsorlink}" size="40" /></td>
 </tr>
 		
 <tr title="Ordering of points if using static points">            
 <th>Points</th>
-<td><input type="text" name="ppoints" value="${c.settings['ppoints']}" size="40" /></td>
+<td><input type="text" name="ppoints" value="${c.settings.ppoints}" size="40" /></td>
 </tr>
 
+<tr title="Unique numbers across all classes, not each class individually">            
+<th>Series Wide Numbers</th>
+<td><input type="checkbox" name="superuniquenumbers" ${c.settings.superuniquenumbers and "checked"} /></td>
+</tr>
+		
 <tr title="Lock the database manually, not recommended">            
 <th>Locked</th>
-<td><input type="checkbox" name="locked" value="${c.settings['locked']}" /></td>
+<td><input type="checkbox" name="locked" ${c.settings.locked and "checked"} /></td>
 </tr>
 		
 <tr>
@@ -53,6 +58,7 @@
 </form>
 
 
+<br/>
 
 <h3>Images</h3>
 

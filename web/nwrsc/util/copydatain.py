@@ -24,6 +24,7 @@ insertfile('champ.mako', 'text/plain', os.path.join(root, 'examples/wwchamp.mako
 insertfile('toptimes.mako', 'text/plain', os.path.join(root, 'examples/toptimes.mako'))
 insertfile('classresult.mako', 'text/plain', os.path.join(root, 'examples/classresults.mako'))
 insertfile('card.py', 'text/plain', os.path.join(root, 'examples/basiccard.py'))
-Setting.saveDict(session, {'useevents':5, 'ppoints':'20,16,13,11,9,7,6,5,4,3,2,1'})
+s = Settings()
+s.save(session)
 session.commit()
 

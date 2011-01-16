@@ -3,6 +3,13 @@ from formencode import Schema, ForEach
 from formencode.validators import Number, String, Bool, Int, DateConverter
 from formencode.variabledecode import NestedVariables
 
+#class IntBool(Bool):
+#    def _from_python(self, value, state):
+#        if value:
+#            return 1
+#        else:
+#            return 0
+
 
 class ClassSchema(Schema):
 	allow_extra_fields = True
@@ -48,6 +55,7 @@ class SettingsSchema(Schema):
 	useevents = Int(not_empty=True)
 	sponsorlink = String()
 	ppoints = String()
+	superuniquenumbers = Bool()
 	locked = Bool()
 
 

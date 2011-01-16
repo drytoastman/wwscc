@@ -1,6 +1,7 @@
 
 from meta import metadata, Session
-from data import Setting, Data, Driver, Car, Run, EventResult, PrevEntry
+from data import Data, Driver, Car, Run, EventResult, PrevEntry
+from settings import Settings
 from challenge import Challenge, ChallengeRound, loadChallengeResults, loadSingleRoundResults
 from result import Result, getAuditResults, getClassResultsShort, getClassResults, loadTopCourseRawTimes, loadTopCourseNetTimes, loadTopRawTimes, loadTopNetTimes, loadTopSegRawTimes
 from champ import getChampResults
@@ -15,7 +16,7 @@ from dialin import Dialins
 __all__ = (
 'metadata',
 'Session',
-'Setting',
+'Settings',
 'Data',
 'Class',
 'Index',

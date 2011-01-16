@@ -25,8 +25,8 @@ class RegisterController(BaseController):
 		c.stylesheets = ['/css/register.css', '/css/redmond/jquery-ui-1.8.2.custom.css']
 		c.javascript = ['/js/register.js', '/js/jquery-1.4.2.min.js', '/js/jquery-ui-1.8.2.custom.min.js', '/js/jquery.validate.min.js']
 		c.tabflags = {}
-		c.sponsorlink = self.settings.get('sponsorlink', None)
-		c.seriesname = self.settings.get('seriesname', 'Missing Name')
+		c.sponsorlink = self.settings.sponsorlink
+		c.seriesname = self.settings.seriesname
 
 		ipsession = session.setdefault(self.srcip, {})
 
@@ -42,7 +42,7 @@ class RegisterController(BaseController):
 				session.save()
 				redirect(url_for(action='login'))
 
-			if action not in ['view'] and int(self.settings['locked']):
+			if action not in ['view'] and self.settings.locked:
 				# Delete any saved session data for this person
 				del ipsession[self.database]
 				session.save()
@@ -137,9 +137,12 @@ class RegisterController(BaseController):
 		if c.code is None:
 			return "<h3>No class was selected.  Cannot print a list of available numbers</h3>\n"
 
-		query = self.session.query(Car.number).distinct().filter(Car.classcode==c.code).filter(Car.driverid!=c.driverid)
+		if self.settings.superuniquenumbers:
+			query = self.session.query(Car.number).distinct().filter(Car.driverid!=c.driverid)
+		else:
+			query = self.session.query(Car.number).distinct().filter(Car.classcode==c.code).filter(Car.driverid!=c.driverid)
 		c.numbers = set([x[0] for x in query])
-		c.largestnumber = int(self.settings.get('largestcarnumber', 1999))
+		c.largestnumber = self.settings.largestcarnumber
 		return render_mako('/register/available.mako')
 
 	def new(self):

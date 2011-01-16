@@ -32,11 +32,11 @@ class AdminController(BaseController, EntrantEditor):
 	def __before__(self):
 		c.stylesheets = ['/css/admin.css', '/css/redmond/jquery-ui-1.8.2.custom.css']
 		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.4.2.min.js', '/js/jquery-ui-1.8.2.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js']
-		c.isLocked = (int(self.settings.get('locked', 1)) == 1)
 		if self.database is not None:
 			c.events = self.session.query(Event).all()
 		self.eventid = self.routingargs.get('eventid', None)
 
+		c.isLocked = self.settings.locked
 		c.event = None
 		if self.eventid and self.eventid.isdigit():
 			c.event = self.session.query(Event).get(self.eventid)
@@ -44,10 +44,10 @@ class AdminController(BaseController, EntrantEditor):
 		if self.eventid and self.routingargs.get('action', '') != 'login':
 			self._checkauth(self.eventid, c.event)
 
-		if int(self.settings.get('locked', 0)):
+		if self.settings.locked:
 			action = self.routingargs.get('action', '')
 			if action not in ['login', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'fees', 'allfees', 'printhelp', 'forceunlock']:
-				c.seriesname = self.settings.get('seriesname', 'Missing Name')
+				c.seriesname = self.settings.seriesname
 				c.next = action
 				raise BeforePage(render_mako('/admin/locked.mako'))
 
@@ -77,8 +77,8 @@ class AdminController(BaseController, EntrantEditor):
 	
 
 	def forceunlock(self):
-		locked = self.session.query(Setting).get('locked')
-		locked.val = '0'
+		self.settings.locked = False
+		self.settings.save(self.session)
 		self.session.commit()
 		redirect(url_for(action=request.GET.get('next', '')))
 
@@ -88,7 +88,7 @@ class AdminController(BaseController, EntrantEditor):
 		ipsession = session.setdefault(self.srcip, {})
 		tokens = ipsession.setdefault('authtokens', set())
 
-		if password == self.settings['password']:
+		if password == self.settings.password:
 			tokens.add('series')
 
 		for event in c.events:
@@ -113,7 +113,6 @@ class AdminController(BaseController, EntrantEditor):
 	### Settings table editor ###
 	def seriessettings(self):
 		c.settings = self.settings
-		c.settings['locked'] = bool(int(c.settings['locked']))
 		c.action = 'updatesettings'
 		c.button = 'Update'
 		return render_mako('/forms/seriessettings.mako')
@@ -121,8 +120,8 @@ class AdminController(BaseController, EntrantEditor):
 	@validate(schema=SettingsSchema(), form='seriessettings', prefix_error=False)
 	def updatesettings(self):
 		""" Process settings form submission """
-		self.form_result['locked'] = int(self.form_result['locked'])
-		Setting.saveDict(self.session, self.form_result)
+		self.settings.set(self.form_result)
+		self.settings.save(self.session)
 		self.session.commit()
 		redirect(url_for(action='seriessettings'))
 

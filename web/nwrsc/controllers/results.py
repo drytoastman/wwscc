@@ -30,7 +30,7 @@ class ResultsController(BaseController):
 
 	def __before__(self):
 		c.title = 'Scorekeeper Results'
-		c.seriesname = self.settings.get('seriesname', 'Missing Name')
+		c.seriesname = self.settings.seriesname
 		c.stylesheets = []
 		c.javascript = []
 		if self.database is not None:
