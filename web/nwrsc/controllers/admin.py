@@ -30,8 +30,8 @@ def insertfile(cur, name, type, path):
 class AdminController(BaseController, EntrantEditor):
 
 	def __before__(self):
-		c.stylesheets = ['/css/admin.css', '/css/redmond/jquery-ui-1.8.2.custom.css']
-		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.4.2.min.js', '/js/jquery-ui-1.8.2.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js']
+		c.stylesheets = ['/css/admin.css', '/css/redmond/jquery-ui-1.8.2.custom.css', '/css/anytimec.css']
+		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.4.2.min.js', '/js/jquery-ui-1.8.2.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js', '/js/anytimec.js']
 		if self.database is not None:
 			c.events = self.session.query(Event).all()
 		self.eventid = self.routingargs.get('eventid', None)
@@ -317,7 +317,7 @@ class AdminController(BaseController, EntrantEditor):
 		""" Process edit event form submission """
 		self.copyvalues(self.form_result, c.event)
 		self.session.commit()
-		redirect(url_for(action='edit'))
+		redirect(url_for(action='editevent'))
 
 	def createevent(self):
 		""" Present form to create a new event """

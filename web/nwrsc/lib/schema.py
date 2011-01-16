@@ -1,14 +1,24 @@
 
-from formencode import Schema, ForEach
-from formencode.validators import Number, String, Bool, Int, DateConverter
+from formencode import Schema, ForEach, FancyValidator
+from formencode.validators import Number, String, Bool, Int
 from formencode.variabledecode import NestedVariables
 
-#class IntBool(Bool):
-#    def _from_python(self, value, state):
-#        if value:
-#            return 1
-#        else:
-#            return 0
+from datetime import datetime
+
+class SDate(FancyValidator):
+	def _to_python(self, value, state):
+		try:
+			return datetime.strptime(value, "%m/%d/%Y")
+		except ValueError, v:
+			raise Invalid(str(v), value, state)
+
+class SDateTime(FancyValidator):
+	def _to_python(self, value, state):
+		try:
+			return datetime.strptime(value, "%m/%d/%Y %H:%M")
+		except ValueError, v:
+			raise Invalid(str(v), value, state)
+
 
 
 class ClassSchema(Schema):
@@ -63,7 +73,7 @@ class EventSchema(Schema):
 	allow_extra_fields = True
 	filter_extra_fields = True
 	name = String(not_empty=True)
-	date = DateConverter()
+	date = SDate()
 	password = String(not_empty=True)
 	location = String()
 	sponsor = String()
@@ -77,8 +87,8 @@ class EventSchema(Schema):
 	conepen = Number(if_empty=2.0)
 	gatepen = Number(if_empty=10.0)
 	segments = String()
-	regopened = DateConverter()
-	regclosed = DateConverter()
+	regopened = SDateTime()
+	regclosed = SDateTime()
 	perlimit = Int(min=1)
 	totlimit = Int(min=0)
 	paypal = String()

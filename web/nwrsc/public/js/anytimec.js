@@ -789,4 +789,3 @@ yearValue=AnyTime.pad(yearValue,4);var eY=_this.earliest&&new Date(_this.earlies
 {$(this).AnyTime_current(era<0,(!_this.earliest)||(_this.earliest<0));});this.yDiv.find('.AnyTime-ce-btn').each(function()
 {$(this).AnyTime_current(era>0,(!_this.latest)||(_this.latest>0));});this.conv.setUtcFormatOffsetAlleged(this.offMin);this.conv.setUtcFormatOffsetSubIndex(this.offSI);this.inp.val(this.conv.format(this.time)).change();this.upd(fBtn);}};__pickers[id].initialize(id);}})(jQuery);
 
-if(window.location.hostname.length&&(window.location.hostname!='www.ama3.com')&&(window.location.hostname!='dev2.ama3.com'))alert('REMOVE THE LAST LINE FROM anytimec.js!');

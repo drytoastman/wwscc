@@ -16,18 +16,24 @@
 
 <tr title='date when the event occurs'>
 <th>Event Date</th>
-<td><input type='text' size='40' name='date' value="${c.event.date}"></td>
+<td><input id='date' type='text' size='40' name='date' value="${c.event.date.strftime("%m/%d/%Y")}"></td>
 </tr>
 
 <tr title='when registration should open'>
 <th>Registration Opens</th>
-<td><input type='text' size='40' name='regopened' value="${c.event.regopened}"></td>
+<td><input id='opens' type='text' size='40' name='regopened' value="${c.event.regopened.strftime("%m/%d/%Y %H:%M")}"></td>
 </tr>
 
 <tr title='when registration should close'>
 <th>Registration Closes</th>
-<td><input type='text' size='40' name='regclosed' value="${c.event.regclosed}"></td>
+<td><input id='closes' type='text' size='40' name='regclosed' value="${c.event.regclosed.strftime("%m/%d/%Y %H:%M")}"></td>
 </tr>
+
+<script>
+  $("#date").AnyTime_picker( { format: "%m/%d/%Y" } );
+  $("#opens").AnyTime_picker( { format: "%m/%d/%Y %H:%i" } );
+  $("#closes").AnyTime_picker( { format: "%m/%d/%Y %H:%i" } );
+</script>
 
 <tr title='location where the event occurs'>
 <th>Location</th>
