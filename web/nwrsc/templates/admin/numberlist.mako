@@ -19,7 +19,7 @@ th { text-align: left; }
 	%for ii in range(0, height):
 		<tr>
 		%for jj in range(ii, count, height):
-			<td>${order[jj]}</td><td>${c.numbers[code][order[jj]]}</td>
+			<td>${order[jj]}</td><td>${','.join(c.numbers[code][order[jj]])}</td>
 		%endfor
 		</tr>
 	%endfor

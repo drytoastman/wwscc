@@ -232,15 +232,19 @@ class AdminController(BaseController, EntrantEditor):
 
 
 	def numbers(self):
+
 		# As with other places, one big query followed by mangling in python is faster (and clearer)
 		c.numbers = {}
 		for res in self.session.query(Driver.firstname, Driver.lastname, Car.classcode, Car.number).join('cars'):
-			code = res[2]
+			if self.settings.superuniquenumbers:
+				code = "All"
+			else:
+				code = res[2]
 			num = res[3]
 			name = res[0]+" "+res[1]
 			if code not in c.numbers:
 				c.numbers[code] = {}
-			c.numbers[code][num] = name
+			c.numbers[code].setdefault(num, set()).add(name)
 
 		return render_mako('/admin/numberlist.mako')
 
@@ -330,6 +334,9 @@ class AdminController(BaseController, EntrantEditor):
 		c.event.runs = 4
 		c.event.perlimit = 2
 		c.event.totlimit = 0
+		c.event.date = datetime.today()
+		c.event.regopened = datetime.today()
+		c.event.regclosed = datetime.today()
 		return render_mako('/forms/eventedit.mako')
 
 	@validate(schema=EventSchema(), form='createevent', prefix_error=False)
