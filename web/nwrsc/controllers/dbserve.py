@@ -39,7 +39,8 @@ class DbserveController(BaseController):
 		if self.settings.locked:
 			log.warning("Download request for %s, but it is locked" % (self.database))
 			abort(404)
-		locked.val = '1'
+		self.settings.locked = True
+		self.settings.save(self.session)
 		self.session.commit()
 		return self.copy()
 
