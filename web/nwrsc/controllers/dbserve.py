@@ -39,7 +39,8 @@ class DbserveController(BaseController):
 		if self.settings.locked:
 			log.warning("Download request for %s, but it is locked" % (self.database))
 			abort(404)
-		locked.val = '1'
+		self.settings.locked = True
+		self.settings.save(self.session)
 		self.session.commit()
 		return self.copy()
 
@@ -63,6 +64,8 @@ class DbserveController(BaseController):
 		engine = create_engine('sqlite:///%s' % self.databasePath(self.database), poolclass=NullPool)
 		self.session.bind = engine
 		metadata.bind = engine
+		self.settings = Settings()
+		self.settings.load(self.session)
 		self.settings.locked = False
 		self.settings.save(self.session)
 		self.session.commit()
@@ -77,9 +80,10 @@ class DbserveController(BaseController):
 				engine = create_engine('sqlite:///%s' % file, poolclass=NullPool)
 				metadata.bind = engine
 				self.session.bind = engine
-				locked = int(self.session.query(Setting).get('locked').val)
+				self.settings = Settings()
+				self.settings.load(self.session)
 				name = os.path.splitext(os.path.basename(file))[0] 
-				data += "%s %s\n" % (name, locked)
+				data += "%s %s\n" % (name, self.settings.locked and "1" or "0")
 				self.session.close()
 			except Exception, e:
 				log.error("available error with %s (%s) " % (file,e))
