@@ -11,6 +11,7 @@ package org.wwscc.storage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
@@ -170,7 +171,7 @@ public class Database
 		}
 		catch (Exception ex)
 		{
-			log.severe("Download error: " + ex);
+			log.log(Level.SEVERE, "Download error: " + ex, ex);
 			return null;
 		}
 	}
@@ -203,8 +204,7 @@ public class Database
 		}
 		catch (Exception ex)
 		{
-			log.severe("Upload error: " + ex);
-			ex.printStackTrace();
+			log.log(Level.SEVERE, "Upload error: " + ex, ex);
 		}
 	}
 }
