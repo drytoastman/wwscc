@@ -5,6 +5,8 @@ from formencode.variabledecode import NestedVariables
 
 from datetime import datetime
 
+__all__ = ( "ClassSchema", "ClassListSchema", "IndexSchema", "IndexListSchema", "SettingsSchema", "EventSchema", "CopySeriesSchema", "LoginSchema", "DriverSchema" )
+
 class SDate(FancyValidator):
 	def _to_python(self, value, state):
 		try:
