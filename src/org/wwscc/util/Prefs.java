@@ -29,7 +29,7 @@ public class Prefs
 
 	public static String getHomeServer() { return prefs.get("hostname", "scorekeeper.wwscc.org"); }
 	public static String getMergeHost() { return prefs.get("mergehost", "1.1.1.1"); }
-	public static String getPasswordFor(String db) { return prefs.get("password-"+db, ""); }
+	public static String getPasswordFor(String db) { return prefs.get("password-"+db, "none"); }
 	public static String getInstallRoot() { return prefs.get("installroot", "c:/timing"); }
 	public static String getSeriesFile(String def) { return prefs.get("seriesfile", def); }
 	public static String getSeriesURL(String def) { return prefs.get("seriesurl", def); }

@@ -31,9 +31,8 @@ import org.wwscc.util.Prefs;
  */
 public class RemoteHTTPConnection
 {
-	private static Logger log = Logger.getLogger(RemoteHTTPConnection.class.getCanonicalName());
-	String cachedip;
-	String hostname;
+	private static final Logger log = Logger.getLogger(RemoteHTTPConnection.class.getCanonicalName());
+	String host;
 	String dbname;
 	byte[] buffer;
 	ProgressMonitor monitor;
@@ -49,11 +48,7 @@ public class RemoteHTTPConnection
 
 	public RemoteHTTPConnection(String remote) throws UnknownHostException
 	{
-		String[] parts = remote.split(":");
-		hostname = parts[0];
-		cachedip = InetAddress.getAllByName(parts[0])[0].getHostAddress();
-		if (parts.length > 1)
-			cachedip += ":" + parts[1];
+		host = remote;
 		dbname = "";
 		buffer = new byte[4096];
 	}
@@ -116,7 +111,7 @@ public class RemoteHTTPConnection
 		conn.setConnectTimeout(3500);
 		conn.setRequestProperty("User-Agent", "Scorekeeper 1.1");
 		conn.setRequestProperty("X-Scorekeeper", Prefs.getPasswordFor(dbname));
-		conn.setRequestProperty("Host", hostname);
+		//conn.setRequestProperty("Host", hostname);
 		conn.setUseCaches(false);
 		conn.setDoInput(true);
 
@@ -190,7 +185,15 @@ public class RemoteHTTPConnection
 			String msg = ioe.getMessage();
 			if (msg.contains("401") && msg.contains("response code"))
 				throw new AuthException();
-			throw ioe;
+			
+			InputStream err = conn.getErrorStream();
+			byte[] errorbuf = new byte[err.available()];
+			err.read(errorbuf);
+			String serror = new String(errorbuf);
+			if (serror.contains("<body>"))
+				throw new IOException(serror.substring(serror.indexOf("<body>")+7), ioe);
+			else
+				throw new IOException(serror, ioe);
 		}
 	}
 
@@ -200,8 +203,7 @@ public class RemoteHTTPConnection
 		monitor.setMillisToDecideToPopup(300);
 		monitor.setMillisToPopup(1000);
 		dbname = name;
-		return basicRequest(new URL(String.format("http://%s/dbserve/%s/sqlmap", cachedip, dbname)),
-							"POST", "text/plain", data);
+		return basicRequest(new URL(String.format("http://%s/dbserve/%s/sqlmap", host, dbname)), "POST", "text/plain", data);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -215,7 +217,7 @@ public class RemoteHTTPConnection
 		monitor = new ProgressMonitor(null, "getAvailable", "Connecting...", 0, Integer.MAX_VALUE);
 		monitor.setMillisToDecideToPopup(0);
 		monitor.setMillisToPopup(0);
-		String data = new String(basicRequest(new URL(String.format("http://%s/dbserve/available", cachedip)), "GET", null));
+		String data = new String(basicRequest(new URL(String.format("http://%s/dbserve/available", host)), "GET", null));
 		for (String db : data.split("\n"))
 		{
 			String[] parts = db.split("\\s+");
@@ -246,8 +248,7 @@ public class RemoteHTTPConnection
 		String action = (lockServerSide) ? "download" : "copy";
 
 		FileOutputStream output = new FileOutputStream(dst);
-		output.write(basicRequest(new URL(String.format("http://%s/dbserve/%s/%s",
-							cachedip, dbname, action)), "GET", null));
+		output.write(basicRequest(new URL(String.format("http://%s/dbserve/%s/%s", host, dbname, action)), "GET", null));
 		output.close();
 		output = null;
 	}
@@ -264,7 +265,7 @@ public class RemoteHTTPConnection
 		byte[] header = mimeFileHeader(boundary, "db", dbname, "application/octet-stream").getBytes();
 		byte[] footer = mimeFooter(boundary).getBytes();
 
-		basicRequest(new URL(String.format("http://%s/dbserve/%s/upload", cachedip, dbname)),
+		basicRequest(new URL(String.format("http://%s/dbserve/%s/upload", host, dbname)),
 						"POST", "multipart/form-data; boundary="+boundary, header, f, footer);
 	}
 
