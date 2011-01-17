@@ -37,7 +37,7 @@ cars[${car.id}] = ${dumps(car.__dict__, default=lambda x: str(x))|n}
 </script>
 <tr>
 <td class='carcell' colspan='2'>
-<button class='ceditor' onclick='editcar(${car.id});'>Edit</button>
+<button class='ceditor' onclick='editcar(${info.driver.id}, ${car.id});'>Edit</button>
 <button class='ceditor' onclick='deletecar(${car.id});' ${car.runs and "disabled='disabled'"}>Delete</button>
 <button class='ceditor' onclick='titlecasecar(${car.id});'>TitleCase</button>
 ${car.classcode}(${car.indexcode}) #${car.number} ${car.year} ${car.make} ${car.model} ${car.color} (${car.runs} events)

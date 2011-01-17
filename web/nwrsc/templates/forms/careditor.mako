@@ -15,8 +15,9 @@ function classchange()
 
 }
 
-function editcar(cid, action)
+function editcar(did, cid)
 {
+	$('#careditor [name=driverid]').val(did);
 	$('#careditor [name=carid]').val(cid);
 	$('#careditor [name=year]').val(cars[cid].year);
 	$('#careditor [name=make]').val(cars[cid].make);
@@ -32,8 +33,18 @@ function editcar(cid, action)
 
 function selectnumber()
 {
-	//$('#availablelink').attr('href', 'available?code='+$('#classcode option:selected').val())
+	$('#numberselection').html("loading...");
 	$('#numberselection').dialog('open');
+	$('#numberselection').load('${h.url_for(action='carnumbers')}', {
+				code : $("#careditor #classcode option:selected").val(),
+				driverid : $('#careditor [name=driverid]').val()
+			});
+}
+
+function setnum(v)
+{
+	$('#careditor [name=number]').val(v);
+	$('#numberselection').dialog('close');
 }
 
 $(document).ready(function(){
@@ -55,7 +66,7 @@ $(document).ready(function(){
 
 	$("#careditor").dialog({
 		autoOpen: false,
-		height: 350,
+		height: 320,
 		width: 450,
 		modal: true,
 		title: 'Car Editor',
@@ -75,7 +86,7 @@ $(document).ready(function(){
 	$("#numberselection").dialog({
 		autoOpen: false,
 		height: 400,
-		width: 500,
+		width: 480,
 		modal: true,
 		title: 'Available Numbers',
 		close: function() {}
@@ -83,8 +94,34 @@ $(document).ready(function(){
 });
 </script>
 
+<style type='text/css'>
+ul.numbers {
+float: left;
+margin: 0;
+padding: 0;
+list-style: none;
+width: 410px;
+}
+
+ul.numbers li {
+text-align: right;
+font-size: 1.1em;
+font-family: arial;
+color: #EDD;
+float: left;
+width: 40px;
+margin: 0;
+padding: 0;
+}
+
+ul.numbers a {
+text-decoration: none;
+color: blue;
+}
+</style>
 
 <form id='careditor'>
+<input id='driverid' name='driverid' type='hidden'/>
 <input id='carid' name='carid' type='hidden'/>
 <table class='careditor'>
 <tbody>
@@ -112,10 +149,14 @@ for code in sorted(c.classdata.classlist):
 %endfor
 </select>
 </td></tr>
-<tr><th>Number</th><td><input name='number' type='text'/></td></tr>
+<tr>
+   <th>Number</th><td>
+   <input name='number' type='text' size='1' readonly/>
+   <button onclick='selectnumber();' style='font-size:0.8em;'>Available</button>
+   </td>
+</tr>
 </tbody>
 </table>
-<button onclick='selectnumber();' style='font-size:0.8em;'>Available Numbers</button>
 </form>
 
 

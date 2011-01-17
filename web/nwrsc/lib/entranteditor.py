@@ -146,3 +146,20 @@ class EntrantEditor(object):
 
 		return {'data': str(render_mako('/admin/driverinfo.mako'))}
 
+
+	def carnumbers(self):
+		code = request.POST.get('code', None)
+		drid = request.POST.get('driverid', None)
+		if code is None or drid is None:
+			return "missing data in request"
+
+		if self.settings.superuniquenumbers:
+			query = self.session.query(Car.number).distinct().filter(Car.driverid!=int(drid))
+		else:
+			query = self.session.query(Car.number).distinct().filter(Car.classcode==code).filter(Car.driverid!=int(drid))
+
+		c.used = set([x[0] for x in query])
+		c.largest = self.settings.largestcarnumber
+		return render_mako('/forms/carnumbers.mako')
+
+
