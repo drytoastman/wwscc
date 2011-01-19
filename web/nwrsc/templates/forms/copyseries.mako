@@ -1,6 +1,8 @@
 <%inherit file="/admin/base.mako" />
 
-<h3>Series Settings</h3>
+<h3>Create New Series</h3>
+
+<p>Create a new series, copying information from the current</p>
 
 <form id="settingsForm" action="${c.action}" method="post">
 <table class='form'>

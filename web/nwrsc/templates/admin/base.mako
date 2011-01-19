@@ -31,15 +31,19 @@
 </li>
 <li><a href='javascript:void(0);'>Series Admin</a>
 	<ul>
-	<li><a href='${h.url_for(eventid='s', action='createevent')}'>Create Event</a></li>
+	<li><a href='${h.url_for(eventid='s', action='createevent')}'>Create New Event</a></li>
 	<li><a href='${h.url_for(eventid='s', action='classlist')}'>Series Classes</a></li>
 	<li><a href='${h.url_for(eventid='s', action='indexlist')}'>Series Indexes</a></li>
 	<li><a href='${h.url_for(eventid='s', action='seriessettings')}'>Series Settings</a></li>
 	<li><a href='${h.url_for(eventid='s', action='drivers')}'>Driver/Car Editor</a></li>
+	<li><a href='${h.url_for(eventid='s', action='cleanup')}'>Clean Unused Registration</a></li>
 	<li><a href='${h.url_for(eventid='s', action='recalc')}' target='_blank'>Recalculate Results</a></li>
-	<li><a href='${h.url_for(eventid='s', action='cleanup')}'>Remove Unused Registration</a></li>
-	<li><a href='${h.url_for(eventid='s', action='purge')}'>Purge Old Drivers and Cars</a></li>
-	<li><a href='${h.url_for(eventid='s', action='copyseries')}'>Create New Series From</a></li>
+	</ul>
+</li>
+<li><a href='javascript:void(0);'>Other</a>
+	<ul>
+	<li><a href='${h.url_for(eventid='s', action='copyseries')}'>Create Series From Current</a></li>
+	<li><a href='${h.url_for(eventid='s', action='purge')}'>Purge Tool</a></li>
 	<li><a href='${h.url_for(eventid='s', action='allfees')}' target='_blank'>All Event 'Fees'</a></li>
 	</ul>
 </li>

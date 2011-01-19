@@ -58,8 +58,8 @@ class AdminController(BaseController, EntrantEditor):
 			return
 	
 		if event is None and eventid != 's':
-			c.adminheader = "No such event for %s" % eventid
-			raise BeforePage(render_mako('/admin/title.mako'))
+			c.text = "<h3>No such event for %s</h3>" % eventid
+			raise BeforePage(render_mako('/admin/simple.mako'))
 	
 		ipsession = session.setdefault(self.srcip, {})
 		tokens = ipsession.setdefault('authtokens', set())
@@ -103,8 +103,8 @@ class AdminController(BaseController, EntrantEditor):
 		if self.eventid and self.eventid.isdigit():
 			return render_mako('/admin/event.mako')
 		elif self.database is not None:
-			c.adminheader = "%s Adminstration" % self.routingargs['database']
-			return render_mako('/admin/title.mako')
+			c.text = "<h2>%s Adminstration</h2>" % self.routingargs['database']
+			return render_mako('/admin/simple.mako')
 		else:
 			c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
 			return render_mako('/databaseselect.mako')
@@ -157,8 +157,8 @@ class AdminController(BaseController, EntrantEditor):
 
 	def cleanup(self):
 		updateFromRuns(self.session)
-		c.adminheader = "Cleaned"
-		return render_mako('/admin/title.mako')
+		c.text = "<h3>Cleaned</h3>"
+		return render_mako('/admin/simple.mako')
 
 
 	def recalc(self):
@@ -199,8 +199,8 @@ class AdminController(BaseController, EntrantEditor):
 			from reportlab.pdfgen import canvas
 			from reportlab.lib.units import inch
 		except:
-			c.adminheader = "PDFGen not installed, can't create timing card PDF files from this system"
-			return render_mako("/admin/title.mako")
+			c.text = "<h4>PDFGen not installed, can't create timing card PDF files from this system</h4>"
+			return render_mako("/admin/simple.mako")
 
 		if page == 'letter': # Letter has an additional 72 points Y to space out
 			size = (8*inch, 11*inch)
@@ -418,6 +418,7 @@ class AdminController(BaseController, EntrantEditor):
 	def purge(self):
 		c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
 		c.files.remove(self.database+".db")
+		c.classlist = self.session.query(Class).order_by(Class.code).all()
 		return render_mako('/admin/purge.mako')
 
 	def processPurge(self):
@@ -426,37 +427,51 @@ class AdminController(BaseController, EntrantEditor):
 		except:
 			from pysqlite2 import dbapi2 as sqlite3
 
+		searchseries = list()
+		purgeclasses = list()
+		for k in request.POST.keys():
+			if k[0:2] == "c-":
+				purgeclasses.append(k[2:])
+			elif k[0:2] == "s-":
+				searchseries.append(k[2:])
+
 		# All cars that have runs in any previous database
 		carids = set()
-		for s in request.POST.keys():
+		for s in searchseries:
 			conn = sqlite3.connect(os.path.join(config['seriesdir'], s))
 			conn.row_factory = sqlite3.Row
-			c = conn.cursor()
-			c.execute("select distinct carid from runs")
-			carids.update([x[0] for x in c.fetchall()])
+			cur = conn.cursor()
+			cur.execute("select distinct carid from runs")
+			carids.update([x[0] for x in cur.fetchall()])
 			conn.close()
 
 		# All drivers associated with those runs
 		driverids = set()
-		for s in request.POST.keys():
+		for s in searchseries:
 			conn = sqlite3.connect(os.path.join(config['seriesdir'], s))
 			conn.row_factory = sqlite3.Row
-			c = conn.cursor()
-			c.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, carids))))
-			driverids.update([x[0] for x in c.fetchall()])
+			cur = conn.cursor()
+			cur.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, carids))))
+			driverids.update([x[0] for x in cur.fetchall()])
 			conn.close()
 
 		# Drivers in this database that have no unique/email
-		blankdr = [x[0] for x in self.session.execute("select id from drivers where email=''")]
+		#blankdr = [x[0] for x in self.session.execute("select id from drivers where email=''")]
+		delcar = deldr = 0
 
-		delcar = self.session.execute("delete from cars where id not in (%s)" % (','.join(map(str, carids)))).rowcount
-		delcar += self.session.execute("delete from cars where driverid in (%s)" % ','.join(map(str,blankdr))).rowcount
-		delcar += self.session.execute("delete from cars where classcode in ('TOAM', 'TOPM', 'NOVA', 'NOVP')").rowcount
-		deldr = self.session.execute("delete from drivers where id not in (%s)" % (','.join(map(str, driverids)))).rowcount
-		deldr += self.session.execute("delete from drivers where id in (%s)" % ','.join(map(str,blankdr))).rowcount
+		if len(searchseries) > 0:  # don't delete if they didn't select any series, that will delete all
+			delcar = self.session.execute("delete from cars where id not in (%s)" % (','.join(map(str, carids)))).rowcount
+			#delcar += self.session.execute("delete from cars where driverid in (%s)" % ','.join(map(str,blankdr))).rowcount
+			deldr = self.session.execute("delete from drivers where id not in (%s)" % (','.join(map(str, driverids)))).rowcount
+			#deldr += self.session.execute("delete from drivers where id in (%s)" % ','.join(map(str,blankdr))).rowcount
+
+		if len(purgeclasses) > 0:
+			sqllist = "', '".join(purgeclasses)
+			delcar += self.session.execute("delete from cars where classcode in ('"+sqllist+"')").rowcount
+		
 		self.session.commit()
-		return "Deleted %s cars and %s drivers" % (delcar, deldr)
-
+		c.text = "<h4>Deleted %s cars and %s drivers</h4>" % (delcar, deldr)
+		return render_mako('/admin/simple.mako')
 
 
 

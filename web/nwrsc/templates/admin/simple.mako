@@ -1,2 +1,2 @@
 <%inherit file="base.mako" />
-<h2>${c.adminheader}</h2>
+${c.text|n}
