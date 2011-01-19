@@ -37,7 +37,7 @@
 	<li><a href='${h.url_for(eventid='s', action='seriessettings')}'>Series Settings</a></li>
 	<li><a href='${h.url_for(eventid='s', action='drivers')}'>Driver/Car Editor</a></li>
 	<li><a href='${h.url_for(eventid='s', action='cleanup')}'>Clean Unused Registration</a></li>
-	<li><a href='${h.url_for(eventid='s', action='recalc')}' target='_blank'>Recalculate Results</a></li>
+	<li><a href='${h.url_for(eventid='s', action='recalc')}'>Recalculate Results</a></li>
 	</ul>
 </li>
 <li><a href='javascript:void(0);'>Other</a>

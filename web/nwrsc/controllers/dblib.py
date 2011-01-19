@@ -65,6 +65,7 @@ def UpdateClassResults(session, eventid, classcode, carid):
 
 
 def RecalculateResults(session):
+	yield "<pre>"
 	try:
 		classdata = ClassData(session)
 		for event in session.query(Event).all():
@@ -93,6 +94,7 @@ def RecalculateResults(session):
 	except Exception, e:
 		yield traceback.format_exc()
 		session.rollback()
+	yield "</pre>"
 
 
 def netsort(a, b):

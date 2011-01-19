@@ -162,6 +162,9 @@ class AdminController(BaseController, EntrantEditor):
 
 
 	def recalc(self):
+		return render_mako('/admin/recalc.mako')
+		
+	def dorecalc(self):
 		from nwrsc.controllers.dblib import RecalculateResults
 		response.headers['Content-type'] = 'text/plain'
 		return RecalculateResults(self.session)
