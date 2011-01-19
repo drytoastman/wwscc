@@ -39,6 +39,23 @@
 
 <h3>Class Editor</h3>
 
+<p>
+Each class has a short code and a full string description.  The description is optional.  The settings available are:
+
+<table>
+<tr><th>Event Trophy</th><td>This class is eligible for trophies at each event and will have a 'T' added in the results</td></tr>
+<tr><th>Champ Trophy</th><td>This class is eligible for championship points and will appear in the championship report</td></tr>
+<tr><th>Cars Indexed</th><td>Cars in this class will have an index applied based on the index of the car entry</td></tr>
+<tr><th>Class Indexed</th><td>Cars in this class will have an index applied based on matching the class code to an index code</td></tr>
+<tr><th>Addl Multiplier</th><td>Cars in this class will have an additional multipler applied to them, like class indexed but statically assigned to this class.  This is a place for a street tire modifier.</td></tr>
+<tr><th>Counted Runs</th><td>Entries in the class will only count a maximum of X runs towards official results</td></tr>
+</table>
+
+</p>
+
+<p></p>
+
+
 <form action="${c.action}" method="post">
 <table id='classtable'>
 <tr>
