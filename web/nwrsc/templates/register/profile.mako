@@ -20,6 +20,9 @@ input.closebutton
 {
 	color: #800;
 }
+.ui-dialog {
+    font-size: 0.75em !important;
+}
 </style>
 </%def>
 
@@ -51,11 +54,20 @@ ${driverform(Driver(), h.url_for(action='newprofile'))}
 <div>Membership: ${c.driver.membership}</div>
 </div>
 
+<br/>
+
 <button class='editor' onclick='editdriver(${c.driver.id});'>Edit</button>
 
 <script>
 var drivers = Array();
 drivers[${c.driver.id}] = ${dumps(c.driver.__dict__, default=lambda x: str(x))|n} 
+
+function driveredited()
+{
+	$('#drivereditor').attr('action', '${h.url_for(action='editprofile')}');
+	$('#drivereditor').submit();
+}
+
 </script>
 ${drivereditor()}
 

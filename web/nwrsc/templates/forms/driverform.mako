@@ -11,23 +11,23 @@
 
 <tr>
 <th>Name</th>
-<td><input name='firstname' type='text' value='${dr.firstname}'/></td>
-<td><input name='lastname' type='text' value='${dr.lastname}'/></td>
+<td colspan='2'><input name='firstname' type='text' value='${dr.firstname}'/></td>
+<td colspan='2'><input name='lastname' type='text' value='${dr.lastname}'/></td>
 </tr>
 
 <tr>
 <th>Email</th>
-<td colspan='3'><input name='email' type='text' value='${dr.email}'/></td>
+<td colspan='6'><input name='email' type='text' value='${dr.email}'/></td>
 </tr>
 
 <tr>
 <th>Membership</th>
-<td colspan='3'><input name='membership' type='text' value='${dr.membership}'/></td>
+<td colspan='6'><input name='membership' type='text' value='${dr.membership}'/></td>
 </tr>
 
 <tr>
 <th>Address</th>
-<td colspan='3'><input name='address' type='text' value='${dr.address}'/></td>
+<td colspan='6'><input name='address' type='text' value='${dr.address}'/></td>
 </tr>
 
 <tr>
@@ -41,22 +41,22 @@
 
 <tr>
 <th>Home Phone</th>
-<td colspan='3'><input name='homephone' type='text' value='${dr.homephone}'/></td>
+<td colspan='6'><input name='homephone' type='text' value='${dr.homephone}'/></td>
 </tr>
 
 <tr>
 <th>Brag</th>
-<td colspan='3'><input name='brag' type='text' value='${dr.brag}'/></td>
+<td colspan='6'><input name='brag' type='text' value='${dr.brag}'/></td>
 </tr>
 
 <tr>
 <th>Sponsor</th>
-<td colspan='3'><input name='sponsor' type='text' value='${dr.sponsor}'/></td>
+<td colspan='6'><input name='sponsor' type='text' value='${dr.sponsor}'/></td>
 </tr>
 
 <tr>
 <th>Clubs</th>
-<td colspan='3'><input name='clubs' type='text' value='${dr.clubs}'/></td>
+<td colspan='6'><input name='clubs' type='text' value='${dr.clubs}'/></td>
 </tr>
 
 </tbody>
