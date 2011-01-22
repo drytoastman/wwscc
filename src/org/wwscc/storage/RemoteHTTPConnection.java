@@ -187,6 +187,8 @@ public class RemoteHTTPConnection
 				throw new AuthException();
 			
 			InputStream err = conn.getErrorStream();
+			if (err == null)
+				throw ioe;
 			byte[] errorbuf = new byte[err.available()];
 			err.read(errorbuf);
 			String serror = new String(errorbuf);
