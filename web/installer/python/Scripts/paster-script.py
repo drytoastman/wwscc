@@ -1,4 +1,4 @@
-#!C:\Python26\python.exe
+#!C:\cygwin\home\bwilson\wwscc\web\installer\python\python.exe
 # EASY-INSTALL-ENTRY-SCRIPT: 'pastescript==1.7.3','console_scripts','paster'
 __requires__ = 'pastescript==1.7.3'
 import sys

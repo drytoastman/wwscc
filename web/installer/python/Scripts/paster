@@ -1,4 +1,4 @@
-#!C:\Python26\python.exe
+#!C:\cygwin\home\bwilson\wwscc\web\installer\python\python.exe
 # EASY-INSTALL-SCRIPT: 'pastescript==1.7.3','paster'
 __requires__ = 'pastescript==1.7.3'
 import pkg_resources

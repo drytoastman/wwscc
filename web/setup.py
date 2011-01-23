@@ -48,12 +48,3 @@ x = setup(
     """
 )
 
-import sys
-import os
-import subprocess
-if sys.argv[1] == 'sdist':
-	for f in os.listdir('dist'):
-		if x.get_version() in f:
-			distfile = "dist/%s" % f
-	subprocess.call("scp %s brett_wilson@scorekeeper.wwscc.org:scorekeeper.wwscc.org/setup/" % distfile, shell=True)
-
