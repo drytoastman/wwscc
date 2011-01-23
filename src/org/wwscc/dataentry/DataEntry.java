@@ -9,8 +9,6 @@
 
 package org.wwscc.dataentry;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.IOException;
@@ -38,7 +36,7 @@ import org.wwscc.util.Messenger;
 
 public class DataEntry extends JFrame implements MessageListener
 {
-	private static Logger log = Logger.getLogger(DataEntry.class.getName());
+	private static final Logger log = Logger.getLogger(DataEntry.class.getName());
 
 	Menus menus;
 	EntryModel dataModel;
@@ -53,6 +51,8 @@ public class DataEntry extends JFrame implements MessageListener
 	TimeEntry timeEntry;
 
 	JTabbedPane tabs;
+
+	FakeUser fakeUser;  // for debugging
 
 	class HelpPanel extends JLabel implements MessageListener
 	{
@@ -101,6 +101,7 @@ public class DataEntry extends JFrame implements MessageListener
 		announcer = new ResultsPane();
 		finder = new FindEntry();
 
+		
 		tabs = new JTabbedPane();
 		tabs.setMinimumSize(new Dimension(250, 400));
 		tabs.setPreferredSize(new Dimension(250, 768));
@@ -136,13 +137,15 @@ public class DataEntry extends JFrame implements MessageListener
 		content.add(timeEntry, "spany 2, growx 0, growy, wrap");
 		content.add(tableScroll, "grow, wrap");
 		content.add(infoBoxes, "spanx 3, growx, wrap");
-		
+
+		fakeUser = new FakeUser(table, timeEntry);
+
 		setContentPane(content);
 		setSize(1024,768);
 		setVisible(true);
 
 		getRootPane().setDefaultButton(timeEntry.getEnterButton());
-		log.info("Starting Application: " + new java.util.Date());
+		log.log(Level.INFO, "Starting Application: {0}", new java.util.Date());
 		
 		Messenger.register(MT.OBJECT_DCLICKED, this);
 		Database.openDefault();

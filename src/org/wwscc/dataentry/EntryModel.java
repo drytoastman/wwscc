@@ -45,31 +45,8 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.RUNGROUP_CHANGED, this);
-
-		new Thread(new Tester()).start();
-	}
-
-	class Tester implements Runnable
-	{
-		public void run()
-		{ while (true) { try {
-			Entrant e;
-
-			if (tableData != null)
-			{
-				e = tableData.get(0);
-				if (e != null)
-				{
-					long a = System.currentTimeMillis();
-					e.setRun(e.getRun(1), 1);
-					System.out.println("call: " + (System.currentTimeMillis() - a));
-				}
-			}
-			
-			Thread.sleep(7000);
-
-			} catch (Exception x) { }
-		}}
+		Messenger.register(MT.START_FAKE_USER, this);
+		Messenger.register(MT.STOP_FAKE_USER, this);
 	}
 
 	public void addCar(int carid)

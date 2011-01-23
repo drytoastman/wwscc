@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -97,9 +98,15 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		results.add(audit);
 		results.add(createItem("Results Page", null));
 		results.add(createItem("Admin Page", null));
+
+		JMenu debug = new JMenu("Debug");
+		add(debug);
+		debug.add(createItem("Start Fake User", null));
+		debug.add(createItem("Stop Fake User", null));
+		debug.add(createItem("Configure Fake User", null));
 	}
 
-	protected JMenuItem createItem(String title, KeyStroke ks)
+	protected final JMenuItem createItem(String title, KeyStroke ks)
 	{ 
 		JMenuItem item = new JMenuItem(title); 
 
@@ -155,6 +162,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		else if (cmd.equals("Download and Lock Database"))
 		{
 			new Thread(new Runnable() {
+				@Override
 				public void run() {
 					Database.download(true);
 				}
@@ -163,6 +171,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		else if (cmd.equals("Upload and Unlock Database"))
 		{
 			new Thread(new Runnable() {
+				@Override
 				public void run() {
 					Database.upload();
 				}
@@ -176,9 +185,21 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		{
 			Messenger.sendEvent(MT.OPEN_FIND, null);
 		}
+		else if (cmd.equals("Start Fake User"))
+		{
+			Messenger.sendEvent(MT.START_FAKE_USER, null);
+		}
+		else if (cmd.equals("Stop Fake User"))
+		{
+			Messenger.sendEvent(MT.STOP_FAKE_USER, null);
+		}
+		else if (cmd.equals("Configure Fake User"))
+		{
+			Messenger.sendEvent(MT.CONFIGURE_FAKE_USER, null);
+		}
 		else
 		{ 
-			log.info("Unknown command from menubar: " + cmd); 
+			log.log(Level.INFO, "Unknown command from menubar: {0}", cmd);
 		} 
 	}
 
