@@ -24,7 +24,11 @@ public class FakeUser implements MessageListener
 	EntryTable table;
 	Run toset;
 	UserThread thread;
-	int waitTime = 5000;
+	int waitTime = 2000;
+        long all = 0;
+        long min = 1000;
+        long max = 0;
+        long cnt = 0;
 
 	public FakeUser(EntryTable t, TimeEntry e)
 	{
@@ -54,6 +58,10 @@ public class FakeUser implements MessageListener
 				break;
 			case CONFIGURE_FAKE_USER:
 				waitTime = Integer.parseInt(JOptionPane.showInputDialog(null, "Enter interval time in ms", "Fake User Wait Time", JOptionPane.INFORMATION_MESSAGE));
+                                min = 1000;
+                                max = 0;
+                                all = 0;
+                                cnt = 0;
 				break;
 		}
 	}
@@ -78,7 +86,12 @@ public class FakeUser implements MessageListener
 				// change back to previous selection
 				table.changeSelection(row, col, false, false);
 
-				System.out.println("time: " + (System.currentTimeMillis() - a));
+                                long t = System.currentTimeMillis() - a;
+                                if (t > max) max = t;
+                                if (t < min) min = t;
+                                all += t;
+                                cnt++;
+				System.out.println(String.format("%d (%d, %d, %d)", t, min, all/cnt, max));
 			}
 
 			Thread.sleep(waitTime);
