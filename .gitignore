@@ -1,2 +1,12 @@
-build
-dist
+*.pyc
+*.o
+*.log
+*.jar
+/*.dll
+build/
+dist/
+nbproject/private/
+web/backup
+web/series
+web/data
+web/nwrsc.egg-info
