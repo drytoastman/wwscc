@@ -2,7 +2,14 @@
 
 <h3>Series Settings</h3>
 
+<%doc>
 <form id="settingsForm" action="${c.action}" method="post">
+<table class='form'>
+</table>
+</form>
+</%doc>
+
+<form method=post enctype="multipart/form-data" action="${c.action}">
 <table class='form'>
 		
 <tr title="the name of the series">            
@@ -51,30 +58,15 @@
 </tr>
 		
 <tr>
-<td><input type="submit" value="Submit"/></td>
-</tr>
-
-</table>
-</form>
-
-
-<br/>
-
-<h3>Images</h3>
-
-<form method=post enctype="multipart/form-data" action="${h.url_for(action='uploadimage')}">
-<table class='form'>
-
-<tr>
 <th>Sponsor Image</th>
 <td><input type=file name="sponsorimage"></td>
-<td><img src='${h.url_for(controller='db', name='sponsorimage', eventid=None, action='nocache')}' height="70" /></td>
+<td><img src='${h.url_for(controller='db', name='sponsorimage', eventid=None, action='nocache')}' height="40" /></td>
 </tr>
 
 <tr>
 <th>Series Image</th>
 <td><input type=file name="seriesimage"></td>
-<td><img src='${h.url_for(controller='db', name='seriesimage', eventid=None, action='nocache')}' height="70" /></td>
+<td><img src='${h.url_for(controller='db', name='seriesimage', eventid=None, action='nocache')}' height="40" /></td>
 </tr>
 
 <tr>

@@ -122,15 +122,12 @@ class AdminController(BaseController, EntrantEditor):
 		""" Process settings form submission """
 		self.settings.set(self.form_result)
 		self.settings.save(self.session)
-		self.session.commit()
-		redirect(url_for(action='seriessettings'))
 
-
-	def uploadimage(self):
-		for key, file in request.POST.iteritems():
+		for key, file in self.form_result.iteritems():
 			if hasattr(file, 'filename'):
 				# TODO: Check file size before doing this
 				Data.set(self.session, key, file.value, file.type)
+
 		self.session.commit()
 		redirect(url_for(action='seriessettings'))
 

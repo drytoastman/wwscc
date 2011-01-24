@@ -1,5 +1,5 @@
 
-from formencode import Schema, ForEach, FancyValidator
+from formencode import Schema, ForEach, FancyValidator, Validator
 from formencode.validators import Number, String, Bool, Int
 from formencode.variabledecode import NestedVariables
 
@@ -69,6 +69,8 @@ class SettingsSchema(Schema):
 	ppoints = String()
 	superuniquenumbers = Bool()
 	locked = Bool()
+	sponsorimage = Validator()
+	seriesimage = Validator()
 
 
 class EventSchema(Schema):
