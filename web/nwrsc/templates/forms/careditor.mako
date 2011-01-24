@@ -151,7 +151,7 @@ for code in sorted(c.classdata.classlist):
 </td></tr>
 <tr>
    <th>Number</th><td>
-   <input name='number' type='text' size='1' readonly/>
+   <input name='number' type='text' size='3' />
    <button onclick='selectnumber();' style='font-size:0.8em;'>Available</button>
    </td>
 </tr>
