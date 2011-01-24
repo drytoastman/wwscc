@@ -15,6 +15,14 @@ class EntrantEditor(object):
 		def __init__(self, d, c):
 			self.driver = d
 			self.cars = c
+			# Make no values into blank strings
+			for k, v in self.driver.__dict__.iteritems(): 
+				if v is None:
+					setattr(self.driver, k, "")
+			for car in self.cars:
+				for k, v in car.__dict__.iteritems(): 
+					if v is None:
+						setattr(car, k, "")
 
 	def drivers(self):
 		c.classdata = ClassData(self.session)

@@ -16,6 +16,9 @@ input.closebutton
    width: 15px;
    height: 15px;
 }
+.error-message {
+   color: red;
+}
 .labelcol .required 
 {
 	color: #800;
@@ -45,9 +48,9 @@ ${driverform(Driver(), h.url_for(action='newprofile'))}
 <div>${c.driver.firstname} ${c.driver.lastname}</div>
 <div>${c.driver.email}</div>
 <br/>
-<div>${h.hide(c.driver.address, 4)|n}</div>
+<div>${h.hide(c.driver.address, 64)|n}</div>
 <div>${c.driver.city} ${c.driver.state} ${c.driver.zip}</div>
-<div>${h.hide(c.driver.homephone, 6)|n}</div>
+<div>${h.hide(c.driver.homephone, 65)|n}</div>
 <br/>
 <div>Brag: ${c.driver.brag}</div>
 <div>Sponsor: ${c.driver.sponsor}</div>

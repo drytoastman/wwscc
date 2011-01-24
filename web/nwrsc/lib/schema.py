@@ -125,4 +125,13 @@ class DriverSchema(Schema):
 	firstname = String(not_empty=True)
 	lastname = String(not_empty=True)
 	email = String(not_empty=True)
+	membership = String()
+	address = String()
+	city = String()
+	state = String()
+	zip = String()
+	homephone = String()
+	brag = String()
+	sponsor = String()
+	clubs = String()
 

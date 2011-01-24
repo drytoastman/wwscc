@@ -4,7 +4,7 @@
 %for info in c.items:
 
 <script>
-drivers[${info.driver.id}] = ${dumps(info.driver.__dict__, default=lambda x: str(x))|n} 
+drivers[${info.driver.id}] = ${dumps(info.driver.__dict__, default=lambda x: x is None and "" or str(x)+'x')|n} 
 </script>
 
 <% anyruns = sum([x.runs for x in info.cars]) %>

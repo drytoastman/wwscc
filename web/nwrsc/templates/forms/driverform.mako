@@ -2,6 +2,8 @@
 
 <style>
 #drivereditor input { width: 100%; }
+th { padding-left: 14px; padding-right: 5px; }
+th { text-align: right; }
 </style>
 
 <form id='drivereditor' action='${action}' method='POST'>
@@ -10,9 +12,10 @@
 <tbody>
 
 <tr>
-<th>Name</th>
+<th>First Name</th>
 <td colspan='2'><input name='firstname' type='text' value='${dr.firstname}'/></td>
-<td colspan='2'><input name='lastname' type='text' value='${dr.lastname}'/></td>
+<th>Last Name</th>
+<td colspan='3'><input name='lastname' type='text' value='${dr.lastname}'/></td>
 </tr>
 
 <tr>
@@ -32,11 +35,11 @@
 
 <tr>
 <th>City</th>
-<td><input name='city' type='text' value='${dr.city}'/></td>
+<td colspan='2'><input name='city' type='text' value='${dr.city}'/></td>
 <th>State</th>
-<td><input name='state' type='text' value='${dr.state}'/></td>
+<td><input name='state' type='text' value='${dr.state}' size=2/></td>
 <th>Zip</th>
-<td><input name='zip' type='text' value='${dr.zip}'/></td>
+<td><input name='zip' type='text' value='${dr.zip}' size=2/></td>
 </tr>
 
 <tr>

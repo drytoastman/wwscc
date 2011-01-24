@@ -156,7 +156,7 @@ class RegisterController(BaseController):
 	def editprofile(self):
 		driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
 		for k, v in self.form_result.iteritems():
-			if v is not None and v.strip() != "" and hasattr(driver, k):
+			if v is not None and hasattr(driver, k):
 				setattr(driver, k, v)
 		self.session.commit()
 		redirect(url_for(action='profile'))
