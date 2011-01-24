@@ -16,16 +16,8 @@ input.closebutton
    width: 15px;
    height: 15px;
 }
-.error-message {
-   color: red;
-}
-.labelcol .required 
-{
-	color: #800;
-}
-.ui-dialog {
-    font-size: 0.75em !important;
-}
+.error-message { color: red; }
+.labelcol .required { color: #800; }
 </style>
 </%def>
 
@@ -44,34 +36,12 @@ ${driverform(Driver(), h.url_for(action='newprofile'))}
 %else:
 
 <h2>My Profile</h2>
-<div class='display'>
-<div>${c.driver.firstname} ${c.driver.lastname}</div>
-<div>${c.driver.email}</div>
-<br/>
-<div>${h.hide(c.driver.address, 64)|n}</div>
-<div>${c.driver.city} ${c.driver.state} ${c.driver.zip}</div>
-<div>${h.hide(c.driver.homephone, 65)|n}</div>
-<br/>
-<div>Brag: ${c.driver.brag}</div>
-<div>Sponsor: ${c.driver.sponsor}</div>
-<div>Membership: ${c.driver.membership}</div>
-</div>
 
-<br/>
-
-<button class='editor' onclick='editdriver(${c.driver.id});'>Edit</button>
-
+<% from nwrsc.model import Driver %>
+${driverform(c.driver, h.url_for(action='editprofile'))}
+<button onclick="$('#drivereditor').submit();">Update</button>
 <script>
-var drivers = Array();
-drivers[${c.driver.id}] = ${dumps(c.driver.__dict__, default=lambda x: str(x))|n} 
-
-function driveredited()
-{
-	$('#drivereditor').attr('action', '${h.url_for(action='editprofile')}');
-	$('#drivereditor').submit();
-}
-
+$('input').keydown( function() { $(this).css('background', 'yellow')} );
 </script>
-${drivereditor()}
 
 %endif

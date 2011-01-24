@@ -28,7 +28,7 @@ Current: ${c.firstname} ${c.lastname}
 
 </div>
 
-<div id='error'>
+<div id='errormsg'>
 ${c.previouserror|n}
 </div>
 

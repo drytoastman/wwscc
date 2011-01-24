@@ -1,7 +1,7 @@
 <%def name="driverform(dr, action)">
 
 <style>
-#drivereditor input { width: 100%; }
+#drivereditor input { width: 100%; background: #fffffe; }
 th { padding-left: 14px; padding-right: 5px; }
 th { text-align: right; }
 </style>
@@ -19,7 +19,7 @@ th { text-align: right; }
 </tr>
 
 <tr>
-<th>Email</th>
+<th>Email/UniqueId</th>
 <td colspan='6'><input name='email' type='text' value='${dr.email}'/></td>
 </tr>
 
