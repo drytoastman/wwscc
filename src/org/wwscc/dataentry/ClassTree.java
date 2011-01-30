@@ -8,11 +8,16 @@
 
 package org.wwscc.dataentry;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
+
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import org.wwscc.components.CarTree;
@@ -23,10 +28,8 @@ import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 
 
-public class ClassTree extends CarTree implements MessageListener
+public class ClassTree extends CarTree implements MessageListener, ActionListener
 {
-	private static Logger log = Logger.getLogger("org.wwscc.dataentry.ClassTree");
-
 	public ClassTree()
 	{
 		super();
@@ -34,6 +37,31 @@ public class ClassTree extends CarTree implements MessageListener
 		Messenger.register(MT.ENTRANTS_CHANGED, this);
 		Messenger.register(MT.COURSE_CHANGED, this);
 		Messenger.register(MT.RUNGROUP_CHANGED, this);
+		
+		registerKeyboardAction(
+			this,
+			"enter",
+			KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+			JComponent.WHEN_FOCUSED
+		);
+	}
+	
+	private void processSelection()
+	{
+		TreePath tp = getSelectionPath();
+		if (tp == null)
+			return;
+
+		DefaultMutableTreeNode lf = (DefaultMutableTreeNode)tp.getLastPathComponent();
+		Object o = lf.getUserObject();
+		if (o instanceof Entrant)
+		{
+			Entrant entrant = (Entrant)lf.getUserObject();
+			if (entrant.isInRunOrder())
+				return;
+
+			Messenger.sendEvent(MT.CAR_ADD, entrant.getCarId());
+		}
 	}
 
 	class DClickWatch extends MouseAdapter
@@ -43,20 +71,7 @@ public class ClassTree extends CarTree implements MessageListener
 		{
 			if (e.getClickCount() == 2)
 			{
-				TreePath tp = getSelectionPath();
-				if (tp == null)
-					return;
-
-				DefaultMutableTreeNode lf = (DefaultMutableTreeNode)tp.getLastPathComponent();
-				Object o = lf.getUserObject();
-				if (o instanceof Entrant)
-				{
-					Entrant entrant = (Entrant)lf.getUserObject();
-					if (entrant.isInRunOrder())
-						return;
-
-					Messenger.sendEvent(MT.CAR_ADD, entrant.getCarId());
-				}
+				processSelection();
 			}
 		}
 	}	
@@ -72,10 +87,18 @@ public class ClassTree extends CarTree implements MessageListener
 				Set<Integer> runorder = Database.d.getCarIdsForCourse();
 				makeTree(reg, runorder);
 				break;
-
 			case RUNGROUP_CHANGED:
 				System.out.println(Database.d.getRunGroupMapping());
 				break;
+		}
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e)
+	{
+		if(e.getActionCommand() == "enter")
+		{
+			processSelection();
 		}
 	}
 }

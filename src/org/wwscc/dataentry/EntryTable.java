@@ -65,7 +65,7 @@ import org.wwscc.util.Messenger;
 /**
  * Table used for DataEntry 
  */
-public class EntryTable extends JTable implements MessageListener
+public class EntryTable extends JTable implements MessageListener, ActionListener
 {
 	ListSelectionModel colSel;
 	ListSelectionModel rowSel;
@@ -100,8 +100,15 @@ public class EntryTable extends JTable implements MessageListener
 		
 		InputMap im = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "cut"); // delete is same as Ctl+X
-		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "none"); // let Enter fall to default, so it goes to one default button
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "Enter Time");
 
+		registerKeyboardAction(
+			this,
+			"Enter Time",
+			KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+			JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+		);
+		
 		addMouseListener(new DClickWatch());
 		
 		Messenger.register(MT.TIME_ENTERED, this);
@@ -157,7 +164,6 @@ public class EntryTable extends JTable implements MessageListener
 				selectedE = (Entrant)sel;
 				driverPopup.show(EntryTable.this, e.getX(), e.getY());
 			}
-			//else if (sel instanceof Run)
 		}
 		
 		@Override
@@ -367,6 +373,13 @@ public class EntryTable extends JTable implements MessageListener
 				repaint();
 				break;
 		}
+	}
+
+	
+	@Override
+	public void actionPerformed(ActionEvent e)
+	{
+		Messenger.sendEvent(MT.TIME_ENTER_REQUEST, null);
 	}
 }
 

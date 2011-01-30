@@ -86,6 +86,7 @@ public abstract class DataInterface
 	public abstract void deleteCar(Car d) throws IOException;
 	public abstract void deleteCars(Collection<Car> d) throws IOException;
 	public abstract boolean isRegistered(Car c);
+	public abstract boolean isRegistered(int carid);
 
 	public abstract boolean setEntrantRuns(Car newCar, Collection<Run> runs);
 	public abstract void insertRun(Run r); 

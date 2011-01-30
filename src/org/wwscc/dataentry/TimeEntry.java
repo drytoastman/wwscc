@@ -37,11 +37,13 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
@@ -104,6 +106,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		Messenger.register(MT.OBJECT_DCLICKED, this);
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.COURSE_CHANGED, this);
+		Messenger.register(MT.TIME_ENTER_REQUEST, this);
 
 		connectionStatus = new JLabel("");
 		modeGroup = new ModeButtonGroup();
@@ -143,18 +146,27 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		gates.addFocusListener(this);
 
 		// set ` key as tab for mistypes in time/penalty fields
-		Set<AWTKeyStroke> s = new HashSet<AWTKeyStroke>(time.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		Set<AWTKeyStroke> s = new HashSet<AWTKeyStroke>(
+			time.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
 		s.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_BACK_QUOTE, 0));
 
 		for (JComponent c : new JComponent[] { reaction, sixty, time, cones, gates })
 			c.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, s);
 		for (int ii = 0; ii < Run.SEGMENTS; ii++)
 			segVal[ii].setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, s);
+		
+		registerKeyboardAction(
+			this,
+			"Enter Time",
+			KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+			JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+		);
 
 		
 		status = new JComboBox(new String[] { "OK", "DNF", "DNS", "RL", "NS", "DSQ" });
 		enter = new JButton("Enter Time");
 		enter.addActionListener(this);
+		enter.setDefaultCapable(true);
 		del = new JButton("Delete From List");
 		del.setFont(new Font(null, Font.PLAIN, 11));
 		del.setMargin(new Insets(0,0,0,0));
@@ -353,50 +365,55 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		connectionStatus.setText(msg);
 	}
 
+	private void enterTime()
+	{
+		String sStatus = (String)status.getSelectedItem();
+		double dTime = time.getTime();
+
+		try
+		{
+			/* Beep and exit if status is OK and we don't have a time */
+			if (Double.isNaN(dTime) && sStatus.equals("OK"))
+				throw new IndexOutOfBoundsException("No time or status entered");
+
+			/* Create a run from the text boxes and send */
+			Run val = new Run(reaction.getTime(), sixty.getTime(), dTime, cones.getInt(), gates.getInt(), sStatus);
+			for (int ii = 0; ii < Run.SEGMENTS; ii++)
+				val.setSegment(ii+1, segVal[ii].getTime());
+
+			Messenger.sendEventNow(MT.TIME_ENTERED, val);
+
+			/* If everything progressed okay remove any times from the serial port
+				if they were selected and used, ... */
+			Object o = timeList.getSelectedValue();
+			if (o instanceof Run)
+			{
+				Run r = (Run)o;
+				if ((r != null) && (r.getRaw() == dTime))
+				{
+					activeModel.remove(timeList.getSelectedIndex());
+				}
+			}
+			/* ... select the next value if one exists */
+			selectNext(0);
+		}
+		catch (IndexOutOfBoundsException iobe)
+		{
+			error.setText(iobe.getMessage());
+			iobe.printStackTrace();
+            Toolkit.getDefaultToolkit().beep();
+		}
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
+		Component compFocusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 		String cmd = e.getActionCommand();
 		if (cmd.equals("Enter Time"))
 		{
-			String sStatus = (String)status.getSelectedItem();
-			double dTime = time.getTime();
-
-			try
-			{
-				/* Beep and exit if status is OK and we don't have a time */
-				if (Double.isNaN(dTime) && sStatus.equals("OK"))
-					throw new IndexOutOfBoundsException("No time or status entered");
-
-				/* Create a run from the text boxes and send */
-				Run val = new Run(reaction.getTime(), sixty.getTime(), dTime, cones.getInt(), gates.getInt(), sStatus);
-				for (int ii = 0; ii < Run.SEGMENTS; ii++)
-					val.setSegment(ii+1, segVal[ii].getTime());
-
-				Messenger.sendEventNow(MT.TIME_ENTERED, val);
-	
-				/* If everything progressed okay remove any times from the serial port
-					if they were selected and used, ... */
-				Object o = timeList.getSelectedValue();
-				if (o instanceof Run)
-				{
-					Run r = (Run)o;
-					if ((r != null) && (r.getRaw() == dTime))
-					{
-						activeModel.remove(timeList.getSelectedIndex());
-					}
-				}
-				/* ... select the next value if one exists */
-				selectNext(0);
-			}
-			catch (IndexOutOfBoundsException iobe)
-			{
-				error.setText(iobe.getMessage());
-				iobe.printStackTrace();
-	            Toolkit.getDefaultToolkit().beep();
-			}
+			enterTime();
 		}
-
 		else if (cmd.equals("Delete From List"))
 		{
 			int index = timeList.getSelectedIndex();
@@ -576,6 +593,10 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			case TIMER_TAKES_FOCUS:
 				log.info("Timer takes focus: " + (Boolean)o);
 				timerTakesFocus = (Boolean)o;
+				break;
+				
+			case TIME_ENTER_REQUEST:
+				enterTime();
 				break;
 		}
 	}

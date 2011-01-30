@@ -9,17 +9,27 @@
 
 package org.wwscc.dataentry;
 
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.components.CurrentDatabaseLabel;
@@ -47,6 +57,7 @@ public class DataEntry extends JFrame implements MessageListener
 	FindEntry finder;
 	EntryTable table;
 	JScrollPane tableScroll;
+	PreregPanel prereg;
 
 	TimeEntry timeEntry;
 
@@ -56,6 +67,8 @@ public class DataEntry extends JFrame implements MessageListener
 
 	class HelpPanel extends JLabel implements MessageListener
 	{
+		private static final long serialVersionUID = -6376824946457087404L;
+
 		public HelpPanel()
 		{
 			super("Use Tabbed Panels to add Entrants");
@@ -100,14 +113,16 @@ public class DataEntry extends JFrame implements MessageListener
 		driverEntry = new DriverEntry();
 		announcer = new ResultsPane();
 		finder = new FindEntry();
+		prereg = new PreregPanel(numberTree);
 
-		
+
 		tabs = new JTabbedPane();
 		tabs.setMinimumSize(new Dimension(250, 400));
 		tabs.setPreferredSize(new Dimension(250, 768));
 		tabs.addTab("Add By Name", driverEntry);
-		tabs.addTab("Preregistered", new JScrollPane(numberTree));
+		tabs.addTab("Preregistered", prereg);
 		tabs.addTab(" Announcer Data ", announcer);
+
 
 		tableScroll = new JScrollPane(table);
 		tableScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -143,8 +158,7 @@ public class DataEntry extends JFrame implements MessageListener
 		setContentPane(content);
 		setSize(1024,768);
 		setVisible(true);
-
-		getRootPane().setDefaultButton(timeEntry.getEnterButton());
+		
 		log.log(Level.INFO, "Starting Application: {0}", new java.util.Date());
 		
 		Messenger.register(MT.OBJECT_DCLICKED, this);

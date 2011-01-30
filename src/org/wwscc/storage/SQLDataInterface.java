@@ -771,9 +771,15 @@ public abstract class SQLDataInterface extends DataInterface
 	@Override
 	public boolean isRegistered(Car c)
 	{
+		return isRegistered(c.id);
+	}
+	
+	@Override
+	public boolean isRegistered(int carid)
+	{
 		try
 		{
-			ResultData cr = executeSelect("ISREGISTERED", newList(c.id, currentEvent.id));
+			ResultData cr = executeSelect("ISREGISTERED", newList(carid, currentEvent.id));
 			return (cr.size() > 0);
 		}
 		catch (Exception ioe)
@@ -782,7 +788,6 @@ public abstract class SQLDataInterface extends DataInterface
 			return false;
 		}
 	}
-	
 
 	@Override
 	public void insertRun(Run r)

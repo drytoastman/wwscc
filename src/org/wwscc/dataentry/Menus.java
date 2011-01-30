@@ -64,6 +64,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		JMenu edit = new JMenu("Edit");
 		add(edit);
 		edit.add(createItem("Find", KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK)));
+		edit.add(createItem("Quick Add Driver", KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK)));
 
 		/* Event Menu */
 		JMenu event = new JMenu("Event");
@@ -184,6 +185,10 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		else if (cmd.equals("Find"))
 		{
 			Messenger.sendEvent(MT.OPEN_FIND, null);
+		}
+		else if(cmd.equals("Quick Add Driver"))
+		{
+			Messenger.sendEvent(MT.QUICK_ADD, null);
 		}
 		else if (cmd.equals("Start Fake User"))
 		{
