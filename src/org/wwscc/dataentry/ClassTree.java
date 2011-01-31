@@ -96,7 +96,7 @@ public class ClassTree extends CarTree implements MessageListener, ActionListene
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		if(e.getActionCommand() == "enter")
+		if(e.getActionCommand().equals("enter"))
 		{
 			processSelection();
 		}
