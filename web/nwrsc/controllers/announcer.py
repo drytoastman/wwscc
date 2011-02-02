@@ -88,7 +88,7 @@ class AnnouncerController(BaseController):
 
 		self._createInfo(carid)
 
-		c.champresults = getChampResults(self.session, c.cls.code).get(c.cls.code, [])
+		c.champresults = getChampResults(self.session, self.settings, c.cls.code).get(c.cls.code, [])
 
 		ret = {}
 		ret['updated'] = int(request.GET.get('updated', 0)) # Return it
