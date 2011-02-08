@@ -51,8 +51,8 @@ class Entrant(object):
 
 
 champResult = """select r.points,r.ppoints,r.eventid,r.classcode,r.carid,d.id,d.firstname,d.lastname 
-				from eventresults as r, cars as c, drivers as d 
-				where r.carid=c.id and c.driverid=d.id and r.classcode like :codeglob
+				from eventresults as r, cars as c, drivers as d, events as e
+				where r.eventid=e.id and e.practice=0 and r.carid=c.id and c.driverid=d.id and r.classcode like :codeglob
 				order by r.classcode,d.firstname COLLATE NOCASE,d.lastname COLLATE NOCASE,r.eventid"""
 
 def getChampResults(session, settings, codeglob = '%'):

@@ -17,6 +17,7 @@ public class Event implements Serializable
 {
 	protected int id;
 	protected boolean ispro;
+	protected boolean practice;
 	protected int courses;
 	protected int runs;
 	protected int countedruns;

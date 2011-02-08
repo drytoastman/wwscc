@@ -53,6 +53,11 @@
 <td><input type='text' size='40' name='chair' value="${c.event.chair}"></td>
 </tr>
 
+<tr class='advanced' title='Is a practice event, does not count towards points'>
+<th>Practice</th>
+<td><input type='checkbox' name='practice' ${c.event.practice and "checked='yes'"}></td>
+</tr>
+
 <tr class='advanced' title='check if this is a ProSolo style event'>
 <th>Is A Pro</th>
 <td><input type='checkbox' name='ispro' ${c.event.ispro and "checked='yes'"}></td>

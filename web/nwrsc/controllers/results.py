@@ -183,7 +183,7 @@ class ResultsController(BaseController):
 
 
 	def champ(self):
-		c.events = self.session.query(Event).all()
+		c.events = self.session.query(Event).filter(Event.practice==False).all()
 		c.results = getChampResults(self.session, self.settings)
 		return render_mako('db:champ.mako')
 

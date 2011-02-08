@@ -33,7 +33,8 @@ t_events = Table('events', metadata,
 	Column('paypal', String(64)),	
 	Column('snail', String(256)),	
 	Column('cost', SmallInteger),
-	Column('notes', String(256))
+	Column('notes', String(256)),
+	Column('practice', Boolean)
 	)
 
 

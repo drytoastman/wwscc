@@ -76,9 +76,9 @@ class BaseController(WSGIController):
 		self.settings = Settings()
 		if self.database is not None:
 			self.settings.load(self.session)
-			if self.settings.schema != '661':
+			if self.settings.schema != '20112':
 				start_response('200 OK', [('content-type', 'text/html')], None)
-				return "Software schema verison is 661 but series database is " + self.settings.schema +  \
+				return "Software schema verison is 20112 but series database is " + self.settings.schema +  \
 					", database schema or software needs to be updated to match"
 
 		try:

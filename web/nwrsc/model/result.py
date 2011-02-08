@@ -112,8 +112,12 @@ top2 = "from runs as r, cars as c, drivers as d where r.carid=c.id and c.driveri
 def loadTopSegRawTimes(session, event, course, seg, classdata):
 	getcol = ", MIN(r.seg%d) as toptime " % (seg)
 	topSegRaw = top1 + getcol + top2 + " and r.course=:course and r.seg%d > %d group by r.carid order by toptime " % (seg, event.getSegments()[seg-1])
-	return [Result(row,classdata) for row in session.execute(topSegRaw, params={'eventid':event.id, 'course':course})]
 
+	ttl = TopTimesList("Top Segment Times (Course %d)" % course, "Name", "Class", "Time")
+	for row in session.execute(topSegRaw, params={'eventid':event.id, 'course':course}):
+		ttl.add(row.carid, row.firstname + " " + row.lastname, row.classcode, "%0.3f" % row.toptime)
+	return ttl
+		
 			
 topCourseRaw    = top1 + ", (r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
 topCourseRawAll = top1 + ", (r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.course=:course and r.bnorder=1 order by toptime"

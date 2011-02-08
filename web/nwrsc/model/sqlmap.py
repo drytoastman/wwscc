@@ -57,6 +57,6 @@ sqlmap = {
 'UPDATECAR':'update cars set driverid=:h1,year=:h2,make=:h3,model=:h4,color=:h5,number=:h6,classcode=:h7,indexcode=:h8 where id=:h9',
 'UPDATECHALLENGEROUND':'update challengerounds set challengeid=:h1,round=:h2,swappedstart=:h3,car1id=:h4,car1dial=:h5,car1result=:h6,car1newdial=:h7,car2id=:h8,car2dial=:h9,car2result=:h10,car2newdial=:h11 where id=:h12',
 'UPDATEDRIVER':'update drivers set firstname=:h1,lastname=:h2,email=:h3,address=:h4,city=:h5,state=:h6,zip=:h7,homephone=:h8,workphone=:h9,clubs=:h10,brag=:h11,sponsor=:h12,membership=:h13 where id=:h14',
-'UPDATEEVENTS':'update events set ispro=:h1,courses=:h2,runs=:h3,countedruns=:h4,conepen=:h5,gatepen=:h6,segments=:h7,password=:h8,name=:h9,date=:h10,location=:h11,sponsor=:h12,host=:h13,designer=:h14,regopened=:h15,regclosed=:h16,perlimit=:h17,totlimit=:h18,cost=:h19,paypal=:h20,snail=:h21,notes=:h22 where id=:h23',
+'UPDATEEVENTS':'update events set ispro=:h1,practice=:h2,courses=:h3,runs=:h4,countedruns=:h5,conepen=:h6,gatepen=:h7,segments=:h8,password=:h9,name=:h10,date=:h11,location=:h12,sponsor=:h13,host=:h14,designer=:h15,regopened=:h16,regclosed=:h17,perlimit=:h18,totlimit=:h19,cost=:h20,paypal=:h21,snail=:h22,notes=:h23 where id=:h24',
 'UPDATERUN':'update runs set carid=:h1,eventid=:h2,course=:h3,run=:h4,cones=:h5,gates=:h6,status=:h7,rorder=:h8,norder=:h9,brorder=:h10,bnorder=:h11,reaction=:h12,sixty=:h13,seg1=:h14,seg2=:h15,seg3=:h16,seg4=:h17,seg5=:h18,raw=:h19,net=:h20 where id=:h21',
 }

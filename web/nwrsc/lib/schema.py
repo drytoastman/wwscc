@@ -84,6 +84,7 @@ class EventSchema(Schema):
 	host = String()
 	designer = String()
 	chair = String()
+	practice = Bool()
 	ispro = Bool()
 	courses = Int(min=1, not_empty=True)
 	runs = Int(min=1, not_empty=True)
