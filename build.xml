@@ -8,6 +8,7 @@
     <import file="nbproject/profiler-build-impl.xml"/>
 
 	<target name="-post-jar">
+		<delete file="wwsccapps.jar"/>
 		<jar destfile="wwsccapps.jar">
 			<zipgroupfileset dir="lib" includes="*.jar" /> 
 			<fileset dir="native">

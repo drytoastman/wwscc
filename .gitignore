@@ -10,3 +10,4 @@ web/backup
 web/series
 web/data
 web/nwrsc.egg-info
+web/installer/python/Lib/site-packages/nwrsc-*
