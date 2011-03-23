@@ -1,6 +1,13 @@
 <%inherit file="base.mako" />
 
-<%def name="carArgs(car)">'${car.id}', '${car.year}', '${car.make}', '${car.model}', '${car.color}', '${car.classcode}', '${car.indexcode}', '${car.number}'</%def>
+<%
+	def qa(text):
+		return text.replace("'", "\\'")
+%>
+
+<%def name="carArgs(car)">
+'${car.id}', '${car.year|qa}', '${car.make|qa}', '${car.model|qa}', '${car.color|qa}', '${car.classcode}', '${car.indexcode}', '${car.number}'
+</%def>
 
 <h2>My Cars</h2>
 <div class='infobox'>
