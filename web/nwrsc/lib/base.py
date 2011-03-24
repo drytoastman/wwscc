@@ -13,6 +13,7 @@ from sqlalchemy.pool import NullPool
 import time
 import os
 import sys
+import glob
 
 import logging
 log = logging.getLogger(__name__)
@@ -53,6 +54,20 @@ class BaseController(WSGIController):
 	def databasePath(self, database):
 		return os.path.join(config['seriesdir'], '%s.db' % (database))
 
+	def _findDatabase(self):
+		dbpath = self.databasePath(self.database)
+		if os.path.exists(dbpath):
+			return dbpath
+		
+		dblower = dbpath.lower()
+		for file in glob.glob(self.databasePath('*')):
+			if file.lower() == dblower:
+				self.database = os.path.basename(file)[:-3]
+				return file
+
+		self.database = None
+		return None
+
 	def __call__(self, environ, start_response):
 		"""Invoke the Controller"""
 		# WSGIController.__call__ dispatches to the Controller method
@@ -63,11 +78,11 @@ class BaseController(WSGIController):
 		self.srcip = request.environ.get("X_FORWARDED_FOR", request.environ["REMOTE_ADDR"]) 
 		self.routingargs = environ['wsgiorg.routing_args'][1]
 		self.database = self.routingargs.get('database', None)
-		if os.path.exists(self.databasePath(self.database)):
-			engine = create_engine('sqlite:///%s' % self.databasePath(self.database), poolclass=NullPool)
+		dbpath = self._findDatabase()
+		if dbpath is not None:
+			engine = create_engine('sqlite:///%s' % dbpath, poolclass=NullPool)
 		else:
 			engine = create_engine('sqlite:///:memory:', poolclass=NullPool)
-			self.database = None
 
 		self.session = Session()
 		self.session.bind = engine
