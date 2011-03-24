@@ -5,7 +5,14 @@
 <table class='carlist'>
 %for driver,car,reg in c.reglist:
 %if car.classcode != current:
-	<tr><th colspan='4'>${car.classcode} - ${c.classdata.classlist[car.classcode].descrip}</th></tr>
+	<% 
+		cd = c.classdata.classlist.get(car.classcode)
+		if cd is None:
+			descrip = "Invalid class"
+		else:
+			descrip = cd.descrip
+	%>
+	<tr><th colspan='4'>${car.classcode} - ${descrip}</th></tr>
 	<% current = car.classcode; counter = 0 %>
 %endif
 
