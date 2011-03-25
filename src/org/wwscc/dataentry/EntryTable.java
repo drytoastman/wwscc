@@ -442,7 +442,7 @@ class TimeRenderer extends DefaultTableCellRenderer
 					setBackground(backgroundDone);
 			}
 
-			String display = new String(df.format(r.getRaw()) + " (" + r.getCones() + "," + r.getGates() + ")");
+			String display = df.format(r.getRaw()) + " (" + r.getCones() + "," + r.getGates() + ")";
 			if (!r.isOK())
 				display= "<HTML><center>" + r.getStatus() + "<br><FONT size=-2>" + display;
 
