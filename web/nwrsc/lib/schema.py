@@ -1,6 +1,6 @@
 
 from formencode import Schema, ForEach, FancyValidator, Validator
-from formencode.validators import Number, String, Bool, Int
+from formencode.validators import Number, String, Bool, Int, Regex
 from formencode.variabledecode import NestedVariables
 
 from datetime import datetime
@@ -105,7 +105,7 @@ class EventSchema(Schema):
 class CopySeriesSchema(Schema):
 	allow_extra_fields = True
 	filter_extra_fields = True
-	name = String(not_empty=True)
+	name = Regex(r'^(\w)+$')
 	password = String(not_empty=True)
 	settings = Bool()
 	data = Bool()
