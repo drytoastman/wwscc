@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.dialogs.DatabaseDialog;
+import org.wwscc.util.CancelException;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.MultiInputDialog;
@@ -114,8 +115,6 @@ public class Database
 		file = null;
 	}
 
-	static class CancelException extends IOException {}
-
 	private static String getHost() throws IOException
 	{
 		MultiInputDialog dia = new MultiInputDialog("Scorekeeper Server");
@@ -157,7 +156,7 @@ public class Database
 						throw new IOException("Unable to delete old version already on disk ("+out+")");
 				}
 				else
-					throw new Exception("Can't download file, already exists on local system ("+out+")");
+					throw new IOException("Can't download file, already exists on local system ("+out+")");
 			}
 
 			conn.downloadDatabase(out, lockServerSide);

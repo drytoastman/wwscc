@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -23,6 +22,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
+import org.wwscc.util.CancelException;
 import org.wwscc.util.Prefs;
 
 /**
@@ -39,7 +39,6 @@ public class RemoteHTTPConnection
 	int transfered;
 
 	class AuthException extends IOException {}
-	class CancelException extends IOException {}
 
 	public RemoteHTTPConnection() throws UnknownHostException
 	{
@@ -89,13 +88,17 @@ public class RemoteHTTPConnection
 			catch (AuthException e)
 			{
 				String s = JOptionPane.showInputDialog("Password not accepted, please enter the proper password: ");
-				if (s == null) return null;
+				if (s == null) 
+				{
+					monitor.close();
+					throw new CancelException("No input for password dialog");
+				}
 				Prefs.setPasswordFor(dbname, s);
 			}
 			catch (CancelException ce)
 			{
 				monitor.close();
-				return null;
+				throw ce;
 			}
 			catch (IOException ioe)
 			{
@@ -249,8 +252,9 @@ public class RemoteHTTPConnection
 		dbname = name.substring(0, name.indexOf('.'));
 		String action = (lockServerSide) ? "download" : "copy";
 
+		byte[] data = basicRequest(new URL(String.format("http://%s/dbserve/%s/%s", host, dbname, action)), "GET", null);
 		FileOutputStream output = new FileOutputStream(dst);
-		output.write(basicRequest(new URL(String.format("http://%s/dbserve/%s/%s", host, dbname, action)), "GET", null));
+		output.write(data);
 		output.close();
 		output = null;
 	}
