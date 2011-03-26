@@ -119,6 +119,7 @@ public class ChallengeRound
 		
 		public void setCar(int i) { carid = i; }
 		public void setDial(double d) { dial = d; }
+		public void setNewDial(double d) { newdial = d; }
 
 		public void applyRun(ChallengeRun r)
 		{

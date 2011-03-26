@@ -156,7 +156,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			right = bottom;
 		}
 		
-		add(stage, "span 3, split 3, al center");
+		add(stage, "span 3, split 3, al center, gapbottom 10");
 		add(swap, "");
 		add(reset, "wrap");
 
@@ -166,12 +166,14 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		add(right.nameLbl, "al center, split 2");
 		add(right.dialLbl, "wrap");
 
-		add(left.autoWin, "hmax 15, al center");
-		add(right.autoWin, "hmax 15, al center, wrap");
+		add(left.autoWin, "hmax 15, al center, split 2");
+		add(left.changeDial, "hmax 15, al center");
+		add(right.autoWin, "hmax 15, al center, split 2");
+		add(right.changeDial, "hmax 15, al center, wrap");
 
 		JLabel border = new JLabel(" ");
 		border.setBorder(new UnderlineBorder());
-		add(border, "growx, span 2, wrap");
+		add(border, "growx, span 2, gaptop 3, gapbottom 5, wrap");
 		add(new JLabel("Left Run"), "");
 		add(new JLabel("Right Run"), "wrap");
 		add(left.leftRun, "");
@@ -364,6 +366,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		public JLabel nameLbl;
 		public JLabel dialLbl;
 		public JButton autoWin;
+		public JButton changeDial;
 		public double dial;
 		public RunDisplay leftRun, rightRun;
 		public Id.Entry entryId;
@@ -371,20 +374,36 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		public EntrantDisplay(Id.Entry eid)
 		{
 			entryId = eid;
-		
 			dial = model.getDial(eid);
 			Entrant e = model.getEntrant(eid);
 			if (e != null)
 				name = e.getFirstName() + " " + e.getLastName();
 			else
 				name = "(none)";
+			
 			autoWin = new JButton("AutoWin");
 			autoWin.setFont(new Font(Font.DIALOG, Font.PLAIN, 10));
 			autoWin.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					Messenger.sendEvent(MT.AUTO_WIN, entryId);
 				}
 			});
+
+			changeDial = new JButton("Dial");
+			changeDial.setFont(new Font(Font.DIALOG, Font.PLAIN, 10));
+			changeDial.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String ret = (String)JOptionPane.showInputDialog("Override Dialin Value", dial);
+					if (ret != null) {
+						dial = Double.valueOf(ret);
+						model.overrideDial(entryId, dial);
+						dialLbl.setText(df.format(dial));
+					}
+				}
+			});
+			
 			nameLbl = new JLabel(name);
 			nameLbl.setFont(new Font(Font.DIALOG, Font.BOLD, 13));
 			dialLbl = new JLabel(df.format(dial));
@@ -393,6 +412,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			rightRun = new RunDisplay(eid.makeRight(), dial);
 		}
 		
+		@Override
 		public String getName()
 		{
 			return name;

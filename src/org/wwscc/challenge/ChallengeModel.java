@@ -267,6 +267,15 @@ public class ChallengeModel implements MessageListener
 		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 		return re.getDial();
 	}
+
+	public void overrideDial(Id.Entry eid, double newDial)
+	{
+		ChallengeRound r = getRound(eid);
+		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
+		re.setDial(newDial);
+		re.setNewDial(newDial);
+		Database.d.updateChallengeRound(r);
+	}
 	
 	public ChallengeRound getRound(Id.Round rid)
 	{
