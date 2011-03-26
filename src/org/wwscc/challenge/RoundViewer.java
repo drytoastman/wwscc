@@ -2,7 +2,7 @@
  * This software is licensed under the GPLv3 license, included as
  * ./GPLv3-LICENSE.txt in the source distribution.
  *
- * Portions created by Brett Wilson are Copyright 2008 Brett Wilson.
+ * Portions created by Brett Wilson are Copyright 2011 Brett Wilson.
  * All rights reserved.
  */
 
@@ -22,6 +22,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.InternalFrameAdapter;
@@ -42,9 +43,9 @@ import org.wwscc.util.TimeTextField;
  */
 public class RoundViewer extends JInternalFrame implements MessageListener
 {
-	private static Logger log = Logger.getLogger(RoundViewer.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(RoundViewer.class.getCanonicalName());
 	
-	static NumberFormat df;
+	static final NumberFormat df;
 	static
 	{
 		df = NumberFormat.getNumberInstance();
@@ -59,7 +60,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 	static Font timeFont = new Font("SansSerif", Font.PLAIN, 12);
 
 	ChallengeModel model;
-	JButton stage, swap;
+	JButton stage, swap, reset;
 	JLabel firstresult, secondresult, finalresult, rldiff, lrdiff;
 	EntrantDisplay top, bottom;
 	Id.Round roundId;
@@ -84,6 +85,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 
 		stage = new JButton("Stage");
 		stage.addActionListener(new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (model.getRound(roundId).isSwappedStart())
 					model.makeActive(roundId.makeUpperRight());
@@ -95,10 +97,23 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 
 		swap = new JButton("Swap");
 		swap.addActionListener(new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				model.getRound(roundId).swapStart();
 				swapped = model.getRound(roundId).isSwappedStart();
 				updateResults();
+				buildLayout();
+			}
+		});
+
+		reset = new JButton("Reset Round");
+		reset.addActionListener(new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (JOptionPane.showConfirmDialog(null, "This will remove all run data for this round, are you sure?", "Are you Sure?", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION)
+					return;
+				model.resetRound(roundId);
+				event(MT.RUN_CHANGED, null);
 				buildLayout();
 			}
 		});
@@ -110,6 +125,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		event(MT.ACTIVE_CHANGE, null);
 		event(MT.RUN_CHANGED, null);
 		addInternalFrameListener(new InternalFrameAdapter() {
+			@Override
 			public void internalFrameClosed(InternalFrameEvent e)
 			{
 				Messenger.unregister(MT.ACTIVE_CHANGE, RoundViewer.this);
@@ -140,8 +156,9 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			right = bottom;
 		}
 		
-		add(stage, "span 2, split 2, al center");
-		add(swap, "wrap");
+		add(stage, "span 3, split 3, al center");
+		add(swap, "");
+		add(reset, "wrap");
 
 
 		add(left.nameLbl, "al center, split 2");
@@ -208,6 +225,12 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		{
 			r1 = e1.rightRun;
 			r2 = e2.leftRun;
+		}
+
+		if ((r1.getRun() == null) || (r2.getRun() == null))
+		{
+			ret.msg = " -*- ";
+			return ret;
 		}
 
 		d1 = r1.getDiff();
@@ -461,13 +484,18 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		
 		public void updateRun()
 		{
-			run = model.getRun(runId);
-			if (run == null)
-				return;
-		
 			try
 			{
 				updating = true;
+				value.setText("00.000");
+				cones.setSelectedIndex(0);
+				status.setSelectedIndex(0);
+				info.setText("0.000");
+
+				run = model.getRun(runId);
+				if (run == null)
+					return;
+
 				savetime = run.getRaw();
 				value.setTime(run.getRaw());
 				cones.setSelectedItem(run.getCones());

@@ -822,6 +822,18 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
+	@Override
+	public void deleteRun(int id)
+	{
+		try
+		{
+			executeUpdate("DELETERUN", newList(id));
+		}
+		catch (Exception ioe)
+		{
+			logError("deleteRun", ioe);
+		}
+	}
 	
 	@Override
 	public boolean setEntrantRuns(Car c, Collection<Run> runs)

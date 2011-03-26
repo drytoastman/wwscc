@@ -33,7 +33,7 @@ import org.wwscc.util.Messenger;
  */
 public class ChallengeModel implements MessageListener
 {
-	private static Logger log = Logger.getLogger(ChallengeModel.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(ChallengeModel.class.getCanonicalName());
 
 	Map<Integer, Map<Integer, ChallengeRound>> rounds;
 	Map<Integer, Challenge> challenges;
@@ -276,6 +276,24 @@ public class ChallengeModel implements MessageListener
 		if (m == null)
 			return null;
 		return m.get(rid.round);
+	}
+
+	public void resetRound(Id.Round rid)
+	{
+		ChallengeRound r = getRound(rid);
+		try {
+			Database.d.deleteRun(r.getTopCar().getLeft().getId());
+		} catch (NullPointerException npe) {}
+		try {
+			Database.d.deleteRun(r.getTopCar().getRight().getId());
+		} catch (NullPointerException npe) {}
+		try {
+			Database.d.deleteRun(r.getBottomCar().getLeft().getId());
+		} catch (NullPointerException npe) {}
+		try {
+			Database.d.deleteRun(r.getBottomCar().getRight().getId());
+		} catch (NullPointerException npe) {}
+		loadEventData();
 	}
 
 	/**

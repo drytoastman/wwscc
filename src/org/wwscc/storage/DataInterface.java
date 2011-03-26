@@ -91,6 +91,7 @@ public abstract class DataInterface
 	public abstract boolean setEntrantRuns(Car newCar, Collection<Run> runs);
 	public abstract void insertRun(Run r); 
 	public abstract void updateRun(Run r);
+	public abstract void deleteRun(int id);
 	
 	public abstract List<EventResult> getResultsForClass(String classcode);
 
