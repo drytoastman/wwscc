@@ -48,21 +48,21 @@ import org.wwscc.util.Messenger;
  * The BracketPane displays a tournament bracket, the driver labels and some action buttons.
  * @author bwilson
  */
-public class BracketPane extends JLayeredPane implements MessageListener, Scrollable
+public final class BracketPane extends JLayeredPane implements MessageListener, Scrollable
 {
-	private static Logger log = Logger.getLogger(BracketPane.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(BracketPane.class.getCanonicalName());
 	private static final int roundWidth = 100;
 	private static final int initialSpacing = 36;
 
-    public static int[] RANK4 =  new int[] { 1, 4, 2, 3 };
-    public static int[] RANK8 =  new int[] { 1, 8, 4, 5, 2, 7, 3, 6 };
-    public static int[] RANK16 = new int[] { 1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11 };
-    public static int[] RANK32 = new int[] { 1, 32, 16, 17, 8, 25, 9, 24, 4, 29, 13, 20, 5, 28, 12, 21, 2, 31, 15, 18, 7, 26, 10, 23, 3, 30, 14, 19, 6, 27, 11, 22 };
+    public static final int[] RANK4 =  new int[] { 1, 4, 2, 3 };
+    public static final int[] RANK8 =  new int[] { 1, 8, 4, 5, 2, 7, 3, 6 };
+    public static final int[] RANK16 = new int[] { 1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11 };
+    public static final int[] RANK32 = new int[] { 1, 32, 16, 17, 8, 25, 9, 24, 4, 29, 13, 20, 5, 28, 12, 21, 2, 31, 15, 18, 7, 26, 10, 23, 3, 30, 14, 19, 6, 27, 11, 22 };
 
-	public static int[] POS4 = new int[4];
-	public static int[] POS8 = new int[8];
-	public static int[] POS16 = new int[16];
-	public static int[] POS32 = new int[32];
+	public static final int[] POS4 = new int[4];
+	public static final int[] POS8 = new int[8];
+	public static final int[] POS16 = new int[16];
+	public static final int[] POS32 = new int[32];
 	
 	static
 	{
@@ -78,7 +78,7 @@ public class BracketPane extends JLayeredPane implements MessageListener, Scroll
 
 	private TransferHandler handler = new DriverDrop();
 	//private TransferHandler roundMove = new RoundDrag();
-	private int challengeid;
+	private Challenge challenge;
 	private int baseRounds;
 	private Vector<RoundGroup> rounds;
 	private RoundGroup thirdPRound;
@@ -116,10 +116,12 @@ public class BracketPane extends JLayeredPane implements MessageListener, Scroll
 			});
 
 			open.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e)
 				{
-					RoundViewer v = new RoundViewer(model, new Id.Round(challengeid, round));
+					RoundViewer v = new RoundViewer(model, new Id.Round(challenge.getId(), round));
 					v.addInternalFrameListener(new InternalFrameAdapter() {
+						@Override
 						public void internalFrameClosed(InternalFrameEvent e) {
 							requestFocus();
 					}});
@@ -167,11 +169,11 @@ public class BracketPane extends JLayeredPane implements MessageListener, Scroll
 				Challenge c = (Challenge)data;
 				if (c == null)
 					break;
-				setChallenge(c.getId());
+				setChallenge(c);
 				break;
 
 			case PRELOAD_MENU:
-				BracketingList b = new BracketingList(baseRounds*2);
+				BracketingList b = new BracketingList(challenge.getName(), challenge.isBonus(), baseRounds*2);
 				b.doDialog("Auto Load", null);
 				List<Entrant> toload = b.getResult();
 				if (toload == null)
@@ -193,7 +195,7 @@ public class BracketPane extends JLayeredPane implements MessageListener, Scroll
 					int placement = pos[ii];
 					int rndidx = topround - placement/2;
 					Id.Entry.Level level = (placement%2==1) ? Id.Entry.Level.LOWER : Id.Entry.Level.UPPER;
-					Id.Entry entry = new Id.Entry(challengeid, rndidx, level);
+					Id.Entry entry = new Id.Entry(challenge.getId(), rndidx, level);
 					if (bys > 0)
 					{
 						entry = entry.advancesTo();
@@ -203,12 +205,12 @@ public class BracketPane extends JLayeredPane implements MessageListener, Scroll
 				}
 
 				// call set challenge to update all of our labels
-				setChallenge(challengeid);
+				setChallenge(challenge);
 				break;
 
 			case ENTRANT_CHANGED:
 				Id.Entry eid = (Id.Entry)data;
-				if (eid.challengeid == challengeid)
+				if (eid.challengeid == challenge.getId())
 				{
 					if (eid.round == 0)
 					{
@@ -257,10 +259,10 @@ public class BracketPane extends JLayeredPane implements MessageListener, Scroll
 	 * recreate the brackets and components.
 	 * @param id
 	 */
-	public void setChallenge(int id)
+	public void setChallenge(Challenge c)
 	{
-		challengeid = id;
-		int newDepth = model.getDepth(challengeid);
+		challenge = c;
+		int newDepth = challenge.getDepth();
 
 		/* base rounds is the number of entrants int the first full round */
 		removeAll();		
@@ -577,12 +579,12 @@ public class BracketPane extends JLayeredPane implements MessageListener, Scroll
 		{
 			entrant = e;
 			setText((e == null) ? " " : e.getName());
-			model.setEntrant(new Id.Entry(challengeid, round, level), entrant);
+			model.setEntrant(new Id.Entry(challenge.getId(), round, level), entrant);
 		}
 
 		public void updateEntrant()
 		{
-			entrant = model.getEntrant(new Id.Entry(challengeid, round, level));
+			entrant = model.getEntrant(new Id.Entry(challenge.getId(), round, level));
 			setText((entrant == null) ? " " : entrant.getName());			
 		}
 		
@@ -632,8 +634,8 @@ public class BracketPane extends JLayeredPane implements MessageListener, Scroll
 					int src = Integer.parseInt(s.substring(5));
 					int dst = Integer.parseInt(b.getText().substring(5));
 					Messenger.sendEvent(MT.MOVE_ROUND, new Id.Round[] {
-										new Id.Round(challengeid, src),
-										new Id.Round(challengeid, dst) } );
+										new Id.Round(challenge.getId(), src),
+										new Id.Round(challenge.getId(), dst) } );
 					return true;
 				}
 			}

@@ -40,11 +40,19 @@ public class BracketingList extends BaseDialog<List<Entrant>> implements ChangeL
 	JTable table;
 	int required;
 
-	public BracketingList(int size)
+	
+	public BracketingList(String cname, boolean bonus, int size)
 	{
 		super(new MigLayout("fill"), false);
+
+		if (bonus)
+			model = new BracketingListModel(BracketingListModel.ChallengeType.BONUS);
+		else if (cname.contains("Ladies"))
+			model = new BracketingListModel(BracketingListModel.ChallengeType.LADIES);
+		else
+			model = new BracketingListModel(BracketingListModel.ChallengeType.OPEN);
+		
 		required = size;
-		model = new BracketingListModel();
 		spinner = new JSpinner(new SpinnerNumberModel(size, size/2+1, size, 1));
 		spinner.addChangeListener(this);
 		
@@ -56,6 +64,7 @@ public class BracketingList extends BaseDialog<List<Entrant>> implements ChangeL
 		table.getColumnModel().getColumn(1).setMaxWidth(200);
 		table.getColumnModel().getColumn(2).setMaxWidth(200);
 		table.getColumnModel().getColumn(3).setMaxWidth(75);
+		table.getColumnModel().getColumn(4).setMaxWidth(75);
 
 		mainPanel.add(new JLabel("Number of Drivers"), "center, split");
 		mainPanel.add(spinner, "center, gapbottom 10, wrap");
@@ -132,12 +141,20 @@ class BracketingListModel extends AbstractTableModel
 		int netposition;
 		double nettime;
 	}
-	
-	public BracketingListModel()
+
+	enum ChallengeType { OPEN, LADIES, BONUS };
+
+	public BracketingListModel(ChallengeType type)
 	{
 		Map<Integer, Entrant> entrants = new HashMap<Integer, Entrant>();
 		for (Entrant e : Database.d.getEntrantsByEvent())
+		{
+			if ((type == ChallengeType.OPEN) && (e.getClassCode().startsWith("L")))
+				continue;
+			else if ((type == ChallengeType.LADIES) && (!e.getClassCode().startsWith("L")))
+				continue;
 			entrants.put(e.getCarId(), e);
+		}
 
 		data = new ArrayList<Store>();
 		Dialins d = Database.d.loadDialins();
@@ -145,6 +162,8 @@ class BracketingListModel extends AbstractTableModel
 		for (Integer id : d.getNetOrder())
 		{
 			Store s = new Store();
+			if (!entrants.containsKey(id))
+				continue;
 			s.entrant = entrants.get(id);
 			s.netposition = pos;
 			s.nettime = d.getNet(id);
@@ -163,7 +182,7 @@ class BracketingListModel extends AbstractTableModel
 	@Override
 	public int getColumnCount()
 	{
-		return 4;
+		return 5;
 	}
 
 	public Entrant getEntrantAt(int rowIndex)
@@ -179,7 +198,8 @@ class BracketingListModel extends AbstractTableModel
 			case 0: return Integer.class;
 			case 1: return String.class;
 			case 2: return String.class;
-			case 3: return Double.class;
+			case 3: return String.class;
+			case 4: return Double.class;
 		}
 		return Object.class;
 	}
@@ -193,7 +213,8 @@ class BracketingListModel extends AbstractTableModel
 			case 0: return s.netposition;
 			case 1: return s.entrant.getFirstName();
 			case 2: return s.entrant.getLastName();
-			case 3: return s.nettime;
+			case 3: return s.entrant.getClassCode();
+			case 4: return s.nettime;
 		}
 		return null;
 	}
@@ -206,7 +227,8 @@ class BracketingListModel extends AbstractTableModel
 			case 0: return "Pos";
 			case 1: return "First";
 			case 2: return "Last";
-			case 3: return "Time";
+			case 3: return "Class";
+			case 4: return "Time";
 			default: return "ERROR";
 		}
 	}
