@@ -31,7 +31,11 @@ class FeedController(BaseController):
 			return self._encode("serieslist", map(corename, glob.glob('%s/*.db' % (config['seriesdir']))))
 
 		event = None
-		if self.eventid:
+		if self.eventid == 'classes':
+			return self._encode("seriesclasses", self.session.query(Class).all())
+		elif self.eventid == 'indexes':
+			return self._encode("seriesindicies", self.session.query(Index).all())
+		elif self.eventid:
 			classdata = ClassData(self.session)
 			event = self.session.query(Event).get(self.eventid)
 			active = Class.activeClasses(self.session, self.eventid)
