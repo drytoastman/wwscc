@@ -35,6 +35,21 @@ class Class(object):
 		else:
 			return self.countedruns
 
+	def getFeed(self):
+		d = dict()
+		for k,v in self.__dict__.iteritems():
+			if v is None or k in ['_sa_instance_state']:
+				continue
+			if isinstance(v, float):
+				if v != 0:
+					d[k] = "%0.3f" % (v)
+			if isinstance(v, bool):
+				d[k] = v and "1" or "0"
+			else:
+				d[k] = v
+		return d
+
+
 	@classmethod
 	def activeClasses(cls, session, eventid):
 		sql = "select distinct x.* from classlist as x, cars as c, runs as r " + \
@@ -58,6 +73,19 @@ class Index(object):
 		for k, v in kwargs.iteritems():
 			if hasattr(self, k):
 				setattr(self, k, v)
+
+	def getFeed(self):
+		d = dict()
+		for k,v in self.__dict__.iteritems():
+			if v is None or k in ['_sa_instance_state']:
+				continue
+			if isinstance(v, float):
+				if v != 0:
+					d[k] = "%0.3f" % (v)
+			else:
+				d[k] = v
+		return d
+
 
 mapper(Index, t_indexlist)
 
