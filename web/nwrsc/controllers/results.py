@@ -82,7 +82,7 @@ class ResultsController(BaseController):
 	def post(self):
 		c.results = getClassResults(self.session, c.event, c.classdata, [cls.code for cls in c.active])
 		c.entrantcount = sum([len(data) for code,data in c.results.iteritems()])
-		c.toptimes = self._loadTopIndexTimes() + self._loadTopTimes()
+		c.toptimes = self._loadTopIndexTimes() + self._loadTopTimes() + self._loadTopIndexTimes(True) + self._loadTopTimes(True)
 		return render_mako('db:event.mako')
 
 
