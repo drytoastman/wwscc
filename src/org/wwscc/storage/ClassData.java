@@ -84,7 +84,7 @@ public class ClassData
 		protected String code;
 		protected String descrip;
 		protected boolean carindexed;
-		protected boolean classindexed;
+		protected String classindex;
 		protected double classmultiplier;
 		protected boolean eventtrophy;
 		protected boolean champtrophy;

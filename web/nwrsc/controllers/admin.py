@@ -381,6 +381,7 @@ class AdminController(BaseController, EntrantEditor):
 	def classlist(self):
 		c.action = 'processClassList'
 		c.classlist = self.session.query(Class).order_by(Class.code).all()
+		c.indexlist = [""] + [x[0] for x in self.session.query(Index.code).order_by(Index.code)]
 		return render_mako('/forms/classlist.mako')
 
 	@validate(schema=ClassListSchema(), form='classlist')
@@ -524,7 +525,8 @@ class AdminController(BaseController, EntrantEditor):
 				insertfile(cur, 'card.py', 'text/plain', os.path.join(root, 'examples/basiccard.py'))
 
 			if self.form_result['classes']:
-				cur.execute("insert into new.classlist select * from old.classlist")
+				cvars = ','.join(metadata.tables['classlist'].columns.keys())
+				cur.execute("insert into new.classlist (%s) select %s from old.classlist" % (cvars, cvars))
 				cur.execute("insert into new.indexlist select * from old.indexlist")
 
 			if self.form_result['drivers']:

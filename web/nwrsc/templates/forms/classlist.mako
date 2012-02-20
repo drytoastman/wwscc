@@ -19,8 +19,13 @@
 <td title="Cars are individually indexed by index value">
 	<input type="checkbox" name="clslist-${ii}.carindexed" ${cls.carindexed and 'checked="yes"' or ''|n} />
 </td>
-<td title="Entire class is indexed matching class code to an index code">
-	<input type="checkbox" name="clslist-${ii}.classindexed" ${cls.classindexed and 'checked="yes"' or ''|n}  />
+<td title="Entire class is indexed by this index code">
+	<!-- <input type="text" name="clslist-${ii}.classindex" value="${cls.classindex}" size="6" /> -->
+	<select name='clslist-${ii}.classindex'>
+	%for code in sorted(c.indexlist):
+		<option value='${code}' ${cls.classindex==code and "selected" or ""}>${code}</option>
+	%endfor
+	</select>
 </td>
 <td title="This multiplier is applied to entire class, i.e. street tire factor">
 	<input type="text" name="clslist-${ii}.classmultiplier" value="${"%0.3f" % (cls.classmultiplier or 1.000)}" size="5" />
@@ -46,7 +51,7 @@ Each class has a short code and a full string description.  The description is o
 <tr><th>Event Trophy</th><td>This class is eligible for trophies at each event and will have a 'T' added in the results</td></tr>
 <tr><th>Champ Trophy</th><td>This class is eligible for championship points and will appear in the championship report</td></tr>
 <tr><th>Cars Indexed</th><td>Cars in this class will have an index applied based on the index of the car entry</td></tr>
-<tr><th>Class Indexed</th><td>Cars in this class will have an index applied based on matching the class code to an index code</td></tr>
+<tr><th>Class Indexed</th><td>Cars in this class will have an index applied based on this specified index code</td></tr>
 <tr><th>Addl Multiplier</th><td>Cars in this class will have an additional multipler applied to them, like class indexed but statically assigned to this class.  This is a place for a street tire modifier.</td></tr>
 <tr><th>Counted Runs</th><td>Entries in the class will only count a maximum of X runs towards official results</td></tr>
 </table>

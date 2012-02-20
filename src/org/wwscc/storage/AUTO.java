@@ -345,7 +345,7 @@ public class AUTO
 		o.code = rs.getString("code");
 		o.descrip = rs.getString("descrip");
 		o.carindexed = rs.getBoolean("carindexed");
-		o.classindexed = rs.getBoolean("classindexed");
+		o.classindex = rs.getString("classindex");
 		o.classmultiplier = rs.getDouble("classmultiplier");
 		o.eventtrophy = rs.getBoolean("eventtrophy");
 		o.champtrophy = rs.getBoolean("champtrophy");
@@ -356,7 +356,7 @@ public class AUTO
 	
 	public static String getClassVarStr()
 	{
-		return "code,descrip,carindexed,classindexed,classmultiplier,eventtrophy,champtrophy,numorder,countedruns";
+		return "code,descrip,carindexed,classindex,classmultiplier,eventtrophy,champtrophy,numorder,countedruns";
 	}
 	
 	public static String getClassArgStr()
@@ -366,7 +366,7 @@ public class AUTO
 	
 	public static String getClassSetStr()
 	{
-		return "code=?,descrip=?,carindexed=?,classindexed=?,classmultiplier=?,eventtrophy=?,champtrophy=?,numorder=?,countedruns=?";
+		return "code=?,descrip=?,carindexed=?,classindex=?,classmultiplier=?,eventtrophy=?,champtrophy=?,numorder=?,countedruns=?";
 	}
 	
 	public static void addClassValues(org.wwscc.storage.ClassData.Class o, List<Object> l)
@@ -374,7 +374,7 @@ public class AUTO
 		l.add(o.code);
 		l.add(o.descrip);
 		l.add(o.carindexed);
-		l.add(o.classindexed);
+		l.add(o.classindex);
 		l.add(o.classmultiplier);
 		l.add(o.eventtrophy);
 		l.add(o.champtrophy);

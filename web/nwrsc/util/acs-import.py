@@ -157,7 +157,7 @@ for old in getcur:
 		nc.code = old.Designation
 		nc.descrip = old.Name
 		nc.carindexed = 1
-		nc.classindexed = 0
+		nc.classindex = ""
 		nc.classmultiplier = 1.0
 		nc.eventtrophy = 1
 		nc.champtrophy = 1

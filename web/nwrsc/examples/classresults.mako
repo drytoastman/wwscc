@@ -135,7 +135,7 @@ for run in runs:
 	%else:
 	<span class='net'>${run.status}</span>
 	%endif
-	%if c.curclass.carindexed or c.curclass.classindexed:
+	%if c.curclass.carindexed or c.curclass.classindex != "":
 	<span class='raw'>[${"%0.3f"%run.raw}]</span>
 	%endif
 	</td>

@@ -31,7 +31,7 @@ class ClassSchema(Schema):
 	eventtrophy = Bool()
 	champtrophy = Bool()
 	carindexed = Bool()
-	classindexed = Bool()
+	classindex = String()
 	classmultiplier = Number(not_empty=True)
 	numorder = Int()
 	countedruns = Int(if_empty=0)

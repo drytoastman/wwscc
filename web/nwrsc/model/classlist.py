@@ -13,7 +13,7 @@ t_classlist = Table('classlist', metadata,
 	Column('code', String(16), primary_key=True),
 	Column('descrip', String(128)),
 	Column('carindexed', Boolean, default=False),
-	Column('classindexed', Boolean, default=False),
+	Column('classindex', String(16), default=""),
 	Column('classmultiplier', Float, default=1.0),
 	Column('eventtrophy', Boolean, default=True),
 	Column('champtrophy', Boolean, default=True),
@@ -111,8 +111,8 @@ class ClassData(object):
 		indexstr = indexcode
 		try:
 			cls = self.classlist[classcode]
-			if cls.classindexed:
-				indexstr = classcode
+			if cls.classindex != "":
+				indexstr = cls.classindex
 
 			if cls.classmultiplier < 1.000:
 				indexstr = indexstr + '*'
@@ -126,8 +126,8 @@ class ClassData(object):
 		try:
 			cls = self.classlist[classcode]
 
-			if cls.classindexed:
-				indexval *= self.indexlist[classcode].value
+			if cls.classindex != "":
+				indexval *= self.indexlist[cls.classindex].value
 
 			if cls.carindexed and indexcode:
 				indexval *= self.indexlist[indexcode].value

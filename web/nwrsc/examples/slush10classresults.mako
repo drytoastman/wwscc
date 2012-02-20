@@ -147,7 +147,7 @@ for ii, segmin in enumerate(c.event.getSegments()):
 %else:
 	<span class='net'>${run.status}</span>
 %endif
-%if c.curclass.carindexed or c.curclass.classindexed:
+%if c.curclass.carindexed or c.curclass.classindex != "":
 	<span class='raw'>[${h.t3(run.raw)}]</span>
 %endif
 %if c.event.getSegmentCount() > 0:

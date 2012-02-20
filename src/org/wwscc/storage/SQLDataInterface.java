@@ -1344,9 +1344,9 @@ public abstract class SQLDataInterface extends DataInterface
 			}
 
 			/* Apply class index (linked to index tables) */
-			if (classData.classindexed)
+			if (!classData.classindex.equals(""))
 			{
-				if ((indexData = classCache.getIndex(classcode)) != null)
+				if ((indexData = classCache.getIndex(classData.classindex)) != null)
 					indexVal *= indexData.getValue();
 			}
 
