@@ -32,6 +32,21 @@ class Data(object):
 mapper(Data, t_data)
 
 
+## Drivers extra table
+# common extras: clubs, membership number
+t_driverextra = Table('driverextra', metadata,
+	Column('id', Integer, primary_key=True, autoincrement=True),
+	Column('driverid', Integer, ForeignKey('drivers.id')),
+	Column('type', String(32)),
+	Column('value', String(64))
+	)
+
+class DriverExtra(object):
+	pass
+
+mapper(DriverExtra, t_driverextra)
+
+
 ## Drivers table
 t_drivers = Table('drivers', metadata,
 	Column('id', Integer, primary_key=True, autoincrement=True),
@@ -42,8 +57,7 @@ t_drivers = Table('drivers', metadata,
 	Column('city', String(32)),
 	Column('state', String(12)),
 	Column('zip', String(12)),
-	Column('homephone', String(16)),
-	Column('workphone', String(16)),
+	Column('phone', String(16)),
 	Column('clubs', String(128)),
 	Column('brag', String(128)),
 	Column('sponsor', String(64)),
@@ -59,7 +73,11 @@ class Driver(object):
 		d['lastname'] = self.lastname
 		return d
 
-mapper(Driver, t_drivers)
+	def __getattr__(self, key):
+		""" can't find attribute in normal table, search extras """
+
+
+mapper(Driver, t_drivers, properties = { 'extras' : relation(DriverExtra) } )
 
 
 ## Cars Table

@@ -15,7 +15,7 @@ x = setup(
 	# Make specific requests here so that everything is the same in each install (debugging, etc)
     install_requires=[
 		"Beaker==1.4.2",
-		"decorator==3.0.0",
+		"decorator>=3.0.0",
 		"FormEncode==1.2.1",
 		"Mako==0.2.4",
 		"nose==0.10.4",
