@@ -525,8 +525,7 @@ class AdminController(BaseController, EntrantEditor):
 				insertfile(cur, 'card.py', 'text/plain', os.path.join(root, 'examples/basiccard.py'))
 
 			if self.form_result['classes']:
-				cvars = ','.join(metadata.tables['classlist'].columns.keys())
-				cur.execute("insert into new.classlist (%s) select %s from old.classlist" % (cvars, cvars))
+				cur.execute("insert into new.classlist select * from old.classlist")
 				cur.execute("insert into new.indexlist select * from old.indexlist")
 
 			if self.form_result['drivers']:

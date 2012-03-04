@@ -18,7 +18,7 @@ x = setup(
 		"decorator>=3.0.0",
 		"FormEncode==1.2.1",
 		"Mako==0.2.4",
-		"nose==0.10.4",
+		"nose>=0.10.4",
 		"Paste==1.7.2",
 		"PasteDeploy==1.3.3",
 		"PasteScript==1.7.3",

@@ -1,12 +1,11 @@
 from sqlalchemy import Table, Column, ForeignKey, Index, UniqueConstraint
-from sqlalchemy.orm import mapper, relation
+from sqlalchemy.orm import mapper, relation, session
 from sqlalchemy.types import Integer, SmallInteger, String, Boolean, Float, Binary, DateTime
 
 from meta import metadata
+from driver import Driver
 from classlist import Class
 import datetime
-#from event import Event
-
 
 ## Formats table
 t_data = Table('data', metadata,
@@ -18,66 +17,18 @@ t_data = Table('data', metadata,
 	
 class Data(object):
 	@classmethod
-	def set(cls, session, name, data, mime=None):
-		obj = session.query(Data).get(name)
+	def set(cls, sess, name, data, mime=None):
+		obj = sess.query(Data).get(name)
 		if obj is None:
 			obj = Data()
 			obj.name = name
-			session.add(obj)
+			sess.add(obj)
 		obj.data = data
 		obj.mod = datetime.datetime.utcnow()
 		if mime is not None:
 			obj.mime = mime
 
 mapper(Data, t_data)
-
-
-## Drivers extra table
-# common extras: clubs, membership number
-t_driverextra = Table('driverextra', metadata,
-	Column('id', Integer, primary_key=True, autoincrement=True),
-	Column('driverid', Integer, ForeignKey('drivers.id')),
-	Column('type', String(32)),
-	Column('value', String(64))
-	)
-
-class DriverExtra(object):
-	pass
-
-mapper(DriverExtra, t_driverextra)
-
-
-## Drivers table
-t_drivers = Table('drivers', metadata,
-	Column('id', Integer, primary_key=True, autoincrement=True),
-	Column('firstname', String(32)),
-	Column('lastname', String(32)),
-	Column('email', String(64)),
-	Column('address', String(64)),
-	Column('city', String(32)),
-	Column('state', String(12)),
-	Column('zip', String(12)),
-	Column('phone', String(16)),
-	Column('clubs', String(128)),
-	Column('brag', String(128)),
-	Column('sponsor', String(64)),
-	Column('membership', String(32)),
-	)
-Index('driveridx_1', t_drivers.c.firstname)
-Index('driveridx_2', t_drivers.c.lastname)
-
-class Driver(object):
-	def getFeed(self):
-		d = dict()
-		d['firstname'] = self.firstname
-		d['lastname'] = self.lastname
-		return d
-
-	def __getattr__(self, key):
-		""" can't find attribute in normal table, search extras """
-
-
-mapper(Driver, t_drivers, properties = { 'extras' : relation(DriverExtra) } )
 
 
 ## Cars Table

@@ -6,7 +6,7 @@ from pylons.controllers import WSGIController
 from pylons import config, request
 from paste.deploy.converters import asbool
 
-from nwrsc.model import Session, metadata, Settings, Data
+from nwrsc.model import Session, metadata, Settings, Data, SCHEMA_VERSION
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
@@ -91,10 +91,10 @@ class BaseController(WSGIController):
 		self.settings = Settings()
 		if self.database is not None:
 			self.settings.load(self.session)
-			if self.settings.schema != '20112':
+			if self.settings.schema != SCHEMA_VERSION:
 				start_response('200 OK', [('content-type', 'text/html')], None)
-				return "Software schema verison is 20112 but series database is " + self.settings.schema +  \
-					", database schema or software needs to be updated to match"
+				return "Software schema verison is %s but series database is %s, database schema or software needs to be updated to match"
+						% (SCHEMA_VERSION, self.settings.schema)
 
 		try:
 			try:
