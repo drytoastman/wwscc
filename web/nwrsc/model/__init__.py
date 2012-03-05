@@ -1,7 +1,9 @@
 
 from meta import metadata, Session
-from data import Data, Car, Run, EventResult, PrevEntry
+from data import Data, EventResult, PrevEntry
 from driver import Driver, DriverExtra, DriverField
+from runs import Run
+from cars import Car
 from settings import Settings, Setting
 from challenge import Challenge, ChallengeRound, loadChallengeResults, loadSingleRoundResults
 from result import Result, getAuditResults, getClassResultsShort, getClassResults, loadTopCourseRawTimes, loadTopCourseNetTimes, loadTopRawTimes, loadTopNetTimes, loadTopSegRawTimes
@@ -14,7 +16,7 @@ from registration import Registration, updateFromRuns
 from event import Event
 from dialin import Dialins
 
-SCHEMA_VERSION = '2012-03-01'
+SCHEMA_VERSION = '20121'
 
 __all__ = (
 'SCHEMA_VERSION',

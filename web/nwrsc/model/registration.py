@@ -3,7 +3,7 @@ from sqlalchemy.orm import mapper, relation
 from sqlalchemy.types import Integer
 
 from meta import metadata
-from data import Run
+from runs import Run
 
 ## Registered table
 t_registered = Table('registered', metadata,

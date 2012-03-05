@@ -1,5 +1,5 @@
 from math import ceil
-from data import Run
+from runs import Run
 
 class Result(object):
 	""" Contains driver name, car description, overall result and 2D array of runs by course and run # """

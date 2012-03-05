@@ -43,6 +43,7 @@ def convert2011(session):
 	settings = Settings()
 	settings.load(session)
 	settings.schema = '20121'
+	settings.save(session)
 
 	session.commit()
 
@@ -58,7 +59,6 @@ def convert(session):
 
 		while settings.schema != SCHEMA_VERSION:
 			converters[settings.schema](session)
-			session.commit()
 			settings.load(session)
 			break
 

@@ -3,7 +3,9 @@ from sqlalchemy.orm import mapper, relation
 from sqlalchemy.types import Integer, String, Boolean, Float
 
 from meta import metadata
-from data import Driver, Car, Run, t_cars
+from driver import Driver
+from cars import Car, t_cars
+from runs import Run
 
 import logging
 log = logging.getLogger(__name__)
