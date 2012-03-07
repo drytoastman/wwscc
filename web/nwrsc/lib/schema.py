@@ -5,7 +5,7 @@ from formencode.variabledecode import NestedVariables
 
 from datetime import datetime
 
-__all__ = ( "ClassSchema", "ClassListSchema", "IndexSchema", "IndexListSchema", "SettingsSchema", "EventSchema", "CopySeriesSchema", "LoginSchema", "DriverSchema" )
+__all__ = ( "ClassSchema", "ExtrasListSchema", "ClassListSchema", "IndexSchema", "IndexListSchema", "SettingsSchema", "EventSchema", "CopySeriesSchema", "LoginSchema", "DriverSchema" )
 
 class SDate(FancyValidator):
 	def _to_python(self, value, state):
@@ -41,6 +41,19 @@ class ClassListSchema(Schema):
 	allow_extra_fields = True
 	filter_extra_fields = True
 	clslist = ForEach(ClassSchema())
+
+
+class ExtrasSchema(Schema):
+	allow_extra_fields = True
+	filter_extra_fields = True
+	name = String(not_empty=True)
+	type = String(not_empty=True)
+
+class ExtrasListSchema(Schema):
+	pre_validators = [NestedVariables()] 
+	allow_extra_fields = True
+	filter_extra_fields = True
+	extraslist = ForEach(ExtrasSchema())
 
 
 class IndexSchema(Schema):
@@ -124,17 +137,15 @@ class LoginSchema(Schema):
 
 class DriverSchema(Schema):
 	allow_extra_fields = True
-	filter_extra_fields = True
+	filter_extra_fields = False
 	firstname = String(not_empty=True)
 	lastname = String(not_empty=True)
 	email = String(not_empty=True)
-	membership = String()
 	address = String()
 	city = String()
 	state = String()
 	zip = String()
-	homephone = String()
+	phone = String()
 	brag = String()
 	sponsor = String()
-	clubs = String()
 

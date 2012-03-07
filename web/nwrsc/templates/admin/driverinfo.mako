@@ -1,10 +1,18 @@
-<%  from simplejson import dumps %>
-<% allids = [x.driver.id for x in c.items] %>
+<%
+from simplejson import dumps
+allids = [x.driver.id for x in c.items]
+def encodesqlobj(obj):
+	d = dict()
+	for k in obj.__dict__.copy():
+		if k.startswith("_"): continue
+		d[k] = getattr(obj, k)
+	return dumps(d, default=lambda x: x is None and "" or str(x))
+%>
 
 %for info in c.items:
 
 <script>
-drivers[${info.driver.id}] = ${dumps(info.driver.__dict__, default=lambda x: x is None and "" or str(x)+'x')|n} 
+drivers[${info.driver.id}] = ${encodesqlobj(info.driver)|n}
 </script>
 
 <% anyruns = sum([x.runs for x in info.cars]) %>
@@ -23,17 +31,19 @@ drivers[${info.driver.id}] = ${dumps(info.driver.__dict__, default=lambda x: x i
 <tr><th>Id</th><td>${info.driver.id}</td></tr>
 <tr><th>Name</th><td>${info.driver.firstname} ${info.driver.lastname}</td></tr>
 <tr><th>Email</th><td>${info.driver.email}</td></tr>
-<tr><th>Membership</th><td>${info.driver.membership}</td></tr>
 
 <tr><th>Address</th><td>${info.driver.address}</td></tr>
 <tr><th>CSZ</th><td>${info.driver.city}, ${info.driver.state} ${info.driver.zip}</td></tr>
-<tr><th>Clubs</th><td>${info.driver.clubs}</td></tr>
 <tr><th>Brag</th><td>${info.driver.brag}</td></tr>
 <tr><th>Sponsor</th><td>${info.driver.sponsor}</td></tr>
 
+%for field in c.fields:
+<tr><th>${field.name.title()}</th><td>${info.driver.getExtra(field.name)}</td></tr>
+%endfor
+
 %for car in info.cars:
 <script>
-cars[${car.id}] = ${dumps(car.__dict__, default=lambda x: str(x))|n} 
+cars[${car.id}] = ${encodesqlobj(car)|n} 
 </script>
 <tr>
 <td class='carcell' colspan='2'>

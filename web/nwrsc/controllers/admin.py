@@ -378,6 +378,24 @@ class AdminController(BaseController, EntrantEditor):
 
 	#### Class and Index Editors ####
 
+	def extraslist(self):
+		c.action = 'processExtrasList'
+		c.fieldlist = self.session.query(DriverField).order_by(DriverField.name).all()
+		return render_mako('/forms/extraslist.mako')
+
+	@validate(schema=ExtrasListSchema(), form='extraslist')
+	def processExtrasList(self):
+		data = self.form_result['extraslist']
+		if len(data) > 0:
+			# delete fields, then add new submitted ones
+			for fld in self.session.query(DriverField):
+				self.session.delete(fld)
+			for obj in data:
+				self.session.add(DriverField(**obj))
+		self.session.commit()
+		redirect(url_for(action='extraslist'))
+
+
 	def classlist(self):
 		c.action = 'processClassList'
 		c.classlist = self.session.query(Class).order_by(Class.code).all()

@@ -146,20 +146,36 @@ class RegisterController(BaseController):
 		return render_mako('/register/available.mako')
 
 	def new(self):
+		c.fields = self.session.query(DriverField).all()
 		return render_mako('/register/profile.mako')
 		 
 	def profile(self):
 		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
+		c.fields = self.session.query(DriverField).all()
 		return render_mako('/register/profile.mako')
+
+
+	def _filldriver(self, form_result, driver):
+		fields = self.session.query(DriverField).all()
+		fieldnames = [x.name for x in fields]
+
+		for k, v in form_result.iteritems():
+			if v is not None and hasattr(driver, k):
+				setattr(driver, k, v)
+			elif k in fieldnames:
+				if len(v) == 0:
+					driver.delExtra(k)
+				else:
+					driver.setExtra(k, v)
+
 
 	@validate(schema=DriverSchema(), form='profile', prefix_error=False)
 	def editprofile(self):
 		driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
-		for k, v in self.form_result.iteritems():
-			if v is not None and hasattr(driver, k):
-				setattr(driver, k, v)
+		self._filldriver(self.form_result, driver)
 		self.session.commit()
 		redirect(url_for(action='profile'))
+
 
 	@validate(schema=DriverSchema(), form='profile', prefix_error=False)
 	def newprofile(self):
@@ -173,7 +189,7 @@ class RegisterController(BaseController):
 
 		driver = Driver()
 		self.session.add(driver)
-		self.copyvalues(self.form_result, driver)
+		self._filldriver(self.form_result, driver)
 		self.session.commit()
 
 		self.user['driverid'] = driver.id

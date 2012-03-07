@@ -93,8 +93,8 @@ class BaseController(WSGIController):
 			self.settings.load(self.session)
 			if self.settings.schema != SCHEMA_VERSION:
 				start_response('200 OK', [('content-type', 'text/html')], None)
-				return "Software schema verison is %s but series database is %s, database schema or software needs to be updated to match"
-						% (SCHEMA_VERSION, self.settings.schema)
+				return "Software schema verison is %s but series database is %s, database schema or software needs to be updated to match" % \
+						(SCHEMA_VERSION, self.settings.schema)
 
 		try:
 			try:

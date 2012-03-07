@@ -29,7 +29,6 @@ Click on column header to change sort.
 <td>${e.car.number}</td>
 <td>${e.driver.firstname}</td>
 <td>${e.driver.lastname}</td>
-<td>${e.driver.membership}</td>
 <td>${e.driver.email}</td>
 <td>${e.car.make} ${e.car.model} ${e.car.color}</td>
 <td><input type='submit' value='unreg' onClick='this.form.regid.value=${e.reg.id};'></td>

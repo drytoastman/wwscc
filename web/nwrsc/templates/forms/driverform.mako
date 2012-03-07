@@ -2,8 +2,9 @@
 
 <style>
 #drivereditor input { width: 100%; background: #fffffe; }
-th { padding-left: 14px; padding-right: 5px; }
-th { text-align: right; }
+.drivereditor th { padding-left: 14px; padding-right: 5px; }
+.drivereditor th { text-align: right; }
+.drivereditor td { text-align: right; }
 </style>
 
 <form id='drivereditor' action='${action}' method='POST'>
@@ -24,43 +25,40 @@ th { text-align: right; }
 </tr>
 
 <tr>
-<th>Membership</th>
-<td colspan='6'><input name='membership' type='text' value='${dr.membership}'/></td>
-</tr>
-
-<tr>
-<th>Address</th>
+<td>Address</td>
 <td colspan='6'><input name='address' type='text' value='${dr.address}'/></td>
 </tr>
 
 <tr>
-<th>City</th>
+<td>City</td>
 <td colspan='2'><input name='city' type='text' value='${dr.city}'/></td>
-<th>State</th>
+<td>State</td>
 <td><input name='state' type='text' value='${dr.state}' size=2/></td>
-<th>Zip</th>
+<td>Zip</td>
 <td><input name='zip' type='text' value='${dr.zip}' size=2/></td>
 </tr>
 
 <tr>
-<th>Home Phone</th>
-<td colspan='6'><input name='homephone' type='text' value='${dr.homephone}'/></td>
+<td>Phone</td>
+<td colspan='6'><input name='phone' type='text' value='${dr.phone}'/></td>
 </tr>
 
 <tr>
-<th>Brag</th>
+<td>Brag</td>
 <td colspan='6'><input name='brag' type='text' value='${dr.brag}'/></td>
 </tr>
 
 <tr>
-<th>Sponsor</th>
+<td>Sponsor</td>
 <td colspan='6'><input name='sponsor' type='text' value='${dr.sponsor}'/></td>
 </tr>
 
+%for field in c.fields:
 <tr>
-<th>Clubs</th>
-<td colspan='6'><input name='clubs' type='text' value='${dr.clubs}'/></td>
+<td>${field.name.title()}</td>
+<td colspan='6'><input name='${field.name}' type='text' value='${dr.getExtra(field.name)}'/></td>
 </tr>
+%endfor
 
 </tbody>
 </table>

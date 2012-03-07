@@ -86,6 +86,13 @@ class Driver(object):
 		field.value = value
 		session.Session.object_session(self).add(field)
 		self._extras.append(field)
+
+	def delExtra(self, name):
+		for e in self._extras:
+			if e.name == name:
+				session.Session.object_session(self).delete(e)
+				return
+
 		
 mapper(Driver, t_drivers, properties = { '_extras' : relation(DriverExtra) } ) 
 

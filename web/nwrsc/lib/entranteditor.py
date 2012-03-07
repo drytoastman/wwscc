@@ -26,6 +26,7 @@ class EntrantEditor(object):
 
 	def drivers(self):
 		c.classdata = ClassData(self.session)
+		c.fields = self.session.query(DriverField).all()
 		return render_mako('/admin/drivers.mako')
 
 		
@@ -96,12 +97,19 @@ class EntrantEditor(object):
 
 	def editdriver(self):
 		try:
+			fields = self.session.query(DriverField).all()
+			fieldnames = [x.name for x in fields]
 			driverid = request.POST.get('driverid', None)
 			log.info('request to edit driver %s' % driverid)
 			driver = self.session.query(Driver).get(driverid)
 			for attr in request.POST:
 				if hasattr(driver, attr):
 					setattr(driver, attr, request.POST[attr])
+				elif attr in fieldnames:
+					if len(request.POST[attr]) == 0:
+						driver.delExtra(attr)
+					else:
+						driver.setExtra(attr, request.POST[attr])
 			self.session.commit()
 		except Exception, e:
 			log.info('edit driver failed: %s' % e)
@@ -145,11 +153,19 @@ class EntrantEditor(object):
 	@jsonify
 	def getitems(self):
 		c.items = list()
+		c.fields = self.session.query(DriverField).all()
 		for id in map(int, request.GET.get('driverids', "").split(',')):
 			dr = self.session.query(Driver).filter(Driver.id==id).first();
 			cars = self.session.query(Car).filter(Car.driverid==id).all();
+
+			# This just gets the number of runs for the car for all events
 			for car in cars:
 				car.runs = len(self.session.query(Run.eventid).distinct().filter(Run.carid==car.id).filter(Run.eventid<100).all())
+
+			# Preload the extra fields
+			for field in c.fields:
+				setattr(dr, field.name, dr.getExtra(field.name))
+
 			c.items.append(self.DriverInfo(dr, cars))
 
 		return {'data': str(render_mako('/admin/driverinfo.mako'))}

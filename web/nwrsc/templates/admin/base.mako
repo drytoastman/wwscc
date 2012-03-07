@@ -34,6 +34,7 @@
 	<li><a href='${h.url_for(eventid='s', action='createevent')}'>Create New Event</a></li>
 	<li><a href='${h.url_for(eventid='s', action='classlist')}'>Series Classes</a></li>
 	<li><a href='${h.url_for(eventid='s', action='indexlist')}'>Series Indexes</a></li>
+	<li><a href='${h.url_for(eventid='s', action='extraslist')}'>Extra Driver Fields List</a></li>
 	<li><a href='${h.url_for(eventid='s', action='seriessettings')}'>Series Settings</a></li>
 	<li><a href='${h.url_for(eventid='s', action='drivers')}'>Driver/Car Editor</a></li>
 	<li><a href='${h.url_for(eventid='s', action='cleanup')}'>Clean Unused Registration</a></li>
