@@ -8,7 +8,8 @@ from meta import metadata
 t_driverfields = Table('driverfields', metadata,
 	Column('id', Integer, primary_key=True, autoincrement=True),
 	Column('name', String(32)),
-	Column('type', String(32))
+	Column('type', String(32)),
+	Column('title', String(32))
 	)
 
 class DriverField(object):

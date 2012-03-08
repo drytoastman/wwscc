@@ -39,6 +39,7 @@ import org.wwscc.dialogs.DriverDialog;
 import org.wwscc.storage.Car;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Driver;
+import org.wwscc.storage.DriverField;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -64,12 +65,16 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	protected boolean carAddOption = false;
 	protected Driver selectedDriver;
 	protected Car selectedCar;
+	
+	protected List<DriverField> driverFields;
 
 	public DriverCarPanel()
 	{
 		super();
 		setLayout(new MigLayout("", "fill"));
 
+		Messenger.register(MT.DATABASE_CHANGED, this);
+		
 		selectedDriver = null;
 		selectedCar = null;
 
@@ -111,6 +116,21 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	}
 
 
+	@Override
+	public void event(MT type, Object o)
+	{
+		switch (type)
+		{
+			case DATABASE_CHANGED:
+				try {
+					driverFields = Database.d.getDriverFields();
+				} catch (IOException ex) {
+					log.log(Level.WARNING, "Can''t load extra driver fields, editor will be hamstrung: {0}", ex);
+				}
+				break;
+		}
+	}
+				
 	protected JTextArea displayArea(String text)
 	{
 		JTextArea ta = new JTextArea(text);
@@ -199,7 +219,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 
 		if (cmd.equals("New Driver"))
 		{
-			DriverDialog dd = new DriverDialog(new Driver(firstSearch.getText(), lastSearch.getText()));
+			DriverDialog dd = new DriverDialog(new Driver(firstSearch.getText(), lastSearch.getText()), driverFields);
 			dd.doDialog("New Driver", new DialogFinisher<Driver>() {
 				@Override
 				public void dialogFinished(Driver d) {
@@ -216,7 +236,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 
 		else if (cmd.equals("Edit Driver"))
 		{
-			DriverDialog dd = new DriverDialog(selectedDriver);
+			DriverDialog dd = new DriverDialog(selectedDriver, driverFields);
 			dd.doDialog("Edit Driver", new DialogFinisher<Driver>() {
 				@Override
 				public void dialogFinished(Driver d) {
@@ -325,19 +345,19 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 
 	public String driverDisplay(Driver d)
 	{
-		StringBuffer ret = new StringBuffer();
+		StringBuilder ret = new StringBuilder();
 		ret.append(d.getFullName() + "\n");
 		ret.append(d.getAddress() + "\n");
 		ret.append(d.getCity() + ", " + d.getState() + " " + d.getZip() + "\n");
 		ret.append(d.getEmail() + "\n");
-		ret.append(d.getHomePhone());
+		ret.append(d.getPhone());
 		return ret.toString();
 	}
 
 
 	public String carDisplay(Car c)
 	{
-		StringBuffer ret = new StringBuffer();
+		StringBuilder ret = new StringBuilder();
 		ret.append(c.getClassCode());
 		if (!c.getIndexCode().equals(""))
 			ret.append(" (" + c.getIndexCode() + ")");

@@ -90,28 +90,25 @@ public class AUTO
 		o.city = rs.getString("city");
 		o.state = rs.getString("state");
 		o.zip = rs.getString("zip");
-		o.homephone = rs.getString("homephone");
-		o.workphone = rs.getString("workphone");
-		o.clubs = rs.getString("clubs");
+		o.phone = rs.getString("phone");
 		o.brag = rs.getString("brag");
 		o.sponsor = rs.getString("sponsor");
-		o.membership = rs.getString("membership");
 		return o;
 	}
 	
 	public static String getDriverVarStr()
 	{
-		return "firstname,lastname,email,address,city,state,zip,homephone,workphone,clubs,brag,sponsor,membership";
+		return "firstname,lastname,email,address,city,state,zip,phone,brag,sponsor";
 	}
 	
 	public static String getDriverArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getDriverSetStr()
 	{
-		return "firstname=?,lastname=?,email=?,address=?,city=?,state=?,zip=?,homephone=?,workphone=?,clubs=?,brag=?,sponsor=?,membership=?";
+		return "firstname=?,lastname=?,email=?,address=?,city=?,state=?,zip=?,phone=?,brag=?,sponsor=?";
 	}
 	
 	public static void addDriverValues(org.wwscc.storage.Driver o, List<Object> l)
@@ -123,12 +120,41 @@ public class AUTO
 		l.add(o.city);
 		l.add(o.state);
 		l.add(o.zip);
-		l.add(o.homephone);
-		l.add(o.workphone);
-		l.add(o.clubs);
+		l.add(o.phone);
 		l.add(o.brag);
 		l.add(o.sponsor);
-		l.add(o.membership);
+	}
+	
+	public static org.wwscc.storage.DriverField loadDriverField(ResultRow rs) throws IOException
+	{
+		org.wwscc.storage.DriverField o = new org.wwscc.storage.DriverField();
+		o.id = rs.getInt("id");
+		o.name = rs.getString("name");
+		o.title = rs.getString("title");
+		o.type = rs.getString("type");
+		return o;
+	}
+	
+	public static String getDriverFieldVarStr()
+	{
+		return "name,title,type";
+	}
+	
+	public static String getDriverFieldArgStr()
+	{
+		return "?,?,?";
+	}
+	
+	public static String getDriverFieldSetStr()
+	{
+		return "name=?,title=?,type=?";
+	}
+	
+	public static void addDriverFieldValues(org.wwscc.storage.DriverField o, List<Object> l)
+	{
+		l.add(o.name);
+		l.add(o.title);
+		l.add(o.type);
 	}
 	
 	public static org.wwscc.storage.Car loadCar(ResultRow rs) throws IOException

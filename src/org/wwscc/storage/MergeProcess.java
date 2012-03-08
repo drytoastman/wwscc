@@ -11,6 +11,7 @@ package org.wwscc.storage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,8 +42,8 @@ public class MergeProcess
 		try
 		{
 			dest.start();
-
-			for (Change change : Database.d.getChanges())
+			List<Change> changes = Database.d.getChanges();
+			for (Change change : changes)
 			{
 				String type = change.getType();
 				log.info("Merge "+type+": " + change.arg);

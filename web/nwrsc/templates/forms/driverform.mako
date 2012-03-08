@@ -55,7 +55,7 @@
 
 %for field in c.fields:
 <tr>
-<td>${field.name.title()}</td>
+<td>${field.title}</td>
 <td colspan='6'><input name='${field.name}' type='text' value='${dr.getExtra(field.name)}'/></td>
 </tr>
 %endfor

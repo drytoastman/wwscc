@@ -5,7 +5,7 @@ from formencode.variabledecode import NestedVariables
 
 from datetime import datetime
 
-__all__ = ( "ClassSchema", "ExtrasListSchema", "ClassListSchema", "IndexSchema", "IndexListSchema", "SettingsSchema", "EventSchema", "CopySeriesSchema", "LoginSchema", "DriverSchema" )
+__all__ = ( "ClassSchema", "DriverFieldListSchema", "ClassListSchema", "IndexSchema", "IndexListSchema", "SettingsSchema", "EventSchema", "CopySeriesSchema", "LoginSchema", "DriverSchema" )
 
 class SDate(FancyValidator):
 	def _to_python(self, value, state):
@@ -43,17 +43,18 @@ class ClassListSchema(Schema):
 	clslist = ForEach(ClassSchema())
 
 
-class ExtrasSchema(Schema):
+class DriverFieldSchema(Schema):
 	allow_extra_fields = True
 	filter_extra_fields = True
 	name = String(not_empty=True)
 	type = String(not_empty=True)
+	title = String(not_empty=True)
 
-class ExtrasListSchema(Schema):
+class DriverFieldListSchema(Schema):
 	pre_validators = [NestedVariables()] 
 	allow_extra_fields = True
 	filter_extra_fields = True
-	extraslist = ForEach(ExtrasSchema())
+	fieldlist = ForEach(DriverFieldSchema())
 
 
 class IndexSchema(Schema):

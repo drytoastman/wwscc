@@ -164,6 +164,9 @@ public class EntryPanel extends DriverCarPanel
 			case EVENT_CHANGED:
 				reloadCars(selectedCar);
 				break;
+				
+			default:
+				super.event(type, o);
 		}
 	}
 

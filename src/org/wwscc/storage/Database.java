@@ -28,7 +28,7 @@ import org.wwscc.util.Prefs;
  */
 public class Database
 {
-	private static Logger log = Logger.getLogger("org.wwscc.storage.Database");
+	private static final Logger log = Logger.getLogger("org.wwscc.storage.Database");
 	public static DataInterface d;
 	public static File file = null;
 

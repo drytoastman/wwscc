@@ -378,14 +378,14 @@ class AdminController(BaseController, EntrantEditor):
 
 	#### Class and Index Editors ####
 
-	def extraslist(self):
-		c.action = 'processExtrasList'
-		c.fieldlist = self.session.query(DriverField).order_by(DriverField.name).all()
-		return render_mako('/forms/extraslist.mako')
+	def fieldlist(self):
+		c.action = 'processFieldList'
+		c.fieldlist = self.session.query(DriverField).all()
+		return render_mako('/forms/fieldlist.mako')
 
-	@validate(schema=ExtrasListSchema(), form='extraslist')
-	def processExtrasList(self):
-		data = self.form_result['extraslist']
+	@validate(schema=DriverFieldListSchema(), form='fieldlist')
+	def processFieldList(self):
+		data = self.form_result['fieldlist']
 		if len(data) > 0:
 			# delete fields, then add new submitted ones
 			for fld in self.session.query(DriverField):
@@ -393,7 +393,7 @@ class AdminController(BaseController, EntrantEditor):
 			for obj in data:
 				self.session.add(DriverField(**obj))
 		self.session.commit()
-		redirect(url_for(action='extraslist'))
+		redirect(url_for(action='fieldlist'))
 
 
 	def classlist(self):

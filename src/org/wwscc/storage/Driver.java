@@ -9,6 +9,9 @@
 package org.wwscc.storage;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class Driver implements Serializable
 {
@@ -20,24 +23,24 @@ public class Driver implements Serializable
 	protected String city;
 	protected String state;
 	protected String zip;
-	protected String homephone;
-	protected String workphone;
-	protected String clubs;
+	protected String phone;
 	protected String brag;
 	protected String sponsor;
-	protected String membership;
+	private Map<String, String> extras;
 
 	/* meta */
 	public int carcount = 0;
 
 	public Driver()
 	{
+		extras = new HashMap<String,String>();
 	}
 
 	public Driver(String f, String l)
 	{
 		firstname = f;
 		lastname = l;
+		extras = new HashMap<String,String>();
 	}
 
 	public String getFullName() { return firstname + " " + lastname; }
@@ -49,11 +52,20 @@ public class Driver implements Serializable
 	public String getCity() { return city; }
 	public String getState() { return state; }
 	public String getZip() { return zip; }
-	public String getHomePhone() { return homephone; }
-	public String getWorkPhone() { return workphone; }
+	public String getPhone() { return phone; }
 	public String getBrag() { return brag; }
 	public String getSponsor() { return sponsor; }
-	public String getMembership() { return membership; }
+	public String getExtra(String name) 
+	{ 
+		String ret = extras.get(name); 
+		if (ret == null)
+			return "";
+		return ret;
+	}
+	public Set<String> getExtraKeys()
+	{
+		return extras.keySet();
+	}
 
 	public void setFirstName(String s) { firstname = s; }
 	public void setLastName(String s) { lastname = s; }
@@ -62,10 +74,16 @@ public class Driver implements Serializable
 	public void setCity(String s) { city = s; }
 	public void setState(String s) { state = s; }
 	public void setZip(String s) { zip = s; }
-	public void setHomePhone(String s) { homephone = s; }
-	public void setWorkPhone(String s) { workphone = s; }
+	public void setPhone(String s) { phone = s; }
 	public void setBrag(String s) { brag = s; }
 	public void setSponsor(String s) { sponsor = s; }
-	public void setMembership(String s) { membership = s; }
+	public void setExtra(String name, String val) 
+	{ 
+		if ((val == null) || (val.trim().length() == 0))
+			extras.remove(name);
+		else
+			extras.put(name, val);
+	}
+	
 }
 

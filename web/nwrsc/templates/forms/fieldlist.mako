@@ -4,8 +4,9 @@
 
 <%def name="dorow(ii, field)" filter="singleline">
 <tr>
-<td><input type="text" name="extraslist-${ii}.name" value="${field.name}" size="10" /></td>
-<td><input type="text" name="extraslist-${ii}.type" value="${field.type}" size="6" /></td>
+<td><input type="text" name="fieldlist-${ii}.name" value="${field.name}" size="10" /></td>
+<td><input type="text" name="fieldlist-${ii}.title" value="${field.title}" size="10" /></td>
+<td><input type="text" name="fieldlist-${ii}.type" value="${field.type}" size="6" /></td>
 <td><button class="small deleterow">Del</button></td>
 </tr>
 </%def>
@@ -16,8 +17,9 @@
 Any extra fields in this list will be available as extra fields for each driver entry.
 
 <table>
-<tr><th>Name</th><td>The field name</td></tr>
-<tr><th>Type</th><td>The field type</td></tr>
+<tr><th>Name</th><td>The field name stored in the database</td></tr>
+<tr><th>Title</th><td>The field title as displayed in dialogs or forms</td></tr>
+<tr><th>Type</th><td>The field type (unused at this point, assumes string)</td></tr>
 </table>
 
 </p>
@@ -26,9 +28,10 @@ Any extra fields in this list will be available as extra fields for each driver 
 
 
 <form action="${c.action}" method="post">
-<table id='extrastable'>
+<table id='fieldtable'>
 <tr>
 <th>Name</th>
+<th>Title</th>
 <th>Type</th>
 </tr>
 
@@ -47,8 +50,8 @@ ${dorow(ii, field)}
 var rowstr = '${dorow('xxxxx', DriverField())}\n';
 var ii = ${ii};
 $('#addbutton').click(function() {
-	$("#extrastable > tbody").append(rowstr.replace(/xxxxx/g, ++ii));
-	$('#extrastable button').button();
+	$("#fieldtable > tbody").append(rowstr.replace(/xxxxx/g, ++ii));
+	$('#fieldtable button').button();
 	return false;
 });
 </script>

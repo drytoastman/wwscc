@@ -632,6 +632,8 @@ public abstract class SQLDataInterface extends DataInterface
 		AUTO.addDriverValues(d, vals);
 		executeUpdate("INSERTDRIVER", vals);
 		d.id = lastInsertId();
+		for (String name : d.getExtraKeys())
+			executeUpdate("INSERTEXTRA", newList(d.id, name, d.getExtra(name)));
 		trackChange("INSERTDRIVER", d);
 	}
 
@@ -642,6 +644,9 @@ public abstract class SQLDataInterface extends DataInterface
 		AUTO.addDriverValues(d, vals);
 		vals.add(d.id);
 		executeUpdate("UPDATEDRIVER", vals);
+		executeUpdate("DELETEEXTRA", newList(d.id));
+		for (String name : d.getExtraKeys())
+			executeUpdate("INSERTEXTRA", newList(d.id, name, d.getExtra(name)));	
 		trackChange("UPDATEDRIVER", d);
 	}
 
@@ -649,6 +654,7 @@ public abstract class SQLDataInterface extends DataInterface
 	public void deleteDriver(Driver d) throws IOException
 	{
 		executeUpdate("DELETEDRIVER", newList(d.id));
+		executeUpdate("DELETEEXTRA", newList(d.id));
 	}
 
 	@Override
@@ -667,7 +673,26 @@ public abstract class SQLDataInterface extends DataInterface
 			throw ioe;
 		}
 	}
+	
+	@Override
+	public List<DriverField> getDriverFields() throws IOException
+	{
+		try
+		{
+			ResultData d = executeSelect("GETALLFIELDS", null);
+			List<DriverField> ret = new ArrayList<DriverField>();
+			for (ResultRow r : d)
+				ret.add(AUTO.loadDriverField(r));
+			return ret;
+		}
+		catch (Exception ioe)
+		{
+			logError("getDriverFields", ioe);
+			return null;
+		}
+	}
 
+	
 	@Override
 	public List<Car> getCarsForDriver(int driverid)
 	{
@@ -1179,8 +1204,8 @@ public abstract class SQLDataInterface extends DataInterface
 			logError("updateChallengeRound", ioe);
 		}
 	}
-
-
+	
+	
 	@Override
 	public List<Driver> getDriversLike(String first, String last)
 	{
@@ -1190,17 +1215,26 @@ public abstract class SQLDataInterface extends DataInterface
 		ArrayList<Driver> ret = null;
 		try
 		{
-			ResultData d;
+			ResultData data;
 			if (first == null)
-				d = executeSelect("GETDRIVERSBYLAST", newList(last+"%"));
+				data = executeSelect("GETDRIVERSBYLAST", newList(last+"%"));
 			else if (last == null)
-				d = executeSelect("GETDRIVERSBYFIRST", newList(first+"%"));
+				data = executeSelect("GETDRIVERSBYFIRST", newList(first+"%"));
 			else
-				d = executeSelect("GETDRIVERSBY", newList(first+"%", last+"%"));
+				data = executeSelect("GETDRIVERSBY", newList(first+"%", last+"%"));
 
 			ret = new ArrayList<Driver>();
-			for (ResultRow r : d)
+			for (ResultRow r : data)
 				ret.add(AUTO.loadDriver(r));
+			
+			for (Driver d : ret)
+			{
+				for (ResultRow r : executeSelect("GETEXTRA", newList(d.id)))
+				{
+					d.setExtra(r.getString("name"), r.getString("value"));
+				}
+			}
+			
 			return ret;
 		}
 		catch (Exception ioe)
@@ -1216,13 +1250,24 @@ public abstract class SQLDataInterface extends DataInterface
 		Map<Integer, Driver> ret = null;
 		try
 		{
-			ResultData d = executeSelect("GETALLDRIVERS", null);
+			ResultData data;
+			
+			data = executeSelect("GETALLDRIVERS", null);
 			ret = new HashMap<Integer, Driver>();
-			for (ResultRow r : d)
+			for (ResultRow r : data)
 			{
 				Driver driver = AUTO.loadDriver(r);
 				ret.put(driver.id, driver);
 			}
+			
+			data = executeSelect("GETALLEXTRA", null);
+			for (ResultRow r : data)
+			{
+				Driver driver = ret.get(r.getInt("driverid"));
+				if (driver != null)
+					driver.setExtra(r.getString("name"), r.getString("value"));
+			}
+			
 			return ret;
 		}
 		catch (Exception ioe)

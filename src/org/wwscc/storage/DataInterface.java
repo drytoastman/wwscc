@@ -76,6 +76,7 @@ public abstract class DataInterface
 	public abstract void updateDriver(Driver d) throws IOException; // update the driver values in the database
 	public abstract void deleteDriver(Driver d) throws IOException;
 	public abstract void deleteDrivers(Collection<Driver> d) throws IOException;
+	public abstract List<DriverField> getDriverFields() throws IOException;
 
 	public abstract List<Car> getCarsForDriver(int driverid); // get all cars for this driverid
 	public abstract List<String> getCarAttributes(String attr); // get a unique list of possible 'attr' for the car

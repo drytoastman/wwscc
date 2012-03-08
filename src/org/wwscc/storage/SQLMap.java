@@ -30,12 +30,15 @@ public class SQLMap
 		sql.put("DELETECAR", "delete from cars where id=?");
 		sql.put("DELETECLASSRESULTS", "delete from eventresults where classcode=? and eventid=?");
 		sql.put("DELETEDRIVER", "delete from drivers where id=?");
+		sql.put("DELETEEXTRA", "delete from driverextra where driverid=?");
 		sql.put("DELETERUN", "delete from runs where id=?");
 		sql.put("DELETECLASSGROUPMAPPING", "delete from rungroups where eventid=?");
 		sql.put("DELETERUNORDER", "delete from runorder where eventid=? and course=? and rungroup=?");
 		sql.put("DELETERUNSBYCOURSE", "delete from runs where carid=? AND course=? AND eventid=?");
 
 		sql.put("GETALLDRIVERS", "select * from drivers");
+		sql.put("GETALLEXTRA", "select * from driverextra");
+		sql.put("GETALLFIELDS", "select * from driverfields");
 		sql.put("GETALLCARS", "select * from cars");
 		sql.put("GETALLRUNS", "select * from runs");
 		sql.put("GETCARIDSBYCHALLENGE", "select car1id,car2id from challengerounds where challengeid=?");
@@ -62,6 +65,7 @@ public class SQLMap
 					"where r.carid=c.id and c.driverid=d.id and r.classcode=? and r.eventid=? " +
 					"order by position");
 		sql.put("GETEVENTS", "select * from events order by date");
+		sql.put("GETEXTRA", "select name,value from driverextra where driverid=?");
 		sql.put("GETINDEXES", "select * from indexlist");
 		sql.put("GETREGISTEREDENTRANTS", "select distinct d.firstname as firstname,d.lastname as lastname,c.* from registered as x, cars as c, drivers as d " +
 						"where x.carid=c.id AND c.driverid=d.id and x.eventid=?");
@@ -85,6 +89,7 @@ public class SQLMap
 		sql.put("INSERTCHALLENGE", "insert into challenges (eventid, name, depth, bonus) values (?,?,?,?)");
 		sql.put("INSERTCLASSRESULTS", "insert into eventresults VALUES (NULL, ?,?,?,?,?,?,?,?,?,?)");
 		sql.put("INSERTDRIVER", "insert or ignore into drivers ("+AUTO.getDriverVarStr()+") values (" +AUTO.getDriverArgStr()+")");
+		sql.put("INSERTEXTRA", "insert into driverextra (driverid, name, value) values (?,?,?)");
 		sql.put("INSERTRUN", "insert into runs ("+AUTO.getRunVarStr()+") values ("+AUTO.getRunArgStr()+")");
 		sql.put("INSERTCLASSGROUPMAPPING", "insert into rungroups (eventid, classcode, rungroup) values (?,?,?)");
 		sql.put("INSERTRUNORDER", "insert into runorder values (NULL, ?,?,?,?,?)");

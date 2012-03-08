@@ -35,8 +35,10 @@ public class CurrentDatabaseLabel extends JLabel implements MessageListener
 			case DATABASE_CHANGED:
 				if (Database.d instanceof WebDataSource)
 					setText("DB: " + Database.d.getCurrentHost()+"/"+Database.d.getCurrentSeries());
-				else
+				else if (Database.file != null)
 					setText("DB: " + Database.file.getName());
+				else
+					setText("DB: none");
 				break;
 		}
 	}

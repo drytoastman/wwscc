@@ -182,6 +182,9 @@ public class DriverEntry extends DriverCarPanel
 			case ENTRANTS_CHANGED: // resync loaded cars to check status
 				reloadCars(selectedCar);
 				break;
+				
+			default:
+				super.event(type, o);
 		}
 	}
 	

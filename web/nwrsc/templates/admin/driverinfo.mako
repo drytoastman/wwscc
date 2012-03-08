@@ -38,7 +38,7 @@ drivers[${info.driver.id}] = ${encodesqlobj(info.driver)|n}
 <tr><th>Sponsor</th><td>${info.driver.sponsor}</td></tr>
 
 %for field in c.fields:
-<tr><th>${field.name.title()}</th><td>${info.driver.getExtra(field.name)}</td></tr>
+<tr><th>${field.title}</th><td>${info.driver.getExtra(field.name)}</td></tr>
 %endfor
 
 %for car in info.cars:

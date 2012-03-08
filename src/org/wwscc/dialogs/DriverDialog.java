@@ -11,25 +11,30 @@ package org.wwscc.dialogs;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.List;
 import javax.swing.Box;
 import javax.swing.JPanel;
 import org.wwscc.storage.Driver;
+import org.wwscc.storage.DriverField;
 
 /**
  * Core functions for all dialogs.
  */
 public class DriverDialog extends BaseDialog<Driver>
 {
+	List<DriverField> xfields;
+	
 	/**
 	 * Create the dialog.
 	 * @param parent	the parent Frame if any
 	 * @param d			the driver data to source initially
 	 */
-    public DriverDialog(Driver d)
+    public DriverDialog(Driver d, List<DriverField> f)
 	{
         super(new GridBagLayout(), true);
 
 		if (d == null) d = new Driver();
+		xfields = f;
 
 		GridBagConstraints c = new GridBagConstraints();
 
@@ -67,27 +72,26 @@ public class DriverDialog extends BaseDialog<Driver>
 		c.insets = new Insets(2,4,2,4);
 
 		/* row 4 */
-		c.gridx = 0; c.gridy = 4; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label("Home Phone", false), c);
-		c.gridx = 1; c.gridy = 4; c.gridwidth = 1; c.weightx = 1; mainPanel.add(entry("homephone", d.getHomePhone()), c);
-
-		c.gridx = 2; c.gridy = 4; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label("Work Phone", false), c);
-		c.gridx = 3; c.gridy = 4; c.gridwidth = 1; c.weightx = 1; mainPanel.add(entry("workphone", d.getWorkPhone()), c);
+		c.gridx = 0; c.gridy = 4; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label("Phone", false), c);
+		c.gridx = 1; c.gridy = 4; c.gridwidth = 3; c.weightx = 1; mainPanel.add(entry("phone", d.getPhone()), c);
 
 		/* row 5 */
 		c.gridx = 0; c.gridy = 5; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label("Brag Fact", false), c);
-		c.gridx = 1; c.gridy = 5; c.gridwidth = 1; c.weightx = 1; mainPanel.add(entry("brag", d.getBrag()), c);
+		c.gridx = 1; c.gridy = 5; c.gridwidth = 3; c.weightx = 1; mainPanel.add(entry("brag", d.getBrag()), c);
 
-		c.gridx = 2; c.gridy = 5; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label("Sponsor", false), c);
-		c.gridx = 3; c.gridy = 5; c.gridwidth = 1; c.weightx = 1; mainPanel.add(entry("sponsor", d.getSponsor()), c);
+		c.gridx = 0; c.gridy = 6; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label("Sponsor", false), c);
+		c.gridx = 1; c.gridy = 6; c.gridwidth = 3; c.weightx = 1; mainPanel.add(entry("sponsor", d.getSponsor()), c);
 
-		/* row 6 */
-		c.gridx = 0; c.gridy = 6; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label("Member #", false), c);
-		c.gridx = 1; c.gridy = 6; c.gridwidth = 1; c.weightx = 1; mainPanel.add(entry("membership", d.getMembership()), c);
-
-		//clubs	= rs.getString("clubs");
+		int row = 7;
+		for (DriverField field : xfields)
+		{
+			c.gridx = 0; c.gridy = row; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label(field.getTitle(), false), c);
+			c.gridx = 1; c.gridy = row; c.gridwidth = 3; c.weightx = 1; mainPanel.add(entry(field.getName(), d.getExtra(field.getName())), c);
+			row++;
+		}
 
 		/* row 7 (vertical filler) */
-		c.gridx = 0; c.gridy = 6; c.gridwidth = 4; c.weightx = 0; c.weighty = 1; mainPanel.add(Box.createHorizontalStrut(450), c);
+		c.gridx = 0; c.gridy = row; c.gridwidth = 4; c.weightx = 0; c.weighty = 1; mainPanel.add(Box.createHorizontalStrut(450), c);
 
 		result = d;
     }
@@ -121,11 +125,13 @@ public class DriverDialog extends BaseDialog<Driver>
 		result.setCity(getEntryText("city"));
 		result.setState(getEntryText("state"));
 		result.setZip(getEntryText("zip"));
-		result.setHomePhone(getEntryText("homephone"));
-		result.setWorkPhone(getEntryText("workphone"));
+		result.setPhone(getEntryText("phone"));
 		result.setBrag(getEntryText("brag"));
 		result.setSponsor(getEntryText("sponsor"));
-		result.setMembership(getEntryText("membership"));
+		for (DriverField field : xfields)
+		{
+			result.setExtra(field.getName(), getEntryText(field.getName()));
+		}
 		return result;
 	}
 
