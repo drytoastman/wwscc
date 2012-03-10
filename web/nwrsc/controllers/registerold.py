@@ -14,7 +14,7 @@ from nwrsc.model import *
 
 log = logging.getLogger(__name__)
 
-class RegisterController(BaseController):
+class RegisteroldController(BaseController):
 
 	def __before__(self):
 		action = self.routingargs.get('action', '')
@@ -22,8 +22,8 @@ class RegisterController(BaseController):
 			return
 
 		c.title = 'Scorekeeper Registration'
-		c.stylesheets = ['/css/register.css', '/css/redmond/jquery-ui-1.8.2.custom.css']
-		c.javascript = ['/js/register.js', '/js/jquery-1.4.2.min.js', '/js/jquery-ui-1.8.2.custom.min.js', '/js/jquery.validate.min.js']
+		c.stylesheets = ['/css/registerold.css', '/css/redmond/jquery-ui-1.8.2.custom.css']
+		c.javascript = ['/js/registerold.js', '/js/jquery-1.4.2.min.js', '/js/jquery-ui-1.8.2.custom.min.js', '/js/jquery.validate.min.js']
 		c.tabflags = {}
 		c.sponsorlink = self.settings.sponsorlink
 		c.seriesname = self.settings.seriesname
@@ -46,7 +46,7 @@ class RegisterController(BaseController):
 				# Delete any saved session data for this person
 				del ipsession[self.database]
 				session.save()
-				raise BeforePage(render_mako('/register/locked.mako'))
+				raise BeforePage(render_mako('/registerold/locked.mako'))
 
 			c.events = self.session.query(Event).all()
 			c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
@@ -61,7 +61,7 @@ class RegisterController(BaseController):
 			return render_mako('/databaseselect.mako')
 
 	def login(self):
-		return render_mako('/register/login.mako')
+		return render_mako('/registerold/login.mako')
 
 	@validate(schema=LoginSchema(), form='login', prefix_error=False)
 	def checklogin(self):
@@ -94,7 +94,7 @@ class RegisterController(BaseController):
 			e.tdclass = ''
 			if e.closed or not e.opened:
 				e.tdclass = 'closed'
-		return render_mako('/register/events.mako')
+		return render_mako('/registerold/events.mako')
 
 	def register(self):
 		carid = int(request.POST.get('carid', 0))
@@ -129,7 +129,7 @@ class RegisterController(BaseController):
 				c.inuse.append(car)
 			else:
 				c.notinuse.append(car)
-		return render_mako('/register/cars.mako')
+		return render_mako('/registerold/cars.mako')
 
 	def available(self):
 		c.stylesheets = []
@@ -143,16 +143,16 @@ class RegisterController(BaseController):
 			query = self.session.query(Car.number).distinct().filter(Car.classcode==c.code).filter(Car.driverid!=c.driverid)
 		c.numbers = set([x[0] for x in query])
 		c.largestnumber = self.settings.largestcarnumber
-		return render_mako('/register/available.mako')
+		return render_mako('/registerold/available.mako')
 
 	def new(self):
 		c.fields = self.session.query(DriverField).all()
-		return render_mako('/register/profile.mako')
+		return render_mako('/registerold/profile.mako')
 		 
 	def profile(self):
 		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
 		c.fields = self.session.query(DriverField).all()
-		return render_mako('/register/profile.mako')
+		return render_mako('/registerold/profile.mako')
 
 
 	def _filldriver(self, form_result, driver):
@@ -202,14 +202,14 @@ class RegisterController(BaseController):
 	def view(self):
 		id = request.GET.get('event', None)
 		if id is None:
-			return render_mako('/register/eventselect.mako')
+			return render_mako('/registerold/eventselect.mako')
 			
 		c.classdata = ClassData(self.session)
 		c.event = self.session.query(Event).get(id)
 		query = self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==id)
 		query = query.order_by(Car.classcode, Car.number)
 		c.reglist = query.all()
-		return render_mako('/register/reglist.mako')
+		return render_mako('/registerold/reglist.mako')
 
 	def editcar(self):
 		p = request.POST

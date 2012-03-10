@@ -16,6 +16,7 @@ from pylons.controllers.util import redirect, url_for, abort
 from pylons.decorators import jsonify, validate
 from nwrsc.lib.base import BaseController, BeforePage
 from nwrsc.lib.entranteditor import EntrantEditor
+from nwrsc.lib.objecteditors import ObjectEditor
 from nwrsc.lib.schema import *
 from nwrsc.model import *
 
@@ -27,7 +28,7 @@ def insertfile(cur, name, type, path):
 	except Exception, e:
 		log.warning("Couldn't insert %s, %s" % (name, e))
 
-class AdminController(BaseController, EntrantEditor):
+class AdminController(BaseController, EntrantEditor, ObjectEditor):
 
 	def __before__(self):
 		c.stylesheets = ['/css/admin.css', '/css/redmond/jquery-ui-1.8.2.custom.css', '/css/anytimec.css']

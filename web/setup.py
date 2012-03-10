@@ -22,7 +22,7 @@ x = setup(
 		"Paste==1.7.2",
 		"PasteDeploy==1.3.3",
 		"PasteScript==1.7.3",
-		"Pygments==1.0",
+		"Pygments>=1.0",
 		"Pylons==0.10rc1",
 		"Routes==1.10.3",
 		"simplejson==2.0.8",
