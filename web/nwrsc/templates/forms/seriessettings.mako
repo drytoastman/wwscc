@@ -47,6 +47,11 @@
 <td><input type="text" name="ppoints" value="${c.settings.ppoints}" size="40" /></td>
 </tr>
 
+<tr title="Flag in settings for template to use position points versus difference points">            
+<th>Use Position Points</th>
+<td><input type="checkbox" name="useppoints" ${c.settings.useppoints and "checked"} /></td>
+</tr>
+
 <tr title="Unique numbers across all classes, not each class individually">            
 <th>Series Wide Numbers</th>
 <td><input type="checkbox" name="superuniquenumbers" ${c.settings.superuniquenumbers and "checked"} /></td>

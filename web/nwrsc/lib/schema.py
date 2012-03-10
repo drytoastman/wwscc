@@ -82,6 +82,7 @@ class SettingsSchema(Schema):
 	sponsorlink = String()
 	ppoints = String()
 	superuniquenumbers = Bool()
+	useppoints = Bool()
 	locked = Bool()
 	sponsorimage = Validator()
 	seriesimage = Validator()
