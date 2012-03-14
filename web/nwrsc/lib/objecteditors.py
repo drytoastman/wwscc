@@ -1,34 +1,44 @@
 from pylons import request, tmpl_context as c
 from pylons.templating import render_mako
 from pylons.controllers.util import abort
-from pylons.decorators import jsonify
-from nwrsc.lib.titlecase import titlecase
 from nwrsc.model import *
-from sqlalchemy.sql import func
 
 import logging
 log = logging.getLogger(__name__)
 
 class ObjectEditor(object):
 
+	def _extractDriver(self, driver):
+		fields = self.session.query(DriverField).all()
+		fieldnames = [x.name for x in fields]
+		for attr in request.POST:
+			if hasattr(driver, attr):
+				setattr(driver, attr, request.POST[attr])
+			elif attr in fieldnames:
+				if len(request.POST[attr]) == 0:
+					driver.delExtra(attr)
+				else:
+					driver.setExtra(attr, request.POST[attr])
+		return driver
+
 	def editdriver(self):
 		try:
-			fields = self.session.query(DriverField).all()
-			fieldnames = [x.name for x in fields]
 			driverid = request.POST.get('driverid', None)
 			log.info('request to edit driver %s' % driverid)
-			driver = self.session.query(Driver).get(driverid)
-			for attr in request.POST:
-				if hasattr(driver, attr):
-					setattr(driver, attr, request.POST[attr])
-				elif attr in fieldnames:
-					if len(request.POST[attr]) == 0:
-						driver.delExtra(attr)
-					else:
-						driver.setExtra(attr, request.POST[attr])
+			self._extractDriver(self.session.query(Driver).get(driverid))
 			self.session.commit()
 		except Exception, e:
 			log.info('edit driver failed: %s' % e)
+			abort(400);
+
+
+	def newdriver(self):
+		try:
+			log.info('request to create driver %s' % driverid)
+			self.session.add(self._extractDriver(Driver()))
+			self.session.commit()
+		except Exception, e:
+			log.info('new driver failed: %s' % e)
 			abort(400);
 
 
@@ -47,17 +57,30 @@ class ObjectEditor(object):
 			abort(400);
 
 
+	def _extractCar(self, car):
+		for attr in ('year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode'):
+			setattr(car, attr, request.POST.get(attr, ''))
+		return car
+
 	def editcar(self):
 		try:
 			carid = request.POST.get('carid', None)
 			log.info('request to edit car %s' % carid)
-			car = self.session.query(Car).get(carid)
-			for attr in ('year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode'):
-				setattr(car, attr, request.POST.get(attr, ''))
+			self._extractCar(self.session.query(Car).get(carid))
 			self.session.commit()
 			return ""
 		except Exception, e:
 			log.info('edit car failed: %s' % e)
+			abort(400);
+
+	def newcar(self):
+		try:
+			log.info('request to add car')
+			self.session.addr(self._extractCar(Car()))
+			self.session.commit()
+			return ""
+		except Exception, e:
+			log.info('new car failed: %s' % e)
 			abort(400);
 
 

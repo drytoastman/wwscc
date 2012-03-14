@@ -1,0 +1,233 @@
+
+table.form th, table.form td { padding: 2px 2px 4px 2px; }
+table.form th { text-align: right; }
+.errormsg { color: red; }
+
+/****** car table ******/
+
+table.smalltable {
+	border-collapse: collapse; 
+	xempty-cells: show;
+	font-size: 0.7em;
+}
+
+table.smalltable td, table.smalltable th {
+	text-align: left;
+	white-space:nowrap;
+}
+
+table.smalltable th {
+	text-align: right;
+	font-weight: bold; 
+	padding-right: 5px;
+}
+
+/****** event table ******/
+
+.eventlist { 
+	border: solid 1px #333; 
+	border-collapse: collapse; 
+	empty-cells: show;
+}
+
+table.eventlist td, table.eventlist th {
+	padding: 2px 10px 2px;
+	font: 0.9em arial,helvetica; 
+	text-align: left;
+}
+
+table.eventlist td {
+	padding: 10px;
+	border-bottom: solid 1px #333;
+}
+
+table.eventlist td.closed {
+	background: #EEE;
+	color: #666;
+}
+
+table.eventlist th {
+	background: #7A8;
+	color: white;
+	text-align: center;
+	font-weight: bold; 
+}
+
+
+/*** Events list ***/
+
+a.elink
+{
+	font-weight: bold;
+	margin-top: 4px;
+	margin-bottom: 5px;
+	display: block;
+	font-size: 1.2em;
+}
+
+span.elabel
+{
+	float: left;
+	width: 65px;
+	text-align: right;
+	margin-bottom: 2px;
+	margin-right: 10px;
+	font-weight: bold;
+}
+
+table.eventlist {
+	font-size: 0.8em;
+}
+
+span.evalue
+{
+}
+
+br
+{
+	clear:left;
+}
+
+div.eaddress
+{
+	margin-left: 60px;
+}
+
+div.enotes
+{
+	margin-left: 60px;
+	color: red;
+}
+
+select.eselector
+{
+	display: block;
+	margin: 4px;
+}
+
+form /* oddness from IE */
+{
+	margin: 0px;
+}
+
+div.espacer
+{
+	height: 20px;
+}
+
+div.erule
+{
+	margin-bottom: 8px;
+	border-bottom: 1px solid #AAA;
+	font-size: 0.9em;
+}
+
+a
+{
+	color: blue;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+a img
+{
+	border: 0px;
+}
+
+span.limit
+{
+	font-size: 0.7em;
+}
+
+
+/*** Profile display ***/
+
+div.display {
+	margin-left: 10px;
+	color: #444;
+}
+
+/*** Profile table ***/
+
+table.profile th {
+	text-align: right;
+	padding-right: 8px;
+	font: 0.9em helvetica; 
+	font-weight: bold;
+}
+
+/*** instruction boxes ***/
+div.infobox {
+	margin-bottom: 15px;
+	padding-right: 20px;
+}
+
+div.infobox ul {
+	font: 0.8em arial,helvetica; 
+	padding-left: 0px;
+	margin-left: 0px;
+	list-style-image: url(../images/info.png);
+	list-style-position: inside;
+}
+
+div.infobox li {
+	margin: 0px;
+	padding: 0px;
+}
+	
+
+/*** Other misc stuff ***/
+
+td.center {
+	text-align: center !important;
+}
+
+#currentuser {
+	font-family: Arial;
+	font-size: 10px;
+	color: #FFF;
+}
+
+#availablelink {
+	margin-left: 15px;
+	font-family: Arial;
+	font-size: 0.7em;
+	color: #00F;
+	text-decoration: none;
+}
+
+li {
+	font: 1.0em arial,helvetica; 
+	margin-top: 0.5em;
+}
+	
+/*** Main body structure ***/
+
+#contentpane {
+	position: absolute;
+	left: 210px;
+	top: 0px;
+}
+
+#sponser {
+	margin-top: 8px;
+	margin-bottom: 18px;
+}
+
+#error {
+	color: #FF0000; 
+	font-weight: bold;
+}
+
+#content {
+	margin-top: 15px;
+	margin-bottom: 10px;
+}
+
+.labelcol { 
+	text-align: right; 
+	font-weight: bold;
+}
+
+
+

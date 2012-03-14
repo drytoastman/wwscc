@@ -31,6 +31,7 @@ def make_map():
 	map.connect('/dbserve/available', controller='dbserve', action='available')
 	map.connect('/dbserve/{database}/{action}', controller='dbserve')
 	map.connect('/registerold/{database}/{action}', controller='registerold')
+	map.connect('/register/{database}/{action}', controller='register')
 
 	# Basic matching patterns
 	map.connect('/{controller}')
