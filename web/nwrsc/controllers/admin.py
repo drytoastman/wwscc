@@ -203,6 +203,15 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 			c.text = "<h4>PDFGen not installed, can't create timing card PDF files from this system</h4>"
 			return render_mako("/admin/simple.mako")
 
+		try:
+			from PIL import Image
+		except ImportError:
+			try:
+				import Image
+			except:
+				c.text = "<h4>Python Image not installed, can't create timing card PDF files from this system</h4>"
+				return render_mako("/admin/simple.mako")
+
 		if page == 'letter': # Letter has an additional 72 points Y to space out
 			size = (8*inch, 11*inch)
 		else:
@@ -213,17 +222,23 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 
 		buffer = cStringIO.StringIO()
 		canvas = canvas.Canvas(buffer, pagesize=size, pageCompression=1)
+		carddata = self.session.query(Data).get('cardimage')
+		if carddata is None:
+			cardimage = Image.new('RGB', (1,1))
+		else:
+			cardimage = Image.open(cStringIO.StringIO(carddata.data))
+
 		while len(registered) > 0:
 			if page == 'letter':
 				canvas.translate(0, 18)  # 72/4, bottom margin for letter page
 				(driver, car, reg) = registered.pop(0)
-				drawCard(canvas, c.event, driver, car)
+				drawCard(canvas, c.event, driver, car, cardimage)
 				canvas.translate(0, 396)  # 360+72/2 card size plus 2 middle margins
 				(driver, car, reg) = registered.pop(0)
-				drawCard(canvas, c.event, driver, car)
+				drawCard(canvas, c.event, driver, car, cardimage)
 			else:
 				(driver, car, reg) = registered.pop(0)
-				drawCard(canvas, c.event, driver, car)
+				drawCard(canvas, c.event, driver, car, cardimage)
 			canvas.showPage()
 		canvas.save()
 

@@ -75,6 +75,12 @@
 </tr>
 
 <tr>
+<th>Card Image</th>
+<td><input type=file name="cardimage"></td>
+<td><img src='${h.url_for(controller='db', name='cardimage', eventid=None, action='nocache')}' height="40" /></td>
+</tr>
+
+<tr>
 <td><input type="submit" value="Submit"></td>
 </tr>
 

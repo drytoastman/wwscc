@@ -58,6 +58,7 @@ def convert(session):
 		settings.load(session)
 
 		while settings.schema != SCHEMA_VERSION:
+			log.info("CONVERSION: upgrading %s", settings.schema)
 			converters[settings.schema](session)
 			settings.load(session)
 			break

@@ -86,6 +86,7 @@ class SettingsSchema(Schema):
 	locked = Bool()
 	sponsorimage = Validator()
 	seriesimage = Validator()
+	cardimage = Validator()
 
 
 class EventSchema(Schema):

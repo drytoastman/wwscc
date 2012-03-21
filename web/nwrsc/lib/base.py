@@ -7,6 +7,7 @@ from pylons import config, request
 from paste.deploy.converters import asbool
 
 from nwrsc.model import Session, metadata, Settings, Data, SCHEMA_VERSION
+from nwrsc.model.conversions import convert as dbconversion
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
@@ -92,9 +93,7 @@ class BaseController(WSGIController):
 		if self.database is not None:
 			self.settings.load(self.session)
 			if self.settings.schema != SCHEMA_VERSION:
-				start_response('200 OK', [('content-type', 'text/html')], None)
-				return "Software schema verison is %s but series database is %s, database schema or software needs to be updated to match" % \
-						(SCHEMA_VERSION, self.settings.schema)
+				dbconversion(self.session)
 
 		try:
 			try:
