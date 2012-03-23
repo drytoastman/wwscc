@@ -19,14 +19,29 @@ function editcar(did, cid)
 {
 	$('#careditor [name=driverid]').val(did);
 	$('#careditor [name=carid]').val(cid);
-	$('#careditor [name=year]').val(cars[cid].year);
-	$('#careditor [name=make]').val(cars[cid].make);
-	$('#careditor [name=model]').val(cars[cid].model);
-	$('#careditor [name=color]').val(cars[cid].color);
-	$('#careditor [name=classcode]').val(cars[cid].classcode);
-	$('#careditor [name=indexcode]').val(cars[cid].indexcode);
-	classchange();
-	$('#careditor [name=number]').val(cars[cid].number);
+
+	if (cid in cars) 
+	{
+		$('#careditor [name=year]').val(cars[cid].year);
+		$('#careditor [name=make]').val(cars[cid].make);
+		$('#careditor [name=model]').val(cars[cid].model);
+		$('#careditor [name=color]').val(cars[cid].color);
+		$('#careditor [name=classcode]').val(cars[cid].classcode);
+		$('#careditor [name=indexcode]').val(cars[cid].indexcode);
+		classchange();
+		$('#careditor [name=number]').val(cars[cid].number);
+	}
+	else
+	{
+		$('#careditor [name=year]').val("");
+		$('#careditor [name=make]').val("");
+		$('#careditor [name=model]').val("");
+		$('#careditor [name=color]').val("");
+		$('#careditor [name=classcode]').val("");
+		$('#careditor [name=indexcode]').val("");
+		$('#careditor [name=number]').val("");
+	}
+
 	$('#careditor').dialog('open');
 	// open editor
 }
@@ -66,8 +81,8 @@ $(document).ready(function(){
 
 	$("#careditor").dialog({
 		autoOpen: false,
-		height: 320,
-		width: 450,
+		height: 300,
+		width: 500,
 		modal: true,
 		title: 'Car Editor',
 		buttons: {

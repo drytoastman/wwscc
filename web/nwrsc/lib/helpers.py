@@ -8,6 +8,7 @@ available to Controllers. This module is available to both as 'h'.
 
 from webhelpers.html.tags import stylesheet_link, javascript_link
 from routes import url_for, redirect_to
+from simplejson import dumps
 
 def esc(str):
 	str.replace
@@ -33,3 +34,11 @@ def t3(val, sub = None):
 	if sub is not None:
 		val -= sub
 	return "%0.3f" % (val)
+
+def encodesqlobj(obj):
+	d = dict()
+	for k in obj.__dict__.copy():
+		if k.startswith("_"): continue
+		d[k] = getattr(obj, k)
+	return dumps(d, default=lambda x: x is None and "" or str(x))
+

@@ -34,7 +34,7 @@ class ObjectEditor(object):
 
 	def newdriver(self):
 		try:
-			log.info('request to create driver %s' % driverid)
+			log.info('request to create driver')
 			self.session.add(self._extractDriver(Driver()))
 			self.session.commit()
 		except Exception, e:
@@ -64,7 +64,9 @@ class ObjectEditor(object):
 
 	def editcar(self):
 		try:
-			carid = request.POST.get('carid', None)
+			carid = int(request.POST.get('carid', None))
+			if carid <= 0:
+				return self.newcar()
 			log.info('request to edit car %s' % carid)
 			self._extractCar(self.session.query(Car).get(carid))
 			self.session.commit()
@@ -76,7 +78,8 @@ class ObjectEditor(object):
 	def newcar(self):
 		try:
 			log.info('request to add car')
-			self.session.addr(self._extractCar(Car()))
+			driverid = int(request.POST.get('driverid', None))
+			self.session.add(self._extractCar(Car(driverid=driverid)))
 			self.session.commit()
 			return ""
 		except Exception, e:

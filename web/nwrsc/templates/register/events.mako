@@ -1,7 +1,7 @@
 <%def name="formatCar(car)">${car.classcode}/${car.number} - ${car.year} ${car.make} ${car.model} ${car.color}</%def>
 
 <%def name="paypalLink(event)">
-	<form style='display:inline;' action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'>
+	<form class='paypalform' action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'>
 	<span class='eimage'>
 	<input type='hidden' name='cmd' value='_xclick' />
 	<input type='hidden' name='business' value='${event.paypal}' />
@@ -19,16 +19,16 @@
 
 <%def name="carSelection(reg, event, cars, disabled)">
 <form action='${h.url_for(action='register')}' method='post'>
-<div>
+<div class='carselector'>
 <input type='hidden' name='carid' value='0' />
 <input type='hidden' name='eventid' value='${event.id}' />
 <input type='hidden' name='regid' value='${reg and reg.id or 0}' />
-<select class='eselector' name='selectcarid' onchange='submitAndWait(this, "selectcarid");'>
-%if reg:
-	<option value='-1'>--- unregister this entry ---</option>
-%else:
-	<option selected='selected' value='-1'></option>
+<select class='eselector' name='selectcarid' onchange='registerCar(this, ${event.id});'>
+
+%if not reg:
+    <option selected='selected' value='-1'></option>
 %endif
+
 
 %for car in cars:
 %if reg and car.id == reg.carid:
@@ -38,18 +38,19 @@
 %endif
 %endfor
 </select>
+
+%if reg:
+	<button></button>
+%endif
+
 </div>
 </form>
 </%def>
 
-<%def name="eventlist()">
-%for ev in sorted(c.events, key=lambda obj: obj.date):
-	<h3><a>${ev.date.strftime('%a %b %d')} - ${ev.name}</a></h3>
-	<div>
-	<tr id='eventrow${ev.id}'>
-	<td class='${ev.tdclass}' valign='top'>
-		<span class='elabel'>Closes:</span>
-		<span class='evalue'>${ev.opened and ev.regclosed.strftime('%a %b %d at %I:%M%p') or 'Has not opened yet'}</span><br/>
+
+<%def name="eventdisplay(ev)">
+	<span class='elabel'>Closes:</span>
+	<span class='evalue'>${ev.opened and ev.regclosed.strftime('%a %b %d at %I:%M%p') or 'Has not opened yet'}</span><br/>
 
 	%if ev.host:
 		<span class='elabel'>Host:</span>
@@ -84,18 +85,15 @@
 		%endif
 	%endif
 
-	</td>
-	<td class='${ev.tdclass}'>
+	<div class='espace'></div>
 
-	<br/>
-	<%doc> Car selection cell  </%doc>
 	%if ev.closed or not ev.opened:
 		%for reg in ev.regentries:
 			${formatCar(reg.car)}<br/>
 		%endfor
 	%else:
-		<%doc> Where they add a new registration 
-		<div class='erule'>Register a car from <a href='${h.url_for(action='cars')}'>My Cars</a></div>
+		<%doc> Where they add a new registration </%doc>
+		<div class='erule'>Register a Car</a></div>
 		%if ev.totlimit and ev.count >= ev.totlimit:
 			<span class='limit'>This event's prereg limit of ${ev.totlimit} has been met.</span>
 		%elif len(ev.regentries) >= ev.perlimit:
@@ -103,14 +101,11 @@
 		%else:
 			${carSelection(None, ev, c.cars, [x.carid for x in ev.regentries])}
 		%endif
-		</%doc>
-		<div class='cardrop'>drop car here</div>
-		<div class='cardrop'>drop car here</div>
 
 		<%doc> Where they change their registration </%doc>
 		%if len(ev.regentries) > 0:
 			<div class='espacer'></div>
-			<div class='erule'>Change/Unregister a currently registered car</div>
+			<div class='erule'>Change/Unregister a Car</div>
 			%for reg in ev.regentries:
 				${carSelection(reg, ev, c.cars, [x.carid for x in ev.regentries])}
 			%endfor
@@ -125,10 +120,10 @@
 			%endfor
 		%endif
 	%endif
-	</td>
-	</tr>
-	</div>
 
-%endfor
+	<script>
+	$(".carselector button").button({icons: { primary:'ui-icon-closethick'}, text: false} );
+	</script>
+
 </%def>
 

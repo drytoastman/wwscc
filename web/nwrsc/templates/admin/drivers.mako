@@ -40,7 +40,12 @@ var drivers = Array();
 function buildselect(json)
 {
 	var select = $('#driverlist');
-	var options = select.attr('options');
+	if (select.prop) {
+		var options = select.prop('options');
+	} else {
+		var options = select.attr('options');
+	}
+
 	$('option', select).remove();
 
 	for (idx in json.data)

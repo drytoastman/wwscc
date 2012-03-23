@@ -47,7 +47,7 @@ $(document).ready(function(){
 	$("#drivereditor").dialog({
 		autoOpen: false,
 		height: 350,
-		width: 500,
+		width: 600,
 		modal: true,
 		title: 'Driver Editor',
 		buttons: {

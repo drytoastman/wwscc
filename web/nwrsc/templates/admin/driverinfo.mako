@@ -1,18 +1,11 @@
 <%
-from simplejson import dumps
 allids = [x.driver.id for x in c.items]
-def encodesqlobj(obj):
-	d = dict()
-	for k in obj.__dict__.copy():
-		if k.startswith("_"): continue
-		d[k] = getattr(obj, k)
-	return dumps(d, default=lambda x: x is None and "" or str(x))
 %>
 
 %for info in c.items:
 
 <script>
-drivers[${info.driver.id}] = ${encodesqlobj(info.driver)|n}
+drivers[${info.driver.id}] = ${h.encodesqlobj(info.driver)|n}
 </script>
 
 <% anyruns = sum([x.runs for x in info.cars]) %>
@@ -43,7 +36,7 @@ drivers[${info.driver.id}] = ${encodesqlobj(info.driver)|n}
 
 %for car in info.cars:
 <script>
-cars[${car.id}] = ${encodesqlobj(car)|n} 
+cars[${car.id}] = ${h.encodesqlobj(car)|n} 
 </script>
 <tr>
 <td class='carcell' colspan='2'>

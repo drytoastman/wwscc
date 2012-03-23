@@ -20,7 +20,10 @@ t_cars = Table('cars', metadata,
 Index('caridx_1', t_cars.c.driverid)
 
 class Car(object):
-	pass
+	def __init__(self, **kwargs):
+		for k, v in kwargs.iteritems():
+			if hasattr(self, k):
+				setattr(self, k, v)
 
 mapper(Car, t_cars, properties = { 'driver' : relation(Driver, backref='cars')})
 
