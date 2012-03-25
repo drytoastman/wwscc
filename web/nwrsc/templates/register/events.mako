@@ -18,15 +18,12 @@
 
 
 <%def name="carSelection(reg, event, cars, disabled)">
-<form action='${h.url_for(action='register')}' method='post'>
 <div class='carselector'>
-<input type='hidden' name='carid' value='0' />
-<input type='hidden' name='eventid' value='${event.id}' />
-<input type='hidden' name='regid' value='${reg and reg.id or 0}' />
-<select class='eselector' name='selectcarid' onchange='registerCar(this, ${event.id});'>
-
 %if not reg:
+	<select class='eselector' name='selectcarid' onchange='registerCar(this, ${event.id});'>
     <option selected='selected' value='-1'></option>
+%else:
+	<select class='eselector' name='selectcarid' onchange='reRegisterCar(this, ${event.id}, ${reg.id});'>
 %endif
 
 
@@ -40,11 +37,9 @@
 </select>
 
 %if reg:
-	<button></button>
+	<button onclick='unregisterCar(${event.id}, ${reg.id});'></button>
 %endif
-
 </div>
-</form>
 </%def>
 
 
@@ -85,8 +80,6 @@
 		%endif
 	%endif
 
-	<div class='espace'></div>
-
 	%if ev.closed or not ev.opened:
 		%for reg in ev.regentries:
 			${formatCar(reg.car)}<br/>
@@ -103,17 +96,18 @@
 		%endif
 
 		<%doc> Where they change their registration </%doc>
-		%if len(ev.regentries) > 0:
-			<div class='espacer'></div>
-			<div class='erule'>Change/Unregister a Car</div>
-			%for reg in ev.regentries:
-				${carSelection(reg, ev, c.cars, [x.carid for x in ev.regentries])}
-			%endfor
-		%endif
+		<div class='erule'>Change/Unregister a Car</div>
+		%for reg in ev.regentries:
+			${carSelection(reg, ev, c.cars, [x.carid for x in ev.regentries])}
+		%endfor
+
+		<%doc> Space holder to keep accordian size at max requirement </%doc>
+		%for ii in range(len(ev.regentries), ev.perlimit):
+			<div class='carspaceholder'></div>
+		%endfor
 
 		<%doc> Just information payment information </%doc>
 		%if len(ev.payments) > 0:
-			<div class='espacer'></div>
 			<div class='erule'>Paypal Payments</div>
 			%for p in ev.payments:
 				${p.amount} (${p.status})<br>

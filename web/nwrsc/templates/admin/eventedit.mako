@@ -1,4 +1,4 @@
-<%inherit file="/admin/base.mako" />
+<%inherit file="base.mako" />
 <h3>Event Editor</h3>
 
 <form id="eventForm" action="${c.action}" method="post">

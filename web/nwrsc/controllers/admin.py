@@ -32,7 +32,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 
 	def __before__(self):
 		c.stylesheets = ['/css/admin.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css', '/css/anytimec.css']
-		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js', '/js/anytimec.js']
+		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js', '/js/anytimec.js', url_for(action='scripts')]
 		if self.database is not None:
 			c.events = self.session.query(Event).all()
 		self.eventid = self.routingargs.get('eventid', None)
@@ -100,6 +100,12 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 		redirect(url_for(action=''))
 			
 
+	def scripts(self):
+		response.headers['Cache-Control'] = 'max-age=360' 
+		response.headers.pop('Pragma', None)
+		return render_mako('/forms/careditor.mako') + render_mako('/forms/drivereditor.mako')
+
+
 	def index(self):
 		if self.eventid and self.eventid.isdigit():
 			return render_mako('/admin/event.mako')
@@ -116,7 +122,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 		c.settings = self.settings
 		c.action = 'updatesettings'
 		c.button = 'Update'
-		return render_mako('/forms/seriessettings.mako')
+		return render_mako('/admin/seriessettings.mako')
 
 	@validate(schema=SettingsSchema(), form='seriessettings', prefix_error=False)
 	def updatesettings(self):
@@ -330,7 +336,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 		""" Present form to edit event details """
 		c.action = 'updateevent'
 		c.button = 'Update'
-		return render_mako('/forms/eventedit.mako')
+		return render_mako('/admin/eventedit.mako')
 
 	@validate(schema=EventSchema(), form='editevent', prefix_error=False)
 	def updateevent(self):
@@ -353,7 +359,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 		c.event.date = datetime.today()
 		c.event.regopened = datetime.today()
 		c.event.regclosed = datetime.today()
-		return render_mako('/forms/eventedit.mako')
+		return render_mako('/admin/eventedit.mako')
 
 	@validate(schema=EventSchema(), form='createevent', prefix_error=False)
 	def newevent(self):
@@ -397,7 +403,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 	def fieldlist(self):
 		c.action = 'processFieldList'
 		c.fieldlist = self.session.query(DriverField).all()
-		return render_mako('/forms/fieldlist.mako')
+		return render_mako('/admin/fieldlist.mako')
 
 	@validate(schema=DriverFieldListSchema(), form='fieldlist')
 	def processFieldList(self):
@@ -416,7 +422,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 		c.action = 'processClassList'
 		c.classlist = self.session.query(Class).order_by(Class.code).all()
 		c.indexlist = [""] + [x[0] for x in self.session.query(Index.code).order_by(Index.code)]
-		return render_mako('/forms/classlist.mako')
+		return render_mako('/admin/classlist.mako')
 
 	@validate(schema=ClassListSchema(), form='classlist')
 	def processClassList(self):
@@ -434,7 +440,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 	def indexlist(self):
 		c.action = 'processIndexList'
 		c.indexlist = self.session.query(Index).order_by(Index.code).all()
-		return render_mako('/forms/indexlist.mako')
+		return render_mako('/admin/indexlist.mako')
 
 	@validate(schema=IndexListSchema(), form='indexlist')
 	def processIndexList(self):
@@ -513,7 +519,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 	### Series Copying ###
 	def copyseries(self):
 		c.action = 'processCopySeries'
-		return render_mako('/forms/copyseries.mako')
+		return render_mako('/admin/copyseries.mako')
 
 
 	@validate(schema=CopySeriesSchema(), form='copyseries')

@@ -1,4 +1,4 @@
-<%inherit file="/admin/base.mako" />
+<%inherit file="base.mako" />
 
 <h3>Index Editor</h3>
 

@@ -1,7 +1,4 @@
-<%def name="drivereditor()">
-<%namespace file="driverform.mako" import="driverform" />
 
-<script>
 function editdriver(did)
 {
 	if (did in drivers)
@@ -41,7 +38,8 @@ function editdriver(did)
 	$('#drivereditor').dialog('open');
 }
 
-$(document).ready(function(){
+function setupDriverDialog()
+{
     $("#drivereditor").validate();
 
 	$("#drivereditor").dialog({
@@ -62,10 +60,5 @@ $(document).ready(function(){
 		close: function() {
 		}
 	});
-});
-</script>
+};
 
-<% from nwrsc.model import Driver %>
-${driverform(Driver(), '')}
-
-</%def>

@@ -1,4 +1,4 @@
-<%inherit file="/admin/base.mako" />
+<%inherit file="base.mako" />
 
 <h3>Create New Series</h3>
 

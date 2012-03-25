@@ -1,6 +1,6 @@
 <%inherit file="base.mako" />
-<%namespace file="/forms/careditor.mako" import="careditor"/>
-<%namespace file="/forms/drivereditor.mako" import="drivereditor"/>
+<%namespace file="/forms/carform.mako" import="carform"/>
+<%namespace file="/forms/driverform.mako" import="driverform"/>
 
 <h3>Driver Editor</h3>
 
@@ -28,8 +28,8 @@ div.editor { margin-left: 10px; margin-bottom: 15px; width: 650px;}
 
 <br style='clear:both'/>
 
-${drivereditor()}
-${careditor()}
+${driverform()}
+${carform()}
 
 <script>
 var saveids = Array();
@@ -153,6 +153,8 @@ $('#driverlist').change(function () {
 $(document).ready(function() { 
 	$.ajaxSetup({ cache: false });
 	$.getJSON('${h.url_for(action='getdrivers')}', {}, buildselect);
+	setupCarDialog();
+	setupDriverDialog();
 });
 		
 </script>

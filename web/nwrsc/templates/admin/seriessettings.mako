@@ -1,13 +1,6 @@
-<%inherit file="/admin/base.mako" />
+<%inherit file="base.mako" />
 
 <h3>Series Settings</h3>
-
-<%doc>
-<form id="settingsForm" action="${c.action}" method="post">
-<table class='form'>
-</table>
-</form>
-</%doc>
 
 <form method=post enctype="multipart/form-data" action="${c.action}">
 <table class='form'>

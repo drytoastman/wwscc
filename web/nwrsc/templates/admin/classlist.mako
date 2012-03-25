@@ -1,4 +1,4 @@
-<%inherit file="/admin/base.mako" />
+<%inherit file="base.mako" />
 
 <% def singleline(text): return text.replace('\n', '') %>
 

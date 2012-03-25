@@ -1,109 +1,14 @@
 <%inherit file="/base.mako" />
-<%namespace file="/forms/careditor.mako" import="careditor"/>
-<%namespace file="/forms/drivereditor.mako" import="drivereditor"/>
+<%namespace file="/forms/carform.mako" import="carform"/>
+<%namespace file="/forms/driverform.mako" import="driverform"/>
 <%namespace file="events.mako" import="eventdisplay"/>
 <%namespace file="cars.mako" import="carlist"/>
 <%namespace file="profile.mako" import="profile"/>
 
-<style>
-
-#series {
-	text-align: left;
-	font-family: "Trebuchet MS", Helvetica, sans-serif;
-}
-
-#sponsor img {
-	display: block;
-	float: left;
-	margin-left: 40px;
-}
-
-#content {
-	min-width: 600px;
-	width: auto !important;
-	width: 600px;
-}
-
-
-.ui-widget {
-	font-size: 0.8em !important;
-	font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
-}
-
-.ui-button {
-}
-
-.ui-accordion-content {
-}
-
-#profile {
-	margin: 1px;
-	float: left;
-	margin-right: 5px;
-	font-family: "Trebuchet MS", Helvetica, sans-serif;
-}
-
-#profile span {
-	display: block;
-	font-size: 0.8em;
-}
-
-#editprofile {
-	margin-top: 10px;
-}
-
-#beforeerror, #aftercars {
-	clear: both
-}
-
-#errormsg {
-	margin-top: 20px;
-}
-
-#errormsg span {
-	margin-left: 20px;
-}
-
-#events {
-	float: left;
-	margin: 1px;
-	width: 350px;
-	margin-right: 5px;
-}
-
-#cars {
-	float: left;
-	margin: 1px;
-}
-
-.clear {
-	clear: both;
-}
-
-.cardrop {
-	color: #aaa;
-	text-align: center;
-	border: 1px solid #aaa;
-	width: 150px;
-}
-
-#carlist { list-style-type: none; margin-left: 0px; margin-top: 30px; padding: 0; }
-
-#carlist li { margin: 6px 0px; padding: 0.4em; font-size: 1.0em; height: 18px; }
-
-#createcar { margin-left: 5px; }
-
-.eselector { display: inline !important; }
-.eselector + button { height: 20px; }
-
-.espace { height: 10px; }
-
-</style>
-
 <div id='content'>
 
 <div id='series'>
-<h2>${c.settings.seriesname}</h2>
+<h2>${c.database} - ${c.settings.seriesname}</h2>
 </div>
 
 
@@ -166,8 +71,9 @@ ${carlist()}
 </div>
 
 
-${drivereditor()}
-${careditor()}
+${driverform()}
+${carform()}
+
 
 <script>
 
@@ -175,8 +81,20 @@ $(document).ready(function() {
 	$.ajaxSetup({ cache: false });
 	$("#eventsinner").accordion();
 	$("input[type='button']").button();
+	setupCarDialog();
+	setupDriverDialog();
 });
 		
+
+function updateEvent(eventid)
+{
+	$.getJSON('${h.url_for(action='getevent')}', {eventid:eventid}, function(json) { $("#event"+eventid).html(json.data)} );
+}
+
+function updateCars()
+{
+	$.getJSON('${h.url_for(action='getcars')}', function(json) { $("#carswrapper").html(json.data)} );
+}
 
 function driveredited()
 {
@@ -188,12 +106,50 @@ function driveredited()
 function caredited()
 {
 	$.post('${h.url_for(action='editcar')}', $("#careditor").serialize(), function() {
-		$.getJSON('${h.url_for(action='getcars')}', function(json) { $("#carswrapper").html(json.data)} );
+		updateCars();
 		%for ev in c.events:
 		%if not ev.closed:
-		$.getJSON('${h.url_for(action='getevent')}', {eventid:${ev.id}}, function(json) { $("#event${ev.id}").html(json.data)} );
+			updateEvent(${ev.id});
 		%endif
 		%endfor
+	});
+}
+
+function deletecar(carid)
+{
+	$.post('${h.url_for(action='deletecar')}', {carid:carid}, function() {
+		updateCars();
+		%for ev in c.events:
+		%if not ev.closed:
+			updateEvent(${ev.id});
+		%endif
+		%endfor
+	});
+}
+
+function registerCar(s, eventid)
+{
+	var carid = s.options[s.selectedIndex].value;
+	$.post('${h.url_for(action='registercar')}', {eventid:eventid, carid:carid}, function() {
+		updateEvent(eventid);
+		updateCars();
+	});
+}
+
+function reRegisterCar(s, eventid, regid)
+{
+	var carid = s.options[s.selectedIndex].value;
+	$.post('${h.url_for(action='registercar')}', {regid:regid, carid:carid}, function() {
+		updateEvent(eventid);
+		updateCars();
+	});
+}
+
+function unregisterCar(eventid, regid)
+{
+	$.post('${h.url_for(action='registercar')}', {regid:regid, carid:-1}, function() {
+		updateEvent(eventid); 
+		updateCars();
 	});
 }
 
