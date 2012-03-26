@@ -26,7 +26,7 @@ function editcar(did, cid)
 		$('#careditor [name=classcode]').val(cars[cid].classcode);
 		$('#careditor [name=indexcode]').val(cars[cid].indexcode);
 		classchange();
-		$('#careditor [name=number]').val(cars[cid].number);
+		setnum(cars[cid].number);
 	}
 	else
 	{
@@ -36,7 +36,7 @@ function editcar(did, cid)
 		$('#careditor [name=color]').val("");
 		$('#careditor [name=classcode]').val("");
 		$('#careditor [name=indexcode]').val("");
-		$('#careditor [name=number]').val("");
+		setnum("")
 	}
 
 	$('#careditor').dialog('open');
@@ -45,7 +45,12 @@ function editcar(did, cid)
 
 function setnum(v)
 {
-	$('#careditor [name=number]').val(v);
+	input = $('#careditor [name=number]');
+	input.val(v);
+	if (input.attr('type') == 'hidden') {
+		$('#numberdisplay').html(v);
+	}
+	
 	$('#numberselection').dialog('close');
 }
 
@@ -98,12 +103,13 @@ function setupCarDialog()
 		close: function() {}
 	});
 
+
 	$('#careditor [name=classcode]').change(function() { 
 		classchange(); 
 	});
 
 
-	$('#numberselect').click(function() { 
+	$('#numberselect').button().click(function() { 
 		$('#numberselection').html("loading...");
 		$('#numberselection').dialog('open');
 		$('#numberselection').load('${h.url_for(action='carnumbers')}', {

@@ -72,7 +72,7 @@ ${carlist()}
 
 
 ${driverform()}
-${carform()}
+${carform(True)}
 
 
 <script>
@@ -81,8 +81,8 @@ $(document).ready(function() {
 	$.ajaxSetup({ cache: false });
 	$("#eventsinner").accordion();
 	$("input[type='button']").button();
-	setupCarDialog();
-	setupDriverDialog();
+	setupCarDialog(true);
+	setupDriverDialog("Edit Profile");
 });
 		
 

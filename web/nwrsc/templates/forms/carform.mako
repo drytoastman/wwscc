@@ -1,4 +1,4 @@
-<%def name="carform()">
+<%def name="carform(numberhidden)">
 
 <style type='text/css'>
 
@@ -25,6 +25,13 @@ ul.numbers a {
 text-decoration: none;
 color: blue;
 }
+
+#numberdisplay {
+margin-right: 10px;
+font-size: 1.1em;
+color: #000;
+}
+
 </style>
 
 <form id='careditor'>
@@ -58,7 +65,12 @@ for code in sorted(c.classdata.classlist):
 </td></tr>
 <tr>
    <th>Number</th><td>
-   <input name='number' type='text' size='3' />
+	%if numberhidden:
+		<input name='number' type='hidden'/>
+		<span id='numberdisplay'></span>
+	%else:
+	   <input name='number' type='text' size='3' />
+	%endif
    <button id="numberselect">Available</button>
    </td>
 </tr>

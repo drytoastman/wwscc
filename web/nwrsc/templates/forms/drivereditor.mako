@@ -38,7 +38,7 @@ function editdriver(did)
 	$('#drivereditor').dialog('open');
 }
 
-function setupDriverDialog()
+function setupDriverDialog(title)
 {
     $("#drivereditor").validate();
 
@@ -47,7 +47,7 @@ function setupDriverDialog()
 		height: 350,
 		width: 600,
 		modal: true,
-		title: 'Driver Editor',
+		title: title,
 		buttons: {
 			'Ok': function() {
 				if ($("#drivereditor").valid()) {

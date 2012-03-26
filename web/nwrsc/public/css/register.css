@@ -9,9 +9,9 @@
 }
 
 #content {
-	min-width: 600px;
-	width: auto !important;
-	width: 600px;
+	min-width: 900px;
+	Xwidth: auto !important;
+	width: 900px;
 }
 
 
@@ -71,7 +71,7 @@ h2 {
 #events {
 	float: left;
 	margin: 1px;
-	width: 350px;
+	width: 380px;
 	margin-right: 5px;
 }
 
@@ -97,7 +97,7 @@ h2 {
 
 #createcar { margin-left: 5px; }
 
-.eselector { display: inline !important; }
+.eselector { display: inline !important; width: 280px; margin-bottom: 4px; }
 .eselector + button { height: 20px; }
 
 .erule

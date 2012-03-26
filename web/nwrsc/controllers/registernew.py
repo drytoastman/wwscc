@@ -25,7 +25,12 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 		c.title = 'Scorekeeper Registration'
 		c.stylesheets = ['/css/register.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css']
-		c.javascript = ['/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/jquery.validate.min.js', url_for(action='scripts')]
+		c.javascript = ['/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/jquery.validate.min.js']
+
+		try:
+			c.javascript.append(url_for(action='scripts'))
+		except:
+			pass
 
 		c.settings = self.settings
 
@@ -52,6 +57,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 			
 
 	def login(self):
+		c.fields = self.session.query(DriverField).all()
 		return render_mako('/register/login.mako')
 
 	def logout(self):
@@ -147,12 +153,12 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 		driver = Driver()
 		self.session.add(driver)
-		self._filldriver(self.form_result, driver)
+		self._extractDriver(driver)
 		self.session.commit()
 
 		self.user['driverid'] = driver.id
 		session.save()
-		redirect(url_for(action='events'))
+		redirect(url_for(action='index'))
 
 
 	@jsonify

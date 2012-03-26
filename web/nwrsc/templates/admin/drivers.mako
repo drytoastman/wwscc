@@ -29,7 +29,7 @@ div.editor { margin-left: 10px; margin-bottom: 15px; width: 650px;}
 <br style='clear:both'/>
 
 ${driverform()}
-${carform()}
+${carform(False)}
 
 <script>
 var saveids = Array();
@@ -154,7 +154,7 @@ $(document).ready(function() {
 	$.ajaxSetup({ cache: false });
 	$.getJSON('${h.url_for(action='getdrivers')}', {}, buildselect);
 	setupCarDialog();
-	setupDriverDialog();
+	setupDriverDialog('Edit Driver');
 });
 		
 </script>

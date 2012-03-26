@@ -12,8 +12,10 @@ drivers[${c.driver.id}] = ${h.encodesqlobj(c.driver)|n}
 <span id='csz'>${c.driver.city}, ${c.driver.state} ${c.driver.zip}</span>
 <span id='brag'>${c.driver.brag}</span>
 <span id='sponsor'>${c.driver.sponsor}</span>
+<%doc>
 %for field in c.fields:
-<span id='${field.name}'>{c.driver.getExtra(field.name)}</span>
+<span id='${field.name}'>${c.driver.getExtra(field.name)}</span>
 %endfor
+</%doc>
 
 </%def>

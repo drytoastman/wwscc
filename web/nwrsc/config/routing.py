@@ -30,6 +30,7 @@ def make_map():
 	# dbserve and register don't use eventid
 	map.connect('/dbserve/available', controller='dbserve', action='available')
 	map.connect('/dbserve/{database}/{action}', controller='dbserve')
+	map.connect('/registernew/{database}/{action}', controller='registernew')
 	map.connect('/registerold/{database}/{action}', controller='registerold')
 	map.connect('/register/{database}/{action}', controller='register')
 

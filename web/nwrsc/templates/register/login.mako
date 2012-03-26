@@ -1,11 +1,12 @@
 <%inherit file="/base.mako" />
+<%namespace file="/forms/driverform.mako" import="driverform"/>
 
 <style>
 #series { margin-left: 20px; }
 #sponsorimg { margin-left: 20px; display: block; }
 #login { margin-left: 20px; margin-top: 20px; }
 #login th { text-align: right; }
-#submit { margin-left: 230px; margin-top: 10px; font-size: 0.8em; }
+#submit { margin-left: 200px; margin-top: 10px; font-size: 0.8em; }
 </style>
 
 
@@ -43,14 +44,26 @@
 </div>
 
 <div id='submit'>
-<input type="submit" value="Submit" id='loginsubmit'/>
+<input type="submit" value="Login" id='loginsubmit'/>
+<button id='newbutton'>New Driver</button>
 </div>
-<input id='editprofile' type='button' value='New' onclick='editdriver()'/>
 </form>
 
+${driverform(action=h.url_for(action='newprofile'), method='POST')}
 
 <script>
-  $(document).ready(function(){ $("#loginForm").validate(); });
-  $(document).ready(function(){ $("#loginsubmit").button(); });
+$(document).ready(function() {
+	drivers=Array();
+	$("#loginForm").validate(); 
+	$("#loginsubmit").button();
+	$("#newbutton").button().click(function() { editdriver(-1); return false; } );
+	setupDriverDialog("New Driver");
+});
+
+function driveredited()
+{
+	$("#drivereditor").submit();
+}
+
 </script>
 
