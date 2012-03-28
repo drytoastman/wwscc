@@ -14,24 +14,16 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.components.CurrentDatabaseLabel;
 import org.wwscc.components.MyIpLabel;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.Run;
-import org.wwscc.util.LastManEventQueue;
-import org.wwscc.util.Logging;
-import org.wwscc.util.MT;
-import org.wwscc.util.MessageListener;
-import org.wwscc.util.Messenger;
+import org.wwscc.util.*;
 
 
 public class DataEntry extends JFrame implements MessageListener
@@ -45,7 +37,8 @@ public class DataEntry extends JFrame implements MessageListener
 	ClassTree  numberTree;
 	ResultsPane announcer;
 	FindEntry finder;
-	EntryTable table;
+	DriverTable driverTable;
+	RunsTable runsTable;
 	JScrollPane tableScroll;
 	PreregPanel prereg;
 
@@ -53,7 +46,7 @@ public class DataEntry extends JFrame implements MessageListener
 
 	JTabbedPane tabs;
 
-	FakeUser fakeUser;  // for debugging
+	//FakeUser fakeUser;  // for debugging
 
 	class HelpPanel extends JLabel implements MessageListener
 	{
@@ -97,7 +90,8 @@ public class DataEntry extends JFrame implements MessageListener
 		setJMenuBar(menus);
 
 		dataModel = new EntryModel();
-		table = new EntryTable(dataModel);
+		driverTable = new DriverTable(dataModel);
+		runsTable = new RunsTable(dataModel);
 		setupBar = new SelectionBar();
 		numberTree = new ClassTree();
 		driverEntry = new DriverEntry();
@@ -114,9 +108,20 @@ public class DataEntry extends JFrame implements MessageListener
 		tabs.addTab(" Announcer Data ", announcer);
 
 
-		tableScroll = new JScrollPane(table);
+		tableScroll = new JScrollPane(runsTable);
 		tableScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		tableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		
+		//driverTable.setPreferredScrollableViewportSize(driverTable.getPreferredSize());
+		tableScroll.setRowHeaderView( driverTable );
+		tableScroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, driverTable.getTableHeader());
+		tableScroll.getRowHeader().addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				JViewport viewport = (JViewport) e.getSource();
+				tableScroll.getVerticalScrollBar().setValue(viewport.getViewPosition().y);
+			}
+		});
 
 		timeEntry = new TimeEntry();
 		menus.add(timeEntry.getTimerMenu());
@@ -143,7 +148,7 @@ public class DataEntry extends JFrame implements MessageListener
 		content.add(tableScroll, "grow, wrap");
 		content.add(infoBoxes, "spanx 3, growx, wrap");
 
-		fakeUser = new FakeUser(table, timeEntry);
+		//fakeUser = new FakeUser(table, timeEntry);
 
 		setContentPane(content);
 		setSize(1024,768);
@@ -162,9 +167,9 @@ public class DataEntry extends JFrame implements MessageListener
 		switch (type)
 		{
 			case OBJECT_DCLICKED:
-				if (o instanceof Entrant)
-					tabs.setSelectedComponent(driverEntry);
-				break;
+                            if (o instanceof Entrant)
+                                tabs.setSelectedComponent(driverEntry);
+                            break;
 		}
 	}
 
@@ -193,4 +198,3 @@ public class DataEntry extends JFrame implements MessageListener
 		}
 	}
 }
-
