@@ -21,7 +21,7 @@ import org.wwscc.util.Messenger;
 public class FakeUser implements MessageListener
 {
 	TimeEntry time;
-	EntryTable table;
+	RunsTable table;
 	Run toset;
 	UserThread thread;
 	int waitTime = 2000;
@@ -30,7 +30,7 @@ public class FakeUser implements MessageListener
         long max = 0;
         long cnt = 0;
 
-	public FakeUser(EntryTable t, TimeEntry e)
+	public FakeUser(RunsTable t, TimeEntry e)
 	{
 		time = e;
 		table = t;

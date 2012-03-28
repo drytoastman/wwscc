@@ -46,7 +46,7 @@ public class DataEntry extends JFrame implements MessageListener
 
 	JTabbedPane tabs;
 
-	//FakeUser fakeUser;  // for debugging
+	FakeUser fakeUser;  // for debugging
 
 	class HelpPanel extends JLabel implements MessageListener
 	{
@@ -148,7 +148,7 @@ public class DataEntry extends JFrame implements MessageListener
 		content.add(tableScroll, "grow, wrap");
 		content.add(infoBoxes, "spanx 3, growx, wrap");
 
-		//fakeUser = new FakeUser(table, timeEntry);
+		fakeUser = new FakeUser(runsTable, timeEntry);
 
 		setContentPane(content);
 		setSize(1024,768);
