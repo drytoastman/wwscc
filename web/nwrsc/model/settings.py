@@ -21,13 +21,14 @@ mapper(Setting, t_settings)
 class Settings(object):
 
 	INTS = ["largestcarnumber", "useevents", "minevents"]
-	BOOLS = ["locked", "superuniquenumbers", "useppoints"]
+	BOOLS = ["locked", "superuniquenumbers", "useppoints", "indexafterpenalties"]
 	STRS = ["ppoints", "seriesname", "sponsorlink", "password", "schema"]
 
 	def __init__(self):
 		self.locked = False
 		self.superuniquenumbers = False
 		self.useppoints = False
+		self.indexafterpenalties = False
 
 		self.ppoints = "20,16,13,11,9,7,6,5,4,3,2,1"
 		self.seriesname = ""

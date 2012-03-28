@@ -64,10 +64,11 @@ def UpdateClassResults(session, eventid, classcode, carid):
 		prev = sum
 
 
-def RecalculateResults(session):
+def RecalculateResults(session, settings):
 	yield "<pre>"
 	try:
 		classdata = ClassData(session)
+
 		for event in session.query(Event).all():
 			yield "Event: %d\n" % (event.id)
 			session.execute("delete from eventresults where eventid=%d" % event.id) # If admin changes car class, this is needed
@@ -83,7 +84,7 @@ def RecalculateResults(session):
 				yield "\tId: %s (%s, %s, %s)\n" % (car.carid, val, istr, (counted < 100 and counted or "all"))
 
 				for course in range(1, event.courses+1):
-					UpdateRunTotals(session, event, car.carid, course, val, counted)
+					UpdateRunTotals(session, event, car.carid, course, val, counted, settings.indexafterpenalties)
 			session.commit()
 
 			for cls in session.query(Car.classcode).distinct().join(Run).filter(Run.eventid==event.id):
@@ -114,7 +115,7 @@ def total(*args):
 			tot += a
 	return tot
 
-def UpdateRunTotals(session, event, carid, course, index, counted):
+def UpdateRunTotals(session, event, carid, course, index, counted, indexafterpenalties):
 	min = 10
 	runs = session.query(Run).filter(Run.eventid==event.id).filter(Run.carid==carid).filter(Run.course==course).all()
 	for r in runs:
@@ -129,7 +130,10 @@ def UpdateRunTotals(session, event, carid, course, index, counted):
 			r.sixty = 0.0
 
 		if r.status == "OK":
-			r.net = (r.raw * index) + (event.conepen * r.cones) + (event.gatepen * r.gates)
+			if indexafterpenalties:
+				r.net = (r.raw + (event.conepen * r.cones) + (event.gatepen * r.gates)) * index
+			else:
+				r.net = (r.raw * index) + (event.conepen * r.cones) + (event.gatepen * r.gates)
 		else:
 			r.net = 999.999
 

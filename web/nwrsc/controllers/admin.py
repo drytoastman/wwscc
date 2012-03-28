@@ -176,7 +176,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 	def dorecalc(self):
 		from nwrsc.controllers.dblib import RecalculateResults
 		response.headers['Content-type'] = 'text/plain'
-		return RecalculateResults(self.session)
+		return RecalculateResults(self.session, self.settings)
 
 
 	def printhelp(self):

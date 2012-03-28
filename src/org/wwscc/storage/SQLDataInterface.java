@@ -182,17 +182,41 @@ public abstract class SQLDataInterface extends DataInterface
 		return o;
 	}
 
+	protected Map<String, String> settingsCache = new HashMap<String,String>();
 	@Override
 	public String getSetting(String key)
 	{
 		try
 		{
-			ResultData setting = executeSelect("GETSETTING", newList(key));
-			return setting.get(0).getString("val");
+			if (!settingsCache.containsKey(key))
+			{
+				ResultData setting = executeSelect("GETSETTING", newList(key));
+				if (setting.size() > 0)
+					settingsCache.put(key, setting.get(0).getString("val"));
+				else
+					settingsCache.put(key, "");
+			}
+
+			return settingsCache.get(key);
 		} catch (IOException ioe) {
 			logError("getSetting", ioe);
 			return "";
 		}
+	}
+	
+	protected Map<String, Boolean> booleanCache = new HashMap<String, Boolean>();
+	@Override
+	public boolean getBooleanSetting(String key)
+	{
+		if (!booleanCache.containsKey(key))
+		{
+			String dbvalue = getSetting(key);
+			if (dbvalue.equals("1") || dbvalue.equals("true"))
+				booleanCache.put(key, true);
+			else
+				booleanCache.put(key, false);
+		}
+		return booleanCache.get(key);
 	}
 
 	@Override
@@ -895,6 +919,10 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
+
+	/*
+ 	 * Separate to be overriden by remote access classes that call a function rather than perform lots of SQL over the wire
+ 	 */
 	protected void updateClassResults(String classcode, int carid) throws IOException
 	{
 		log.fine("Update event for class " + classcode);

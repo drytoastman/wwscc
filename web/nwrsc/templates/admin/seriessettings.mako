@@ -45,6 +45,11 @@
 <td><input type="checkbox" name="useppoints" ${c.settings.useppoints and "checked"} /></td>
 </tr>
 
+<tr title="Apply indexes after penalties, default is false (index is applied, then penalties)">
+<th>Apply Index After Penalties</th>
+<td><input type="checkbox" name="indexafterpenalties" ${c.settings.indexafterpenalties and "checked"} /></td>
+</tr>
+
 <tr title="Unique numbers across all classes, not each class individually">            
 <th>Series Wide Numbers</th>
 <td><input type="checkbox" name="superuniquenumbers" ${c.settings.superuniquenumbers and "checked"} /></td>

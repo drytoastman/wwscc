@@ -83,6 +83,7 @@ class SettingsSchema(Schema):
 	ppoints = String()
 	superuniquenumbers = Bool()
 	useppoints = Bool()
+	indexafterpenalties = Bool()
 	locked = Bool()
 	sponsorimage = Validator()
 	seriesimage = Validator()

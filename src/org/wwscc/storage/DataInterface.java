@@ -49,6 +49,7 @@ public abstract class DataInterface
 	public abstract void clearChanges();
 	public abstract List<Change> getChanges();
 	public abstract String getSetting(String key);
+	public abstract boolean getBooleanSetting(String key);
 	
 	public abstract List<Event> getEvents(); // get a list of all events in the database
 	public abstract boolean updateEvent(); // update the current event data in the database
