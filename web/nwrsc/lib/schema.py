@@ -151,4 +151,5 @@ class DriverSchema(Schema):
 	phone = String()
 	brag = String()
 	sponsor = String()
+	anonymize = Bool()
 

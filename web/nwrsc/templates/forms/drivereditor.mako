@@ -13,6 +13,7 @@ function editdriver(did)
 		$('#drivereditor [name=phone]').val(drivers[did].homephone);
 		$('#drivereditor [name=brag]').val(drivers[did].brag);
 		$('#drivereditor [name=sponsor]').val(drivers[did].sponsor);
+		$('#drivereditor [name=anonymize]').prop("checked", drivers[did].anonymize);
 %for field in c.fields:
 		$('#drivereditor [name=${field.name}]').val(drivers[did].${field.name});
 %endfor
@@ -29,6 +30,7 @@ function editdriver(did)
 		$('#drivereditor [name=phone]').val("");
 		$('#drivereditor [name=brag]').val("");
 		$('#drivereditor [name=sponsor]').val("");
+		$('#drivereditor [name=anonymize]').prop("checked", false);
 %for field in c.fields:
 		$('#drivereditor [name=${field.name}]').val("");
 %endfor

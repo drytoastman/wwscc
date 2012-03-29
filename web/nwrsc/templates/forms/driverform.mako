@@ -26,6 +26,8 @@
 <td colspan='2'><input name='firstname' type='text' value=''/></td>
 <th>Last Name</th>
 <td colspan='3'><input name='lastname' type='text' value=''/></td>
+<th>Anonymize</th>
+<td><input type="checkbox" name="anonymize"></td>
 </tr>
 
 <tr id='emailrow'>

@@ -1,6 +1,8 @@
 from pylons import request, tmpl_context as c
 from pylons.templating import render_mako
 from pylons.controllers.util import abort
+from pylons.decorators import validate
+from nwrsc.lib.schema import *
 from nwrsc.model import *
 
 import logging
@@ -11,20 +13,23 @@ class ObjectEditor(object):
 	def _extractDriver(self, driver):
 		fields = self.session.query(DriverField).all()
 		fieldnames = [x.name for x in fields]
-		for attr in request.POST:
+		for attr in self.form_result:
 			if hasattr(driver, attr):
-				setattr(driver, attr, request.POST[attr])
+				setattr(driver, attr, self.form_result[attr])
 			elif attr in fieldnames:
-				if len(request.POST[attr]) == 0:
+				if len(self.form_result[attr]) == 0:
 					driver.delExtra(attr)
 				else:
-					driver.setExtra(attr, request.POST[attr])
+					driver.setExtra(attr, self.form_result[attr])
+
 		return driver
 
+
+	@validate(schema=DriverSchema())
 	def editdriver(self):
 		try:
-			driverid = request.POST.get('driverid', None)
-			log.info('request to edit driver %s' % driverid)
+			driverid = self.form_result['driverid']
+			log.debug('request to edit driver %s' % driverid)
 			self._extractDriver(self.session.query(Driver).get(driverid))
 			self.session.commit()
 		except Exception, e:
@@ -32,9 +37,10 @@ class ObjectEditor(object):
 			abort(400);
 
 
+	@validate(schema=DriverSchema())
 	def newdriver(self):
 		try:
-			log.info('request to create driver')
+			log.debug('request to create driver')
 			self.session.add(self._extractDriver(Driver()))
 			self.session.commit()
 		except Exception, e:

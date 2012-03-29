@@ -41,7 +41,7 @@ def convert2011(session):
 	session.execute("DROP TABLE olddrivers")
 
 	settings = Settings()
-	settings.load(session)
+	settings.load(session)  # also loads new default values
 	settings.schema = '20121'
 	settings.save(session)
 

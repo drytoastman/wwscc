@@ -45,7 +45,7 @@ sqlmap = {
 'INSERTCHALLENGE':'insert into challenges (eventid, name, depth, bonus) values (:h1,:h2,:h3,:h4)',
 'INSERTCLASSGROUPMAPPING':'insert into rungroups (eventid, classcode, rungroup) values (:h1,:h2,:h3)',
 'INSERTCLASSRESULTS':'insert into eventresults VALUES (NULL, :h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10)',
-'INSERTDRIVER':'insert or ignore into drivers (firstname,lastname,email,address,city,state,zip,phone,brag,sponsor) values (:h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10)',
+'INSERTDRIVER':'insert or ignore into drivers (firstname,lastname,email,address,city,state,zip,phone,brag,sponsor,anonymize) values (:h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10,:h11)',
 'INSERTEXTRA':'insert into driverextra (driverid, name, value) values (:h1,:h2,:h3)',
 'INSERTRUN':'insert into runs (carid,eventid,course,run,cones,gates,status,rorder,norder,brorder,bnorder,reaction,sixty,seg1,seg2,seg3,seg4,seg5,raw,net) values (:h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10,:h11,:h12,:h13,:h14,:h15,:h16,:h17,:h18,:h19,:h20)',
 'INSERTRUNORDER':'insert into runorder values (NULL, :h1,:h2,:h3,:h4,:h5)',
@@ -61,7 +61,7 @@ sqlmap = {
 'UNREGISTERCAR':'delete from registered where eventid=:h1 and carid=:h2',
 'UPDATECAR':'update cars set driverid=:h1,year=:h2,make=:h3,model=:h4,color=:h5,number=:h6,classcode=:h7,indexcode=:h8 where id=:h9',
 'UPDATECHALLENGEROUND':'update challengerounds set challengeid=:h1,round=:h2,swappedstart=:h3,car1id=:h4,car1dial=:h5,car1result=:h6,car1newdial=:h7,car2id=:h8,car2dial=:h9,car2result=:h10,car2newdial=:h11 where id=:h12',
-'UPDATEDRIVER':'update drivers set firstname=:h1,lastname=:h2,email=:h3,address=:h4,city=:h5,state=:h6,zip=:h7,phone=:h8,brag=:h9,sponsor=:h10 where id=:h11',
+'UPDATEDRIVER':'update drivers set firstname=:h1,lastname=:h2,email=:h3,address=:h4,city=:h5,state=:h6,zip=:h7,phone=:h8,brag=:h9,sponsor=:h10,anonymize=:h11 where id=:h12',
 'UPDATEEVENTS':'update events set ispro=:h1,practice=:h2,courses=:h3,runs=:h4,countedruns=:h5,conepen=:h6,gatepen=:h7,segments=:h8,password=:h9,name=:h10,date=:h11,location=:h12,sponsor=:h13,host=:h14,designer=:h15,regopened=:h16,regclosed=:h17,perlimit=:h18,totlimit=:h19,cost=:h20,paypal=:h21,snail=:h22,notes=:h23 where id=:h24',
 'UPDATERUN':'update runs set carid=:h1,eventid=:h2,course=:h3,run=:h4,cones=:h5,gates=:h6,status=:h7,rorder=:h8,norder=:h9,brorder=:h10,bnorder=:h11,reaction=:h12,sixty=:h13,seg1=:h14,seg2=:h15,seg3=:h16,seg4=:h17,seg5=:h18,raw=:h19,net=:h20 where id=:h21',
 }
