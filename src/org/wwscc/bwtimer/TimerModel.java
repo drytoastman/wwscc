@@ -19,8 +19,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.wwscc.storage.Run;
 import org.wwscc.timercomm.TimerService;
-import org.wwscc.util.Messenger;
 import org.wwscc.util.MT;
+import org.wwscc.util.Messenger;
 import org.wwscc.util.Prefs;
 import org.wwscc.util.TimerTimestamp;
 
@@ -57,11 +57,12 @@ public class TimerModel implements TableModel, TimeStorage
 		server.close();
 	}
 
+	
 	@SuppressWarnings("unchecked")
 	public void setLights(int sensorsused)
 	{
 		lights = sensorsused;
-		timestamps = new LinkedList[lights];
+		timestamps = new LinkedList[lights]; 
 		for (int ii = 0; ii < lights; ii++)
 			timestamps[ii] = new LinkedList<Long>();
 		lasttick = 0;
@@ -407,7 +408,7 @@ public class TimerModel implements TableModel, TimeStorage
 	}
 
 	@Override
-	public Object getElementAt(int row)
+	public Run getElementAt(int row)
 	{
 		if (row < timestamps[finish].size())
 			return getRun(row);
@@ -418,7 +419,7 @@ public class TimerModel implements TableModel, TimeStorage
 		// Live timer, show up to date double count
 		long end = lasttick;
 		long beg = timestamps[start].get(row);
-		return (end-beg)/1000.0;
+		return new Run((end-beg)/1000.0);
 	}
 
 	@Override

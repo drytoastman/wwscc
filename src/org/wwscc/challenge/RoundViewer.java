@@ -448,8 +448,8 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 	class RunDisplay extends JComponent implements ActionListener, FocusListener
 	{	
 		TimeTextField value;
-		JComboBox cones;
-		JComboBox status;
+		JComboBox<Integer> cones;
+		JComboBox<String> status;
 		JLabel info;
 		
 		ChallengeRun run;
@@ -472,9 +472,9 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			value.addFocusListener(this);
 			value.setFont(timeFont);
 
-			cones = new JComboBox(new Integer[] {0, 1, 2, 3, 4, 5});
+			cones = new JComboBox<Integer>(new Integer[] {0, 1, 2, 3, 4, 5});
 			cones.addActionListener(this);
-			status = new JComboBox(new String[] {"OK", "RL", "NS", "DNF"});
+			status = new JComboBox<String>(new String[] {"OK", "RL", "NS", "DNF"});
 			status.addActionListener(this);
 			Font f = new Font("SansSerif", Font.PLAIN, 10);
 			cones.setFont(f);

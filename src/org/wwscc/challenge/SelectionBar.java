@@ -34,8 +34,8 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 	private static Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
 
 	JLabel seriesLabel, connectLabel;
-	JComboBox eventSelect;
-	JComboBox challengeSelect;
+	JComboBox<Event> eventSelect;
+	JComboBox<Challenge> challengeSelect;
 
 	public SelectionBar()
 	{
@@ -81,9 +81,9 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		return l;
 	}
 
-	private JComboBox createCombo(String name)
+	private <E> JComboBox<E> createCombo(String name)
 	{
-		JComboBox combo = new JComboBox();
+		JComboBox<E> combo = new JComboBox<E>();
 		combo.setActionCommand(name);
 		combo.addActionListener(this);
 		return combo;
@@ -103,7 +103,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				
 			case DATABASE_CHANGED:
 				seriesLabel.setText(Database.d.getCurrentSeries());
-				eventSelect.setModel(new DefaultComboBoxModel(new Vector<Event>(Database.d.getEvents())));
+				eventSelect.setModel(new DefaultComboBoxModel<Event>(Database.d.getEvents().toArray(new Event[0])));
 
 				int select = Prefs.getEventId(0);
 				if (select < eventSelect.getItemCount())
@@ -113,7 +113,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				break;
 				
 			case NEW_CHALLENGE:
-				challengeSelect.setModel(new DefaultComboBoxModel(new Vector<Challenge>(Database.d.getChallengesForEvent())));
+				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(Database.d.getChallengesForEvent().toArray(new Challenge[0])));
 				challengeSelect.setSelectedIndex(challengeSelect.getItemCount() - 1);
 				break;
 		}
@@ -129,7 +129,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 
 		if (cmd.endsWith("Change"))
 		{
-			JComboBox cb = (JComboBox)e.getSource();
+			JComboBox<?> cb = (JComboBox<?>)e.getSource();
 			Object o = cb.getSelectedItem();
 
 			if (cmd.startsWith("event"))
@@ -137,7 +137,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				Database.d.setCurrentEvent((Event)o);
 				Messenger.sendEvent(MT.EVENT_CHANGED, null);
 				Prefs.setEventId(eventSelect.getSelectedIndex());
-				challengeSelect.setModel(new DefaultComboBoxModel(new Vector<Challenge>(Database.d.getChallengesForEvent())));
+				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(Database.d.getChallengesForEvent().toArray(new Challenge[0])));
 				
 				int select = Prefs.getChallengeId(0);
 				if (select < challengeSelect.getItemCount())

@@ -8,72 +8,70 @@
 
 package org.wwscc.dataentry;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.*;
+import javax.swing.DropMode;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.KeyStroke;
+import javax.swing.TransferHandler;
 import javax.swing.event.TableColumnModelEvent;
-import javax.swing.event.TableModelEvent;
-import javax.swing.table.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import org.wwscc.dataentry.TableBase.SimpleDataTransfer;
+import org.wwscc.dialogs.TextRunsDialog;
+import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
+import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 
 
-
-
-
 /**
- * Table used for DataEntry 
+ * Table showing the driver entries.  Takes two columns and is placed into the scroll panel row header
  */
-public class DriverTable extends JTable implements MessageListener
+public class DriverTable extends TableBase implements MessageListener
 {
-	ListSelectionModel rowSel;
-	ListSelectionModel colSel;
-
-	EntryModel model;
 	String activeSearch;
 	
 	public DriverTable(EntryModel m)
 	{
-		super(m);
-		setAutoCreateColumnsFromModel( false );
-
-		model = m;
+		super(m, new EntrantRenderer(), new DriverTransferHandler(), 0, 2);
 		activeSearch = "";
 
-		rowSel = getSelectionModel();
-		colSel = getColumnModel().getSelectionModel();
-
-		/* Selection and DnD/cut/paste */
-		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		setCellSelectionEnabled(true);
 		setDragEnabled(true);
 		setDropMode(DropMode.INSERT);
-		setTransferHandler(new DriverTransferHandler());
-
-		/* Drawing and other misc drawing stuff */
-		getTableHeader().setReorderingAllowed(false);
-		setDefaultRenderer(Entrant.class, new EntrantRenderer());
-		setRowHeight(36);
-		
 		
 		InputMap im = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "cut"); // delete is same as Ctl+X
 
-		addMouseListener(new DClickWatch());
+		addMouseListener(new ContextMenu());
 		getTableHeader().addMouseListener( new RowHeaderTableResizer() );
 		
 		Messenger.register(MT.CAR_ADD, this);
@@ -81,36 +79,60 @@ public class DriverTable extends JTable implements MessageListener
 		Messenger.register(MT.FIND_ENTRANT, this);
 	}
 
+	@Override
+	public void setColumnSizes(TableColumnModelEvent e)
+	{
+		TableColumnModel tcm = (TableColumnModel)e.getSource();
+		int cc = tcm.getColumnCount();
+		if (cc <= 1) return;
+		
+		setColumnWidths(tcm.getColumn(0), 40, 60, 75);
+		setColumnWidths(tcm.getColumn(1), 80, 250, 400);
+		doLayout();
+	}
 
-	class DClickWatch extends MouseAdapter implements ActionListener
+	@Override
+	public void event(MT type, Object o)
+	{
+		switch (type)
+		{
+			case CAR_ADD:
+				Sounds.playBlocked();
+				((EntryModel)getModel()).addCar((Integer)o);
+				scrollTable(getRowCount(), 0);
+				break;
+
+			case CAR_CHANGE:
+				int row = getSelectedRow();
+				if ((row >= 0) && (row < getRowCount()))
+					((EntryModel)getModel()).replaceCar((Integer)o, row);
+				break;
+
+			case FIND_ENTRANT:
+				activeSearch = (String)o;
+				repaint();
+				break;
+		}
+	}
+	
+	
+	/**
+	 * Create a simple context menu for the driver columns to allow pasting
+	 * of textual run data from other sources (like national pro solo)
+	 */
+	class ContextMenu extends MouseAdapter implements ActionListener
 	{
 		JPopupMenu driverPopup;
 		JPopupMenu runPopup;
 		Entrant selectedE;
 
-		public DClickWatch()
+		public ContextMenu()
 		{
 			driverPopup = new JPopupMenu("");
-			driverPopup.add(createItem("Cut", KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK)));
-			driverPopup.add(createItem("Add Text Runs", null));
-			selectedE = null;
-			//copy = createItem("Copy", KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
-			//paste = createItem("Paste", KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
-		}
-
-		protected JMenuItem createItem(String title, KeyStroke ks)
-		{
-			JMenuItem item = new JMenuItem(title);
+			JMenuItem item = new JMenuItem("Add Text Runs");
 			item.addActionListener(this);
-			if (item != null) item.setAccelerator(ks);
-			return item;
-		}
-
-		protected Object getObject()
-		{
-			int row = rowSel.getMinSelectionIndex();
-			int col = colSel.getMinSelectionIndex();
-			return getValueAt(row, col);
+			driverPopup.add(item);
+			selectedE = null;
 		}
 
 		public void doPopup(MouseEvent e)
@@ -118,8 +140,8 @@ public class DriverTable extends JTable implements MessageListener
 			int row = rowAtPoint(e.getPoint());
 			int col = columnAtPoint(e.getPoint());
 			if ((row == -1) || (col == -1)) return;
-			if (!rowSel.isSelectedIndex(row)) return;
-			if (!colSel.isSelectedIndex(col)) return;
+			if (DriverTable.this.getSelectedRow() != row) return;
+			if (DriverTable.this.getSelectedColumn() != col) return;
 			
 			selectedE = (Entrant)getValueAt(row, col);
 			driverPopup.show(DriverTable.this, e.getX(), e.getY());
@@ -128,7 +150,6 @@ public class DriverTable extends JTable implements MessageListener
 		@Override
 		public void mousePressed(MouseEvent e)
 		{
-			Messenger.sendEvent(MT.OBJECT_CLICKED, getObject());
 			if (e.isPopupTrigger())
 				doPopup(e);
 		}
@@ -141,126 +162,45 @@ public class DriverTable extends JTable implements MessageListener
 		}
 
 		@Override
-		public void mouseClicked(MouseEvent e)
-		{
-			if (e.getClickCount() == 2)
-				Messenger.sendEvent(MT.OBJECT_DCLICKED, getObject());
-		}
-		
-		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			String cmd = e.getActionCommand();
-			if (cmd.equals("Cut"))
+			TextRunsDialog trd = new TextRunsDialog();
+			trd.doDialog("Textual Run Input", null);
+			List<Run> runs = trd.getResult();
+			if (runs == null) return;
+			Map<Integer, Run> course1, course2;
+			course1 = new HashMap<Integer,Run>();
+			course2 = new HashMap<Integer,Run>();
+
+			Database.d.setCurrentCourse(1);
+			Entrant ent = Database.d.loadEntrant(selectedE.getCarId(), false);
+			for (Run r : trd.getResult())
 			{
-				e.setSource(DriverTable.this); // redirect as cut action on Table
-				TransferHandler.getCutAction().actionPerformed(e);
+				r.updateTo(Database.d.getCurrentEvent().getId(), r.course(), r.run(), selectedE.getCarId(), ent.getIndex());
+				if (r.course() == 2) course2.put(r.run(), r); else course1.put(r.run(), r);
 			}
-		}
-		
 
-
-	}
-
-	class ScrollMe implements Runnable
-	{
-		public int row;
-		public int col;
-		public ScrollMe(int r, int c) { row = r; col = c; }
-		public void run() { scrollRectToVisible(getCellRect(row, col, true)); };
-	}
-
-	public void scrollTable(int row, int col)
-	{
-		SwingUtilities.invokeLater( new ScrollMe(row, col) );
-	}
-	
-	@Override
-	public boolean getScrollableTracksViewportWidth() 
-	{
-		if (getParent() instanceof JViewport)
-		{
-			return (((JViewport)getParent()).getWidth() > getMinimumSize().width);
-		}
-
-		return false;
-	}
-
-	public void setColumnWidths(TableColumn col, int min, int pref, int max)
-	{
-		if (col == null) return;
-		col.setMinWidth(min);
-		col.setPreferredWidth(pref);
-		col.setMaxWidth(max);
-	}
-
-	public void setColumnSizes(TableColumnModelEvent e)
-	{
-		TableColumnModel tcm = (TableColumnModel)e.getSource();
-		int cc = tcm.getColumnCount();
-		if (cc <= 1) return;
-		
-		setColumnWidths(tcm.getColumn(0), 40, 60, 75);
-		setColumnWidths(tcm.getColumn(1), 80, 250, 400);
-		doLayout();
-	}
-
-
-	@Override
-	public void event(MT type, Object o)
-	{
-		switch (type)
-		{
-			case CAR_ADD:
-				Sounds.playBlocked();
-				model.addCar((Integer)o);
-				scrollTable(getRowCount(), 0);
-				break;
-
-			case CAR_CHANGE:
-				int row = rowSel.getMinSelectionIndex();
-				if ((row >= 0) && (row < getRowCount()))
-					model.replaceCar((Integer)o, row);
-				break;
-
-			case FIND_ENTRANT:
-				activeSearch = (String)o;
-				repaint();
-				break;
-		}
-	}
-	
-	@Override
-	public void tableChanged(TableModelEvent e)
-	{
-		if (e == null || e.getFirstRow() == TableModelEvent.HEADER_ROW)
-		{
-			TableColumnModel tcm = getColumnModel();
-			TableModel m = getModel();
-			
-			if (m != null)
+			ent.setRuns(course1);
+			if (course2.size() > 0)
 			{
-				// Remove any current columns
-				while (tcm.getColumnCount() > 0) {
-					tcm.removeColumn(tcm.getColumn(0));
-				}
-
-				// Create new columns from the data model info
-				for (int ii = 0; ii < m.getColumnCount() && ii < 2; ii++) {
-					TableColumn newColumn = new TableColumn(ii);
-					addColumn(newColumn);
-				}
+				Database.d.setCurrentCourse(2);
+				ent = Database.d.loadEntrant(selectedE.getCarId(), false);
+				ent.setRuns(course2);
 			}
+
+			Database.d.setCurrentCourse(1);
+			Messenger.sendEvent(MT.RUNGROUP_CHANGED, 1);
 		}
-		
-		super.tableChanged(e);
 	}
 }
 
 
+/**
+ * Special mouse listener that lets the user adjust the width of the row table header in a scroll
+ * pane which is where this static two column driver table is placed.
+ */
 class RowHeaderTableResizer extends MouseAdapter
 {
-	// extra adapter
 	TableColumn column;
 	int columnWidth;
 	int pressedX;
@@ -304,6 +244,10 @@ class RowHeaderTableResizer extends MouseAdapter
 }
 
 
+/**
+ * Render for both columns in the driver table, it differs its display based
+ * column being 0 or 1.
+ */
 class EntrantRenderer extends JComponent implements TableCellRenderer 
 {
 	private Color background;
@@ -428,16 +372,14 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 
 /**
  * Class to enable special DnD handling in our JTable.
- * Basically, this has boiled down to allow only drag movements (insertions)
- * in the driver column and copy/cut/paste in the runs columns
+ * Allow only cut drag movements (insertions) in the driver columns
  */
 class DriverTransferHandler extends TransferHandler
 {
 	private static Logger log = Logger.getLogger(DriverTransferHandler.class.getCanonicalName());
+	private static DataFlavor flavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + "; class=org.wwscc.storage.Driver", "DriverData");
 	private int[] rowsidx = null;
-	//private int[] colsidx = null;
 	private boolean isCut = false;
-
 
 	@Override
 	public int getSourceActions(JComponent c)
@@ -445,27 +387,23 @@ class DriverTransferHandler extends TransferHandler
 		return COPY_OR_MOVE;
 	}
 
-
 	@Override
 	public void exportAsDrag(JComponent comp, InputEvent e, int action)
 	{
-		log.fine("export as drag");
 		isCut = false;
 		super.exportAsDrag(comp, e, action);
 	}
-
 	
 	@Override
 	public void exportToClipboard(JComponent comp, Clipboard cb, int action)
 	{
 		isCut = true;
-		log.fine("export to clipboard");
 		super.exportToClipboard(comp, cb, action);
 	}
 
 	/******* Export Side *******/
 
-	/* Create data from the selected rows and columns */
+	/* Create data from the selected rows */
 	@Override
 	protected Transferable createTransferable(JComponent c)
 	{
@@ -476,20 +414,18 @@ class DriverTransferHandler extends TransferHandler
 		for (int ii = 0; ii < rowsidx.length; ii++)
 			store[ii] = (Entrant)table.getValueAt(rowsidx[ii], 0);
 
-		return new EntrantDataTransfer(store);
+		return new SimpleDataTransfer(flavor, store);
 	}
 
 	
 	@Override
 	protected void exportDone(JComponent c, Transferable data, int action)
 	{
-		if (rowsidx == null)
-			return;
-		if (rowsidx.length == 0)
+		if ((rowsidx == null)|| (rowsidx.length == 0))
 			return;
 
-		/* MOVE means Drag or cut (use isCut to determine) */
-		if ((action == MOVE) && isCut)
+		/* use isCut to determine if we cut or were just dragging columns around */
+		if (isCut)
 		{
 			DriverTable t = (DriverTable)c;
 			log.fine("cut driver");
@@ -500,23 +436,26 @@ class DriverTransferHandler extends TransferHandler
 		rowsidx = null;
 	}
 
-
 	/******* Import Side *******/
 
-	/* Called to allow drop operations */
+	/**
+	 * Called to allow drop operations, allow driver drag full range of rows
+	 * except for last (Add driver box).
+	 */
 	@Override
 	public boolean canImport(TransferHandler.TransferSupport support)
 	{
 		JTable.DropLocation dl = (JTable.DropLocation)support.getDropLocation();
 		JTable target = (JTable)support.getComponent();
 
-		 // allow driver drag full range of rows except for last (Add driver box)
 		if (dl.getRow() > target.getRowCount()) return false;  
 		return true;
 	}
 
 
-	/* Called for drop and paste operations */
+	/**
+	 * Called for drop and paste operations 
+	 */
 	@Override
 	public boolean importData(TransferHandler.TransferSupport support)
 	{
@@ -537,60 +476,5 @@ class DriverTransferHandler extends TransferHandler
 		catch (Exception e) { log.warning("General error during driver drag:" + e); }
 
 		return false;
-	}
-}
-
-/**
- * Class used for data transfer during Drag/Drop/Copy
- */
-class EntrantDataTransfer implements Transferable, ClipboardOwner
-{
-	Entrant data[];
-	String string;
-	static DataFlavor myFlavor;
-
-	static
-	{
-		myFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + "; class=java.lang.Object", "EntrantArray");
-	}
-
-	public EntrantDataTransfer(Entrant data[])
-	{
-		int ii, jj;
-
-		this.data = data;
-		this.string = new String();
-		for (ii = 0; ii < data.length; ii++)
-		{
-			this.string += data[ii] + "\n";
-		}
-	}
-
-	@Override
-	public DataFlavor[] getTransferDataFlavors()
-	{
-		DataFlavor[] flavors = new DataFlavor[2];
-		flavors[0] = myFlavor;
-		flavors[1] = DataFlavor.stringFlavor;
-		return flavors;
-	}
-
-	@Override
-	public boolean isDataFlavorSupported(DataFlavor flavor)
-	{
-		return (flavor.equals(myFlavor) || flavor.equals(DataFlavor.stringFlavor));
-	}
-
-	@Override
-	public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException
-	{
-		if (flavor.equals(myFlavor))
-			return data;
-		return string;
-	}
-
-	@Override
-	public void lostOwnership(Clipboard clipboard, Transferable contents)
-	{
 	}
 }

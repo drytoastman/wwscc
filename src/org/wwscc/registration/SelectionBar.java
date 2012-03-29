@@ -33,7 +33,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 {
 	private static Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
 
-	JComboBox eventSelect;
+	JComboBox<Event> eventSelect;
 
 	public SelectionBar()
 	{
@@ -44,7 +44,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		setBorder(new BevelBorder(0));
 
 		Font f = new Font(Font.DIALOG, Font.BOLD, 14);
-		eventSelect = new JComboBox();
+		eventSelect = new JComboBox<Event>();
 		eventSelect.setActionCommand("eventChange");
 		eventSelect.addActionListener(this);
 
@@ -63,7 +63,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		switch (type)
 		{
 			case DATABASE_CHANGED:
-				eventSelect.setModel(new DefaultComboBoxModel(new Vector<Event>(Database.d.getEvents())));
+				eventSelect.setModel(new DefaultComboBoxModel<Event>(Database.d.getEvents().toArray(new Event[0])));
 				int select = Prefs.getEventId(0);
 				if (select < eventSelect.getItemCount())
 					eventSelect.setSelectedIndex(select);

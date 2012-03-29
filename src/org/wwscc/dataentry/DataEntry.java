@@ -112,7 +112,7 @@ public class DataEntry extends JFrame implements MessageListener
 		tableScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		tableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		
-		//driverTable.setPreferredScrollableViewportSize(driverTable.getPreferredSize());
+		driverTable.setPreferredScrollableViewportSize(new Dimension(240, Integer.MAX_VALUE));
 		tableScroll.setRowHeaderView( driverTable );
 		tableScroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, driverTable.getTableHeader());
 		tableScroll.getRowHeader().addChangeListener(new ChangeListener() {

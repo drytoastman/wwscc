@@ -8,9 +8,9 @@
 
 package org.wwscc.dataentry;
 
-import org.wwscc.bwtimer.TimeStorage;
 import java.util.Vector;
 import javax.swing.AbstractListModel;
+import org.wwscc.bwtimer.TimeStorage;
 import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
@@ -19,11 +19,15 @@ import org.wwscc.util.Messenger;
  *
  * @author bwilson
  */
-public class SimpleTimeListModel extends AbstractListModel implements TimeStorage
+public class SimpleTimeListModel extends AbstractListModel<Run> implements TimeStorage
 {
 	Vector<Run> data;
 	int forCourse;
 	
+	/**
+	 * Create a new time list that is linked to a course
+	 * @param course the course number
+	 */
 	public SimpleTimeListModel(int course)
 	{
 		data = new Vector<Run>();
@@ -65,7 +69,7 @@ public class SimpleTimeListModel extends AbstractListModel implements TimeStorag
 	}
 
 	@Override
-	public Object getElementAt(int row)
+	public Run getElementAt(int row)
 	{
 		return data.get(row);
 	}

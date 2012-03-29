@@ -13,11 +13,23 @@ import org.wwscc.storage.Run;
 import org.wwscc.util.MessageListener;
 
 /**
- * @author bwilson
  */
-public interface TimeStorage extends ListModel, MessageListener
+public interface TimeStorage extends ListModel<Run>, MessageListener
 {
+	/**
+	 * Get the run value at this row
+	 * @param row the row to find
+	 * @return a Run object
+	 */
 	public Run getRun(int row);
+	
+	/**
+	 * @return the number of time entries in this model
+	 */
 	public int getFinishedCount();
+	
+	/**
+	 * @param row the row to remove from the model.
+	 */
 	public void remove(int row);
 }

@@ -10,9 +10,7 @@ package org.wwscc.dataentry;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Point;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -20,74 +18,41 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DropMode;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
 import javax.swing.JTable;
-import javax.swing.JViewport;
 import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.border.LineBorder;
 import javax.swing.event.TableColumnModelEvent;
-import javax.swing.event.TableModelEvent;
-import javax.swing.table.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
+import org.wwscc.dataentry.TableBase.SimpleDataTransfer;
 import org.wwscc.storage.Database;
-import org.wwscc.storage.Entrant;
 import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 
 
-
-
-
 /**
  * Table used for DataEntry 
  */
-public class RunsTable extends JTable implements MessageListener, ActionListener
+public class RunsTable extends TableBase implements MessageListener, ActionListener
 {
-	ListSelectionModel colSel;
-	ListSelectionModel rowSel;
-
-	EntryModel model;
-	
 	public RunsTable(EntryModel m)
 	{
-		super(m, new DefaultTableColumnModel());
-		setAutoCreateColumnsFromModel( false );
-		
-		model = m;
-		colSel = getColumnModel().getSelectionModel();
-		rowSel = getSelectionModel();
-
-		/* Selection and DnD/cut/paste */
-		getColumnModel().setSelectionModel(colSel);
-		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		setCellSelectionEnabled(true);
-		setDragEnabled(true);
-		setDropMode(DropMode.INSERT);
-		setTransferHandler(new RunsTransferHandler());
-
-		/* Drawing and other misc drawing stuff */
-		getTableHeader().setReorderingAllowed(false);
-		setDefaultRenderer(Run.class, new TimeRenderer());
-		setDefaultRenderer(Entrant.class, new EntrantRenderer());
-		setRowHeight(36);
-		
+		super(m, new TimeRenderer(), new RunsTransferHandler(), 2, Integer.MAX_VALUE);
 		
 		InputMap im = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "cut"); // delete is same as Ctl+X
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "Enter Time");
-
+		
 		registerKeyboardAction(
 			this,
 			"Enter Time",
@@ -95,86 +60,10 @@ public class RunsTable extends JTable implements MessageListener, ActionListener
 			JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
 		);
 		
-		addMouseListener(new DClickWatch());
-		
 		Messenger.register(MT.TIME_ENTERED, this);
 		Messenger.register(MT.COURSE_CHANGED, this);
 	}
 
-
-	class DClickWatch extends MouseAdapter implements ActionListener
-	{
-		JPopupMenu runPopup;
-
-		public DClickWatch()
-		{
-		}
-
-		protected Object getObject()
-		{
-			int row = rowSel.getMinSelectionIndex();
-			int col = colSel.getMinSelectionIndex();
-			return getValueAt(row, col);
-		}
-
-		@Override
-		public void mousePressed(MouseEvent e)
-		{
-			Messenger.sendEvent(MT.OBJECT_CLICKED, getObject());
-		}
-
-		@Override
-		public void mouseClicked(MouseEvent e)
-		{
-			if (e.getClickCount() == 2)
-				Messenger.sendEvent(MT.OBJECT_DCLICKED, getObject());
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			String cmd = e.getActionCommand();
-			if (cmd.equals("Cut"))
-			{
-				e.setSource(RunsTable.this); // redirect as cut action on Table
-				TransferHandler.getCutAction().actionPerformed(e);
-			}
-		}
-	}
-
-
-	class ScrollMe implements Runnable
-	{
-		public int row;
-		public int col;
-		public ScrollMe(int r, int c) { row = r; col = c; }
-		public void run() { scrollRectToVisible(getCellRect(row, col, true)); };
-	}
-
-	public void scrollTable(int row, int col)
-	{
-		SwingUtilities.invokeLater( new ScrollMe(row, col) );
-	}
-
-	
-	@Override
-	public boolean getScrollableTracksViewportWidth() 
-	{
-		if (getParent() instanceof JViewport)
-		{
-			return (((JViewport)getParent()).getWidth() > getMinimumSize().width);
-		}
-
-		return false;
-	}
-
-	public void setColumnWidths(TableColumn col, int min, int pref, int max)
-	{
-		if (col == null) return;
-		col.setMinWidth(min);
-		col.setPreferredWidth(pref);
-		col.setMaxWidth(max);
-	}
 
 	public void setColumnSizes(TableColumnModelEvent e)
 	{
@@ -186,25 +75,11 @@ public class RunsTable extends JTable implements MessageListener, ActionListener
 		doLayout();
 	}
 
-	@Override
-	public void columnAdded(TableColumnModelEvent e)
-	{
-		setColumnSizes(e);
-		super.columnAdded(e);
-	}
-
-	@Override
-	public void columnRemoved(TableColumnModelEvent e)
-	{
-		setColumnSizes(e);
-		super.columnRemoved(e);
-	}
-
 
 	public void setSelectedRun(Run r) throws IndexOutOfBoundsException
 	{
-		int row = rowSel.getMinSelectionIndex();
-		int col = colSel.getMinSelectionIndex();
+		int row = getSelectedRow();
+		int col = getSelectedColumn();
 
 		if ((row < 0) || (col < 0))
 			throw new IndexOutOfBoundsException("No table cell selected");
@@ -225,17 +100,17 @@ public class RunsTable extends JTable implements MessageListener, ActionListener
 			{
 				if (getValueAt(selectedrow, ii) == null)
 				{
-					rowSel.setSelectionInterval(selectedrow, selectedrow);
-					colSel.setSelectionInterval(ii, ii);
+					getSelectionModel().setSelectionInterval(selectedrow, selectedrow);
+					getColumnModel().getSelectionModel().setSelectionInterval(ii, ii);
 					scrollTable(selectedrow, ii);
 					return;
 				}
 			}
 		}
 		
-		/* Nowhere to go, clear selection */		
-		rowSel.clearSelection();
-		colSel.clearSelection();
+		/* Nowhere to go, clear selection */
+		getSelectionModel().clearSelection();
+		getColumnModel().getSelectionModel().clearSelection();
 	} 
 
 
@@ -264,39 +139,14 @@ public class RunsTable extends JTable implements MessageListener, ActionListener
 		}
 	}
 
-	
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		Messenger.sendEvent(MT.TIME_ENTER_REQUEST, null);
 	}
-	
-	@Override
-	public void tableChanged(TableModelEvent e)
-	{
-		if (e == null || e.getFirstRow() == TableModelEvent.HEADER_ROW)
-		{
-			TableColumnModel tcm = getColumnModel();
-			TableModel m = getModel();
-			
-			if (m != null)
-			{
-				// Remove any current columns
-				while (tcm.getColumnCount() > 0) {
-					tcm.removeColumn(tcm.getColumn(0));
-				}
-
-				// Create new columns from the data model info
-				for (int ii = 2; ii < m.getColumnCount(); ii++) {
-					TableColumn newColumn = new TableColumn(ii);
-					addColumn(newColumn);
-				}
-			}
-		}
-		
-		super.tableChanged(e);
-	}
 }
+
+
 /**
  * Cell Renderer for the Run type
  */
@@ -385,11 +235,11 @@ class TimeRenderer extends DefaultTableCellRenderer
  */
 class RunsTransferHandler extends TransferHandler
 {
-	private static Logger log = Logger.getLogger(RunsTransferHandler.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(RunsTransferHandler.class.getCanonicalName());
+	private static DataFlavor flavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + "; class=org.wwscc.storage.Run", "RunData");
 	private int[] rowsidx = null;
 	private int[] colsidx = null;
 	private boolean isCut = false;
-
 
 	@Override
 	public int getSourceActions(JComponent c)
@@ -401,13 +251,13 @@ class RunsTransferHandler extends TransferHandler
 	public void exportAsDrag(JComponent comp, InputEvent e, int action)
 	{
 		isCut = false;
+		super.exportAsDrag(comp, e, action);
 	} 
 
 	@Override
 	public void exportToClipboard(JComponent comp, Clipboard cb, int action)
 	{
 		isCut = true;
-		log.fine("export to clipboard");
 		super.exportToClipboard(comp, cb, action);
 	}
 
@@ -426,7 +276,7 @@ class RunsTransferHandler extends TransferHandler
 			for (int jj = 0; jj < colsidx.length; jj++)
 				store[ii][jj] = (Run)table.getValueAt(rowsidx[ii], colsidx[jj]);
 
-		return new RunDataTransfer(store);
+		return new SimpleDataTransfer(flavor, store);
 	}
 
 	
@@ -442,7 +292,7 @@ class RunsTransferHandler extends TransferHandler
 		if ((action == MOVE) && (isCut))
 		{
 			RunsTable t = (RunsTable)c;
-			log.fine("cut run " + rowsidx.length + "," + colsidx.length);
+			log.log(Level.FINE, "cut run {0},{1}", new Object[]{rowsidx.length, colsidx.length});
 			for (int ii = 0; ii < rowsidx.length; ii++)
 				for (int jj = 0; jj < colsidx.length; jj++)
 					t.setValueAt(null, rowsidx[ii], colsidx[jj]);
@@ -469,7 +319,7 @@ class RunsTransferHandler extends TransferHandler
 	{
 		try
 		{
-			Object newdata[][] = (Object[][])support.getTransferable().getTransferData(RunDataTransfer.myFlavor);
+			Run newdata[][] = (Run[][])support.getTransferable().getTransferData(flavor);
 			JTable target = (JTable)support.getComponent();
 			int dr,dc;
 
@@ -481,78 +331,15 @@ class RunsTransferHandler extends TransferHandler
 
 				for (int ii = 0; ii < newdata.length; ii++)
 					for (int jj = 0; jj < newdata[0].length; jj++)
-						target.setValueAt(((Run)newdata[ii][jj]).clone(), dr+ii, dc+jj);
+						target.setValueAt((newdata[ii][jj]).clone(), dr+ii, dc+jj);
 			}
 
 			return true;
 		}
 		catch (UnsupportedFlavorException ufe) { log.warning("Sorry, you pasted data I don't work with"); }
-		catch (IOException ioe) { log.warning("I/O Error during paste:" + ioe); }
-		catch (Exception e) { log.warning("General error during paste:" + e); }
+		catch (IOException ioe) { log.log(Level.WARNING, "I/O Error during paste:{0}", ioe); }
+		catch (Exception e) { log.log(Level.WARNING, "General error during paste:{0}", e); }
 
 		return false;
 	}
 }
-
-
-
-/**
- * Class used for data transfer during Drag/Drop/Copy
- */
-class RunDataTransfer implements Transferable, ClipboardOwner
-{
-	Run data[][];
-	String string;
-	static DataFlavor myFlavor;
-
-	static
-	{
-		myFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + "; class=java.lang.Object", "RunMatrix");
-	}
-
-	public RunDataTransfer(Run data[][])
-	{
-		int ii, jj;
-
-		this.data = data;
-		this.string = new String();
-		for (ii = 0; ii < data.length; ii++)
-		{
-			for (jj = 0; jj < (data[0].length - 1); jj++)
-			{
-				this.string += data[ii][jj] + "\t";
-			}
-			this.string += data[ii][jj] + "\n";
-		}
-	}
-
-	@Override
-	public DataFlavor[] getTransferDataFlavors()
-	{
-		DataFlavor[] flavors = new DataFlavor[2];
-		flavors[0] = myFlavor;
-		flavors[1] = DataFlavor.stringFlavor;
-		return flavors;
-	}
-
-	@Override
-	public boolean isDataFlavorSupported(DataFlavor flavor)
-	{
-		return (flavor.equals(myFlavor) || flavor.equals(DataFlavor.stringFlavor));
-	}
-
-	@Override
-	public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException
-	{
-		if (flavor.equals(myFlavor))
-			return data;
-		return string;
-	}
-
-	@Override
-	public void lostOwnership(Clipboard clipboard, Transferable contents)
-	{
-	}
-}
-
-

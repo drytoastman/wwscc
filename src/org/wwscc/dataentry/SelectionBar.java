@@ -37,9 +37,9 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 
 	JButton resultsButton;
 
-	JComboBox eventSelect;
-	JComboBox courseSelect;
-	JComboBox groupSelect;
+	JComboBox<Event> eventSelect;
+	JComboBox<Integer> courseSelect;
+	JComboBox<Integer> groupSelect;
 	JCheckBox timeGrabsFocus;
 
 	public SelectionBar()
@@ -61,7 +61,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		timeGrabsFocus = new JCheckBox("New Time Grabs Focus");
 		timeGrabsFocus.addActionListener(this);
 
-		groupSelect.setModel(new DefaultComboBoxModel(new Integer[] { 1, 2, 3, 4, 5, 6 }));
+		groupSelect.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 1, 2, 3, 4, 5, 6 }));
 
 		add(createLabel("Event:", f), "gapleft 10");
 		add(eventSelect, "gapright 20");
@@ -88,9 +88,9 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		return l;
 	}
 
-	private JComboBox createCombo(String name)
+	private <E> JComboBox<E> createCombo(String name)
 	{
-		JComboBox combo = new JComboBox();
+		JComboBox<E> combo = new JComboBox<E>();
 		combo.setActionCommand(name);
 		combo.addActionListener(this);
 		return combo;
@@ -103,7 +103,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		for (int ii = 0; ii < count; ii++)
 			list[ii] = (ii+1);
 
-		courseSelect.setModel(new DefaultComboBoxModel(list));
+		courseSelect.setModel(new DefaultComboBoxModel<Integer>(list));
 	}
 	
 
@@ -113,7 +113,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		switch (type)
 		{
 			case DATABASE_CHANGED:
-				eventSelect.setModel(new DefaultComboBoxModel(new Vector<Event>(Database.d.getEvents())));
+				eventSelect.setModel(new DefaultComboBoxModel<Event>(Database.d.getEvents().toArray(new Event[0])));
 				int select = Prefs.getEventId(0);
 				if (select < eventSelect.getItemCount())
 					eventSelect.setSelectedIndex(select);
@@ -126,13 +126,14 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 	/**
 	 *
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		String cmd = e.getActionCommand();
 
 		if (cmd.endsWith("Change"))
 		{
-			JComboBox cb = (JComboBox)e.getSource();
+			JComboBox<?> cb = (JComboBox<?>)e.getSource();
 			Object o = cb.getSelectedItem();
 
 			if (cmd.startsWith("event"))

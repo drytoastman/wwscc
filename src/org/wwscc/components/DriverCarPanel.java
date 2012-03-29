@@ -55,11 +55,11 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	protected SearchDrivers searchDrivers = new SearchDrivers();
 
 	protected JScrollPane dscroll;
-	protected JList drivers;
+	protected JList<Driver> drivers;
 	protected JTextArea driverInfo;
 
 	protected JScrollPane cscroll;
-	protected JList cars;
+	protected JList<Car> cars;
 	protected JTextArea carInfo;
 
 	protected boolean carAddOption = false;
@@ -87,10 +87,10 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		lastSearch.addFocusListener(this);
 
 		/* Driver Section */
-		drivers = new JList();
+		drivers = new JList<Driver>();
 		drivers.addListSelectionListener(this);
 		drivers.setVisibleRowCount(1);
-		drivers.setPrototypeCellValue("12345678901234567890");
+		//drivers.setPrototypeCellValue("12345678901234567890");
 		drivers.setSelectionMode(0);
 
 		dscroll = new JScrollPane(drivers);
@@ -101,10 +101,10 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		driverInfo = displayArea("\n\n\n\n");
 
 		/* Car Section */
-		cars = new JList();
+		cars = new JList<Car>();
 		cars.addListSelectionListener(this);
 		cars.setVisibleRowCount(2);
-		cars.setPrototypeCellValue("12345678901234567890");
+		//cars.setPrototypeCellValue("12345678901234567890");
 		cars.setSelectionMode(0);
 	
 		cscroll = new JScrollPane(cars);
@@ -320,7 +320,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 				{
 					selectedDriver = null;
 					driverInfo.setText("\n\n\n\n");
-					cars.setListData(new Vector());
+					cars.setListData(new Car[0]);
 					cars.clearSelection();
 				}
 			}

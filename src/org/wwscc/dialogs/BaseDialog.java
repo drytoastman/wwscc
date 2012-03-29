@@ -167,7 +167,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 
 	protected JComboBox select(String name, Object initial, List<?> possible, ActionListener al)
 	{
-		JComboBox cb = new JComboBox(new Vector<Object>(possible));
+		JComboBox<Object> cb = new JComboBox<Object>(possible.toArray());
 		selects.put(name, cb);
 		cb.setSelectedItem(initial);
 		if (al != null)

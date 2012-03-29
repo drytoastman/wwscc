@@ -201,6 +201,7 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 			if (aValue instanceof Entrant)
 			{
 				log.warning("How did you get here?");
+				Thread.dumpStack();
 			}
 			else if (aValue == null)
 			{

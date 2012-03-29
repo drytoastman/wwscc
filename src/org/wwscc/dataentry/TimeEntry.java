@@ -9,8 +9,6 @@
 package org.wwscc.dataentry;
 
 import java.awt.AWTKeyStroke;
-import java.io.IOException;
-import org.wwscc.bwtimer.TimeStorage;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -22,10 +20,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.text.NumberFormat;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -37,7 +37,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
@@ -50,23 +49,27 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import net.miginfocom.swing.MigLayout;
+import org.wwscc.bwtimer.TimeStorage;
 import org.wwscc.bwtimer.TimerModel;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Run;
+import org.wwscc.timercomm.SerialDataInterface;
 import org.wwscc.timercomm.ServiceFinder;
+import org.wwscc.timercomm.ServiceFinder.FoundService;
+import org.wwscc.timercomm.TimerClient;
 import org.wwscc.util.IntTextField;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.TimeTextField;
-import org.wwscc.timercomm.SerialDataInterface;
-import org.wwscc.timercomm.ServiceFinder.FoundService;
-import org.wwscc.timercomm.TimerClient;
 
 
+/**
+ * Implements the time entry panel used in the data entry GUI
+ */
 public class TimeEntry extends JPanel implements ActionListener, ListSelectionListener, ListDataListener, FocusListener, MessageListener
 {
-	private static Logger log = Logger.getLogger(TimeEntry.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(TimeEntry.class.getCanonicalName());
 
 	public enum Mode { OFF, BASIC_SERIAL, BWTIMER_SERIAL, BWTIMER_NETWORK, PROTIMER_NETWORK };
 
@@ -74,7 +77,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	Mode mode;
 	TimerClient tclient;
 	String commPort;
-	JList timeList;
+	JList<Run> timeList;
 	TimeStorage activeModel;
 	TimeStorage defaultModel;
 	TimeStorage course2Model;
@@ -88,7 +91,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	IntTextField gates;
 	TimeTextField segVal[];
 	JLabel segLabel[];
-	JComboBox status;
+	JComboBox<String> status;
 	JTextArea error;
 
 	JButton del;
@@ -120,9 +123,8 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		activeModel = defaultModel;
 		activeModel.addListDataListener(this);
 
-		timeList = new JList(activeModel);
+		timeList = new JList<Run>(activeModel);
 		timeList.addListSelectionListener(this);
-		timeList.setPrototypeCellValue("999.999");
 		timeList.setCellRenderer(new RunListRenderer());
 		timeList.setFixedCellHeight(26);
 
@@ -163,7 +165,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		);
 
 		
-		status = new JComboBox(new String[] { "OK", "DNF", "DNS", "RL", "NS", "DSQ" });
+		status = new JComboBox<String>(new String[] { "OK", "DNF", "DNS", "RL", "NS", "DSQ" });
 		enter = new JButton("Enter Time");
 		enter.addActionListener(this);
 		enter.setDefaultCapable(true);
@@ -189,7 +191,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		setLayout(new MigLayout("ins 0 0 0 4, hidemode 3, fillx", "[al right, 50!][fill,grow]", ""));
 		add(connectionStatus, "spanx 2, al center, wrap");
 		add(del, "spanx 2, growx, wrap");
-		add(scroll, "spanx 2, growx, h 50:300:500, wrap");
+		add(scroll, "spanx 2, growx, h 50:300:500, wrap, w 120!");
 		add(reactionLabel, "");
 		add(reaction, "wrap");
 		add(sixtyLabel, "");
@@ -591,7 +593,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				break;
 
 			case TIMER_TAKES_FOCUS:
-				log.info("Timer takes focus: " + (Boolean)o);
+				log.log(Level.INFO, "Timer takes focus: {0}", o);
 				timerTakesFocus = (Boolean)o;
 				break;
 				
