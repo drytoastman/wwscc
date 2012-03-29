@@ -40,11 +40,6 @@
 <td><input type="text" name="ppoints" value="${c.settings.ppoints}" size="40" /></td>
 </tr>
 
-<tr title="Flag in settings for template to use position points versus difference points">            
-<th>Use Position Points</th>
-<td><input type="checkbox" name="useppoints" ${c.settings.useppoints and "checked"} /></td>
-</tr>
-
 <tr title="Apply indexes after penalties, default is false (index is applied, then penalties)">
 <th>Apply Index After Penalties</th>
 <td><input type="checkbox" name="indexafterpenalties" ${c.settings.indexafterpenalties and "checked"} /></td>
