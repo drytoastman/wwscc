@@ -1,5 +1,7 @@
 from math import ceil
 from runs import Run
+from pylons import config
+from paste.deploy.converters import asbool
 
 class Result(object):
 	""" Contains driver name, car description, overall result and 2D array of runs by course and run # """
@@ -18,6 +20,11 @@ class Result(object):
 		if type(getattr(self, 'toptime', None)) is not float:
 			self.toptime = 0.0
 
+		if asbool(self.anonymize) and not config['nwrsc.private']:
+			self.firstname = '-----'
+			self.lastname = '-----'
+
+
 	def getFeed(self):
 		ret = dict()
 		for k,v in self.__dict__.iteritems():
@@ -30,7 +37,7 @@ class Result(object):
 		return ret
 
 
-auditList = """select r.*,d.firstname,d.lastname,c.year,c.number,c.make,c.model,c.color,c.classcode,c.indexcode 
+auditList = """select r.*,d.firstname,d.lastname,d.anonymize,c.year,c.number,c.make,c.model,c.color,c.classcode,c.indexcode 
 				from runorder as r, cars as c, drivers as d  
 				where r.carid=c.id and c.driverid=d.id and 
 				r.eventid=:eventid and r.course=:course and r.rungroup=:group """
@@ -52,7 +59,7 @@ def getAuditResults(session, event, course, rungroup):
 
 
 
-classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.indexcode, d.firstname, d.lastname
+classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.indexcode, d.firstname, d.lastname, d.anonymize
 				from eventresults as r, cars as c, drivers as d 
 				where r.carid=c.id and c.driverid=d.id and r.eventid=%d and r.classcode in (%s)
 				order by r.position"""
@@ -105,20 +112,10 @@ def getClassResults(session, event, classdata, codes):
 	return ret
 
 
-top1 = "select d.firstname as firstname, d.lastname as lastname, c.classcode as classcode, c.indexcode as indexcode, c.id as carid "
+top1 = "select d.firstname as firstname, d.lastname as lastname, d.anonymize as anonymize, c.classcode as classcode, c.indexcode as indexcode, c.id as carid "
 top2 = "from runs as r, cars as c, drivers as d where r.carid=c.id and c.driverid=d.id and r.eventid=:eventid "
 
 
-def loadTopSegRawTimes(session, event, course, seg, classdata):
-	getcol = ", MIN(r.seg%d) as toptime " % (seg)
-	topSegRaw = top1 + getcol + top2 + " and r.course=:course and r.seg%d > %d group by r.carid order by toptime " % (seg, event.getSegments()[seg-1])
-
-	ttl = TopTimesList("Top Segment Times (Course %d)" % course, "Name", "Class", "Time")
-	for row in session.execute(topSegRaw, params={'eventid':event.id, 'course':course}):
-		ttl.add(row.carid, row.firstname + " " + row.lastname, row.classcode, "%0.3f" % row.toptime)
-	return ttl
-		
-			
 topCourseRaw    = top1 + ", (r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
 topCourseRawAll = top1 + ", (r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.course=:course and r.bnorder=1 order by toptime"
 topCourseNet    = top1 + ", r.net as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
@@ -136,10 +133,23 @@ class TopTimesList(object):
 		self.carids = list()
 		self.rows = list()
 
-	def add(self, carid, *vals):
+	def add(self, carid, anonymize, firstname, lastname, *vals):
+		if asbool(anonymize) and not config['nwrsc.private']:
+			firstname = '----'
+			lastname = '----'
 		self.carids.append(carid)
-		self.rows.append(vals)
+		self.rows.append((firstname + " " + lastname,) + vals)
 
+
+def loadTopSegRawTimes(session, event, course, seg, classdata):
+	getcol = ", MIN(r.seg%d) as toptime " % (seg)
+	topSegRaw = top1 + getcol + top2 + " and r.course=:course and r.seg%d > %d group by r.carid order by toptime " % (seg, event.getSegments()[seg-1])
+
+	ttl = TopTimesList("Top Segment Times (Course %d)" % course, "Name", "Class", "Time")
+	for row in session.execute(topSegRaw, params={'eventid':event.id, 'course':course}):
+		ttl.add(row.carid, row.anonymize, row.firstname, row.lastname, row.classcode, "%0.3f" % row.toptime)
+	return ttl
+			
 
 def loadTopCourseRawTimes(session, event, course, classdata, all=False):
 	if all:
@@ -149,7 +159,7 @@ def loadTopCourseRawTimes(session, event, course, classdata, all=False):
 
 	ttl = TopTimesList("Top Times (Course %d)" % course, "Name", "Class", "Time")
 	for row in session.execute(sql, params={'eventid':event.id, 'course':course, 'conepen':event.conepen, 'gatepen':event.gatepen}):
-		ttl.add(row.carid, row.firstname + " " + row.lastname, row.classcode, "%0.3f" % row.toptime)
+		ttl.add(row.carid, row.anonymize, row.firstname, row.lastname, row.classcode, "%0.3f" % row.toptime)
 	return ttl
 		
 
@@ -163,7 +173,7 @@ def loadTopCourseNetTimes(session, event, course, classdata, all=False):
 	for row in session.execute(sql, params={'eventid':event.id, 'course':course}):
 		eis = classdata.getIndexStr(row.classcode, row.indexcode)
 		eiv = classdata.getEffectiveIndex(row.classcode, row.indexcode)
-		ttl.add(row.carid, row.firstname + " " + row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
+		ttl.add(row.carid, row.anonymize, row.firstname, row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
 	return ttl
 
 
@@ -177,7 +187,7 @@ def loadTopRawTimes(session, event, classdata, all=False):
 	if all: title += " (All Runs)"
 	ttl = TopTimesList(title, "Name", "Class", "Time")
 	for row in session.execute(sql, params={'eventid':event.id,'conepen':event.conepen,'gatepen':event.gatepen}):
-		ttl.add(row.carid, row.firstname + " " + row.lastname, row.classcode, "%0.3f" % row.toptime)
+		ttl.add(row.carid, row.anonymize, row.firstname, row.lastname, row.classcode, "%0.3f" % row.toptime)
 	return ttl
 
 
@@ -193,6 +203,6 @@ def loadTopNetTimes(session, event, classdata, all=False):
 	for row in session.execute(sql, params={'eventid':event.id}):
 		eis = classdata.getIndexStr(row.classcode, row.indexcode)
 		eiv = classdata.getEffectiveIndex(row.classcode, row.indexcode)
-		ttl.add(row.carid, row.firstname + " " + row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
+		ttl.add(row.carid, row.anonymize, row.firstname, row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
 	return ttl
 

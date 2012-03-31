@@ -22,6 +22,9 @@ def corename(file):
 	return Series(os.path.splitext(base)[0])
 
 class FeedController(BaseController):
+	"""
+		Generic feed controller that provides standard behaviour used by both the json and xml feeds
+	"""
 
 	def __before__(self):
 		self.eventid = self.routingargs.get('eventid', None)

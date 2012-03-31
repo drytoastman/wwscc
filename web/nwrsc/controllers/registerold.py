@@ -209,6 +209,11 @@ class RegisteroldController(BaseController):
 		query = self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==id)
 		query = query.order_by(Car.classcode, Car.number)
 		c.reglist = query.all()
+		for reg in c.reglist:
+			if reg[0].anonymize:
+				reg[0].firstname = 'John'
+				reg[0].lastname = 'Smith'
+
 		return render_mako('/registerold/reglist.mako')
 
 	def editcar(self):

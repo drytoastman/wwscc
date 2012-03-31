@@ -22,6 +22,10 @@ def corename(file):
 	return os.path.splitext(base)[0]+"\n"
 
 class DbserveController(BaseController):
+	"""
+		DBServe is used as the contact point for the java applications when speaking to
+		the web service.
+	"""
 
 	def __before__(self):
 		# Perform authentication (TBD: real authentication)		

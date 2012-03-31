@@ -42,12 +42,19 @@ function editdriver(did)
 
 function setupDriverDialog(title)
 {
-    $("#drivereditor").validate();
+    $('#drivereditor').validate({
+		invalidHandler: function(e, validator) { alert('invalid'); return false; }
+	});
+
+    $('#drivereditor [name=firstname]').rules("add", {required:true, minlength:3});
+    $('#drivereditor [name=lastname]').rules("add", {required:true, minlength:3});
+    $('#drivereditor [name=email]').rules("add", {required:true, minlength:3});
+
 
 	$("#drivereditor").dialog({
 		autoOpen: false,
 		height: 350,
-		width: 600,
+		width: 620,
 		modal: true,
 		title: title,
 		buttons: {

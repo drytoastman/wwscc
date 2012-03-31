@@ -4,6 +4,7 @@ from nwrsc.controllers.feed import FeedController
 from webhelpers.html import escape
 
 class XmlController(FeedController):
+	""" Provides the feed using XML encoding """
 
 	def _encode(self, head, o):
 		response.headers['Content-type'] = 'text/xml'

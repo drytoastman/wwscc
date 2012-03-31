@@ -50,7 +50,7 @@ public class SQLMap
 		sql.put("GETCLASSRESULTS", "select r.carid as carid,SUM(r.net) as sum, COUNT(r.net) as coursecnt from runs as r, cars as c " +
 					"where r.norder=1 and r.carid=c.id and c.classcode=? and r.eventid=? " +
 					"group by r.carid order by coursecnt DESC,sum");
-		sql.put("GETDIALINS", "select d.firstname as firstname, d.lastname as lastname, c.classcode as classcode, " +
+		sql.put("GETDIALINS", "select d.firstname as firstname, d.lastname as lastname, d.anonymize as anonymize, c.classcode as classcode, " +
 					"c.indexcode as indexcode, c.id as carid, SUM(r.raw) as myraw, f.position as position, f.sum as mynet " +
 					"from runs as r, cars as c, drivers as d, eventresults as f " +
 					"where r.carid=c.id and c.driverid=d.id and r.eventid=? and r.rorder=1 and f.eventid=? and f.carid=c.id " +

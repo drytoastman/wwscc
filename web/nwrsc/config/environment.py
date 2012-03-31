@@ -2,6 +2,7 @@
 import os
 
 #from mako.lookup import TemplateLookup
+from paste.deploy.converters import asbool
 from pylons.error import handle_mako_error
 from pylons import config
 
@@ -27,6 +28,8 @@ def load_environment(global_conf, app_conf):
     config['routes.map'] = make_map()
     config['pylons.app_globals'] = app_globals.Globals()
     config['pylons.h'] = nwrsc.lib.helpers
+    config['nwrsc.onsite'] = asbool(config.get('nwrsc.onsite', 'false'))
+    config['nwrsc.private'] = asbool(config.get('nwrsc.private', 'false'))
 
     # Create the Mako TemplateLookup, with the default auto-escaping
     config['pylons.app_globals'].mako_lookup = DatabaseLookup(

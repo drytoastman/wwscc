@@ -8,6 +8,10 @@ from nwrsc.model import Data
 log = logging.getLogger(__name__)
 
 class DbController(BaseController):
+	"""
+		DB Controller is only used to access data files in the data table.  At this time, those are series
+		images and template files
+	"""
 
 	weekdayname = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 	monthname = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']

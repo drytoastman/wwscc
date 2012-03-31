@@ -1,5 +1,4 @@
 <%inherit file="base.mako" />
-<%namespace file="/forms/drivereditor.mako" import="drivereditor"/>
 <%namespace file="/forms/driverform.mako" import="driverform"/>
 <% from simplejson import dumps %>
 <%def name="extrahead()">
@@ -30,7 +29,7 @@ input.closebutton
 </div>
 
 <% from nwrsc.model import Driver %>
-${driverform(Driver(), h.url_for(action='newprofile'))}
+${driverform(action=h.url_for(action='newprofile'))}
 <button onclick="$('#drivereditor').submit();">Create</button>
 
 %else:
@@ -38,7 +37,7 @@ ${driverform(Driver(), h.url_for(action='newprofile'))}
 <h2>My Profile</h2>
 
 <% from nwrsc.model import Driver %>
-${driverform(c.driver, h.url_for(action='editprofile'))}
+${driverform(action=h.url_for(action='editprofile'), driver=c.driver)}
 <button onclick="$('#drivereditor').submit();">Update</button>
 <script>
 $('input').keydown( function() { $(this).css('background', 'yellow')} );

@@ -11,6 +11,9 @@ class JEncoder(JSONEncoder):
 			return str(o)
 
 class JsonController(FeedController):
+	"""
+		Serve up data feeds as json
+	"""
 	def _encode(self, head, o):
 		response.headers['Content-type'] = 'text/javascript'
 		return JEncoder(indent=1).encode(o)

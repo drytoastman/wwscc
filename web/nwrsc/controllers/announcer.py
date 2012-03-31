@@ -7,7 +7,7 @@ from datetime import datetime
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako
 from pylons.decorators import jsonify
-from nwrsc.lib.base import BaseController
+from nwrsc.lib.base import BaseController, BeforePage
 from nwrsc.model import *
 
 log = logging.getLogger(__name__)
@@ -15,6 +15,9 @@ log = logging.getLogger(__name__)
 class AnnouncerController(BaseController):
 
 	def __before__(self):
+		if not config['nwrsc.private']:
+			raise BeforePage("Announcer currently only available if server is configured private")
+
 		self.eventid = self.routingargs.get('eventid', None)
 		if self.eventid:
 			c.event = self.session.query(Event).get(self.eventid)

@@ -7,6 +7,10 @@ from pylons import config
 log = logging.getLogger(__name__)
 
 class DocController(BaseController):
+	"""
+		Special controller to provide a list of the documents in the static docs
+		folder.  Kind of like an apache alias without need for one.
+	"""
 
 	def index(self):
 		yield "<H3>Scorekeeper Documents</H3>\n<ul>\n";

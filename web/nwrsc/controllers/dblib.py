@@ -1,3 +1,9 @@
+"""
+	Set of helper functions used by other controllers to complete the functionality from
+	Java but more efficient as its all done on one side rather than sending data back
+	and forth.
+"""
+
 import logging
 import datetime
 import time

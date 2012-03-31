@@ -1,4 +1,4 @@
-<%inherit file="base.mako" />
+<%inherit file="/base.mako" />
 
 <h2>Select an Event:</h2>
 <ol>

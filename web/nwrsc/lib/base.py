@@ -4,7 +4,6 @@ Provides the BaseController class for subclassing.
 """
 from pylons.controllers import WSGIController
 from pylons import config, request
-from paste.deploy.converters import asbool
 
 from nwrsc.model import Session, metadata, Settings, Data, SCHEMA_VERSION
 from nwrsc.model.conversions import convert as dbconversion

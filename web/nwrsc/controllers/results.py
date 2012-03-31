@@ -10,7 +10,7 @@ from pylons import request, response, session, config, tmpl_context as c
 from pylons.controllers.util import url_for
 
 from pylons.templating import render_mako, render_mako_def
-from nwrsc.lib.base import BaseController
+from nwrsc.lib.base import BaseController, BeforePage
 from nwrsc.lib.bracket import Bracket
 from nwrsc.lib.rungroups import *
 from nwrsc.model import *
@@ -27,6 +27,9 @@ def checklist(func, self, *args, **kwargs):
 
 
 class ResultsController(BaseController):
+	"""
+		Provides all the unathenticated results, audit pages, grid printouts, etc
+	"""
 
 	def __before__(self):
 		c.title = 'Scorekeeper Results'
@@ -45,10 +48,10 @@ class ResultsController(BaseController):
 	def index(self):
 		if c.event:
 			c.challenges = self.session.query(Challenge).filter(Challenge.eventid==c.event.id).all()
-			return render_mako('/resultsindex.mako')
+			return render_mako('/results/resultsindex.mako')
 		elif self.database is not None:
 			c.events = self.session.query(Event).all()
-			return render_mako('/eventselect.mako')
+			return render_mako('/results/eventselect.mako')
 		else:
 			c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
 			return render_mako('/databaseselect.mako')
@@ -87,6 +90,9 @@ class ResultsController(BaseController):
 
 
 	def audit(self):
+		if not config['nwrsc.private']:
+			raise BeforePage("Audit only available if server configured private")
+
 		course = int(request.GET.get('course', 1))
 		group = int(request.GET.get('group', 1))
 		c.order = request.GET.get('order', 'firstname')
@@ -103,10 +109,13 @@ class ResultsController(BaseController):
 			c.title = "Audit (Run Group %d)" % (group)
 
 		c.header = "<h3>%s</h3>\n" % (c.title)
-		return render_mako('audit.mako')
+		return render_mako('/results/audit.mako')
 
 
 	def grid(self):
+		if not config['nwrsc.private']:
+			raise BeforePage("Grid for onsite use only")
+
 		classmap = dict()
 		groups = [RunGroupList(0)]
 		for item in self.session.query(RunGroup).order_by(RunGroup.rungroup, RunGroup.gorder).filter(RunGroup.eventid==self.eventid):
@@ -152,7 +161,7 @@ class ResultsController(BaseController):
 						del subgroup[jj+1]
 					jj += 1
 
-		return render_mako('/grid.mako')
+		return render_mako('/results/grid.mako')
 
 
 	def topreport(self):
@@ -210,7 +219,7 @@ class ResultsController(BaseController):
 
 
 	def bracket(self):
-		c.javascript.append('/js/jquery-1.4.2.min.js');
+		c.javascript.append('/js/jquery-1.7.1.min.js');
 		challenge = self.session.query(Challenge).get(int(request.GET.get('id', 0)))
 		b = Bracket(challenge.depth)  # Just getting the coords, no drawing takes place
 		b.getImage()
@@ -228,6 +237,8 @@ class ResultsController(BaseController):
 		rounds = dict()
 		for rnd in self.session.query(ChallengeRound).filter(ChallengeRound.challengeid == id).all():
 			rounds[rnd.round] = rnd
+
+		loadChallengeResults(self.session, challenge.id, rounds)
 
 		try:
 			response.headers['Content-type'] = 'image/png'

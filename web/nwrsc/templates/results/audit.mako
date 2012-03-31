@@ -1,4 +1,4 @@
-<%inherit file="base.mako" />
+<%inherit file="/base.mako" />
 <%def name="extrahead()">
 <style type='text/css'>
 table.auditreport td, table.auditreport th { border: 1px solid #AAA; padding: 5px; }

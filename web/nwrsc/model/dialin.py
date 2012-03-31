@@ -1,5 +1,7 @@
 
 from classlist import ClassData
+from pylons import config
+from paste.deploy.converters import asbool
 
 
 class Entry(object):
@@ -12,6 +14,11 @@ class Entry(object):
 		self.raw = row['myraw']
 		self.net = row['mynet']
 		self.position = row['position']
+
+		if bool(row['anonymize']) and not config['nwrsc.private']:
+			self.firstname = '-----'
+			self.lastname = '-----'
+
 		
 		
 class Dialins(list):

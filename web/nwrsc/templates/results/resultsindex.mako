@@ -1,4 +1,4 @@
-<%inherit file="base.mako" />
+<%inherit file="/base.mako" />
 <%def name="extrahead()">
 <style type="text/css">
 ul, ol, h3, h2 { text-align: left; }
@@ -81,11 +81,13 @@ padding: 0;
 
 <h3>Other</h3>
 <ul>
+%if config['nwrsc.private']:
 <li><a href="${h.url_for(controller='announcer')}">Announcer Panel</a></li>
+%endif
 <li><a href='${h.url_for(action='all')}'>All Classes</a></li>
 <li><a href='${h.url_for(action='post')}'>Event Results For Posting</a></li>
 <li><a href='${h.url_for(action='champ')}'>Championship Results for Posting</a></li>
-%if c.event.ispro:
+%if c.event.ispro and config['nwrsc.onsite']:
 	<li><a href='${h.url_for(action='grid', order='number')}'>Grid By Number</a></li>
 	<li><a href='${h.url_for(action='grid', order='position')}'>Grid By Position</a></li>
 	<li>Dialins &darr;

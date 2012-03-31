@@ -2,6 +2,7 @@ from sqlalchemy import Table, Column, ForeignKey
 from sqlalchemy.orm import mapper, relation
 from sqlalchemy.types import Integer, String, Boolean, Float
 
+from pylons import config
 from meta import metadata
 from driver import Driver
 from cars import Car, t_cars
@@ -81,6 +82,7 @@ class ChallengeRound(object):
 			tdiff = 0.0
 			bdiff = 0.0
 
+
 		return tdiff - bdiff
 
 mapper(ChallengeRound, t_challengerounds, properties = {
@@ -96,6 +98,11 @@ def loadSingleRoundResults(session, challenge, rnd):
 	rnd.driver2 = rnd.car2 and rnd.car2.driver or None
 	rnd.car2leftrun = None
 	rnd.car2rightrun = None 
+
+	for dr in (rnd.driver1, rnd.driver2):
+		if dr is not None and dr.anonymize and not config['nwrsc.private']:
+			dr.firstname = '-----'
+			dr.lastname = '-----'
 
 	for r in session.query(Run).filter(Run.eventid.op(">>")(16)==challenge.id).filter(Run.eventid.op("&")(255)==rnd.round):
 		if rnd.car1id == r.carid:
@@ -147,6 +154,9 @@ def loadChallengeResults(session, challengeid, rounds):
 	cars = dict()
 	for cd in session.query(Driver,Car).join('cars').filter(Car.id.in_(carids)):
 		cars[cd.Car.id] = cd
+		if cd[0].anonymize and not config['nwrsc.private']:
+			cd[0].firstname = '-----'
+			cd[0].lastname = '-----'
 
 	for rnd in rounds.itervalues():
 		if rnd.car1id > 0 and rnd.car1id in cars:
