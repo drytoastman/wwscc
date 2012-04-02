@@ -30,21 +30,19 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import net.miginfocom.swing.MigLayout;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.EventResult;
 import org.wwscc.storage.Run;
-import org.wwscc.util.MT;
-import org.wwscc.util.MessageListener;
-import org.wwscc.util.Messenger;
 
 
 /** 
  * Overall class that represents the panel in the list of tabs
  */
-public class ResultsPane extends JPanel implements MessageListener
+public class ResultsPane extends JPanel
 {
-	static NumberFormat df;
+	static final NumberFormat df;
 	static
 	{
 		df = NumberFormat.getNumberInstance();
@@ -53,64 +51,74 @@ public class ResultsPane extends JPanel implements MessageListener
 	}
 
 	JLabel nameLabel;
+	JLabel detailsLabel;
 	JLabel classLabel;
-	AnnouncerStrings details;
-
+	
 	JTable nameTable;
+	JTable details;
 	JTable classTable;
 
 	EntrantResultModel nameModel;
+	RandomThoughtsModel detailsModel;
 	EventResultModel classModel;
 
 	HighlightRenderer renderer;
-
-	JPanel upperPanel;
 	DecimalFormat diffForm;
 
 	public ResultsPane()
 	{
-		super(new BorderLayout());
-		Messenger.register(MT.RUN_CHANGED, this);
-
+		super(new MigLayout("gap 0, ins 2", "fill", "fill"));
+		Color back = new Color(200, 200, 244);
+		
 		diffForm = new DecimalFormat("##0.000");
 		diffForm.setPositivePrefix("+");
 
-		nameLabel = new JLabel("", SwingConstants.CENTER);
+		nameLabel = new JLabel("Driver", SwingConstants.CENTER);
 		nameLabel.setFont(new Font("dialog", Font.BOLD, 16));
 		nameLabel.setBorder(new LineBorder(Color.GRAY));
-		nameLabel.setAlignmentX(0.5f);
-		nameLabel.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
+		nameLabel.setBackground(back);
+		nameLabel.setOpaque(true);
 
 		nameModel = new EntrantResultModel();
-
+		
 		nameTable = new JTable(nameModel);
 		nameTable.setDefaultRenderer(Object.class, new EntrantResultRenderer());
 		nameTable.setRowHeight(20);
-		nameTable.setAlignmentX(0.5f);
 		nameTable.setRowSelectionAllowed(false);
 		nameTable.setColumnSelectionAllowed(false);
 		TableColumnModel cm1 = nameTable.getColumnModel();
 		cm1.getColumn(0).setPreferredWidth(250);
-		cm1.getColumn(1).setPreferredWidth(80);
-		cm1.getColumn(2).setPreferredWidth(200);
+		cm1.getColumn(1).setPreferredWidth(50);
+		cm1.getColumn(2).setPreferredWidth(50);
 		cm1.getColumn(3).setPreferredWidth(250);
-		cm1.getColumn(4).setPreferredWidth(80);
 
-		JLabel announcerLabel = new JLabel("Run Results", JLabel.CENTER);
-		announcerLabel.setFont(new Font("dialog", Font.BOLD, 16));
-		announcerLabel.setBorder(new LineBorder(Color.GRAY));
-		announcerLabel.setAlignmentX(0.5f);
-		announcerLabel.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
+		detailsLabel = new JLabel("Last Run", JLabel.CENTER);
+		detailsLabel.setFont(new Font("dialog", Font.BOLD, 16));
+		detailsLabel.setBorder(new LineBorder(Color.GRAY));
+		detailsLabel.setBackground(back);
+		detailsLabel.setOpaque(true);
 
-		details = new AnnouncerStrings();
-		details.setAlignmentX(0.5f);
+		detailsModel = new RandomThoughtsModel();
+		
+		details = new JTable(detailsModel);
+		details.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+			Font myfont = ((Font)UIManager.get("Label.font")).deriveFont(Font.PLAIN, 12.0f);
+			public Font getFont() { return myfont; }
+		});
+		details.setTableHeader(null);
+		details.setRowHeight(22);
+		details.setRowSelectionAllowed(false);
+		details.setColumnSelectionAllowed(false);
+		TableColumnModel cm2 = details.getColumnModel();
+		cm2.getColumn(0).setPreferredWidth(250);
+		cm2.getColumn(1).setPreferredWidth(250);
 
 		classLabel = new JLabel("", SwingConstants.CENTER);
 		classLabel.setFont(new Font("dialog", Font.BOLD, 16));
 		classLabel.setBorder(new LineBorder(Color.GRAY));
-		classLabel.setText("Class Results");
-		classLabel.setAlignmentX(0.5f);
-		classLabel.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
+		classLabel.setBackground(back);
+		classLabel.setOpaque(true);
+		classLabel.setText("Class");
 
 		classModel = new EventResultModel();
 		classTable = new JTable(classModel);
@@ -124,121 +132,42 @@ public class ResultsPane extends JPanel implements MessageListener
 		TableColumnModel cm = classTable.getColumnModel();
 		cm.getColumn(0).setPreferredWidth(50);
 		cm.getColumn(1).setPreferredWidth(500);
-		cm.getColumn(2).setPreferredWidth(250);
+		cm.getColumn(2).setPreferredWidth(80);
 		cm.getColumn(3).setPreferredWidth(250);
 
-		upperPanel = new JPanel();
-		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.PAGE_AXIS));
-		upperPanel.add(nameLabel);
-		upperPanel.add(nameTable.getTableHeader());
-		upperPanel.add(nameTable);
+		add(nameLabel, "wrap");
+		add(nameTable.getTableHeader(), "wrap");
+		add(nameTable, "wrap");
+		add(detailsLabel, "gaptop 10px, wrap");
+		add(details, "wrap");
+		add(classLabel, "gaptop 10px, wrap");
+		JScrollPane scroller = new JScrollPane(classTable);
+		scroller.setColumnHeader(null);
+		scroller.setColumnHeaderView(null);
+		add(scroller, "grow");
 		
-		upperPanel.add(announcerLabel);
-		upperPanel.add(Box.createRigidArea(new Dimension(0,5)));
-		upperPanel.add(details);
-		upperPanel.add(Box.createRigidArea(new Dimension(0,20)));
-		upperPanel.add(classLabel);
-		upperPanel.setOpaque(true); 
-		upperPanel.setBackground(Color.WHITE);
-
-		add(upperPanel, BorderLayout.NORTH);
-		add(new JScrollPane(classTable), BorderLayout.CENTER);
+		setOpaque(true); 
+		setBackground(Color.WHITE);
 	}
 
-	@Override
-	public void event(MT type, Object o)
+	
+	public void updateDisplayData(Entrant e, boolean showLast)
 	{
-		switch (type)
-		{
-			case RUN_CHANGED:
-				Entrant e = (Entrant)o;
-				String classcode = e.getClassCode();
+		String classcode = e.getClassCode();
+		List<EventResult> erlist = Database.d.getResultsForClass(classcode);
+		
+		nameLabel.setText(e.getName());
+		nameModel.setData(e);
+		if (showLast)
+			detailsLabel.setText("Last Run");			
+		else
+			detailsLabel.setText("Difference");
 
-				nameLabel.setText("Driver: " + e.getName());
-				nameModel.setData(e);
-
-				details.setData(e.getRuns());
-				
-				classLabel.setText("Class: " + classcode);
-				classModel.setData(Database.d.getResultsForClass(classcode));
-				renderer.setHighlightValue(e.getFirstName() + " " + e.getLastName());
-
-				break;
-		}
-	} 
-
-
-	class AnnouncerStrings extends JLabel
-	{
-		public AnnouncerStrings()
-		{
-			super("", CENTER);
-			setFont(new Font(Font.DIALOG, Font.PLAIN, 13));
-		}
-
-		public void setData(Run[] r)
-		{
-			if ((r == null) || (r.length <= 1))
-			{
-				setText("");
-				return;
-			}
-
-			Run one, two, last;
-
-			one = two = last = r[r.length-1];
-			for (int ii = 0; ii < r.length; ii++)
-			{
-				if (r[ii] == null)
-					continue;
-
-				if (r[ii].getNetOrder() == 1)
-					one = r[ii];
-				else if (r[ii].getNetOrder() == 2)
-					two = r[ii];
-
-				//if (r[ii].iorder == 1)
-				//	raw = r[ii];
-			}
-
-			double ndiff,rdiff;
-
-			String txt = "<HTML>";
-			if (last.run() != one.run())
-			{
-				ndiff = last.getNet() - one.getNet();
-				rdiff = last.getRaw() - one.getRaw();
-				if (rdiff < 0)
-				{
-					txt += "Run "+last.run()+" raw is " + df.format(-rdiff) + " faster than run "+one.run();
-					txt += "<br>However, net is " + df.format(ndiff) + " slower";
-				}
-				else
-				{
-					txt += "Run "+last.run()+" raw is " + df.format(rdiff) + " slower than run "+one.run();
-					if (ndiff != rdiff)
-						txt += "<br>Net is " + df.format(ndiff) + " slower";
-				}
-			}
-			else
-			{
-				ndiff = two.getNet() - last.getNet();
-				rdiff = two.getRaw() - last.getRaw();
-				if (rdiff < 0)
-				{
-					txt += "Run "+last.run()+" raw is " + df.format(-rdiff) + " slower than run "+two.run();
-					txt += "<br>However, net is " + df.format(ndiff) + " faster";
-				}
-				else
-				{
-					txt += "Run "+last.run()+" raw is " + df.format(rdiff) + " faster than run "+two.run();
-					if (ndiff != rdiff)
-						txt += "<br>Net is " + df.format(ndiff) + " faster";
-				}
-			}
-
-			setText(txt);
-		}
+		detailsModel.setData(erlist, e, showLast);
+		
+		classLabel.setText(classcode);
+		classModel.setData(erlist);
+		renderer.setHighlightValue(e.getFirstName() + " " + e.getLastName());
 	}
 
 
@@ -251,6 +180,7 @@ public class ResultsPane extends JPanel implements MessageListener
 		Font regular;
 		Font bold;
 		Color mygray;
+		Color myred;
 
 		public EntrantResultRenderer()
 		{
@@ -259,6 +189,7 @@ public class ResultsPane extends JPanel implements MessageListener
 			regular = (Font)UIManager.get("Label.font");
 			bold = ((Font)UIManager.get("Label.font")).deriveFont(Font.BOLD, 12.0f);
 			mygray = new Color(240,240,240);
+			myred = new Color(240,170,170);
 		}
 
 		public Component getTableCellRendererComponent (JTable t, Object o, boolean is, boolean hf, int r, int c)
@@ -272,6 +203,11 @@ public class ResultsPane extends JPanel implements MessageListener
 			{
 				cell.setFont(bold);
 				cell.setBackground(mygray);
+			}
+			else if ((run != null) && (run.getRawOrder() == 1) && c == 0)
+			{
+				cell.setFont(bold);
+				cell.setBackground(myred);
 			}
 			else
 			{
@@ -363,7 +299,7 @@ public class ResultsPane extends JPanel implements MessageListener
 
 		public int getColumnCount()
 		{
-			return 5;
+			return 4;
 		}
 
 		public String getColumnName(int col)
@@ -371,7 +307,8 @@ public class ResultsPane extends JPanel implements MessageListener
 			switch (col)
 			{
 				case 0: return "Raw";
-				case 2: return "Pen";
+				case 1: return "C";
+				case 2: return "G";
 				case 3: return "Net";
 			}
 			return "";
@@ -380,53 +317,184 @@ public class ResultsPane extends JPanel implements MessageListener
 		public Object getValueAt(int row, int col)
 		{
 			Run r = null;
-			Run last = null;
-
 			if (data == null) return "";
 			r = data.getRun(row+1);
 			if (r == null) return "";
 
-			if (row > 0) last = data.getRun(row);
-
 			switch (col)
 			{
 				case 0: return df.format(r.getRaw());
-				case 2: return new String("("+r.getCones()+","+r.getGates()+")");
+				case 1: return r.getCones();
+				case 2: return r.getGates();
 				case 3: return df.format(r.getNet());
-
-				case 1:
-					if (r.getRawOrder() == 1)
-						return "*";
-					else
-						return "";
-
-				case 4:
-					if (r.getNetOrder() <= 2)
-						return r.getNetOrder();
-					else
-						return "";
 			}
 			return null;
 		}
 	}
 
+	private static final int MOVE=2, FIRST=1, NEXT=0, RAW=3, NET=4; 
+	class RandomThoughtsModel extends AbstractTableModel
+	{
+		Integer origpos = null;
+		Double rawImprovement = null, netImprovement = null;
+		EventResult myresult = null;
+		EventResult topresult = null;
+		boolean showLast = true;
+		
+		@Override
+		public int getRowCount() { return showLast ? 5 : 2; }
+		@Override
+		public int getColumnCount() { return 2; }
+		@Override
+		public Object getValueAt(int row, int col)
+		{
+			if (col == 0)
+			{
+				System.out.println("");
+				switch (row)
+				{
+					case  MOVE: return "Movement";
+					case FIRST: return "From First (Raw)";
+					case  NEXT: return "From Next (Raw)";
+					case   RAW: return "Raw Improvement";
+					case   NET: return "Net Improvement";
+				}
+			}
+			else
+			{
+				if (myresult == null)
+					return "";
+				switch (row)
+				{
+					case MOVE: 
+						if ((origpos != null) && (origpos != myresult.getPosition()))
+							return origpos + " to " + myresult.getPosition();
+						return "none";
+					case NEXT:
+						if (myresult.getPosition() != 1)
+							return df.format(myresult.getDiff());
+						return "";
+					case FIRST: 
+						if (myresult.getPosition() != 1)
+							return df.format((myresult.getSum() - topresult.getSum())/myresult.getIndex());
+						return "";
+					case RAW: 
+						if ((rawImprovement != null))
+							return df.format(rawImprovement);
+						return "";
+					case NET: 
+						if ((netImprovement != null))
+							return df.format(netImprovement);
+						return "";
+				}
+			}
 
+			return "";
+		}
+		
+		public void setData(List<EventResult> erlist, Entrant entrant, boolean showlast)
+		{
+			origpos = null;
+			rawImprovement = null;
+			netImprovement = null;
+			myresult = null;
+			topresult = erlist.get(0);
+			showLast = showlast;
+			
+			Run[] runs = entrant.getRuns();
+			Run one, two, last;
+			if (runs.length <= 1)
+			{
+				fireTableDataChanged();
+				return;
+			}
+
+			one = two = last = runs[runs.length-1];
+			for (int ii = 0; ii < runs.length; ii++)
+			{
+				if (runs[ii] == null)
+					continue;
+
+				if (runs[ii].getNetOrder() == 1)
+					one = runs[ii];
+				else if (runs[ii].getNetOrder() == 2)
+					two = runs[ii];
+			}
+
+			for (EventResult er : erlist) {
+				if (er.getCarId() == entrant.getCarId()) {
+					myresult = er;
+					break;
+			}}
+						
+			if (last.run() == one.run())
+			{
+				for (EventResult er : erlist) {
+					if (er.getSum() > two.getNet()) {
+						origpos = er.getPosition();
+						break;
+				}}
+				if (origpos == null)
+					origpos = erlist.size();
+			}
+
+			if (last.run() != one.run())
+			{
+				double rdiff = last.getRaw() - one.getRaw();
+				if (rdiff < 0)
+					rawImprovement = -rdiff;
+			}
+			else
+			{
+				double ndiff = two.getNet() - last.getNet();
+				double rdiff = two.getRaw() - last.getRaw();
+				if (rdiff < 0)
+				{
+					netImprovement = ndiff;
+				}
+				else
+				{
+					rawImprovement = rdiff;
+					netImprovement = ndiff;
+				}
+			}
+			
+			fireTableDataChanged();
+		}
+	}
+	
 	/**
 	 * Data model to hold results for a single class
 	 */
 	class EventResultModel extends AbstractTableModel
 	{
 		List<EventResult> data;
+		List<Double> toFirstRaw;
+		List<Double> toFirstIndex;
 
 		public EventResultModel()
 		{
 			data = new ArrayList<EventResult>();
+			toFirstRaw = new ArrayList<Double>();
+			toFirstIndex = new ArrayList<Double>();
 		}
 
 		public void setData(List<EventResult> v)
 		{
 			if (v != null)
+			{
 				data = v;
+				toFirstRaw = new ArrayList<Double>();
+				toFirstIndex = new ArrayList<Double>();
+				double topindex = data.get(0).getSum();
+				
+				for (EventResult r : data)
+				{
+					double tofirst = r.getSum() - topindex;
+					toFirstIndex.add(tofirst);
+					toFirstRaw.add(tofirst/r.getIndex());
+				}
+			}
 			fireTableDataChanged();
 		}
 
@@ -446,8 +514,8 @@ public class ResultsPane extends JPanel implements MessageListener
 			{
 				case 0: return "";
 				case 1: return "Name";
-				case 2: return "Sum";
-				case 3: return "Diff";
+				case 2: return "";
+				case 3: return "Net";
 			}
 			return "";
 		}
@@ -459,8 +527,8 @@ public class ResultsPane extends JPanel implements MessageListener
 			{
 				case 0: return new Integer(row+1);
 				case 1: return e.getFullName();
-				case 2: return df.format(e.getSum());
-				case 3: return df.format(e.getDiff());
+				case 2: return e.getIndexCode();
+				case 3: return df.format(e.getSum());
 			}
 			return null;
 		}

@@ -184,7 +184,6 @@ public class Run implements Serial, Cloneable
 	{
 		if (status.equals("OK"))		
 		{
-			System.out.println(Database.d.getBooleanSetting("indexafterpenalties"));
 			if (Database.d.getBooleanSetting("indexafterpenalties"))
 				net = (raw + (Database.d.currentEvent.conepen * cones) + (Database.d.currentEvent.gatepen * gates)) * index;
 			else

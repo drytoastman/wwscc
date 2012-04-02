@@ -5,6 +5,7 @@ function editdriver(did)
 	{
 		$('#drivereditor [name=firstname]').val(drivers[did].firstname);
 		$('#drivereditor [name=lastname]').val(drivers[did].lastname);
+		$('#drivereditor [name=alias]').val(drivers[did].alias);
 		$('#drivereditor [name=email]').val(drivers[did].email);
 		$('#drivereditor [name=address]').val(drivers[did].address);
 		$('#drivereditor [name=city]').val(drivers[did].city);
@@ -13,7 +14,6 @@ function editdriver(did)
 		$('#drivereditor [name=phone]').val(drivers[did].homephone);
 		$('#drivereditor [name=brag]').val(drivers[did].brag);
 		$('#drivereditor [name=sponsor]').val(drivers[did].sponsor);
-		$('#drivereditor [name=anonymize]').prop("checked", drivers[did].anonymize);
 %for field in c.fields:
 		$('#drivereditor [name=${field.name}]').val(drivers[did].${field.name});
 %endfor
@@ -22,6 +22,7 @@ function editdriver(did)
 	{
 		$('#drivereditor [name=firstname]').val("");
 		$('#drivereditor [name=lastname]').val("");
+		$('#drivereditor [name=alias]').val("");
 		$('#drivereditor [name=email]').val("");
 		$('#drivereditor [name=address]').val("");
 		$('#drivereditor [name=city]').val("");
@@ -30,7 +31,6 @@ function editdriver(did)
 		$('#drivereditor [name=phone]').val("");
 		$('#drivereditor [name=brag]').val("");
 		$('#drivereditor [name=sponsor]').val("");
-		$('#drivereditor [name=anonymize]').prop("checked", false);
 %for field in c.fields:
 		$('#drivereditor [name=${field.name}]').val("");
 %endfor

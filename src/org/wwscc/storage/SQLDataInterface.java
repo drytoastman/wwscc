@@ -1016,7 +1016,11 @@ public abstract class SQLDataInterface extends DataInterface
 			ResultData d = executeSelect("GETEVENTRESULTSBYCLASS", newList(classcode, currentEvent.id));
 			List<EventResult> ret = new ArrayList<EventResult>(d.size());
 			for (ResultRow r : d)
-				ret.add(AUTO.loadEventResult(r));
+			{
+				EventResult er = AUTO.loadEventResult(r);
+				er.setIndex(getEffectiveIndex(classcode, er.indexcode));
+				ret.add(er);
+			}
 			return ret;
 		}
 		catch (Exception ioe)
@@ -1395,7 +1399,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	ClassData classCache = null;
-	double getEffectiveIndex(String classcode, String indexcode)
+	public double getEffectiveIndex(String classcode, String indexcode)
 	{
 		if (classCache == null)
 			getClassData();

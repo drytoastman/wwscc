@@ -1,4 +1,5 @@
 from event import Event
+from pylons import config
 import logging
 
 log = logging.getLogger(__name__)
@@ -27,11 +28,16 @@ class Points(object):
 	def __cmp__(self, other):
 		return cmp(other.total, self.total)
 
+
 class Entrant(object):
 
 	def __init__(self, row):
-		self.firstname = row.firstname
-		self.lastname = row.lastname
+		if row.alias and not config['nwrsc.private']:
+			self.firstname = row.alias
+			self.lastname = ""
+		else:
+			self.firstname = row.firstname
+			self.lastname = row.lastname
 		self.id = row.id
 		self.carid = row.carid
 		self.points = Points()
@@ -50,7 +56,7 @@ class Entrant(object):
 		self.ppoints.calc(best)
 
 
-champResult = """select r.points,r.ppoints,r.eventid,r.classcode,r.carid,d.id,d.firstname,d.lastname 
+champResult = """select r.points,r.ppoints,r.eventid,r.classcode,r.carid,d.id,d.firstname,d.lastname,d.alias
 				from eventresults as r, cars as c, drivers as d, events as e
 				where r.eventid=e.id and e.practice=0 and r.carid=c.id and c.driverid=d.id and r.classcode like :codeglob
 				order by r.classcode,d.firstname COLLATE NOCASE,d.lastname COLLATE NOCASE,r.eventid"""

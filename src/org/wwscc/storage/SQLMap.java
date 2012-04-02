@@ -50,7 +50,7 @@ public class SQLMap
 		sql.put("GETCLASSRESULTS", "select r.carid as carid,SUM(r.net) as sum, COUNT(r.net) as coursecnt from runs as r, cars as c " +
 					"where r.norder=1 and r.carid=c.id and c.classcode=? and r.eventid=? " +
 					"group by r.carid order by coursecnt DESC,sum");
-		sql.put("GETDIALINS", "select d.firstname as firstname, d.lastname as lastname, d.anonymize as anonymize, c.classcode as classcode, " +
+		sql.put("GETDIALINS", "select d.firstname as firstname, d.lastname as lastname, d.alias as alias, c.classcode as classcode, " +
 					"c.indexcode as indexcode, c.id as carid, SUM(r.raw) as myraw, f.position as position, f.sum as mynet " +
 					"from runs as r, cars as c, drivers as d, eventresults as f " +
 					"where r.carid=c.id and c.driverid=d.id and r.eventid=? and r.rorder=1 and f.eventid=? and f.carid=c.id " +
@@ -60,7 +60,7 @@ public class SQLMap
 		sql.put("GETDRIVERSBYLAST", "select * from drivers where lastname like ? order by firstname,lastname");
 		sql.put("GETEVENTENTRANTS", "select distinct d.firstname as firstname,d.lastname as lastname,c.* from runs as r, cars as c, drivers as d " +
 						"where r.carid=c.id AND c.driverid=d.id and r.eventid=?");
-		sql.put("GETEVENTRESULTSBYCLASS", "select d.firstname,d.lastname,r.position,r.courses,r.sum,r.diff,r.points,r.ppoints,r.updated " +
+		sql.put("GETEVENTRESULTSBYCLASS", "select d.firstname,d.lastname,c.id as carid,c.indexcode,r.position,r.courses,r.sum,r.diff,r.points,r.ppoints,r.updated " +
 					"from eventresults as r, cars as c, drivers as d " +
 					"where r.carid=c.id and c.driverid=d.id and r.classcode=? and r.eventid=? " +
 					"order by position");

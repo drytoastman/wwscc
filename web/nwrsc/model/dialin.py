@@ -15,9 +15,9 @@ class Entry(object):
 		self.net = row['mynet']
 		self.position = row['position']
 
-		if bool(row['anonymize']) and not config['nwrsc.private']:
-			self.firstname = '-----'
-			self.lastname = '-----'
+		if row['alias'] and not config['nwrsc.private']:
+			self.firstname = row['alias']
+			self.lastname = ""
 
 		
 		

@@ -1,17 +1,11 @@
-<%inherit file="/base.mako" />
+<%inherit file="base.mako" />
 <%namespace file="/forms/carform.mako" import="carform"/>
 <%namespace file="/forms/driverform.mako" import="driverform"/>
 <%namespace file="events.mako" import="eventdisplay"/>
 <%namespace file="cars.mako" import="carlist"/>
 <%namespace file="profile.mako" import="profile"/>
 
-<div id='content'>
-
-<div id='series'>
-<h2>${c.database} - ${c.settings.seriesname}</h2>
-</div>
-
-
+<%def name="leftpiece()">
 <div id='profile'>
 <div id='profilewrapper'>
 ${profile()}
@@ -19,26 +13,7 @@ ${profile()}
 <input id='editprofile' type='button' value='Edit' onclick='editdriver(${c.driver.id})'/>
 <input id='logout' type='button' value='Logout' onclick='document.location.href="${h.url_for(action="logout")}"'/>
 </div>
-
-
-<div id='sponsor'>
-%if c.sponsorlink is not None and c.sponsorlink.strip() != "":
-  <a href='${c.sponsorlink}' target='_blank'>
-  <img src='${h.url_for(controller='db', name='sponsorimage')}' alt='Sponsor Image'/>
-  </a>
-%else:
-  <img src='${h.url_for(controller='db', name='sponsorimage')}' alt='Sponsor Image'/>
-%endif
-</div>
-
-
-<div id='beforeerror'></div>
-
-%if len(c.previouserror) > 0:
-<div id='errormsg' class='ui-state-error'>
-<span class='ui-state-error-text'>${c.previouserror|n}</span>
-</div>
-%endif
+</%def>
 
 
 <div id='events'>
@@ -67,9 +42,6 @@ ${carlist()}
 
 <div id='aftercars'>
 </div>
-
-</div>
-
 
 ${driverform()}
 ${carform(True)}

@@ -18,6 +18,7 @@ public class Driver implements Serializable
 	protected int id;
 	protected String firstname;
 	protected String lastname;
+	protected String alias;
 	protected String email;
 	protected String address;
 	protected String city;
@@ -26,7 +27,6 @@ public class Driver implements Serializable
 	protected String phone;
 	protected String brag;
 	protected String sponsor;
-	protected boolean anonymize;
 	private Map<String, String> extras;
 
 	/* meta */
@@ -56,7 +56,7 @@ public class Driver implements Serializable
 	public String getPhone() { return phone; }
 	public String getBrag() { return brag; }
 	public String getSponsor() { return sponsor; }
-	public boolean getAnonymize() { return anonymize; }
+	public String getAlias() { return alias; }
 	public String getExtra(String name) 
 	{ 
 		String ret = extras.get(name); 
@@ -79,7 +79,7 @@ public class Driver implements Serializable
 	public void setPhone(String s) { phone = s; }
 	public void setBrag(String s) { brag = s; }
 	public void setSponsor(String s) { sponsor = s; }
-	public void setAnonymize(boolean b) { anonymize = b; }
+	public void setAlias(String s) { alias = s; }
 	public void setExtra(String name, String val) 
 	{ 
 		if ((val == null) || (val.trim().length() == 0))

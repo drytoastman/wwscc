@@ -100,9 +100,9 @@ def loadSingleRoundResults(session, challenge, rnd):
 	rnd.car2rightrun = None 
 
 	for dr in (rnd.driver1, rnd.driver2):
-		if dr is not None and dr.anonymize and not config['nwrsc.private']:
-			dr.firstname = '-----'
-			dr.lastname = '-----'
+		if dr is not None and dr.alias and not config['nwrsc.private']:
+			dr.firstname = dr.alias
+			dr.lastname = ""
 
 	for r in session.query(Run).filter(Run.eventid.op(">>")(16)==challenge.id).filter(Run.eventid.op("&")(255)==rnd.round):
 		if rnd.car1id == r.carid:
@@ -154,9 +154,9 @@ def loadChallengeResults(session, challengeid, rounds):
 	cars = dict()
 	for cd in session.query(Driver,Car).join('cars').filter(Car.id.in_(carids)):
 		cars[cd.Car.id] = cd
-		if cd[0].anonymize and not config['nwrsc.private']:
-			cd[0].firstname = '-----'
-			cd[0].lastname = '-----'
+		if cd[0].alias and not config['nwrsc.private']:
+			cd[0].firstname = cd[0].alias
+			cd[0].lastname = ""
 
 	for rnd in rounds.itervalues():
 		if rnd.car1id > 0 and rnd.car1id in cars:

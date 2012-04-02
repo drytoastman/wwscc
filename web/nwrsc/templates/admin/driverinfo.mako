@@ -23,8 +23,8 @@ drivers[${info.driver.id}] = ${h.encodesqlobj(info.driver)|n}
 <tbody>
 <tr><th>Id</th><td>${info.driver.id}</td></tr>
 <tr><th>Name</th><td>${info.driver.firstname} ${info.driver.lastname}</td></tr>
+<tr><th>Alias</th><td>${info.driver.alias}</td></tr>
 <tr><th>Email</th><td>${info.driver.email}</td></tr>
-<tr><th>Anonymize</th><td>${info.driver.anonymize}</td></tr>
 
 <tr><th>Address</th><td>${info.driver.address}</td></tr>
 <tr><th>CSZ</th><td>${info.driver.city}, ${info.driver.state} ${info.driver.zip}</td></tr>

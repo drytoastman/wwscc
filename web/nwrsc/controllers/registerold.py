@@ -210,9 +210,9 @@ class RegisteroldController(BaseController):
 		query = query.order_by(Car.classcode, Car.number)
 		c.reglist = query.all()
 		for reg in c.reglist:
-			if reg[0].anonymize:
-				reg[0].firstname = 'John'
-				reg[0].lastname = 'Smith'
+			if reg[0].alias:
+				reg[0].firstname = reg[0].alias
+				reg[0].lastname = ""
 
 		return render_mako('/registerold/reglist.mako')
 

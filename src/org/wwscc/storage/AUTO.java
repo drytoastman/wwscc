@@ -85,6 +85,7 @@ public class AUTO
 		o.id = rs.getInt("id");
 		o.firstname = rs.getString("firstname");
 		o.lastname = rs.getString("lastname");
+		o.alias = rs.getString("alias");
 		o.email = rs.getString("email");
 		o.address = rs.getString("address");
 		o.city = rs.getString("city");
@@ -93,13 +94,12 @@ public class AUTO
 		o.phone = rs.getString("phone");
 		o.brag = rs.getString("brag");
 		o.sponsor = rs.getString("sponsor");
-		o.anonymize = rs.getBoolean("anonymize");
 		return o;
 	}
 	
 	public static String getDriverVarStr()
 	{
-		return "firstname,lastname,email,address,city,state,zip,phone,brag,sponsor,anonymize";
+		return "firstname,lastname,alias,email,address,city,state,zip,phone,brag,sponsor";
 	}
 	
 	public static String getDriverArgStr()
@@ -109,13 +109,14 @@ public class AUTO
 	
 	public static String getDriverSetStr()
 	{
-		return "firstname=?,lastname=?,email=?,address=?,city=?,state=?,zip=?,phone=?,brag=?,sponsor=?,anonymize=?";
+		return "firstname=?,lastname=?,alias=?,email=?,address=?,city=?,state=?,zip=?,phone=?,brag=?,sponsor=?";
 	}
 	
 	public static void addDriverValues(org.wwscc.storage.Driver o, List<Object> l)
 	{
 		l.add(o.firstname);
 		l.add(o.lastname);
+		l.add(o.alias);
 		l.add(o.email);
 		l.add(o.address);
 		l.add(o.city);
@@ -124,7 +125,6 @@ public class AUTO
 		l.add(o.phone);
 		l.add(o.brag);
 		l.add(o.sponsor);
-		l.add(o.anonymize);
 	}
 	
 	public static org.wwscc.storage.DriverField loadDriverField(ResultRow rs) throws IOException
@@ -445,8 +445,10 @@ public class AUTO
 	{
 		org.wwscc.storage.EventResult o = new org.wwscc.storage.EventResult();
 		o.id = rs.getInt("id");
+		o.carid = rs.getInt("carid");
 		o.firstname = rs.getString("firstname");
 		o.lastname = rs.getString("lastname");
+		o.indexcode = rs.getString("indexcode");
 		o.position = rs.getInt("position");
 		o.courses = rs.getInt("courses");
 		o.sum = rs.getDouble("sum");
@@ -459,23 +461,25 @@ public class AUTO
 	
 	public static String getEventResultVarStr()
 	{
-		return "firstname,lastname,position,courses,sum,diff,points,ppoints,updated";
+		return "carid,firstname,lastname,indexcode,position,courses,sum,diff,points,ppoints,updated";
 	}
 	
 	public static String getEventResultArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getEventResultSetStr()
 	{
-		return "firstname=?,lastname=?,position=?,courses=?,sum=?,diff=?,points=?,ppoints=?,updated=?";
+		return "carid=?,firstname=?,lastname=?,indexcode=?,position=?,courses=?,sum=?,diff=?,points=?,ppoints=?,updated=?";
 	}
 	
 	public static void addEventResultValues(org.wwscc.storage.EventResult o, List<Object> l)
 	{
+		l.add(o.carid);
 		l.add(o.firstname);
 		l.add(o.lastname);
+		l.add(o.indexcode);
 		l.add(o.position);
 		l.add(o.courses);
 		l.add(o.sum);

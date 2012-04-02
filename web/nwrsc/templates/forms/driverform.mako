@@ -4,10 +4,8 @@
 #drivereditor input { width: 100%; }
 #drivereditor th { padding-left: 14px; padding-right: 5px; }
 #drivereditor th, #drivereditor td { text-align: right; font-weight: normal; }
-#namerow th, #emailrow th, #anonrow th { font-weight: bold; }
+#namerow th, #emailrow th { font-weight: bold; }
 #emailrow th, #emailrow td { padding-bottom: 20px; }
-#anonrow input { width: auto; }
-#anonrow td { text-align: left; }
 </style>
 
 <%
@@ -33,14 +31,14 @@
 <td colspan='3'><input name='lastname' type='text' value='${driver.lastname}'/></td>
 </tr>
 
-<tr id='anonrow'>
-<th>Anonymize Results</th>
-<td colspan='6'><input type="checkbox" name="anonymize" ${driver.anonymize and "checked"}></td>
-</tr>
-
 <tr id='emailrow'>
 <th>Email/UniqueId</th>
 <td colspan='6'><input name='email' type='text' value='${driver.email}'/></td>
+</tr>
+
+<tr>
+<th>Public Alias</th>
+<td colspan='6'><input name="alias" type='text' value='${driver.alias}'></td>
 </tr>
 
 <tr>

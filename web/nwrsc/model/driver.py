@@ -45,6 +45,7 @@ t_drivers = Table('drivers', metadata,
 	Column('id', Integer, primary_key=True, autoincrement=True),
 	Column('firstname', String(32)),
 	Column('lastname', String(32)),
+	Column('alias', String(64)),
 	Column('email', String(64)),
 	Column('address', String(64)),
 	Column('city', String(32)),
@@ -53,7 +54,6 @@ t_drivers = Table('drivers', metadata,
 	Column('phone', String(16)),
 	Column('brag', String(128)),
 	Column('sponsor', String(64)),
-	Column('anonymize', Boolean, default=False),
 	)
 Index('driveridx_1', t_drivers.c.firstname)
 Index('driveridx_2', t_drivers.c.lastname)

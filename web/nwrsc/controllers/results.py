@@ -82,6 +82,7 @@ class ResultsController(BaseController):
 		c.header = '<h2>Results for All Classes</h2>'
 		return self._classresults([cls.code for cls in c.active])
 
+
 	def post(self):
 		c.results = getClassResults(self.session, c.event, c.classdata, [cls.code for cls in c.active])
 		c.entrantcount = sum([len(data) for code,data in c.results.iteritems()])

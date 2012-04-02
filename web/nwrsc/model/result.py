@@ -20,9 +20,9 @@ class Result(object):
 		if type(getattr(self, 'toptime', None)) is not float:
 			self.toptime = 0.0
 
-		if asbool(self.anonymize) and not config['nwrsc.private']:
-			self.firstname = '-----'
-			self.lastname = '-----'
+		if self.alias and not config['nwrsc.private']:
+			self.firstname = self.alias
+			self.lastname = ""
 
 
 	def getFeed(self):
@@ -37,7 +37,7 @@ class Result(object):
 		return ret
 
 
-auditList = """select r.*,d.firstname,d.lastname,d.anonymize,c.year,c.number,c.make,c.model,c.color,c.classcode,c.indexcode 
+auditList = """select r.*,d.firstname,d.lastname,d.alias,c.year,c.number,c.make,c.model,c.color,c.classcode,c.indexcode 
 				from runorder as r, cars as c, drivers as d  
 				where r.carid=c.id and c.driverid=d.id and 
 				r.eventid=:eventid and r.course=:course and r.rungroup=:group """
@@ -59,7 +59,7 @@ def getAuditResults(session, event, course, rungroup):
 
 
 
-classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.indexcode, d.firstname, d.lastname, d.anonymize
+classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.indexcode, d.firstname, d.lastname, d.alias
 				from eventresults as r, cars as c, drivers as d 
 				where r.carid=c.id and c.driverid=d.id and r.eventid=%d and r.classcode in (%s)
 				order by r.position"""
@@ -112,7 +112,7 @@ def getClassResults(session, event, classdata, codes):
 	return ret
 
 
-top1 = "select d.firstname as firstname, d.lastname as lastname, d.anonymize as anonymize, c.classcode as classcode, c.indexcode as indexcode, c.id as carid "
+top1 = "select d.firstname as firstname, d.lastname as lastname, d.alias as alias, c.classcode as classcode, c.indexcode as indexcode, c.id as carid "
 top2 = "from runs as r, cars as c, drivers as d where r.carid=c.id and c.driverid=d.id and r.eventid=:eventid "
 
 
@@ -133,11 +133,14 @@ class TopTimesList(object):
 		self.carids = list()
 		self.rows = list()
 
-	def add(self, carid, anonymize, firstname, lastname, *vals):
-		if asbool(anonymize) and not config['nwrsc.private']:
-			firstname = '----'
-			lastname = '----'
-		self.carids.append(carid)
+	def add(self, entrant, *vals):
+		if entrant.alias and not config['nwrsc.private']:
+			firstname = entrant.alias
+			lastname = ""
+		else:
+			firstname = entrant.firstname
+			lastname = entrant.lastname
+		self.carids.append(entrant.carid)
 		self.rows.append((firstname + " " + lastname,) + vals)
 
 
@@ -147,7 +150,7 @@ def loadTopSegRawTimes(session, event, course, seg, classdata):
 
 	ttl = TopTimesList("Top Segment Times (Course %d)" % course, "Name", "Class", "Time")
 	for row in session.execute(topSegRaw, params={'eventid':event.id, 'course':course}):
-		ttl.add(row.carid, row.anonymize, row.firstname, row.lastname, row.classcode, "%0.3f" % row.toptime)
+		ttl.add(row, row.classcode, "%0.3f" % row.toptime)
 	return ttl
 			
 
@@ -159,7 +162,7 @@ def loadTopCourseRawTimes(session, event, course, classdata, all=False):
 
 	ttl = TopTimesList("Top Times (Course %d)" % course, "Name", "Class", "Time")
 	for row in session.execute(sql, params={'eventid':event.id, 'course':course, 'conepen':event.conepen, 'gatepen':event.gatepen}):
-		ttl.add(row.carid, row.anonymize, row.firstname, row.lastname, row.classcode, "%0.3f" % row.toptime)
+		ttl.add(row, row.classcode, "%0.3f" % row.toptime)
 	return ttl
 		
 
@@ -173,7 +176,7 @@ def loadTopCourseNetTimes(session, event, course, classdata, all=False):
 	for row in session.execute(sql, params={'eventid':event.id, 'course':course}):
 		eis = classdata.getIndexStr(row.classcode, row.indexcode)
 		eiv = classdata.getEffectiveIndex(row.classcode, row.indexcode)
-		ttl.add(row.carid, row.anonymize, row.firstname, row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
+		ttl.add(row, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
 	return ttl
 
 
@@ -187,7 +190,7 @@ def loadTopRawTimes(session, event, classdata, all=False):
 	if all: title += " (All Runs)"
 	ttl = TopTimesList(title, "Name", "Class", "Time")
 	for row in session.execute(sql, params={'eventid':event.id,'conepen':event.conepen,'gatepen':event.gatepen}):
-		ttl.add(row.carid, row.anonymize, row.firstname, row.lastname, row.classcode, "%0.3f" % row.toptime)
+		ttl.add(row, row.classcode, "%0.3f" % row.toptime)
 	return ttl
 
 
@@ -203,6 +206,6 @@ def loadTopNetTimes(session, event, classdata, all=False):
 	for row in session.execute(sql, params={'eventid':event.id}):
 		eis = classdata.getIndexStr(row.classcode, row.indexcode)
 		eiv = classdata.getEffectiveIndex(row.classcode, row.indexcode)
-		ttl.add(row.carid, row.anonymize, row.firstname, row.lastname, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
+		ttl.add(row, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
 	return ttl
 
