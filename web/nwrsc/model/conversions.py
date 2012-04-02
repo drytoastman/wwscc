@@ -1,5 +1,6 @@
 
 import sys
+import re
 import logging
 
 from nwrsc.model import *
@@ -39,6 +40,14 @@ def convert2011(session):
 
 	session.execute("DROP TABLE oldclasslist")
 	session.execute("DROP TABLE olddrivers")
+
+	classresults = session.query(Data).filter(Data.name=='classresult.mako').first()
+	classresults.data = re.sub('classindexed', 'classindex', classresults.data)
+
+	cardpy = session.query(Data).filter(Data.name=='card.py').first()
+	cardpy.data = re.sub(r'def drawCard.*', 'def drawCard(c, event, driver, car, image, **kwargs):\n', cardpy.data)
+	cardpy.data = re.sub('homephone', 'phone', cardpy.data)
+	cardpy.data = re.sub('membership', "getExtra('membership')", cardpy.data)
 
 	settings = Settings()
 	settings.load(session)  # also loads new default values
