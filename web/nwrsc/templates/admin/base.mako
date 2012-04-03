@@ -31,11 +31,11 @@
 </li>
 <li><a href='javascript:void(0);'>Series Admin</a>
 	<ul>
-	<li><a href='${h.url_for(eventid='s', action='createevent')}'>Create New Event</a></li>
-	<li><a href='${h.url_for(eventid='s', action='classlist')}'>Series Classes</a></li>
-	<li><a href='${h.url_for(eventid='s', action='indexlist')}'>Series Indexes</a></li>
-	<li><a href='${h.url_for(eventid='s', action='fieldlist')}'>Extra Driver Fields List</a></li>
-	<li><a href='${h.url_for(eventid='s', action='seriessettings')}'>Series Settings</a></li>
+	<li><a href='${h.url_for(eventid='s', action='createevent')}'>New Event</a></li>
+	<li><a href='${h.url_for(eventid='s', action='classlist')}'>Classes</a></li>
+	<li><a href='${h.url_for(eventid='s', action='indexlist')}'>Indexes</a></li>
+	<li><a href='${h.url_for(eventid='s', action='fieldlist')}'>Driver Fields</a></li>
+	<li><a href='${h.url_for(eventid='s', action='seriessettings')}'>Settings</a></li>
 	<li><a href='${h.url_for(eventid='s', action='drivers')}'>Driver/Car Editor</a></li>
 	<li><a href='${h.url_for(eventid='s', action='cleanup')}'>Clean Unused Registration</a></li>
 	<li><a href='${h.url_for(eventid='s', action='recalc')}'>Recalculate Results</a></li>
@@ -53,29 +53,17 @@
 
 
 %if c.isLocked:
-<div style='margin-top:5px; margin-left:30px; color:red; font-weight:bold;'>
-<span style='text-decoration: line-through;'>
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-</span>
-&nbsp;
+<div class='ui-state-error'>
+<span class='ui-state-error-text'>
 Locked
-&nbsp;
-<span style='text-decoration: line-through;'>
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
 </span>
 </div>
 %endif
+
 <div class='body ui-widget'>
 ${next.body()}
 </div>
+
 <script>
 $(':submit').button();
 $('button').button();

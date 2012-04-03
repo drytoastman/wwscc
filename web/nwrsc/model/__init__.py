@@ -6,10 +6,10 @@ from runs import Run
 from cars import Car
 from settings import Settings, Setting
 from challenge import Challenge, ChallengeRound, loadChallengeResults, loadSingleRoundResults
-from result import Result, getAuditResults, getClassResultsShort, getClassResults, loadTopCourseRawTimes, loadTopCourseNetTimes, loadTopRawTimes, loadTopNetTimes, loadTopSegRawTimes
+from result import Result, getAuditResults, getClassResultsShort, getClassResults, TopTimesStorage
 from champ import getChampResults
 from classlist import Class, Index, ClassData
-from runorder import RunOrder, RunGroup, loadNextRunOrder
+from runorder import RunOrder, RunGroup, loadNextRunOrder, getNextCarIdInOrder
 from feelist import FeeList
 from payments import Payment
 from registration import Registration, updateFromRuns
@@ -39,6 +39,7 @@ __all__ = (
 'RunOrder',
 'RunGroup',
 'loadNextRunOrder',
+'getNextCarIdInOrder',
 'PrevEntry',
 'Payment',
 'Challenge',
@@ -50,11 +51,7 @@ __all__ = (
 'getAuditResults',
 'getClassResultsShort',
 'getClassResults',
-'loadTopCourseRawTimes',
-'loadTopCourseNetTimes', 
-'loadTopRawTimes', 
-'loadTopNetTimes',
-'loadTopSegRawTimes',
+'TopTimesStorage',
 'getChampResults',
 'FeeList',
 'Dialins'

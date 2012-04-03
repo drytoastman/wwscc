@@ -43,7 +43,21 @@ function editdriver(did)
 function setupDriverDialog(title)
 {
     $('#drivereditor').validate({
-		invalidHandler: function(e, validator) { alert('invalid'); return false; }
+		invalidHandler: function(e, validator) {
+			var errors = validator.numberOfInvalids();
+			if (errors) {
+				var message = errors == 1
+					? 'You missed 1 field. It has been highlighted below'
+					: 'You missed ' + errors + ' fields.  They have been highlighted below';
+				$("#drivererror").html(message);
+				$("#drivererror").show();
+			} else {
+				$("#drivererror").hide();
+			}
+		},
+		showErrors: function(errorMap, errorList) { },
+		onkeyup: false,
+		messages: {}
 	});
 
     $('#drivereditor [name=firstname]').rules("add", {required:true, minlength:3});
@@ -67,6 +81,7 @@ function setupDriverDialog(title)
 			Cancel: function() { $(this).dialog('close'); }
 		},
 		close: function() {
+			$("#drivererror").hide();
 		}
 	});
 };

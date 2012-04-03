@@ -1,6 +1,7 @@
 from sqlalchemy import Table, Column, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.orm import mapper, relation
 from sqlalchemy.types import Integer, SmallInteger, String
+from pylons import config
 
 from meta import metadata
 from data import Car
@@ -28,7 +29,7 @@ getCarRunOrder = """select carid from runorder where eventid=:eventid and course
 				select rungroup from runorder where eventid=:eventid and carid=:carid
 				) order by row"""
 
-getEntrant = """select d.firstname, d.lastname, c.*
+getEntrant = """select d.firstname, d.lastname, d.alias, c.*
 				from drivers as d, cars as c
 				where c.driverid=d.id and c.id=:carid """
 
@@ -36,6 +37,20 @@ getStatus = """select re.diff, re.position, ru.*
 				from eventresults as re, runs as ru 
 				where re.carid=:carid and re.eventid=:eventid and 
 				ru.carid=:carid and ru.eventid=:eventid and ru.norder=1"""
+
+
+class ModifiableWrapper(object):
+	""" Change RowProxy into something we reference the same way but can also modify """
+	def __init__(self, items):
+		self.__dict__ = dict(items)
+
+
+def getNextCarIdInOrder(session, event, carid):
+	order = [x.carid for x in session.execute(getCarRunOrder, params={'eventid':event.id, 'carid':carid, 'course':1}).fetchall()]
+	for ii, row in enumerate(order):
+		if row == carid:
+			return order[(ii+1)%len(order)]
+
 
 def loadNextRunOrder(session, event, carid):
 	order = [x.carid for x in session.execute(getCarRunOrder, params={'eventid':event.id, 'carid':carid, 'course':1}).fetchall()]
@@ -48,11 +63,15 @@ def loadNextRunOrder(session, event, carid):
 				carid = order[jj%size]
 				entrant = session.execute(getEntrant, params={'carid':carid})
 				result = session.execute(getStatus, params={'eventid':event.id, 'carid':carid})
-				ret.append((entrant.fetchone(),result.fetchone()))
+				ret.append((ModifiableWrapper(entrant.fetchone()),result.fetchone()))
 				entrant.close()
 				result.close()
 			break
 
+	for (entrant, result) in ret:
+		if entrant.alias and not config['nwrsc.private']:
+			entrant.firstname = entrant.alias
+			entrant.lastname = ""
 	return ret
 
 

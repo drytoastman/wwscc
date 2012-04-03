@@ -69,14 +69,13 @@ padding: 0;
 <br style='clear:both;'/>
 
 
+%if c.event.getSegmentCount() > 0:
 <h3>Other Top Times Lists</h3>
 <ul class='classlist'>
-%if c.event.getSegmentCount() > 0:
 <li><a href='${h.url_for(action='topseg')}'>Segment</a></li>
-%endif
-<li><a href='${h.url_for(action='topreport')}'>All Lists</a></li>
 </ul>
 <br style='clear:both;'/>
+%endif
 
 
 <h3>Other</h3>

@@ -1,6 +1,7 @@
 <%def name="driverform(action=None, method='POST', driver=None)">
 
 <style>
+#drivererror { margin: auto; text-align: center; }
 #drivereditor input { width: 100%; }
 #drivereditor th { padding-left: 14px; padding-right: 5px; }
 #drivereditor th, #drivereditor td { text-align: right; font-weight: normal; }
@@ -20,9 +21,8 @@
 %>
 
 <form id='drivereditor' ${addition}>
-<input name='driverid' type='hidden' value='-1'/>
-<table>
-<tbody>
+<div id='drivererror'></div> <input name='driverid' type='hidden' value='-1'/>
+<table> <tbody>
 
 <tr id='namerow'>
 <th>First Name</th>

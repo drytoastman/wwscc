@@ -1,6 +1,6 @@
 <%inherit file="base.mako" />
 
-<h3>Series Settings</h3>
+<h2>Series Settings</h2>
 
 <form method=post enctype="multipart/form-data" action="${c.action}">
 <table class='form'>
@@ -55,13 +55,13 @@
 <td><input type="checkbox" name="locked" ${c.settings.locked and "checked"} /></td>
 </tr>
 		
-<tr>
+<tr title="Image used at the top of the registration site">
 <th>Sponsor Image</th>
 <td><input type=file name="sponsorimage"></td>
 <td><img src='${h.url_for(controller='db', name='sponsorimage', eventid=None, action='nocache')}' height="40" /></td>
 </tr>
 
-<tr>
+<tr title="Image used at the top of the registration site">
 <th>Series Image</th>
 <td><input type=file name="seriesimage"></td>
 <td><img src='${h.url_for(controller='db', name='seriesimage', eventid=None, action='nocache')}' height="40" /></td>
@@ -81,8 +81,7 @@
 </form>
 
 
-<br/>
-<h3>Template Code</h3>
+<h2>Template Code</h2>
 <ul id='templatelist'>
 <li><a target='_blank' href='${h.url_for(action='editor', name='classresult.mako')}'>Class Tables</a>
 <li><a target='_blank' href='${h.url_for(action='editor', name='toptimes.mako')}'>Top Times List</a>

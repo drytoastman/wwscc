@@ -4,7 +4,7 @@
 <style>
 #login { margin-left: 20px; margin-top: 20px; }
 #login th { text-align: right; }
-#submit { margin-left: 200px; margin-top: 10px; font-size: 0.8em; }
+#loginsubmit { margin-left: 230px; margin-top: 10px; font-size: 0.8em; }
 </style>
 
 
@@ -20,10 +20,10 @@
 
 <div id='submit'>
 <input type="submit" value="Login" id='loginsubmit'/>
-<button id='newbutton'>New Driver</button>
 </div>
 </form>
 
+<!--<button id='newbutton'>New Driver</button>-->
 ${driverform(action=h.url_for(action='newprofile'), method='POST')}
 
 <script>

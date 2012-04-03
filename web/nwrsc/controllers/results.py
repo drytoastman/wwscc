@@ -36,6 +36,8 @@ class ResultsController(BaseController):
 		c.seriesname = self.settings.seriesname
 		c.stylesheets = []
 		c.javascript = []
+		c.ismobile = False  # what to do about this one
+
 		if self.database is not None:
 			c.stylesheets.append(url_for(controller='db', name='results.css', eventid=None))
 			self.eventid = self.routingargs.get('eventid', None)
@@ -61,8 +63,8 @@ class ResultsController(BaseController):
 	def byclass(self):
 		c.title = 'Results for Class %s' % (request.str_GET['list'])
 		c.header = '<h2>%s</h2>' % (c.title)
-		return self._classresults(request.str_GET['list'].split(','))
-
+		c.results = getClassResults(self.session, c.event, c.classdata, request.str_GET['list'].split(','))
+		return render_mako('db:classresult.mako')
 
 	@checklist
 	def bygroup(self):
@@ -75,18 +77,25 @@ class ResultsController(BaseController):
 					.filter(RunOrder.course == course) \
 					.filter(RunOrder.rungroup.in_(list)) \
 					.all()
-		return self._classresults([x.classcode for x in codes])
+		c.results = getClassResults(self.session, c.event, c.classdata, [x.classcode for x in codes])
+		return render_mako('db:classresult.mako')
 
 	def all(self):
 		c.title = 'Results for All Classes'
 		c.header = '<h2>Results for All Classes</h2>'
-		return self._classresults([cls.code for cls in c.active])
+		c.results = getClassResults(self.session, c.event, c.classdata, [cls.code for cls in c.active])
+		return render_mako('db:classresult.mako')
 
 
 	def post(self):
 		c.results = getClassResults(self.session, c.event, c.classdata, [cls.code for cls in c.active])
 		c.entrantcount = sum([len(data) for code,data in c.results.iteritems()])
-		c.toptimes = self._loadTopIndexTimes() + self._loadTopTimes() + self._loadTopIndexTimes(True) + self._loadTopTimes(True)
+
+		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
+		c.toptimes.backAppend(False, False, 0) # self._loadTopIndexTimes()
+		c.toptimes.backAppend(False, True, 0)  # self._loadTopTimes()
+		c.toptimes.backAppend(True, False, 0) # self._loadTopIndexTimes(True)
+		c.toptimes.backAppend(True, True, 0)  # self._loadTopTimes(True)
 		return render_mako('db:event.mako')
 
 
@@ -165,31 +174,31 @@ class ResultsController(BaseController):
 		return render_mako('/results/grid.mako')
 
 
-	def topreport(self):
-		c.toptimes = self._loadTopTimes() + self._loadTopIndexTimes()
-		if c.event.getCountedRuns() < c.event.runs:
-			c.toptimes += self._loadTopTimes(True) + self._loadTopIndexTimes(True)
-		return render_mako('db:toptimes.mako')
-
 	def topindex(self):
-		c.toptimes = self._loadTopIndexTimes()
+		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
+		c.toptimes.backAppend(False, False, 0) # self._loadTopIndexTimes()
 		return render_mako('db:toptimes.mako')
 
 	def topindexall(self):
-		c.toptimes = self._loadTopIndexTimes(True)
+		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
+		c.toptimes.backAppend(True, False, 0) # self._loadTopIndexTimes(True)
 		return render_mako('db:toptimes.mako')
 
 	def topraw(self):
-		c.toptimes = self._loadTopTimes()
+		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
+		c.toptimes.backAppend(False, True, 0)  # self._loadTopTimes()
 		return render_mako('db:toptimes.mako')
 
 	def toprawall(self):
-		c.toptimes = self._loadTopTimes(True)
+		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
+		c.toptimes.backAppend(True, True, 0)  # self._loadTopTimes(True)
 		return render_mako('db:toptimes.mako')
 
+	"""
 	def topseg(self):
-		c.toptimes = self._loadTopSegTimes()
+		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
 		return render_mako('db:toptimes.mako')
+	"""
 
 
 	def champ(self):
@@ -278,33 +287,4 @@ class ResultsController(BaseController):
 		return render_mako('/challenge/dialins.mako')
 
 
-	def _loadTopTimes(self, all=False):
-		times = []
-		times.append(loadTopRawTimes(self.session, c.event, c.classdata, all))
-		if c.event.courses > 1:
-			for ii in range(c.event.courses):
-				times.append(loadTopCourseRawTimes(self.session, c.event, ii+1, c.classdata, all))
-		return times
-
-	def _loadTopIndexTimes(self, all=False):
-		times = []
-		times.append(loadTopNetTimes(self.session, c.event, c.classdata, all))
-		if c.event.courses > 1:
-			for ii in range(c.event.courses):
-				times.append(loadTopCourseNetTimes(self.session, c.event, ii+1, c.classdata, all))
-		return times
-
-
-	def _loadTopSegTimes(self):
-		times = []
-		for ii in range(c.event.courses):
-			for jj in range(c.event.getSegmentCount()):
-				times.append(loadTopSegRawTimes(self.session, c.event, ii+1, jj+1, c.classdata))
-		return times
-
-
-	def _classresults(self, codes):
-		c.results = getClassResults(self.session, c.event, c.classdata, codes)
-		c.ismobile = False
-		return render_mako('db:classresult.mako')
 

@@ -4,25 +4,24 @@
 
 <%def name="dorow(ii, field)" filter="singleline">
 <tr>
-<td><input type="text" name="fieldlist-${ii}.name" value="${field.name}" size="10" /></td>
-<td><input type="text" name="fieldlist-${ii}.title" value="${field.title}" size="10" /></td>
-<td><input type="text" name="fieldlist-${ii}.type" value="${field.type}" size="6" /></td>
+<td><input type="text" name="fieldlist-${ii}.name" value="${field.name}" size="20" /></td>
+<td><input type="text" name="fieldlist-${ii}.title" value="${field.title}" size="20" /></td>
+<!-- <td><input type="text" name="fieldlist-${ii}.type" value="${field.type}" size="6" /></td> -->
 <td><button class="small deleterow">Del</button></td>
 </tr>
 </%def>
 
-<h3>Driver Fields Editor</h3>
+<h2>Driver Fields Editor</h2>
 
 <p>
-Any extra fields in this list will be available as extra fields for each driver entry.
+Any extra fields in this list will be available as extra fields for each driver entry.<br/>
+Eventually there may be a field type and data validation but not yet.
+</p>
 
 <table>
 <tr><th>Name</th><td>The field name stored in the database</td></tr>
 <tr><th>Title</th><td>The field title as displayed in dialogs or forms</td></tr>
-<tr><th>Type</th><td>The field type (unused at this point, assumes string)</td></tr>
 </table>
-
-</p>
 
 <p></p>
 
@@ -32,7 +31,7 @@ Any extra fields in this list will be available as extra fields for each driver 
 <tr>
 <th>Name</th>
 <th>Title</th>
-<th>Type</th>
+<!-- <th>Type</th> -->
 </tr>
 
 <% ii = 0 %>

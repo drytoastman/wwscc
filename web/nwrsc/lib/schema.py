@@ -47,8 +47,8 @@ class DriverFieldSchema(Schema):
 	allow_extra_fields = True
 	filter_extra_fields = True
 	name = String(not_empty=True)
-	type = String(not_empty=True)
 	title = String(not_empty=True)
+	type = String()
 
 class DriverFieldListSchema(Schema):
 	pre_validators = [NestedVariables()] 

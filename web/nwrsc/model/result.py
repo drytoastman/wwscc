@@ -1,7 +1,6 @@
 from math import ceil
 from runs import Run
 from pylons import config
-from paste.deploy.converters import asbool
 
 class Result(object):
 	""" Contains driver name, car description, overall result and 2D array of runs by course and run # """
@@ -66,16 +65,12 @@ classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.index
 
 def getClassResultsShort(session, event, cls):
 	ret = []
-	#lasttime = 0
-
 	for row in session.execute(classResult % (event.id, "'%s'" % cls.code)):
 		ret.append(Result(row, None))
 
 	trophydepth = ceil(len(ret) / 3.0)
 	for ii, result in enumerate(ret):
 		result.trophy = (cls.eventtrophy) and (ii < trophydepth)
-#		if result.updated > lasttime:
-#			lasttime = result.updated
 
 	return ret #, lasttime)
 
@@ -144,7 +139,72 @@ class TopTimesList(object):
 		self.rows.append((firstname + " " + lastname,) + vals)
 
 
-def loadTopSegRawTimes(session, event, course, seg, classdata):
+class TopTimesStorage(object):
+
+	def __init__(self, session, event, classdata):
+		self.session = session
+		self.event = event
+		self.classdata = classdata
+	
+		if self.event.courses > 1:
+			coursecnt = self.event.courses + 1
+		else:
+			coursecnt = 1  # all courses == course 1
+
+		# first tuple is allruns vs counted runs
+		# next tuple is raw times vs net times
+		# last step is a list with 0=all_courses, 1=course1, ...
+		self.store = (([None]*coursecnt, [None]*coursecnt), ([None]*coursecnt, [None]*coursecnt))  
+
+		self.segs = [[None]*self.event.getSegmentCount()]*self.event.courses
+
+		self.back = list()
+
+
+	# for backwards compatibility with what old templates where getting
+	def __getitem__(self, key):
+		""" call list with backAppend arguments """
+		return self.getList(*self.back[key])
+
+	def __len__(self):
+		""" just return length of back appended list """
+		return len(self.back)
+
+	def __iter__(self):
+		""" Allow iteration as we are backwards compatible with list """
+		for ii in range(len(self.back)):
+			yield self[ii]
+
+	def backAppend(self, allruns=False, raw=False, course=0):
+		""" Save the arguments to use at the next index """
+		self.back.append((allruns, raw, course))
+		
+	def getList(self, allruns=False, raw=False, course=0):
+		if self.store[allruns][raw][course] is None:
+			if course == 0:
+				if raw:
+					ttl = loadTopRawTimes(self.session, self.event, self.classdata, allruns)
+				else:
+					ttl = loadTopNetTimes(self.session, self.event, self.classdata, allruns)
+			else:
+				if raw:
+					ttl = loadTopCourseRawTimes(self.session, self.event, self.course, self.classdata, allruns)
+				else:
+					ttl = loadTopCourseNetTimes(self.session, self.event, self.course, self.classdata, allruns)
+	
+			self.store[allruns][raw][course] = ttl
+
+		return self.store[allruns][raw][course]
+
+
+	def getSegmentList(self, course, seg):
+		if self.segs[course][seg] is None:
+			self.segs[course][seg] = loadTopSegRawTimes(self.session, self.event, course, seg)
+		return self.segs[course][seg]
+	
+
+
+def loadTopSegRawTimes(session, event, course, seg):
 	getcol = ", MIN(r.seg%d) as toptime " % (seg)
 	topSegRaw = top1 + getcol + top2 + " and r.course=:course and r.seg%d > %d group by r.carid order by toptime " % (seg, event.getSegments()[seg-1])
 
@@ -154,8 +214,8 @@ def loadTopSegRawTimes(session, event, course, seg, classdata):
 	return ttl
 			
 
-def loadTopCourseRawTimes(session, event, course, classdata, all=False):
-	if all:
+def loadTopCourseRawTimes(session, event, course, classdata, allruns=False):
+	if allruns:
 		sql = topCourseRawAll
 	else:
 		sql = topCourseRaw
@@ -166,8 +226,8 @@ def loadTopCourseRawTimes(session, event, course, classdata, all=False):
 	return ttl
 		
 
-def loadTopCourseNetTimes(session, event, course, classdata, all=False):
-	if all:
+def loadTopCourseNetTimes(session, event, course, classdata, allruns=False):
+	if allruns:
 		sql = topCourseNetAll
 	else:
 		sql = topCourseNet
@@ -180,28 +240,28 @@ def loadTopCourseNetTimes(session, event, course, classdata, all=False):
 	return ttl
 
 
-def loadTopRawTimes(session, event, classdata, all=False):
-	if all:
+def loadTopRawTimes(session, event, classdata, allruns=False):
+	if allruns:
 		sql = topRawAll
+		title = "Top Times (All)"
 	else:
 		sql = topRaw
+		title = "Top Times (Counted)"
 
-	title = "Top Times"
-	if all: title += " (All Runs)"
 	ttl = TopTimesList(title, "Name", "Class", "Time")
 	for row in session.execute(sql, params={'eventid':event.id,'conepen':event.conepen,'gatepen':event.gatepen}):
 		ttl.add(row, row.classcode, "%0.3f" % row.toptime)
 	return ttl
 
 
-def loadTopNetTimes(session, event, classdata, all=False):
-	if all:
+def loadTopNetTimes(session, event, classdata, allruns=False):
+	if allruns:
 		sql = topNetAll
+		title = "Top Index Times (All)"
 	else:
 		sql = topNet
+		title = "Top Index Times (Counted)"
 
-	title = "Top Index Times"
-	if all: title += " (All Runs)"
 	ttl = TopTimesList(title, "Name", "Index", "", "Time")
 	for row in session.execute(sql, params={'eventid':event.id}):
 		eis = classdata.getIndexStr(row.classcode, row.indexcode)

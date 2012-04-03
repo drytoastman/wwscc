@@ -15,9 +15,6 @@ log = logging.getLogger(__name__)
 class AnnouncerController(BaseController):
 
 	def __before__(self):
-		if not config['nwrsc.private']:
-			raise BeforePage("Announcer currently only available if server is configured private")
-
 		self.eventid = self.routingargs.get('eventid', None)
 		if self.eventid:
 			c.event = self.session.query(Event).get(self.eventid)
@@ -36,33 +33,45 @@ class AnnouncerController(BaseController):
 
 	@jsonify
 	def last(self):
+		"""
+			Get the timestamps of the last 2 updated run entries, announcer panel periodically calls this
+			to see if there is any real data to get
+		"""
 		timestamp = datetime.fromtimestamp(int(request.GET.get('time', 0)))
 		data = [{'updated':time.mktime(row[0].timetuple()), 'carid':row[1]} \
 				for row in self.session.query(EventResult.updated, EventResult.carid)\
 				.filter(EventResult.eventid==self.eventid).filter(EventResult.updated > timestamp)\
-				.order_by(EventResult.updated.desc()).limit(4).all()]
+				.order_by(EventResult.updated.desc()).limit(2).all()]
 		return {'data': data}
 
 
 	def runorder(self):
+		"""
+			Returns the HTML to render the NextToFinish box
+		"""
 		c.order = loadNextRunOrder(self.session, c.event, int(request.GET.get('carid', 0)))
 		return render_mako('/announcer/runorder.mako')
 
 
 	@jsonify
 	def toptimes(self):
+		"""
+			Returns the top times tables that are shown in the announer panel
+		"""
 		c.classdata = ClassData(self.session)
 		c.highlight = int(request.GET.get('carid', 0))
 
 		ret = {}
 		ret['updated'] = int(request.GET.get('updated', 0)) # Return it
 
-		c.title = "Raw"
-		c.toptimes = loadTopRawTimes(self.session, c.event, c.classdata)
+		tts = TopTimesStorage(self.session, c.event, c.classdata)
+
+		c.toptimes = tts.getList(allruns=False, raw=True, course=0)
+		c.toptimes.title = "Raw"
 		ret['topraw'] = render_mako('/announcer/toptimes.mako').replace('\n', '')
 
-		c.title = "Net"
-		c.toptimes = loadTopNetTimes(self.session, c.event, c.classdata)
+		c.toptimes = tts.getList(allruns=False, raw=False, course=0)
+		c.toptimes.title = "Net"
 		ret['topnet'] = render_mako('/announcer/toptimes.mako').replace('\n', '')
 
 		if c.event.getSegmentCount() > 0:
@@ -74,12 +83,25 @@ class AnnouncerController(BaseController):
 		return ret
 
 
+	def nexttofinish(self):
+		carid = getNextCarIdInOrder(self.session, c.event, int(request.GET.get('carid', 0)))
+		return self._results(carid)
+
+
+	def results(self):
+		return self._results(int(request.GET.get('carid', 0)))
+
 
 	@jsonify
-	def results(self):
-		carid = int(request.GET.get('carid', 0))
-
+	def _results(self, carid):
+		"""
+			Returns the collection of tables shown for a single entrant
+		"""
 		(c.driver,c.car) = self.session.query(Driver,Car).join('cars').filter(Car.id==carid).first()
+		if c.driver.alias and not config['nwrsc.private']:
+			c.driver.firstname = c.driver.alias
+			c.driver.lastname = ""
+
 		c.cls = self.session.query(Class).filter(Class.code==c.car.classcode).first()
 		c.highlight = carid
 		c.marker = time.strftime('%I:%M:%S')

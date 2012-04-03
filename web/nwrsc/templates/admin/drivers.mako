@@ -2,7 +2,13 @@
 <%namespace file="/forms/carform.mako" import="carform"/>
 <%namespace file="/forms/driverform.mako" import="driverform"/>
 
-<h3>Driver Editor</h3>
+<h2>Driver Editor</h2>
+
+<p>
+Select a single driver from the list to edit their information or merge cars.<br/>
+Select multiple drivers from the list to merge the drivers together.<br/>
+Enter text above the driver list to filter the visible list.<br/>
+</p>
 
 <style>
 .ui-dialog { font-size: 0.75em !important; }

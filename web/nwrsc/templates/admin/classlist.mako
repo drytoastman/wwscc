@@ -42,7 +42,7 @@
 </tr>
 </%def>
 
-<h3>Class Editor</h3>
+<h2>Class Editor</h2>
 
 <p>
 Each class has a short code and a full string description.  The description is optional.  The settings available are:

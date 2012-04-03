@@ -84,11 +84,19 @@ function moveresults(from, to)
 	$(to).attr('updated', $(from).attr('updated'));
 }
 
+function processNext(json)
+{
+	if (json.updated > $('#nexte').attr('updated'))
+	{
+		$('#nexte').html(json.entrantresult);
+		$('#nexte').attr('updated', json.updated);
+	}
+}
+
 function processResults(json)
 {
 	if (json.updated > $('#firste').attr('updated'))
 	{
-		moveresults('#seconde', '#thirde');
 		moveresults('#firste', '#seconde');
 		$('#firste').html(json.entrantresult);
 		$('#firste').attr('updated', json.updated);
@@ -96,14 +104,8 @@ function processResults(json)
 	}
 	else if (json.updated > $('#seconde').attr('updated'))
 	{
-		moveresults('#seconde', '#thirde');
 		$('#seconde').html(json.entrantresult);
 		$('#seconde').attr('updated', json.updated);
-	}
-	else if (json.updated > $('#thirde').attr('updated'))
-	{
-		$('#thirde').html(json.entrantresult);
-		$('#thirde').attr('updated', json.updated);
 	}
 }
 
@@ -131,6 +133,7 @@ function processLast(json)
 		}
 		$('#runorder').load('${h.url_for(action='runorder')}?carid='+json.data[0].carid);
 		$.getJSON('${h.url_for(action='toptimes')}', json.data[0],  processTopTimes);
+		$.getJSON('${h.url_for(action='nexttofinish')}', json.data[0],  processNext);
 	}
 }
 
@@ -160,13 +163,13 @@ $(document).ready(function(){
 
 <div id="entranttabs">
     <ul>
+        <li><a href="#nexte"><span>Next to Finish</span></a></li>
         <li><a href="#firste"><span>Last to Finish</span></a></li>
         <li><a href="#seconde"><span>Second to Last</span></a></li>
-        <li><a href="#thirde"><span>Third to Last</span></a></li>
     </ul>
+    <div id="nexte" updated='0'></div>
     <div id="firste" updated='0'></div>
     <div id="seconde" updated='0'></div>
-    <div id="thirde" updated='0'></div>
 </div>
 
 </td><td>

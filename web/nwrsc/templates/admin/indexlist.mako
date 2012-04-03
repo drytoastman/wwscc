@@ -1,6 +1,6 @@
 <%inherit file="base.mako" />
 
-<h3>Index Editor</h3>
+<h2>Index Editor</h2>
 
 <form action="${c.action}" method="post">
 <table id='indextable'>

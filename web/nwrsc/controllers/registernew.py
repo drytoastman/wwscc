@@ -83,7 +83,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 				redirect(url_for(action=''))
 
 		self.user['previouserror'] =  """Couldn't find a match for your information, try again.<br>
-				If you have never registered before, you can <a href='%s'>create a new profile</a>""" % url_for(action='new')
+				If you have never registered before, you can <a href='javascript;' onclick='editdriver(-1); return false;'>create a new profile</a>""" 
 		session.save()
 		redirect(url_for(action='login'))
 

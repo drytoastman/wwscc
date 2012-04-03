@@ -1,5 +1,5 @@
 <%inherit file="base.mako" />
-<h3>Event Editor</h3>
+<h2>Event Editor</h2>
 
 <form id="eventForm" action="${c.action}" method="post">
 <table class="form">
@@ -124,9 +124,10 @@
 </tr>
 
 <tr>
+<th></th>
 <td>
-<button id='showall' onclick='return showallevent();'>Show All</button>
-<button id='hideadv' class='advanced' onclick='return hideadvevent();'>Hide Extra</button>
+<button id='showall' onclick='return showallevent();'>Show All Options</button>
+<button id='hideadv' class='advanced' onclick='return hideadvevent();'>Hide Extra Options</button>
 <input type='submit' value="${c.button}">
 </td>
 </tr>
