@@ -4,6 +4,7 @@ Provides the BaseController class for subclassing.
 """
 from pylons.controllers import WSGIController
 from pylons import config, request
+from webob.exc import HTTPNotFound
 
 from nwrsc.model import Session, metadata, Settings, Data, SCHEMA_VERSION
 from nwrsc.model.conversions import convert as dbconversion
@@ -78,11 +79,15 @@ class BaseController(WSGIController):
 		self.srcip = request.environ.get("X_FORWARDED_FOR", request.environ["REMOTE_ADDR"]) 
 		self.routingargs = environ['wsgiorg.routing_args'][1]
 		self.database = self.routingargs.get('database', None)
-		dbpath = self._findDatabase()
-		if dbpath is not None:
-			engine = create_engine('sqlite:///%s' % dbpath, poolclass=NullPool)
-		else:
+
+		if self.database is None:  # no database specified yet, allow selection later by controller
 			engine = create_engine('sqlite:///:memory:', poolclass=NullPool)
+		else:
+			dbpath = self._findDatabase()
+			if dbpath is not None:
+				engine = create_engine('sqlite:///%s' % dbpath, poolclass=NullPool)
+			else:
+				return HTTPNotFound()
 
 		self.session = Session()
 		self.session.bind = engine

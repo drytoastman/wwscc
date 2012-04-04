@@ -179,7 +179,7 @@ class TopTimesStorage(object):
 		""" Save the arguments to use at the next index """
 		self.back.append((allruns, raw, course))
 		
-	def getList(self, allruns=False, raw=False, course=0):
+	def getList(self, allruns=False, raw=False, course=0, settitle=None):
 		if self.store[allruns][raw][course] is None:
 			if course == 0:
 				if raw:
@@ -194,6 +194,8 @@ class TopTimesStorage(object):
 	
 			self.store[allruns][raw][course] = ttl
 
+		if settitle is not None:
+			self.store[allruns][raw][course].title = settitle
 		return self.store[allruns][raw][course]
 
 

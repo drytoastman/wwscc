@@ -22,13 +22,36 @@ class ErrorController(BaseController):
 	ErrorDocuments middleware in your config/middleware.py file.
 	
 	"""
+
+	error_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Server Error %(code)s</title>
+<style type="text/css">
+        .red {
+            color:#FF0000;
+        }
+        .bold {
+            font-weight: bold;
+        }
+</style>
+</head>
+<body>
+    <div id="container">
+        %(message)s
+    </div>
+</body>
+</html>
+
+	"""
+
 	def document(self):
 		"""Render the error document"""
 		req = request.environ.get('pylons.original_request')
 		resp = request.environ.get('pylons.original_response')
 		log.info("Processing error for %s - %s" % (req.url, resp.status))
 		content = literal(resp.body) or cgi.escape(request.GET.get('message', ''))
-		page = error_document_template % \
+		page = self.error_template % \
 			dict(prefix=request.environ.get('SCRIPT_NAME', ''),
 				 code=cgi.escape(request.GET.get('code', str(resp.status_int))),
 				 message=content)
