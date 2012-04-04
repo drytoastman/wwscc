@@ -488,6 +488,10 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 		currentdr = set()
 		for x in self.session.query(Run.carid):
 			currentcar.add(x.carid)
+		for x in self.session.query(Registration.carid):
+			currentcar.add(x.carid)
+
+		currentcar.discard(None)
 
 		for y in self.session.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, currentcar)))):
 			currentdr.add(y[0])
