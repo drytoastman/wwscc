@@ -35,11 +35,11 @@ Source: "web\installer\XYNTService.ini"; DestDir: "{app}"; Flags: ignoreversion;
 Source: "web\installer\nwrsc.ini"; DestDir: "{userdocs}\nwrsc"; Flags: ignoreversion; Components: python
 
 [Icons]
-Name: "{group}\DataEntry"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar DataEntry";  WorkingDir: "{app}\java"; Components: java
-Name: "{group}\Registration"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar Registration";  WorkingDir: "{app}\java"; Components: java
-Name: "{group}\BW Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar BWTimer";  WorkingDir: "{app}\java"; Components: java
-Name: "{group}\Pro Timer"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ProTimer";  WorkingDir: "{app}\java"; Components: java
-Name: "{group}\Challenge"; Filename: "javaw"; Parameters: "-jar wwsccapps.jar ChallengeGUI";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\DataEntry"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar DataEntry";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\Registration"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar Registration";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\BW Timer"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar BWTimer";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\Pro Timer"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar ProTimer";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\Challenge"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar ChallengeGUI";  WorkingDir: "{app}\java"; Components: java
 Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}\java"; Components: java
 
 [Registry]
@@ -61,6 +61,15 @@ Filename: "{app}\XYNTService.exe"; Parameters: "-k NWRSc"; Components: python
 Filename: "{app}\XYNTService.exe"; Parameters: "-u"; Components: python
 
 [Code]
+
+var
+  JavaPath: string;
+
+function getJavaPath(Param: String): String;
+begin
+  Result := JavaPath + '\bin';
+end;
+
 function InitializeSetup(): Boolean;
 var
  ErrorCode: Integer;
@@ -82,6 +91,7 @@ begin
    begin
     if ( Versions[I][2]='.' ) and ( ( StrToInt(Versions[I][1]) > 1 ) or ( ( StrToInt(Versions[I][1]) = 1 ) and ( StrToInt(Versions[I][3]) >= 6 ) ) ) then
     begin
+     RegQueryStringValue(HKLM, 'SOFTWARE\JavaSoft\Java Runtime Environment\'+Versions[I], 'JavaHome', JavaPath);
      JavaInstalled := true;
     end else
     begin

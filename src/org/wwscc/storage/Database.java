@@ -11,6 +11,7 @@ package org.wwscc.storage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -130,18 +131,27 @@ public class Database
 		throw new CancelException();
 	}
 
+	/**
+	 * Download a database and open a database using a remote server (specified by the user).
+	 * @param lockServerSide true to required an unlocked database on the remote side and then lock it after downloading
+	 * @return the pointer to the new File object
+	 */
 	public static File download(boolean lockServerSide)
 	{
 		try
 		{
 			RemoteHTTPConnection conn = new RemoteHTTPConnection(getHost());
-			List<String> available[] = conn.getAvailableForCheckout();
+			Map<String, List<String>> available = conn.getAvailableForCheckout();
+			List<String> list = available.get("unlocked");
+			if (!lockServerSide)
+				list.addAll(available.get("locked"));
+			
 			String dbname = (String)JOptionPane.showInputDialog(null,
 						lockServerSide ? "Select the file to check out" : "Select the file to download",
 						lockServerSide ? "Checkout Database" : "Download Database",
 						JOptionPane.PLAIN_MESSAGE,
 						null, 
-						lockServerSide ? available[0].toArray() : available[2].toArray(),
+						list.toArray(),
 						null);
 			if (dbname == null)
 				return null;

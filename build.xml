@@ -36,7 +36,7 @@
             </filterchain>
         </copy>
 
-		<exec executable="c:/Program Files/Inno Setup 5/iscc.exe" osfamily="Windows">
+		<exec executable="c:/Program Files (x86)/Inno Setup 5/iscc.exe" osfamily="Windows">
 			<arg line="${issname}"/>
 		</exec>
 

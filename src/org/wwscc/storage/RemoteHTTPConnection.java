@@ -18,7 +18,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
@@ -211,13 +215,19 @@ public class RemoteHTTPConnection
 		return basicRequest(new URL(String.format("http://%s/dbserve/%s/sqlmap", host, dbname)), "POST", "text/plain", data);
 	}
 
+	
+	/**
+	 * Get the list of available databases on the server.  The return value map contains keys based
+	 * on the status of the database, currently "locked" or "unlocked".
+	 * @return a map of status to lists of names
+	 * @throws IOException
+	 */
 	@SuppressWarnings("unchecked")
-	public List<String>[] getAvailableForCheckout() throws IOException
+	public Map<String, List<String>> getAvailableForCheckout() throws IOException
 	{
-		List<String>[] ret = new List[3];
-		ret[0] = new ArrayList<String>(); // unlocked
-		ret[1] = new ArrayList<String>(); // locked
-		ret[2] = new ArrayList<String>(); // all
+		Map<String, List<String>> ret = new HashMap<String, List<String>>();
+		ret.put("unlocked", new ArrayList<String>());
+		ret.put("locked", new ArrayList<String>());
 
 		monitor = new ProgressMonitor(null, "getAvailable", "Connecting...", 0, Integer.MAX_VALUE);
 		monitor.setMillisToDecideToPopup(0);
@@ -226,19 +236,28 @@ public class RemoteHTTPConnection
 		for (String db : data.split("\n"))
 		{
 			String[] parts = db.split("\\s+");
-			if (parts.length != 2)
+			if (parts.length < 3)
 			{
-				log.info("Invalid data from available: " + db);
+				log.log(Level.INFO, "Invalid data from available: {0}", db);
 				continue;
 			}
-
-			ret[2].add(parts[0]);
-			if (parts[1].trim().equals("0"))
-				ret[0].add(parts[0]);
+			
+			String name = parts[0];
+			boolean locked = parts[1].trim().equals("1");
+			boolean archived = parts[2].trim().equals("1");
+			
+			if (archived)
+				continue;
+			
+			if (!locked)
+				ret.get("unlocked").add(name);
 			else
-				ret[1].add(parts[0]);
+				ret.get("locked").add(name);
 		}
 
+		for (List<String> list : ret.values())
+			Collections.sort(list);
+		
 		return ret;
 	}
 

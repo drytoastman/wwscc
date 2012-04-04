@@ -87,7 +87,7 @@ class DbserveController(BaseController):
 				self.settings = Settings()
 				self.settings.load(self.session)
 				name = os.path.splitext(os.path.basename(file))[0] 
-				data += "%s %s\n" % (name, self.settings.locked and "1" or "0")
+				data += "%s %s %s\n" % (name, self.settings.locked and "1" or "0", self.settings.archived and "1" or "0")
 				self.session.close()
 			except Exception, e:
 				log.error("available error with %s (%s) " % (file,e))
