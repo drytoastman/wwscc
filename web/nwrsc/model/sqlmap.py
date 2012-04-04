@@ -25,7 +25,7 @@ sqlmap = {
 'GETDRIVERSBYFIRST':'select * from drivers where firstname like :h1 order by firstname,lastname',
 'GETDRIVERSBYLAST':'select * from drivers where lastname like :h1 order by firstname,lastname',
 'GETEVENTENTRANTS':'select distinct d.firstname as firstname,d.lastname as lastname,c.* from runs as r, cars as c, drivers as d where r.carid=c.id AND c.driverid=d.id and r.eventid=:h1',
-'GETEVENTRESULTSBYCLASS':'select d.firstname,d.lastname,c.indexcode,r.position,r.courses,r.sum,r.diff,r.points,r.ppoints,r.updated from eventresults as r, cars as c, drivers as d where r.carid=c.id and c.driverid=d.id and r.classcode=:h1 and r.eventid=:h2 order by position',
+'GETEVENTRESULTSBYCLASS':'select d.firstname,d.lastname,c.id as carid,c.indexcode,r.position,r.courses,r.sum,r.diff,r.points,r.ppoints,r.updated from eventresults as r, cars as c, drivers as d where r.carid=c.id and c.driverid=d.id and r.classcode=:h1 and r.eventid=:h2 order by position',
 'GETEVENTS':'select * from events order by date',
 'GETEXTRA':'select name,value from driverextra where driverid=:h1',
 'GETINDEXES':'select * from indexlist',
