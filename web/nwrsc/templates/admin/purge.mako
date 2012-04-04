@@ -1,4 +1,5 @@
 <%inherit file="base.mako" />
+<% from operator import attrgetter %>
 
 <style>
 table.purge ul { margin: 0; padding: 0; list-style: none; }
@@ -16,19 +17,23 @@ This tool will purge unused drivers and cars from the current database by lookin
 You can also request that cars from the selected classes are purged regardless of their previous activity, such as Time Only classes.  Simply select the classes to purge and submit.  If series are only selected, the two purging processes are combined, previous activity and then class purge.
 </p>
 
+<p class='ui-state-error-text'>
+NOTE: Purge Classes removes EVERYONE from that class.  This is intended for time only classes.
+</p>
+
 <form action='${h.url_for(action='processPurge')}' method='post'>
 <table class='purge'>
 <tr><th>Search Series</th><th colspan='${int(len(c.classlist)/20)+1}'>Purge Classes</th></tr><tr>
 
 <td>
-%for f in c.files:
+%for f in sorted(c.files, key=str.lower):
 <input type='checkbox' name='s-${f}'/> ${f[:-3]}<br/>
 %endfor
 </td>
 
 <td>
 <ul>
-%for ii, cls in enumerate(c.classlist):
+%for ii, cls in enumerate(sorted(c.classlist, key=attrgetter('code'))):
 <li><input type='checkbox' name='c-${cls.code}'/> ${cls.code}</li>
 %if ((ii+1) % 20) == 0:
 </ul></td><td><ul>

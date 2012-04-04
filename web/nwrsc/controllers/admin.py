@@ -58,6 +58,9 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 				raise BeforePage(render_mako('/admin/locked.mako'))
 
 
+	def _tokenName(self, authid):
+		return "%s:%s" % (self.database, authid)
+
 	def _checkauth(self, eventid, event):
 		if self.srcip == '127.0.0.1':
 			c.isAdmin = True
@@ -69,9 +72,9 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 	
 		ipsession = session.setdefault(self.srcip, {})
 		tokens = ipsession.setdefault('authtokens', set())
-		c.isAdmin = 'series' in tokens
+		c.isAdmin = self._tokenName('series') in tokens
 		if event is not None:
-			if int(eventid) in tokens or 'series' in tokens:
+			if self._tokenName(eventid) in tokens or self._tokenName('series') in tokens:
 				return
 			c.request = "Need authentication token for %s" % event.name
 			raise BeforePage(render_mako('/admin/login.mako'))
@@ -95,11 +98,11 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 		tokens = ipsession.setdefault('authtokens', set())
 
 		if password == self.settings.password:
-			tokens.add('series')
+			tokens.add(self._tokenName('series'))
 
 		for event in c.events:
 			if password == event.password:
-				tokens.add(event.id)
+				tokens.add(self._tokenName(event.id))
 
 		session.save()
 		redirect(url_for(action=''))

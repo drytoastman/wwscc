@@ -10,16 +10,25 @@ log = logging.getLogger(__name__)
 class ConversionError(StandardError):
 	pass
 
+
+def row2dict(row):
+	args = dict() # why do they hate me so
+	for k,v in row.items():
+		args[str(k)] = v
+	return args
+
 def convert2011(session):
 	session.execute("ALTER TABLE classlist RENAME to oldclasslist")
 	metadata.tables['classlist'].create()
 
+	log.info("update classes")
 	# change classindexed/BOOLEAN to classindex/STRING
 	for row in session.execute("select * from oldclasslist"):
-		newclass = Class(**dict(row.items()))
+		newclass = Class(**row2dict(row))
 		newclass.classindex = row.classindexed and newclass.code or ''
 		session.add(newclass)
 	
+	log.info("update drivers")
 	session.execute("ALTER TABLE drivers RENAME TO olddrivers")
 	for index in metadata.tables['drivers'].indexes:
 		session.execute("DROP INDEX %s" % index.name)
@@ -28,8 +37,9 @@ def convert2011(session):
 	metadata.tables['driverfields'].create()
 
 	# change homephone->phone, delete workphone, move membership/clubs to extra
+	log.info("pull in old drivers table")
 	for row in session.execute("select * from olddrivers"):
-		newdriver = Driver(**dict(row.items()))
+		newdriver = Driver(**row2dict(row))
 		newdriver.phone = row.homephone
 		session.add(newdriver)
 
@@ -38,9 +48,11 @@ def convert2011(session):
 		if row.clubs is not None and len(row.clubs) > 0:
 			session.add(DriverExtra(driverid=row.id, name='clubs', value=row.clubs))
 
+	log.info("drop old drivers table")
 	session.execute("DROP TABLE oldclasslist")
 	session.execute("DROP TABLE olddrivers")
 
+	log.info("filter data")
 	classresults = session.query(Data).filter(Data.name=='classresult.mako').first()
 	classresults.data = re.sub('classindexed', 'classindex', classresults.data)
 
@@ -49,6 +61,7 @@ def convert2011(session):
 	cardpy.data = re.sub('homephone', 'phone', cardpy.data)
 	cardpy.data = re.sub('membership', "getExtra('membership')", cardpy.data)
 
+	log.info("update settings")
 	settings = Settings()
 	settings.load(session)  # also loads new default values
 	settings.schema = '20121'
