@@ -373,7 +373,6 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 	def newevent(self):
 		""" Process new event form submission """
 		ev = Event()
-		print self.form_result
 		self.copyvalues(self.form_result, ev)
 		self.session.add(ev)
 		self.session.commit()
@@ -484,39 +483,50 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 			elif k[0:2] == "s-":
 				searchseries.append(k[2:])
 
+		# All cars that have runs in this series
+		currentcar = set()
+		currentdr = set()
+		for x in self.session.query(Run.carid):
+			currentcar.add(x.carid)
+
+		for y in self.session.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, currentcar)))):
+			currentdr.add(y[0])
+
 		# All cars that have runs in any previous database
-		carids = set()
+		oldcarids = set()
 		for s in searchseries:
 			conn = sqlite3.connect(os.path.join(config['seriesdir'], s))
 			conn.row_factory = sqlite3.Row
 			cur = conn.cursor()
 			cur.execute("select distinct carid from runs")
-			carids.update([x[0] for x in cur.fetchall()])
+			oldcarids.update([x[0] for x in cur.fetchall()])
 			conn.close()
 
 		# All drivers associated with those runs
-		driverids = set()
+		olddriverids = set()
 		for s in searchseries:
 			conn = sqlite3.connect(os.path.join(config['seriesdir'], s))
 			conn.row_factory = sqlite3.Row
 			cur = conn.cursor()
-			cur.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, carids))))
-			driverids.update([x[0] for x in cur.fetchall()])
+			cur.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, oldcarids))))
+			olddriverids.update([x[0] for x in cur.fetchall()])
 			conn.close()
 
 		# Drivers in this database that have no unique/email
 		#blankdr = [x[0] for x in self.session.execute("select id from drivers where email=''")]
 		delcar = deldr = 0
 
+		savecars = ','.join(map(str, oldcarids.union(currentcar)))
+		savedrivers = ','.join(map(str, olddriverids.union(currentdr)))
+
 		if len(searchseries) > 0:  # don't delete if they didn't select any series, that will delete all
-			delcar = self.session.execute("delete from cars where id not in (%s)" % (','.join(map(str, carids)))).rowcount
-			#delcar += self.session.execute("delete from cars where driverid in (%s)" % ','.join(map(str,blankdr))).rowcount
-			deldr = self.session.execute("delete from drivers where id not in (%s)" % (','.join(map(str, driverids)))).rowcount
-			#deldr += self.session.execute("delete from drivers where id in (%s)" % ','.join(map(str,blankdr))).rowcount
+			delcar = self.session.execute("delete from cars where id not in (%s)" % savecars).rowcount
+			deldr = self.session.execute("delete from drivers where id not in (%s)" % savedrivers).rowcount
 
 		if len(purgeclasses) > 0:
 			sqllist = "', '".join(purgeclasses)
-			delcar += self.session.execute("delete from cars where classcode in ('"+sqllist+"')").rowcount
+			currentcars = ','.join(map(str, currentcar))
+			delcar += self.session.execute("delete from cars where classcode in ('%s') and id not in (%s)" % (sqllist, currentcars)).rowcount
 		
 		self.session.commit()
 		c.text = "<h4>Deleted %s cars and %s drivers</h4>" % (delcar, deldr)
