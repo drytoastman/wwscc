@@ -1,7 +1,7 @@
 import logging
 import os
 
-from nwrsc.lib.base import BaseController, BeforePage
+from nwrsc.controllers.lib.base import BaseController, BeforePage
 from pylons import config
 
 log = logging.getLogger(__name__)

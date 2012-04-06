@@ -1,16 +1,11 @@
-import logging
-import os
-import glob
 import time
 from datetime import datetime
 
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako
 from pylons.decorators import jsonify
-from nwrsc.lib.base import BaseController, BeforePage
+from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.model import *
-
-log = logging.getLogger(__name__)
 
 class AnnouncerController(BaseController):
 
@@ -27,8 +22,7 @@ class AnnouncerController(BaseController):
 			c.events = self.session.query(Event).all()
 			return render_mako('/eventselect.mako')
 		else:
-			c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
-			return render_mako('/databaseselect.mako')
+			return databaseSelector()
 
 
 	@jsonify

@@ -4,7 +4,7 @@ import glob
 
 from simplejson import JSONEncoder
 from pylons import request, response, config
-from nwrsc.lib.base import BaseController
+from nwrsc.controllers.lib.base import BaseController
 from nwrsc.model import *
 
 log = logging.getLogger(__name__)

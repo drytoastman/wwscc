@@ -39,13 +39,18 @@
 	<li><a href='${h.url_for(eventid='s', action='drivers')}'>Driver/Car Editor</a></li>
 	<li><a href='${h.url_for(eventid='s', action='cleanup')}'>Clean Unused Registration</a></li>
 	<li><a href='${h.url_for(eventid='s', action='recalc')}'>Recalculate Results</a></li>
+	<li><a href='${h.url_for(eventid='s', action='purge')}'>Purge Tool</a></li>
+	</ul>
+</li>
+<li><a href='javascript:void(0);'>Reports</a>
+	<ul>
+	<li><a href='${h.url_for(eventid='s', action='allfees')}' target='_blank'>All Event 'Fees'</a></li>
+	<li><a href='${h.url_for(eventid='s', action='email')}' target='_blank'>Email List</a></li>
 	</ul>
 </li>
 <li><a href='javascript:void(0);'>Other</a>
 	<ul>
 	<li><a href='${h.url_for(eventid='s', action='copyseries')}'>Create Series From Current</a></li>
-	<li><a href='${h.url_for(eventid='s', action='purge')}'>Purge Tool</a></li>
-	<li><a href='${h.url_for(eventid='s', action='allfees')}' target='_blank'>All Event 'Fees'</a></li>
 	</ul>
 </li>
 </ul>

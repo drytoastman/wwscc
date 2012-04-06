@@ -6,16 +6,13 @@ from pylons.controllers import WSGIController
 from pylons import config, request
 from webob.exc import HTTPNotFound
 
-from nwrsc.model import Session, metadata, Settings, Data, SCHEMA_VERSION
+from nwrsc.model import Session, metadata, Settings, SCHEMA_VERSION
 from nwrsc.model.conversions import convert as dbconversion
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
-import time
 import os
-import sys
 import glob
-
 import logging
 log = logging.getLogger(__name__)
 
@@ -24,36 +21,14 @@ class BeforePage(Exception):
 	def __init__(self, data):
 		self.data = data
 
-
 class BaseController(WSGIController):
 
-	def __init__(self):
-		self.a = time.time()
-
-	def copyvalues(self, src, dst):
-		for k, v in src.iteritems():
-			if hasattr(dst, k):
-				setattr(dst, k, v)
-
-	def loadPythonFunc(self, func, text):
-		# Create place to load stuff defined in loaded code, provide limited builtins
-		loadenv = dict()
-		sand = dict()
-		for k in ['str', 'range']:
-			sand[k] = __builtins__[k]
-		loadenv['__builtins__'] = sand
-
-		# Some flailing attempt at stopping bad behaviour
-		if 'import' in text:
-			raise Exception("python code to load contains import, not loading")
-		
-		text = str(text)
-		text = text.replace('\r', '')
-		exec text in loadenv
-		return loadenv[func]
-		
 	def databasePath(self, database):
 		return os.path.join(config['seriesdir'], '%s.db' % (database))
+
+	def databaseSelector(self):
+		c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
+		return render_mako('/databaseselect.mako')
 
 	def _findDatabase(self):
 		dbpath = self.databasePath(self.database)
@@ -74,7 +49,7 @@ class BaseController(WSGIController):
 		# WSGIController.__call__ dispatches to the Controller method
 		# the request is routed to. This routing information is
 		# available in environ['pylons.routes_dict']
-		log.debug("start(%s)" % (environ['PATH_INFO']))
+		log.debug("process (%s)" % (environ['PATH_INFO']))
 
 		self.srcip = request.environ.get("X_FORWARDED_FOR", request.environ["REMOTE_ADDR"]) 
 		self.routingargs = environ['wsgiorg.routing_args'][1]
@@ -107,5 +82,4 @@ class BaseController(WSGIController):
 				return p.data
 		finally:
 			Session.remove()
-			log.debug("finish(%s): %f" % (environ['PATH_INFO'], time.time() - self.a))
 

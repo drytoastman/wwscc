@@ -1,8 +1,4 @@
 import logging
-import cStringIO
-import os
-import glob
-import time
 import operator
 from decorator import decorator
 
@@ -10,8 +6,8 @@ from pylons import request, response, session, config, tmpl_context as c
 from pylons.controllers.util import url_for
 
 from pylons.templating import render_mako, render_mako_def
-from nwrsc.lib.base import BaseController, BeforePage
-from nwrsc.lib.bracket import Bracket
+from nwrsc.controllers.lib.bracket import Bracket
+from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.lib.rungroups import *
 from nwrsc.model import *
 
@@ -55,8 +51,7 @@ class ResultsController(BaseController):
 			c.events = self.session.query(Event).all()
 			return render_mako('/results/eventselect.mako')
 		else:
-			c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
-			return render_mako('/databaseselect.mako')
+			return self.databaseSelector()
 
 
 	@checklist

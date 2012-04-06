@@ -1,4 +1,3 @@
-import logging
 import traceback
 import sys
 import glob
@@ -10,16 +9,10 @@ from pylons.controllers.util import abort
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
-from nwrsc.lib.base import BaseController
+from nwrsc.controllers.lib.base import BaseController
 from nwrsc.lib.codec import Codec, DataInput
-from nwrsc.controllers.dblib import UpdateClassResults
+from nwrsc.controllers.lib.resultscalc import UpdateClassResults
 from nwrsc.model import *
-
-log = logging.getLogger(__name__)
-
-def corename(file):
-	base = os.path.basename(file)
-	return os.path.splitext(base)[0]+"\n"
 
 class DbserveController(BaseController):
 	"""
