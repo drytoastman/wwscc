@@ -1,6 +1,5 @@
 import logging
 import os
-import glob
 
 from simplejson import JSONEncoder
 from pylons import request, response, config
@@ -9,17 +8,6 @@ from nwrsc.model import *
 
 log = logging.getLogger(__name__)
 
-
-class Series(object):
-	def __init__(self, val):
-		self.val = val
-
-	def getFeed(self):
-		return {'name':self.val}
-
-def corename(file):
-	base = os.path.basename(file)
-	return Series(os.path.splitext(base)[0])
 
 class FeedController(BaseController):
 	"""
@@ -31,7 +19,7 @@ class FeedController(BaseController):
 
 	def index(self):
 		if self.database is None:
-			return self._encode("serieslist", map(corename, glob.glob('%s/*.db' % (config['seriesdir']))))
+			return self._encode("serieslist", self._databaseList())
 
 		event = None
 		if self.eventid == 'classes':
@@ -48,7 +36,7 @@ class FeedController(BaseController):
 		else:
 			return self._encode("eventlist", self.session.query(Event).all())
 
-	def _encode(self, o):
+	def _encode(self, head, o):
 		return "What?"
 
 	def challenge(self, other = 0):

@@ -113,16 +113,20 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			c.text = "<h2>%s Adminstration</h2>" % self.routingargs['database']
 			return render_mako('/admin/simple.mako')
 		else:
-			return self.databaseSelector()
+			return self.databaseSelector(True)
 
 
 	def email(self):
+		""" Create text email reports """
 		if self.eventid == 's':
 			query = self.session.query(Driver.email).filter(Driver.email.contains('@'))
+			title = "Email Report for Series\n\n"
 		else:
 			query = self.session.query(Driver.email).join('cars', 'registration').filter(Registration.eventid==self.eventid).filter(Driver.email.contains('@'))
+			title = "Email Report for %s\n\n" % c.event.name
 			
-		return "<pre>%s</pre>" % '\n'.join([x.email for x in query.all()])
+		response.content_type = 'text/plain'
+		return title + '\n'.join([x.email for x in query.all()])
 
 
 	### Settings table editor ###
@@ -178,7 +182,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		
 	def dorecalc(self):
 		from nwrsc.controllers.lib.resultscalc import RecalculateResults
-		response.headers['Content-type'] = 'text/plain'
+		response.content_type = 'text/plain'
 		return RecalculateResults(self.session, self.settings)
 
 

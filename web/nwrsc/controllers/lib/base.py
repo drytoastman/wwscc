@@ -3,7 +3,8 @@
 Provides the BaseController class for subclassing.
 """
 from pylons.controllers import WSGIController
-from pylons import config, request
+from pylons.templating import render_mako
+from pylons import config, request, tmpl_context as c
 from webob.exc import HTTPNotFound
 
 from nwrsc.model import Session, metadata, Settings, SCHEMA_VERSION
@@ -21,28 +22,75 @@ class BeforePage(Exception):
 	def __init__(self, data):
 		self.data = data
 
+class DatabaseListing(object):
+	def __init__(self, **kwargs):
+		for n in ('name', 'locked', 'archived', 'mtime'):
+			setattr(self, n, kwargs[n])
+
+	def getFeed(self):
+		return self.__dict__
+
+
 class BaseController(WSGIController):
+	""" Base controller ala Pylons base, modified for using multiple databases based on URL """
+
 
 	def databasePath(self, database):
+		""" Given a database name (no extension), return the full path where we expect to find it """
 		return os.path.join(config['seriesdir'], '%s.db' % (database))
 
-	def databaseSelector(self):
-		c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
+
+	def databaseSelector(self, showArchived=False, timelimit=0.0):
+		"""" Common routine for other controllers, return a list of active series to select """
+		c.dblist = list()
+		for db in self._databaseList():
+			if not showArchived and db.archived:
+				continue
+			if db.mtime < timelimit:
+				continue
+			c.dblist.append(db)
+		
 		return render_mako('/databaseselect.mako')
 
+
+	def _databaseList(self):
+		"""
+			Return a list of the current databases with information on lock and archive settings
+			Note, this affects the current active metadata
+		"""
+		ret = list()
+		for path in glob.glob('%s/*.db' % (config['seriesdir'])):
+			try:
+				engine = create_engine('sqlite:///%s' % path, poolclass=NullPool)
+				metadata.bind = engine
+				self.session.bind = engine
+				self.settings = Settings()
+				self.settings.load(self.session)
+				name = os.path.splitext(os.path.basename(path))[0] 
+				mtime = os.path.getmtime(path)
+				ret.append(DatabaseListing(name=name, mtime=mtime, locked=self.settings.locked, archived=self.settings.archived))
+				self.session.close()
+			except Exception, e:
+				log.error("available error with %s (%s) " % (name,e))
+	
+		return ret
+
+
 	def _findDatabase(self):
+		""" See if we can find the database as specified, if not, check without case """
 		dbpath = self.databasePath(self.database)
 		if os.path.exists(dbpath):
 			return dbpath
 		
 		dblower = dbpath.lower()
-		for file in glob.glob(self.databasePath('*')):
-			if file.lower() == dblower:
-				self.database = os.path.basename(file)[:-3]
-				return file
+		for name in glob.glob(self.databasePath('*')):
+			if name.lower() == dblower:
+				self.database = os.path.basename(name)[:-3]
+				return name 
 
 		self.database = None
 		return None
+
 
 	def __call__(self, environ, start_response):
 		"""Invoke the Controller"""
@@ -62,7 +110,7 @@ class BaseController(WSGIController):
 			if dbpath is not None:
 				engine = create_engine('sqlite:///%s' % dbpath, poolclass=NullPool)
 			else:
-				return HTTPNotFound()
+				return HTTPNotFound() # don't know where you are going, but it stops here for me
 
 		self.session = Session()
 		self.session.bind = engine
@@ -71,6 +119,7 @@ class BaseController(WSGIController):
 		self.settings = Settings()
 		if self.database is not None:
 			self.settings.load(self.session)
+			# Check if we are the correct schema, update if possible
 			if self.settings.schema != SCHEMA_VERSION:
 				dbconversion(self.session)
 

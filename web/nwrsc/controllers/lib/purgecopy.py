@@ -1,6 +1,5 @@
 import logging
 import os
-import glob
 
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
@@ -19,8 +18,7 @@ log = logging.getLogger(__name__)
 class PurgeCopy(object):
 
 	def purge(self):
-		c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
-		c.files.remove(self.database+".db")
+		c.files = [x for x in self._databaseList() if x.name != self.database]
 		c.classlist = self.session.query(Class).order_by(Class.code).all()
 		return render_mako('/admin/purge.mako')
 

@@ -55,6 +55,11 @@
 <td><input type="checkbox" name="locked" ${c.settings.locked and "checked"} /></td>
 </tr>
 		
+<tr title="Hide the database from the generic list for results and register sections as well as the purge tool"> 
+<th>Archived</th>
+<td><input type="checkbox" name="archived" ${c.settings.archived and "checked"} /></td>
+</tr>
+		
 <tr title="Image used at the top of the registration site">
 <th>Sponsor Image</th>
 <td><input type=file name="sponsorimage"></td>
