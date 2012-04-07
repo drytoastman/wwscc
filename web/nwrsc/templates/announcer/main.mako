@@ -100,7 +100,7 @@ function processResults(json)
 		moveresults('#firste', '#seconde');
 		$('#firste').html(json.entrantresult);
 		$('#firste').attr('updated', json.updated);
-		$('#entranttabs').tabs('option', 'selected', 0);
+		$('#entranttabs').tabs('option', 'selected', 1);
 	}
 	else if (json.updated > $('#seconde').attr('updated'))
 	{
