@@ -55,6 +55,11 @@
 <td><input type="checkbox" name="locked" ${c.settings.locked and "checked"} /></td>
 </tr>
 		
+<tr title="Hide the database from the generic list for results and register sections as well as the purge tool"> 
+<th>Archived</th>
+<td><input type="checkbox" name="archived" ${c.settings.archived and "checked"} /></td>
+</tr>
+		
 <tr title="Image used at the top of the registration site">
 <th>Sponsor Image</th>
 <td><input type=file name="sponsorimage"></td>
@@ -67,7 +72,7 @@
 <td><img src='${h.url_for(controller='db', name='seriesimage', eventid=None, action='nocache')}' height="40" /></td>
 </tr>
 
-<tr>
+<tr title="Image passed to the card template for printing cards">
 <th>Card Image</th>
 <td><input type=file name="cardimage"></td>
 <td><img src='${h.url_for(controller='db', name='cardimage', eventid=None, action='nocache')}' height="40" /></td>

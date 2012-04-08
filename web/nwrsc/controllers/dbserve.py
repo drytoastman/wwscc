@@ -1,25 +1,16 @@
-import logging
 import traceback
 import sys
-import glob
-import os
 import shutil
 
-from pylons import config, request, response
+from pylons import request, response
 from pylons.controllers.util import abort
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
-from nwrsc.lib.base import BaseController
+from nwrsc.controllers.lib.base import BaseController
 from nwrsc.lib.codec import Codec, DataInput
-from nwrsc.controllers.dblib import UpdateClassResults
+from nwrsc.controllers.lib.resultscalc import UpdateClassResults
 from nwrsc.model import *
-
-log = logging.getLogger(__name__)
-
-def corename(file):
-	base = os.path.basename(file)
-	return os.path.splitext(base)[0]+"\n"
 
 class DbserveController(BaseController):
 	"""
@@ -78,20 +69,9 @@ class DbserveController(BaseController):
 
 	def available(self):
 		response.headers['Content-type'] = 'text/plain'
-		data = ''
-		for file in glob.glob('%s/*.db' % (config['seriesdir'])):
-			try:
-				engine = create_engine('sqlite:///%s' % file, poolclass=NullPool)
-				metadata.bind = engine
-				self.session.bind = engine
-				self.settings = Settings()
-				self.settings.load(self.session)
-				name = os.path.splitext(os.path.basename(file))[0] 
-				data += "%s %s %s\n" % (name, self.settings.locked and "1" or "0", self.settings.archived and "1" or "0")
-				self.session.close()
-			except Exception, e:
-				log.error("available error with %s (%s) " % (file,e))
-	
+		data = ""
+		for db in self._databaseList():
+			data += "%s %s %s\n" % (db.name, db.locked and "1" or "0", db.archived and "1" or "0")
 		return data
 		
 

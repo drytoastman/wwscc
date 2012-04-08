@@ -1,27 +1,17 @@
 <%inherit file="/base.mako" />
 
-<script type="text/javascript"> 
-    $(document).ready(function(){ 
-        $("ul.sf-menu").supersubs({
-			minWidth:    10,
-            maxWidth:    100,
-            extraWidth:  5 
-		}).superfish({
-			disableHI: true,
-			animation:   {height:'show'}, 
-			speed: 'fast',
-			autoArrows: false,
-			delay: 200
-		}).addClass('ui-widget-header ui-corner-all').width('100%'); 
-		$("ul.sf-menu a").button();
-    }); 
-</script>
-
 <style>
-.sf-menu { float: left; }
+#titlebutton a {
+	color: black;
+	background: url("images/ui-bg_highlight-soft_100_f6f6f6_1x100.png") repeat-x scroll 50% 50% rgb(246, 246, 246);
+}
+#titlebutton a:hover {
+	border: 1px solid #DDD;
+}
 </style>
 
 <ul id='adminmenu' class='sf-menu'>
+<li id='titlebutton'><a>${c.seriesname}</a></li>
 <li><a href='javascript:void(0);'>Event Admin</a>
 	<ul>
 	%for event in sorted(c.events, key=lambda obj: obj.date):
@@ -37,20 +27,25 @@
 	<li><a href='${h.url_for(eventid='s', action='fieldlist')}'>Driver Fields</a></li>
 	<li><a href='${h.url_for(eventid='s', action='seriessettings')}'>Settings</a></li>
 	<li><a href='${h.url_for(eventid='s', action='drivers')}'>Driver/Car Editor</a></li>
-	<li><a href='${h.url_for(eventid='s', action='cleanup')}'>Clean Unused Registration</a></li>
 	<li><a href='${h.url_for(eventid='s', action='recalc')}'>Recalculate Results</a></li>
+	<li><a href='${h.url_for(eventid='s', action='cleanup')}'>Clean Unused Registration</a></li>
+	<li><a href='${h.url_for(eventid='s', action='purge')}'>Purge Tool</a></li>
+	</ul>
+</li>
+<li><a href='javascript:void(0);'>Reports</a>
+	<ul>
+	<li><a href='${h.url_for(eventid='s', action='newentrants')}' target='_blank'>Event Fees/New Entrants</a></li>
+	<li><a href='${h.url_for(eventid='s', action='email')}' target='_blank'>Series Email List</a></li>
+	<li><a href='${h.url_for(eventid='s', action='weekend')}' target='_blank'>Weekend Entries</a></li>
 	</ul>
 </li>
 <li><a href='javascript:void(0);'>Other</a>
 	<ul>
 	<li><a href='${h.url_for(eventid='s', action='copyseries')}'>Create Series From Current</a></li>
-	<li><a href='${h.url_for(eventid='s', action='purge')}'>Purge Tool</a></li>
-	<li><a href='${h.url_for(eventid='s', action='allfees')}' target='_blank'>All Event 'Fees'</a></li>
 	</ul>
 </li>
 </ul>
 <br clear='both'/>
-
 
 %if c.isLocked:
 <div class='ui-state-error'>
@@ -64,9 +59,23 @@ Locked
 ${next.body()}
 </div>
 
-<script>
-$(':submit').button();
-$('button').button();
-$('button.deleterow').click(function () { $(this).closest('tr').remove(); return false; });
+<script type="text/javascript"> 
+    $(document).ready(function(){ 
+        $("ul.sf-menu").supersubs({
+			minWidth:    10,
+            maxWidth:    100,
+            extraWidth:  5 
+		}).superfish({
+			disableHI: true,
+			animation:   {height:'show'}, 
+			speed: 'fast',
+			autoArrows: false,
+			delay: 200
+		}).addClass('ui-widget-header ui-corner-all').width('100%'); 
+		$("ul.sf-menu a").button();
+		$(':submit').button();
+		$('button').button();
+		$('button.deleterow').click(function () { $(this).closest('tr').remove(); return false; });
+    }); 
 </script>
 

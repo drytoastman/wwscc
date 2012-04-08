@@ -39,9 +39,20 @@ t_events = Table('events', metadata,
 
 
 class Event(object):
+
+	def __init__(self, **kwargs):
+		self.merge(**kwargs)
+
+	def merge(self, **kwargs):
+		for k, v in kwargs.iteritems():
+			if hasattr(self, k):
+				setattr(self, k, v)
+
 	def _get_count(self):
+		""" property getter to get number of entrants for an event based on registration, NOT recorded runs """
 		return object_session(self).query(func.count(Registration.id)).filter(Registration.eventid==self.id).first()[0]
 	count = property(_get_count)
+
 
 	def getFeed(self):
 		d = dict()
@@ -51,6 +62,7 @@ class Event(object):
 				continue
 			d[k] = v
 		return d
+
 
 	def getSegments(self):
 		if hasattr(self, '_seglist'): # shortcut cache

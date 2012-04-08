@@ -1,8 +1,7 @@
 <%inherit file="base.mako" />
-
 <h3>Select series:</h3>
 <ol>
-%for file in sorted(c.files, key=str.lower):
-	<li><a href='${h.url_for(database=file[:-3])}'>${file[:-3]}</a></li>
+%for db in sorted(c.dblist, key=lambda x: x.name.lower()):
+	<li><a href='${h.url_for(database=db.name)}'>${db.name}</a></li>
 %endfor
 </ol>

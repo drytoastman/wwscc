@@ -10,7 +10,8 @@ class FeeList(object):
 	beforeQuery = basic + " and r.eventid in (select id from events where date < (select date from events where id=:eventid))"
 	afterQuery = basic + " and r.eventid=:eventid"
 
-	def __init__(self, setbefore, setafter):
+	def __init__(self, name, setbefore, setafter):
+		self.name = name
 		self.before = list(setbefore)
 		self.before.sort(key=lambda x:(x[1], x[0]))
 		self.during = list(setafter.difference(setbefore))
@@ -31,7 +32,9 @@ class FeeList(object):
 		for x in session.execute(FeeList.afterQuery, params={'eventid':eventid}).fetchall():
 			setafter.add((x.firstname.strip().lower(), x.lastname.strip().lower()))
 
-		return FeeList(setbefore, setafter)
+		event = session.query(Event).filter(Event.id==eventid).first()
+
+		return [FeeList(event.name, setbefore, setafter)]
 
 
 	@classmethod
@@ -42,16 +45,12 @@ class FeeList(object):
 		for x in session.query(PrevEntry):
 			setbefore.add((x.firstname.strip().lower(), x.lastname.strip().lower()))
 	
-		for event in session.query(Event): #.order_by(Event.date):
+		for event in session.query(Event).order_by(Event.date):
 			setafter = setbefore.copy()
 			for x in session.execute(FeeList.afterQuery, params={'eventid':event.id}).fetchall():
 				setafter.add((x.firstname.strip().lower(), x.lastname.strip().lower()))
 
-			e = {}
-			e['name'] = event.name
-			e['feelist'] = FeeList(setbefore, setafter)
-			ret.append(e)
-			
+			ret.append(FeeList(event.name, setbefore, setafter))
 			setbefore.update(setafter)
 
 		return ret

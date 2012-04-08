@@ -2,7 +2,8 @@ import logging
 
 from pylons import request, response
 from pylons.controllers.util import etag_cache
-from nwrsc.lib.base import BaseController
+
+from nwrsc.controllers.lib.base import BaseController
 from nwrsc.model import Data
 
 log = logging.getLogger(__name__)

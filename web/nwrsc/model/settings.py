@@ -46,7 +46,6 @@ class Settings(object):
 			if k in Settings.INTS:
 				setattr(self, k, int(v))
 			elif k in Settings.BOOLS:
-				print "set %s with %s" % (k, v)
 				setattr(self, k, v in ("True", "1", True, "checked"))
 			elif k in Settings.STRS:
 				setattr(self, k, v)

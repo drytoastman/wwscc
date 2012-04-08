@@ -1,6 +1,3 @@
-import logging
-import os
-import glob
 import datetime
 import urllib
 
@@ -8,11 +5,9 @@ from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako
 from pylons.controllers.util import redirect, url_for
 from pylons.decorators import jsonify, validate
-from nwrsc.lib.base import BaseController, BeforePage
+from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.lib.schema import *
 from nwrsc.model import *
-
-log = logging.getLogger(__name__)
 
 class RegisteroldController(BaseController):
 
@@ -57,8 +52,7 @@ class RegisteroldController(BaseController):
 		if self.database is not None:
 			return self.events()
 		else:
-			c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
-			return render_mako('/databaseselect.mako')
+			return self.databaseSelector()
 
 	def login(self):
 		return render_mako('/registerold/login.mako')

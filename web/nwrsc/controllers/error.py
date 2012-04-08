@@ -7,7 +7,7 @@ from pylons.controllers.util import forward
 from pylons.middleware import error_document_template
 from webhelpers.html.builder import literal
 
-from nwrsc.lib.base import BaseController
+from nwrsc.controllers.lib.base import BaseController
 
 import logging
 log = logging.getLogger(__name__)

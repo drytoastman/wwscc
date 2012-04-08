@@ -103,13 +103,13 @@ class EntrantEditor(object):
 	def getitems(self):
 		c.items = list()
 		c.fields = self.session.query(DriverField).all()
-		for id in map(int, request.GET.get('driverids', "").split(',')):
-			dr = self.session.query(Driver).filter(Driver.id==id).first();
-			cars = self.session.query(Car).filter(Car.driverid==id).all();
+		for drid in map(int, request.GET.get('driverids', "").split(',')):
+			dr = self.session.query(Driver).filter(Driver.id==drid).first();
+			cars = self.session.query(Car).filter(Car.driverid==drid).all();
 
 			# This just gets the number of runs for the car for all events
 			for car in cars:
-				car.runs = len(self.session.query(Run.eventid).distinct().filter(Run.carid==car.id).filter(Run.eventid<100).all())
+				car.runcount = len(self.session.query(Run.eventid).distinct().filter(Run.carid==car.id).filter(Run.eventid<100).all())
 
 			# Preload the extra fields
 			for field in c.fields:

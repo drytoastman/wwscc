@@ -87,6 +87,7 @@ li li { font-size: 90%; }
 }
 .sf-menu {
 	line-height:	1.0;
+	float: left;
 }
 .sf-menu ul {
 	position:		absolute;

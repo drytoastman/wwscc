@@ -1,34 +1,27 @@
 import logging
-import cStringIO
-import os
-import glob
-import time
 import operator
 
-from sqlalchemy import create_engine
-from sqlalchemy.sql import func
-from sqlalchemy.pool import NullPool
-from datetime import datetime
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako
-from pylons.controllers.util import redirect, url_for, abort
+from pylons.controllers.util import redirect, url_for
 from pylons.decorators import jsonify, validate
-from nwrsc.lib.base import BaseController, BeforePage
-from nwrsc.lib.entranteditor import EntrantEditor
-from nwrsc.lib.objecteditors import ObjectEditor
+
+from nwrsc.controllers.lib.base import BaseController, BeforePage
+from nwrsc.controllers.lib.entranteditor import EntrantEditor
+from nwrsc.controllers.lib.objecteditors import ObjectEditor
+from nwrsc.controllers.lib.cardprinting import CardPrinting
+from nwrsc.controllers.lib.purgecopy import PurgeCopy
+
 from nwrsc.lib.schema import *
 from nwrsc.model import *
 
 log = logging.getLogger(__name__)
 
-def insertfile(cur, name, type, path):
-	try:
-		cur.execute("insert into new.data values (?,?,?,?)", (name, type, datetime.today(), open(path).read()))
-	except Exception, e:
-		log.warning("Couldn't insert %s, %s" % (name, e))
 
-class AdminController(BaseController, EntrantEditor, ObjectEditor):
+class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting, PurgeCopy):
 
 	def __before__(self):
 		c.stylesheets = ['/css/admin.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css', '/css/anytimec.css']
@@ -40,6 +33,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 
 		if self.database is not None:
 			c.events = self.session.query(Event).all()
+			c.seriesname = self.database
 		self.eventid = self.routingargs.get('eventid', None)
 
 		c.isLocked = self.settings.locked
@@ -52,7 +46,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 
 		if self.settings.locked:
 			action = self.routingargs.get('action', '')
-			if action not in ['login', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'fees', 'allfees', 'printhelp', 'forceunlock']:
+			if action not in ('login', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'newentrants', 'printhelp', 'forceunlock'):
 				c.seriesname = self.settings.seriesname
 				c.next = action
 				raise BeforePage(render_mako('/admin/locked.mako'))
@@ -121,8 +115,60 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 			c.text = "<h2>%s Adminstration</h2>" % self.routingargs['database']
 			return render_mako('/admin/simple.mako')
 		else:
-			c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
-			return render_mako('/databaseselect.mako')
+			return self.databaseSelector(True)
+
+
+	def email(self):
+		""" Create text email reports """
+		if self.eventid == 's':
+			query = self.session.query(Driver.email).filter(Driver.email.contains('@')).distinct()
+			title = "Email Report for Series\n\n"
+		else:
+			query = self.session.query(Driver.email).join('cars', 'registration').filter(Registration.eventid==self.eventid).filter(Driver.email.contains('@')).distinct()
+			title = "Email Report for %s\n\n" % c.event.name
+			
+		response.content_type = 'text/plain'
+		return title + '\n'.join([x.email for x in query.all()])
+
+
+	class WeekendReport(object):
+		pass
+
+	def _validNumber(self, num):
+		if num.isdigit() and int(num) > 100000:
+			return True
+		elif num[1:].isdigit() and int(num[1:]) > 100000:
+			return True
+		return False
+
+	def weekend(self):
+		""" Create a weekend report reporting unique entrants and their information """
+		bins = defaultdict(list)
+		events = self.session.query(Event).order_by(Event.date).all()
+		for e in events:
+			wed = e.date + timedelta(-(e.date.weekday()+5)%7)   # convert M-F(0-7) to Wed-Tues(0-7), formerly (2-6,0-1)
+			bins[wed].append(e)
+
+		c.weeks = dict()
+		for wed in sorted(bins):
+			eventids = [e.id for e in bins[wed]]
+			report = self.WeekendReport()
+			c.weeks[wed] = report
+
+			report.events = bins[wed]
+			report.drivers = self.session.query(Driver).join('cars', 'runs').filter(Run.eventid.in_(eventids)).distinct().all()
+			report.membership = list()
+			report.invalid = list()
+			for d in report.drivers:
+				num = d.getExtra('membership')
+				if self._validNumber(num):
+					report.membership.append(num)
+				else:	
+					report.invalid.append(num)
+			report.membership.sort()  # TODO: should we take into account first letters and go totally numeric?
+			report.invalid.sort()
+
+		return render_mako('/admin/weekend.mako')
 
 
 	### Settings table editor ###
@@ -177,8 +223,8 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 		return render_mako('/admin/recalc.mako')
 		
 	def dorecalc(self):
-		from nwrsc.controllers.dblib import RecalculateResults
-		response.headers['Content-type'] = 'text/plain'
+		from nwrsc.controllers.lib.resultscalc import RecalculateResults
+		response.content_type = 'text/plain'
 		return RecalculateResults(self.session, self.settings)
 
 
@@ -186,83 +232,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 		return render_mako('/admin/printhelp.mako')
 
 
-	def printcards(self):
-
-		drawCard = self.loadPythonFunc('drawCard', self.session.query(Data).get('card.py').data)
-
-		page = request.GET.get('page', 'card')
-		type = request.GET.get('type', 'blank')
-
-		query = self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==self.eventid)
-		if type == 'blank':
-			registered = [(None,None,None)]
-		elif type == 'lastname':
-			registered = query.order_by(func.lower(Driver.lastname), func.lower(Driver.firstname)).all()
-		elif type == 'classnumber':
-			registered = query.order_by(Car.classcode, Car.number).all()
-		
-		if page == 'csv':
-			# CSV data, just use a template and return
-			c.registered = registered
-			response.headers['Content-type'] = "application/octet-stream"
-			response.headers['Content-Disposition'] = 'attachment;filename=cards.csv'
-			response.charset = 'utf8'
-			return render_mako('/admin/csv.mako')
-
-		# Otherwise we are are PDF
-		try:
-			from reportlab.pdfgen import canvas
-			from reportlab.lib.units import inch
-		except:
-			c.text = "<h4>PDFGen not installed, can't create timing card PDF files from this system</h4>"
-			return render_mako("/admin/simple.mako")
-
-		try:
-			from PIL import Image
-		except ImportError:
-			try:
-				import Image
-			except:
-				c.text = "<h4>Python Image not installed, can't create timing card PDF files from this system</h4>"
-				return render_mako("/admin/simple.mako")
-
-		if page == 'letter': # Letter has an additional 72 points Y to space out
-			size = (8*inch, 11*inch)
-		else:
-			size = (8*inch, 5*inch)
-
-		if page == 'letter' and len(registered)%2 != 0:
-			registered.append((None,None,None)) # Pages are always two cards per so make it divisible by 2
-
-		buffer = cStringIO.StringIO()
-		canvas = canvas.Canvas(buffer, pagesize=size, pageCompression=1)
-		carddata = self.session.query(Data).get('cardimage')
-		if carddata is None:
-			cardimage = Image.new('RGB', (1,1))
-		else:
-			cardimage = Image.open(cStringIO.StringIO(carddata.data))
-
-		while len(registered) > 0:
-			if page == 'letter':
-				canvas.translate(0, 18)  # 72/4, bottom margin for letter page
-				(driver, car, reg) = registered.pop(0)
-				drawCard(canvas, c.event, driver, car, cardimage)
-				canvas.translate(0, 396)  # 360+72/2 card size plus 2 middle margins
-				(driver, car, reg) = registered.pop(0)
-				drawCard(canvas, c.event, driver, car, cardimage)
-			else:
-				(driver, car, reg) = registered.pop(0)
-				drawCard(canvas, c.event, driver, car, cardimage)
-			canvas.showPage()
-		canvas.save()
-
-		response.headers['Content-type'] = "application/octet-stream"
-		response.headers['Content-Disposition'] = 'attachment;filename=cards.pdf'
-		return buffer.getvalue()
-
-
 	def numbers(self):
-
 		# As with other places, one big query followed by mangling in python is faster (and clearer)
 		c.numbers = {}
 		for res in self.session.query(Driver.firstname, Driver.lastname, Car.classcode, Car.number).join('cars'):
@@ -280,22 +250,18 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 
 	def paid(self):
 		""" Return the list of fees paid before this event """
-		f = FeeList.get(self.session, self.eventid)
 		c.header = '<h2>Fees Collected Before %s</h2>' % c.event.name
-		c.feelist = f.before
+		c.beforelist = FeeList.get(self.session, self.eventid)[-1].before
 		return render_mako('/admin/feelist.mako')
 
-	def fees(self):
-		""" Return the list of fees collected at a single event """
-		f = FeeList.get(self.session, self.eventid)
-		c.header = '<h2>Fees Collected During %s (%d)</h2>' % (c.event.name, len(f.during))
-		c.feelist = f.during
-		return render_mako('/admin/feelist.mako')
-
-	def allfees(self):
-		""" Return the complete list of fees collected at all events """
-		c.feelists = FeeList.getAll(self.session)
-		return render_mako('/admin/allfees.mako')
+	def newentrants(self):
+		""" Return the list of new entrants/fees collected by event or for the series """
+		if self.eventid == 's':
+			c.feelists = FeeList.getAll(self.session)
+			return render_mako('/admin/newentrants.mako')
+		else:
+			c.feelists = FeeList.get(self.session, self.eventid)
+			return render_mako('/admin/newentrants.mako')
 
 	def paypal(self):
 		""" Return a list of paypal transactions for the current event """
@@ -334,7 +300,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 						self.session.add(g)
 			self.session.commit()
 		except Exception, e:
-			logging.error("setRunGroups failed: %s" % e)
+			log.error("setRunGroups failed: %s" % e)
 			self.session.rollback()
 		redirect(url_for(action='rungroups'))
 		
@@ -349,7 +315,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 	@validate(schema=EventSchema(), form='editevent', prefix_error=False)
 	def updateevent(self):
 		""" Process edit event form submission """
-		self.copyvalues(self.form_result, c.event)
+		c.event.merge(**self.form_result)
 		self.session.commit()
 		redirect(url_for(action='editevent'))
 
@@ -372,8 +338,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 	@validate(schema=EventSchema(), form='createevent', prefix_error=False)
 	def newevent(self):
 		""" Process new event form submission """
-		ev = Event()
-		self.copyvalues(self.form_result, ev)
+		ev = Event(**self.form_result)
 		self.session.add(ev)
 		self.session.commit()
 		redirect(url_for(eventid=ev.id, action=''))
@@ -431,6 +396,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 		c.indexlist = [""] + [x[0] for x in self.session.query(Index.code).order_by(Index.code)]
 		return render_mako('/admin/classlist.mako')
 
+
 	@validate(schema=ClassListSchema(), form='classlist')
 	def processClassList(self):
 		data = self.form_result['clslist']
@@ -460,154 +426,4 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor):
 				self.session.add(Index(**obj))
 		self.session.commit()
 		redirect(url_for(action='indexlist'))
-
-	### Clean Series ###
-
-	def purge(self):
-		c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
-		c.files.remove(self.database+".db")
-		c.classlist = self.session.query(Class).order_by(Class.code).all()
-		return render_mako('/admin/purge.mako')
-
-	def processPurge(self):
-		try:
-			import sqlite3
-		except:
-			from pysqlite2 import dbapi2 as sqlite3
-
-		searchseries = list()
-		purgeclasses = list()
-		for k in request.POST.keys():
-			if k[0:2] == "c-":
-				purgeclasses.append(k[2:])
-			elif k[0:2] == "s-":
-				searchseries.append(k[2:])
-
-		# All cars that have runs in this series
-		currentcar = set()
-		currentdr = set()
-		for x in self.session.query(Run.carid):
-			currentcar.add(x.carid)
-		for x in self.session.query(Registration.carid):
-			currentcar.add(x.carid)
-
-		currentcar.discard(None)
-
-		for y in self.session.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, currentcar)))):
-			currentdr.add(y[0])
-
-		# All cars that have runs in any previous database
-		oldcarids = set()
-		for s in searchseries:
-			conn = sqlite3.connect(os.path.join(config['seriesdir'], s))
-			conn.row_factory = sqlite3.Row
-			cur = conn.cursor()
-			cur.execute("select distinct carid from runs")
-			oldcarids.update([x[0] for x in cur.fetchall()])
-			conn.close()
-
-		# All drivers associated with those runs
-		olddriverids = set()
-		for s in searchseries:
-			conn = sqlite3.connect(os.path.join(config['seriesdir'], s))
-			conn.row_factory = sqlite3.Row
-			cur = conn.cursor()
-			cur.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, oldcarids))))
-			olddriverids.update([x[0] for x in cur.fetchall()])
-			conn.close()
-
-		# Drivers in this database that have no unique/email
-		#blankdr = [x[0] for x in self.session.execute("select id from drivers where email=''")]
-		delcar = deldr = 0
-
-		savecars = ','.join(map(str, oldcarids.union(currentcar)))
-		savedrivers = ','.join(map(str, olddriverids.union(currentdr)))
-
-		if len(searchseries) > 0:  # don't delete if they didn't select any series, that will delete all
-			delcar = self.session.execute("delete from cars where id not in (%s)" % savecars).rowcount
-			deldr = self.session.execute("delete from drivers where id not in (%s)" % savedrivers).rowcount
-
-		if len(purgeclasses) > 0:
-			sqllist = "', '".join(purgeclasses)
-			currentcars = ','.join(map(str, currentcar))
-			delcar += self.session.execute("delete from cars where classcode in ('%s') and id not in (%s)" % (sqllist, currentcars)).rowcount
-		
-		self.session.commit()
-		c.text = "<h4>Deleted %s cars and %s drivers</h4>" % (delcar, deldr)
-		return render_mako('/admin/simple.mako')
-
-
-
-	### Series Copying ###
-	def copyseries(self):
-		c.action = 'processCopySeries'
-		return render_mako('/admin/copyseries.mako')
-
-
-	@validate(schema=CopySeriesSchema(), form='copyseries')
-	def processCopySeries(self):
-		try:
-			import sqlite3
-		except:
-			from pysqlite2 import dbapi2 as sqlite3
-
-		""" Process settings form submission """
-		log.debug("copyseriesform: %s", self.form_result)
-		name = self.form_result['name']
-		import nwrsc
-		root = nwrsc.__path__[0]
-
-		if not os.path.exists(self.databasePath(name)):
-			metadata.bind = create_engine('sqlite:///%s' % self.databasePath(name), poolclass=NullPool)
-			metadata.create_all()
-
-			conn = sqlite3.connect(':memory:')
-			conn.row_factory = sqlite3.Row
-			cur = conn.cursor()
-			cur.execute("attach '%s' as old" % self.databasePath(self.database))
-			cur.execute("attach '%s' as new" % self.databasePath(name))
-
-			# Settings
-			if self.form_result['settings']:
-				cur.execute("insert into new.settings select * from old.settings")
-			else:
-				for k,v in {'useevents':5, 'ppoints':'20,16,13,11,9,7,6,5,4,3,2,1'}.iteritems():
-					cur.execute("insert into new.settings values (?,?)", (k,v))
-			cur.execute("insert or replace into new.settings values (?,?)", ("password", self.form_result['password']))
-
-			# Template data
-			if self.form_result['data']:
-				cur.execute("insert into new.data select * from old.data")
-			else:
-				insertfile(cur, 'results.css', 'text/css', os.path.join(root, 'examples/wwresults.css'))
-				insertfile(cur, 'event.mako', 'text/plain', os.path.join(root, 'examples/wwevent.mako'))
-				insertfile(cur, 'champ.mako', 'text/plain', os.path.join(root, 'examples/wwchamp.mako'))
-				insertfile(cur, 'toptimes.mako', 'text/plain', os.path.join(root, 'examples/toptimes.mako'))
-				insertfile(cur, 'classresult.mako', 'text/plain', os.path.join(root, 'examples/classresults.mako'))
-				insertfile(cur, 'card.py', 'text/plain', os.path.join(root, 'examples/basiccard.py'))
-
-			if self.form_result['classes']:
-				cur.execute("insert into new.classlist select * from old.classlist")
-				cur.execute("insert into new.indexlist select * from old.indexlist")
-
-			if self.form_result['drivers']:
-				cur.execute("insert into new.drivers select * from old.drivers")
-
-			if self.form_result['cars']:
-				cur.execute("insert into new.cars select * from old.cars")
-
-			if self.form_result['prevlist']:
-				cur.execute("""insert into new.prevlist (firstname, lastname) 
-							select distinct lower(d.firstname) as firstname, lower(d.lastname) as lastname
-							from old.runs as r, old.cars as c, old.drivers as d
-							where r.carid=c.id and c.driverid=d.id """)
-				c.feelists = FeeList.getAll(self.session)
-
-			cur.close()
-			conn.commit()
-
-		else:
-			log.error("database exists")
-
-		redirect(url_for(action='copyseries'))
 

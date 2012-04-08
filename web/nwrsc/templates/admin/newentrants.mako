@@ -6,16 +6,16 @@ th { text-align: left; }
 </style>
 </%def>
 
-<h2>All Fees Collected</h2>
+<h2>New Entrants Per Event/Fees Collected</h2>
 <table>
 <% from math import ceil %>
 %for f in c.feelists:
 	<%
-		feelist = f['feelist'].during
+		feelist = f.during
 		count = len(feelist)
 		height = int(ceil(count/5.0))
 	%>
-	<tr><th colspan='5'>Fees for ${f['name']} (${count})</th></tr>
+	<tr><th colspan='5'>New Entrants for ${f.name} (${count})</th></tr>
 	%for ii in range(0, height):
 		<tr>
 		%for jj in range(ii, count, height):

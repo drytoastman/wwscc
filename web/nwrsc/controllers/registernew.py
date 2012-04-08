@@ -1,20 +1,16 @@
-import logging
-import os
-import glob
 import datetime
-import urllib
 
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako, render_mako_def
-from pylons.controllers.util import redirect, url_for, etag_cache
+from pylons.controllers.util import redirect, url_for
 from pylons.decorators import jsonify, validate
-from nwrsc.lib.base import BaseController, BeforePage
-from nwrsc.lib.paypal import PayPalIPN
-from nwrsc.lib.objecteditors import ObjectEditor
+
+from nwrsc.controllers.lib.base import BaseController, BeforePage
+from nwrsc.controllers.lib.paypal import PayPalIPN
+from nwrsc.controllers.lib.objecteditors import ObjectEditor
+
 from nwrsc.lib.schema import *
 from nwrsc.model import *
-
-log = logging.getLogger(__name__)
 
 class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
@@ -90,8 +86,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 	def index(self):
 		if self.database is None:
-			c.files = map(os.path.basename, glob.glob('%s/*.db' % (config['seriesdir'])))
-			return render_mako('/databaseselect.mako')
+			return self.databaseSelector()
 
 		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
 		c.fields = self.session.query(DriverField).all()
