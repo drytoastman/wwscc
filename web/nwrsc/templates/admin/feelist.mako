@@ -9,13 +9,13 @@ th { text-align: left; }
 <table>
 <%
 	from math import ceil
-	count = len(c.feelist)
+	count = len(c.beforelist)
 	height = int(ceil(count/5.0))
 %>
 %for ii in range(0, height):
 	<tr>
 	%for jj in range(ii, count, height):
-		<td>${c.feelist[jj][1].capitalize()}, ${c.feelist[jj][0].capitalize()}</td>
+		<td>${c.beforelist[jj][1].capitalize()}, ${c.beforelist[jj][0].capitalize()}</td>
 	%endfor
 	</tr>
 %endfor

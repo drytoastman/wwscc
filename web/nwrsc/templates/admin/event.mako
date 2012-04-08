@@ -1,20 +1,23 @@
 <%inherit file="base.mako" />
 
+<style>
+.Xcleanlist { list-style: none; }
+</style>
+
 <div class='emenu'>
 <h2 style='margin-bottom:5px;'>${c.event.name} - ${c.event.date.strftime('%B %d, %Y')}</h2>
 
 <div style='margin-left: 20px;'>
 
 <h3>General Admin</h3>
-<ol>
+<ul class='cleanlist'>
 <li><a href='${h.url_for(action='editevent')}'>Edit Event Details</a></li>
 <li><a href='${h.url_for(action='list')}'>Entry Admin</a></li>
 <li><a href='${h.url_for(action='rungroups')}'>Grid Order</a></li>
-<li><a href='${h.url_for(action='email')}'>Email List</a></li>
-</ol>
+</ul>
 
 <h3>Before The Event</h3>
-<ol>
+<ul class='cleanlist'>
 <li>Pregistered Timing Cards (<a href='${h.url_for(action='printhelp')}' target='_blank'>Printing Help</a>):
 	<ul>
 	<li>8x5 Index Cards</li>
@@ -41,15 +44,21 @@
 	<li><a href='${h.url_for(action='printcards', type='blank', page='letter')}'>8x11 Letter Paper</a></li>
 	</ul>
 </li>
+</ul>
+
+<h3>Reports</h3>
+<ul class='cleanlist'>
 <li><a href='${h.url_for(action='numbers')}' target='_blank'>Used Car Number List</a></li>
-<li><a href='${h.url_for(action='paid')}' target='_blank'>Series Fee Paid List</a></li>
+<li><a href='${h.url_for(action='paid')}' target='_blank'>List of Fess Already Paid</a></li>
 <li><a href='${h.url_for(action='paypal')}' target='_blank'>Paypal Transaction List</a></li>
-</ol>
+<li><a href='${h.url_for(action='email')}' target='_blank'>Email List</a></li>
+</ul>
 
 <h3>After The Event</h3>
-<ol>
-<li><a href='${h.url_for(action='fees')}' target='_blank'>Collected Fee List</a></li>
-</ol>
+<ul class='cleanlist'>
+<li><a href='${h.url_for(action='newentrants')}' target='_blank'>Collected Fee List</a></li>
+</ul>
+
 </div>
 
 </div>

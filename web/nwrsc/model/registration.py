@@ -18,7 +18,7 @@ class Registration(object):
 		self.eventid = eventid
 		self.carid = carid
 
-from data import Car
+from cars import Car
 mapper(Registration, t_registered, properties = {'car':relation(Car, backref='registration')})
 
 

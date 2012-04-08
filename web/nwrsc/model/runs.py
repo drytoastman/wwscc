@@ -4,6 +4,7 @@ from sqlalchemy.types import Integer, SmallInteger, String, Boolean, Float, Bina
 
 from meta import metadata
 from cars import Car
+#from event import Event
 
 ## Runs 
 t_runs = Table('runs', metadata,
@@ -68,6 +69,5 @@ class Run(object):
 
 
 mapper(Run, t_runs, properties = {
-#		'event':relation(Event),
-		'car':relation(Car)}) 
-
+		#'event':relation(Event),
+		'car':relation(Car, backref='runs')}) 

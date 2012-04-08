@@ -75,6 +75,7 @@ class Driver(object):
 		for e in self._extras:
 			if e.name == name:
 				return e.value
+		return ""
 
 	def setExtra(self, name, value):
 		for e in self._extras:

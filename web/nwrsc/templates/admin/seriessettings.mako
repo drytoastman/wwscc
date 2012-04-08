@@ -72,7 +72,7 @@
 <td><img src='${h.url_for(controller='db', name='seriesimage', eventid=None, action='nocache')}' height="40" /></td>
 </tr>
 
-<tr>
+<tr title="Image passed to the card template for printing cards">
 <th>Card Image</th>
 <td><input type=file name="cardimage"></td>
 <td><img src='${h.url_for(controller='db', name='cardimage', eventid=None, action='nocache')}' height="40" /></td>

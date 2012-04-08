@@ -79,7 +79,7 @@ class RegisteroldController(BaseController):
 	def events(self):
 		now = datetime.datetime.now()
 		for e in c.events:
-			e.regentries = self.session.query(Registration).join('car') \
+			e.regentries = self.session.query(Registration).join('cars') \
 						.filter(Registration.eventid==e.id).filter(Car.driverid==c.driverid).all()
 			e.payments = self.session.query(Payment) \
 						.filter(Payment.eventid==e.id).filter(Payment.driverid==c.driverid).all()
@@ -117,7 +117,7 @@ class RegisteroldController(BaseController):
 		c.classdata = ClassData(self.session)
 		c.inuse = []
 		c.notinuse = []
-		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]
+		regids = [x[0] for x in self.session.query(Registration.carid).join('cars').distinct().filter(Car.driverid==c.driverid)]
 		for car in c.cars:
 			if car.id in regids:
 				c.inuse.append(car)

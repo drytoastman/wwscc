@@ -1,7 +1,8 @@
 import logging
 import operator
 
-from datetime import datetime
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako
@@ -32,6 +33,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 		if self.database is not None:
 			c.events = self.session.query(Event).all()
+			c.seriesname = self.database
 		self.eventid = self.routingargs.get('eventid', None)
 
 		c.isLocked = self.settings.locked
@@ -44,7 +46,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 		if self.settings.locked:
 			action = self.routingargs.get('action', '')
-			if action not in ['login', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'fees', 'allfees', 'printhelp', 'forceunlock']:
+			if action not in ('login', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'newentrants', 'printhelp', 'forceunlock'):
 				c.seriesname = self.settings.seriesname
 				c.next = action
 				raise BeforePage(render_mako('/admin/locked.mako'))
@@ -119,14 +121,54 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 	def email(self):
 		""" Create text email reports """
 		if self.eventid == 's':
-			query = self.session.query(Driver.email).filter(Driver.email.contains('@'))
+			query = self.session.query(Driver.email).filter(Driver.email.contains('@')).distinct()
 			title = "Email Report for Series\n\n"
 		else:
-			query = self.session.query(Driver.email).join('cars', 'registration').filter(Registration.eventid==self.eventid).filter(Driver.email.contains('@'))
+			query = self.session.query(Driver.email).join('cars', 'registration').filter(Registration.eventid==self.eventid).filter(Driver.email.contains('@')).distinct()
 			title = "Email Report for %s\n\n" % c.event.name
 			
 		response.content_type = 'text/plain'
 		return title + '\n'.join([x.email for x in query.all()])
+
+
+	class WeekendReport(object):
+		pass
+
+	def _validNumber(self, num):
+		if num.isdigit() and int(num) > 100000:
+			return True
+		elif num[1:].isdigit() and int(num[1:]) > 100000:
+			return True
+		return False
+
+	def weekend(self):
+		""" Create a weekend report reporting unique entrants and their information """
+		bins = defaultdict(list)
+		events = self.session.query(Event).order_by(Event.date).all()
+		for e in events:
+			wed = e.date + timedelta(-(e.date.weekday()+5)%7)   # convert M-F(0-7) to Wed-Tues(0-7), formerly (2-6,0-1)
+			bins[wed].append(e)
+
+		c.weeks = dict()
+		for wed in sorted(bins):
+			eventids = [e.id for e in bins[wed]]
+			report = self.WeekendReport()
+			c.weeks[wed] = report
+
+			report.events = bins[wed]
+			report.drivers = self.session.query(Driver).join('cars', 'runs').filter(Run.eventid.in_(eventids)).distinct().all()
+			report.membership = list()
+			report.invalid = list()
+			for d in report.drivers:
+				num = d.getExtra('membership')
+				if self._validNumber(num):
+					report.membership.append(num)
+				else:	
+					report.invalid.append(num)
+			report.membership.sort()  # TODO: should we take into account first letters and go totally numeric?
+			report.invalid.sort()
+
+		return render_mako('/admin/weekend.mako')
 
 
 	### Settings table editor ###
@@ -191,7 +233,6 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 
 	def numbers(self):
-
 		# As with other places, one big query followed by mangling in python is faster (and clearer)
 		c.numbers = {}
 		for res in self.session.query(Driver.firstname, Driver.lastname, Car.classcode, Car.number).join('cars'):
@@ -209,22 +250,18 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 	def paid(self):
 		""" Return the list of fees paid before this event """
-		f = FeeList.get(self.session, self.eventid)
 		c.header = '<h2>Fees Collected Before %s</h2>' % c.event.name
-		c.feelist = f.before
+		c.beforelist = FeeList.get(self.session, self.eventid)[-1].before
 		return render_mako('/admin/feelist.mako')
 
-	def fees(self):
-		""" Return the list of fees collected at a single event """
-		f = FeeList.get(self.session, self.eventid)
-		c.header = '<h2>Fees Collected During %s (%d)</h2>' % (c.event.name, len(f.during))
-		c.feelist = f.during
-		return render_mako('/admin/feelist.mako')
-
-	def allfees(self):
-		""" Return the complete list of fees collected at all events """
-		c.feelists = FeeList.getAll(self.session)
-		return render_mako('/admin/allfees.mako')
+	def newentrants(self):
+		""" Return the list of new entrants/fees collected by event or for the series """
+		if self.eventid == 's':
+			c.feelists = FeeList.getAll(self.session)
+			return render_mako('/admin/newentrants.mako')
+		else:
+			c.feelists = FeeList.get(self.session, self.eventid)
+			return render_mako('/admin/newentrants.mako')
 
 	def paypal(self):
 		""" Return a list of paypal transactions for the current event """
@@ -358,6 +395,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		c.classlist = self.session.query(Class).order_by(Class.code).all()
 		c.indexlist = [""] + [x[0] for x in self.session.query(Index.code).order_by(Index.code)]
 		return render_mako('/admin/classlist.mako')
+
 
 	@validate(schema=ClassListSchema(), form='classlist')
 	def processClassList(self):
