@@ -94,7 +94,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		now = datetime.datetime.now()
 		c.events = self.session.query(Event).all()
 		for e in c.events:
-			e.regentries = self.session.query(Registration).join('cars') \
+			e.regentries = self.session.query(Registration).join('car') \
 						.filter(Registration.eventid==e.id).filter(Car.driverid==c.driverid).all()
 			e.payments = self.session.query(Payment) \
 						.filter(Payment.eventid==e.id).filter(Payment.driverid==c.driverid).all()
@@ -107,7 +107,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		c.classdata = ClassData(self.session)
 		c.inuse = []
 		c.notinuse = []
-		regids = [x[0] for x in self.session.query(Registration.carid).join('cars').distinct().filter(Car.driverid==c.driverid)]
+		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]
 		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
 		for car in c.cars:
 			car.inuse = car.id in regids
@@ -166,7 +166,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 	def getcars(self):
 		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
 		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		regids = [x[0] for x in self.session.query(Registration.carid).join('cars').distinct().filter(Car.driverid==c.driverid)]
+		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]
 		for car in c.cars:
 			car.inuse = car.id in regids
 		return {'data': str(render_mako_def('/register/cars.mako', 'carlist'))}
@@ -175,7 +175,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 	def getevent(self):
 		eventid = int(request.GET.get('eventid', 0))
 		event = self.session.query(Event).filter(Event.id==eventid).first()
-		event.regentries = self.session.query(Registration).join('cars').filter(Registration.eventid==event.id).filter(Car.driverid==c.driverid).all()
+		event.regentries = self.session.query(Registration).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==c.driverid).all()
 		event.payments = self.session.query(Payment).filter(Payment.eventid==event.id).filter(Payment.driverid==c.driverid).all()
 		now = datetime.datetime.now()
 		event.closed = now > event.regclosed 
@@ -185,7 +185,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 			event.tdclass = 'closed'
 
 		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		regids = [x[0] for x in self.session.query(Registration.carid).join('cars').distinct().filter(Car.driverid==c.driverid)]
+		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]
 		for car in c.cars:
 			car.inuse = car.id in regids
 		return {'data': str(render_mako_def('/register/events.mako', 'eventdisplay', ev=event))}

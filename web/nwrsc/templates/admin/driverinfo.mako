@@ -8,7 +8,7 @@ allids = [x.driver.id for x in c.items]
 drivers[${info.driver.id}] = ${h.encodesqlobj(info.driver)|n}
 </script>
 
-<% anyruns = sum([x.runs for x in info.cars]) %>
+<% anyruns = sum([x.runcount for x in info.cars]) %>
 
 <div class='editor' id='driver${info.driver.id}'>
 <button class='editor' onclick='editdriver(${info.driver.id});'>Edit</button>
@@ -42,9 +42,9 @@ cars[${car.id}] = ${h.encodesqlobj(car)|n}
 <tr>
 <td class='carcell' colspan='2'>
 <button class='ceditor' onclick='editcar(${info.driver.id}, ${car.id});'>Edit</button>
-<button class='ceditor' onclick='deletecar(${car.id});' ${car.runs and "disabled='disabled'"}>Delete</button>
+<button class='ceditor' onclick='deletecar(${car.id});' ${car.runcount and "disabled='disabled'"}>Delete</button>
 <button class='ceditor' onclick='titlecasecar(${car.id});'>TitleCase</button>
-${car.classcode}(${car.indexcode}) #${car.number} ${car.year} ${car.make} ${car.model} ${car.color} (${car.runs} events)
+${car.classcode}(${car.indexcode}) #${car.number} ${car.year} ${car.make} ${car.model} ${car.color} (${car.runcount} events)
 </td>
 </tr>
 %endfor
