@@ -32,9 +32,20 @@ font-size: 1.1em;
 color: #000;
 }
 
+#carerror {
+margin: auto;
+text-align: center;
+}
+
+#carerror label {
+border: 0px;
+display: block;
+}
+
 </style>
 
 <form id='careditor'>
+<div id='carerror' class='ui-state-error-text'></div>
 <input id='driverid' name='driverid' type='hidden'/>
 <input id='carid' name='carid' type='hidden'/>
 <table class='careditor'>

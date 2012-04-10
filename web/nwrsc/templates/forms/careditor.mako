@@ -10,6 +10,8 @@ function classchange()
 		$('#careditor [name=indexcode]').val(0);
 		$('#careditor [name=indexcode]').attr('disabled', 'disabled');
 	}
+
+	setnum("");
 }
 
 function editcar(did, cid)
@@ -49,6 +51,8 @@ function setnum(v)
 	input.val(v);
 	if (input.attr('type') == 'hidden') {
 		$('#numberdisplay').html(v);
+		if (v != "")
+			$('#careditor').validate().form();
 	}
 	
 	$('#numberselection').dialog('close');
@@ -68,8 +72,24 @@ function setupCarDialog()
 				max: 1999,
 			}
 		},
+
 		messages: { 
-			indexcode: 'an index is required for indexed classes'
+			indexcode: 'an index is required for indexed classes',
+			number: 'a number is required'
+		},
+
+		invalidHandler: function(e, validator) {
+			var errors = validator.numberOfInvalids();
+			if (errors) {
+				$("#carerror").html("");
+				$("#carerror").show();
+			} else {
+				$("#carerror").hide();
+			}
+		},
+
+		errorPlacement: function(error, element) {
+			$("#carerror").append(error);
 		},
 	});
 

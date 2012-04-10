@@ -46,16 +46,14 @@ function setupDriverDialog(title)
 		invalidHandler: function(e, validator) {
 			var errors = validator.numberOfInvalids();
 			if (errors) {
-				var message = errors == 1
-					? 'You missed 1 field. It has been highlighted below'
-					: 'You missed ' + errors + ' fields.  They have been highlighted below';
-				$("#drivererror").html(message);
+				$("#drivererror").html("first name, last name and unique/email must be at least 3 characters each");
 				$("#drivererror").show();
 			} else {
 				$("#drivererror").hide();
 			}
 		},
-		showErrors: function(errorMap, errorList) { },
+		errorPlacement: function(error, element) {
+		},
 		onkeyup: false,
 		messages: {}
 	});

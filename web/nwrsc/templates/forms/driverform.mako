@@ -7,6 +7,7 @@
 #drivereditor th, #drivereditor td { text-align: right; font-weight: normal; }
 #namerow th, #emailrow th { font-weight: bold; }
 #emailrow th, #emailrow td { padding-bottom: 20px; }
+.error { border: 1px solid red; }
 </style>
 
 <%
@@ -21,7 +22,8 @@
 %>
 
 <form id='drivereditor' ${addition}>
-<div id='drivererror'></div> <input name='driverid' type='hidden' value='-1'/>
+<div id='drivererror' class='ui-state-error-text'></div>
+<input name='driverid' type='hidden' value='-1'/>
 <table> <tbody>
 
 <tr id='namerow'>

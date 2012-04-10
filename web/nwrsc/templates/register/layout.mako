@@ -22,7 +22,7 @@ ${profile()}
 
 %for ev in sorted(c.events, key=lambda obj: obj.date):
 	<h3><a>${ev.date.strftime('%a %b %d')} - ${ev.name}</a></h3>
-	<div id='event${ev.id}'>
+	<div id='event${ev.id}' class='eventholder'>
 	${eventdisplay(ev)}
 	</div>
 %endfor
@@ -60,18 +60,24 @@ $(document).ready(function() {
 
 function updateEvent(eventid)
 {
-	$.getJSON('${h.url_for(action='getevent')}', {eventid:eventid}, function(json) { $("#event"+eventid).html(json.data)} );
+	$.getJSON('${h.url_for(action='getevent')}', {eventid:eventid}, function(json) {
+		$("#event"+eventid).html(json.data);
+	});
 }
 
 function updateCars()
 {
-	$.getJSON('${h.url_for(action='getcars')}', function(json) { $("#carswrapper").html(json.data)} );
+	$.getJSON('${h.url_for(action='getcars')}', function(json) { 
+		$("#carswrapper").html(json.data);
+	});
 }
 
 function driveredited()
 {
 	$.post('${h.url_for(action='editdriver')}', $("#drivereditor").serialize(), function() {
-		$.getJSON('${h.url_for(action='getprofile')}', function(json) { $("#profilewrapper").html(json.data)} );
+		$.getJSON('${h.url_for(action='getprofile')}', function(json) {
+			$("#profilewrapper").html(json.data)
+		});
 	});
 }
 
@@ -102,6 +108,7 @@ function deletecar(carid)
 function registerCar(s, eventid)
 {
 	var carid = s.options[s.selectedIndex].value;
+	$("#event"+eventid+" select").attr("disabled", "disabled");
 	$.post('${h.url_for(action='registercar')}', {eventid:eventid, carid:carid}, function() {
 		updateEvent(eventid);
 		updateCars();
@@ -111,6 +118,7 @@ function registerCar(s, eventid)
 function reRegisterCar(s, eventid, regid)
 {
 	var carid = s.options[s.selectedIndex].value;
+	$("#event"+eventid+" select").attr("disabled", "disabled");
 	$.post('${h.url_for(action='registercar')}', {regid:regid, carid:carid}, function() {
 		updateEvent(eventid);
 		updateCars();
@@ -119,6 +127,7 @@ function reRegisterCar(s, eventid, regid)
 
 function unregisterCar(eventid, regid)
 {
+	$("#event"+eventid+" select").attr("disabled", "disabled");
 	$.post('${h.url_for(action='registercar')}', {regid:regid, carid:-1}, function() {
 		updateEvent(eventid); 
 		updateCars();
