@@ -53,7 +53,7 @@ class PurgeCopy(object):
 		# All cars that have runs in any previous database
 		oldcarids = set()
 		for s in searchseries:
-			conn = sqlite3.connect(os.path.join(config['seriesdir'], s))
+			conn = sqlite3.connect(self.databasePath(s))
 			conn.row_factory = sqlite3.Row
 			cur = conn.cursor()
 			cur.execute("select distinct carid from runs")
@@ -63,7 +63,7 @@ class PurgeCopy(object):
 		# All drivers associated with those runs
 		olddriverids = set()
 		for s in searchseries:
-			conn = sqlite3.connect(os.path.join(config['seriesdir'], s))
+			conn = sqlite3.connect(self.databasePath(s))
 			conn.row_factory = sqlite3.Row
 			cur = conn.cursor()
 			cur.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, oldcarids))))
