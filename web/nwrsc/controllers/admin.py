@@ -64,7 +64,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			c.text = "<h3>No such event for %s</h3>" % eventid
 			raise BeforePage(render_mako('/admin/simple.mako'))
 	
-		ipsession = session.setdefault(self.srcip, {})
+		ipsession = session.setdefault(('admin', self.srcip), {})
 		tokens = ipsession.setdefault('authtokens', set())
 		c.isAdmin = self._tokenName('series') in tokens
 		if event is not None:
@@ -88,7 +88,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 	def login(self):
 		password = request.POST.get('password')
-		ipsession = session.setdefault(self.srcip, {})
+		ipsession = session.setdefault(('admin', self.srcip), {})
 		tokens = ipsession.setdefault('authtokens', set())
 
 		if password == self.settings.password:
