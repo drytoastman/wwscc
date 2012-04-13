@@ -24,13 +24,8 @@ input.closebutton
 <h2>Create Profile</h2>
 <div class='infobox'>
 <ul>
-<li>First name, last name and email/uniqueid are required
-<li>
-If you don't wish to have your name displayed on public results, you can enter
-a value in the public alias field.  If it is not blank, the value will be used
-in place of your real name for any publically available results.  All results
-onsite, timing cards, etc will retain your real name.  
-</li>
+<li>First name, last name and email/uniqueid are required</li>
+<li>Alias requires series administrator approval first</li>
 </ul>
 </div>
 

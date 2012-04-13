@@ -1,6 +1,9 @@
 import traceback
 import sys
 import shutil
+import logging
+
+log = logging.getLogger(__name__)
 
 from pylons import request, response
 from pylons.controllers.util import abort

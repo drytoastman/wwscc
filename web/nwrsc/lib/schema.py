@@ -84,7 +84,6 @@ class SettingsSchema(Schema):
 	superuniquenumbers = Bool()
 	indexafterpenalties = Bool()
 	locked = Bool()
-	archived = Bool()
 	sponsorimage = Validator()
 	seriesimage = Validator()
 	cardimage = Validator()
