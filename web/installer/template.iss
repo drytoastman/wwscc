@@ -24,6 +24,7 @@ Name: "python"; Description: "Python And Web Service"; Types: full
 [Dirs]
 Name: "{app}\java"; Permissions: users-modify
 Name: "{userdocs}\nwrsc\series"; Permissions: users-modify; Flags: uninsneveruninstall
+Name: "{userdocs}\nwrsc\archive"; Permissions: users-modify; Flags: uninsneveruninstall
 Name: "{userdocs}\nwrsc\backup"; Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
