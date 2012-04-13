@@ -74,6 +74,13 @@ li li { font-size: 90%; }
 	text-decoration:none;
 }
 
+#titlebutton a {
+	color: black;
+}
+
+#titlebutton a:hover {
+	border: 1px solid #DDD;
+}
 
 
 /* superfish */

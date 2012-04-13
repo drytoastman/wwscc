@@ -1,6 +1,6 @@
 from sqlalchemy import Table, Column, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.orm import mapper, relation, session
-from sqlalchemy.types import Integer, SmallInteger, String, Boolean, Float, Binary, DateTime
+from sqlalchemy.types import Integer, SmallInteger, String, Boolean, Float, DateTime
 
 from meta import metadata
 
@@ -64,6 +64,13 @@ class Driver(object):
 			if hasattr(self, k):
 				setattr(self, k, v)
 
+	def copy(self):
+		ret = Driver()
+		for col in t_drivers.c.keys():
+			if col != 'id':
+				setattr(ret, col, getattr(self, col))
+		return ret
+		
 	def getFeed(self):
 		d = dict()
 		d['firstname'] = self.firstname
@@ -95,6 +102,9 @@ class Driver(object):
 			if e.name == name:
 				session.Session.object_session(self).delete(e)
 				return
+
+	def clearExtra(self):
+		self._extras[:] = []
 
 		
 mapper(Driver, t_drivers, properties = { '_extras' : relation(DriverExtra) } ) 

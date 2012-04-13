@@ -2,7 +2,6 @@ import logging
 import os
 
 from sqlalchemy import create_engine
-from sqlalchemy.pool import NullPool
 
 from pylons import request, config, tmpl_context as c
 from pylons.templating import render_mako
@@ -119,7 +118,7 @@ class PurgeCopy(object):
 		root = nwrsc.__path__[0]
 
 		if not os.path.exists(self.databasePath(name)):
-			metadata.bind = create_engine('sqlite:///%s' % self.databasePath(name), poolclass=NullPool)
+			metadata.bind = create_engine('sqlite:///%s' % self.databasePath(name))
 			metadata.create_all()
 
 			conn = sqlite3.connect(':memory:')

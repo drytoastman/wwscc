@@ -1,51 +1,77 @@
-"""The base Controller API
+"""
+The base Controller API
 
 Provides the BaseController class for subclassing.
+
 """
+
 from pylons.controllers import WSGIController
 from pylons.templating import render_mako
 from pylons import config, request, tmpl_context as c
 from webob.exc import HTTPNotFound
 
-from nwrsc.model import Session, metadata, Settings, SCHEMA_VERSION
+from nwrsc.model import Driver, Session, Settings, SCHEMA_VERSION
 from nwrsc.model.conversions import convert as dbconversion
 from sqlalchemy import create_engine
-from sqlalchemy.pool import NullPool
 
 import os
 import glob
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class BeforePage(Exception):
+
 	def __init__(self, data):
 		self.data = data
 
+
 class DatabaseListing(object):
+
 	def __init__(self, **kwargs):
-		for n in ('name', 'locked', 'archived', 'mtime'):
+		for n in ('name', 'locked', 'archived', 'mtime', 'driver'):
 			setattr(self, n, kwargs[n])
 
 	def getFeed(self):
-		return self.__dict__
+		return {'name':self.name, 'locked':self.locked, 'archived':self.archived, 'mtime':self.mtime}
 
 
 class BaseController(WSGIController):
 	""" Base controller ala Pylons base, modified for using multiple databases based on URL """
 
 
-	def databasePath(self, database):
-		""" Given a database name (no extension), return the full path where we expect to find it """
-		return os.path.join(config['seriesdir'], '%s.db' % (database))
+	def databasePath(self, name):
+		"""
+			Given a database name (no extension), return the full path where we expect to find it
+			Includes checks for case insensitive names.
+			Returns None if there nothing to find.
+		"""
+		path = os.path.join(config['seriesdir'], '%s.db' % name)
+		if os.path.exists(path):
+			return path
+
+		path = os.path.join(config['archivedir'], '%s.db' % name)
+		if os.path.exists(path):
+			return path
+
+		name = name.lower()
+
+		for path in glob.glob(os.path.join(config['seriesdir'], '*.db')):
+			if os.path.basename(path)[:-3].lower() == name:
+				return path
+
+		for path in glob.glob(os.path.join(config['archivedir'], '*.db')):
+			if os.path.basename(path)[:-3].lower() == name:
+				return path
+
+		return None
 
 
-	def databaseSelector(self, showArchived=False, timelimit=0.0):
+	def databaseSelector(self, archived=False, timelimit=0.0):
 		"""" Common routine for other controllers, return a list of active series to select """
 		c.dblist = list()
-		for db in self._databaseList():
-			if not showArchived and db.archived:
-				continue
+		for db in self._databaseList(archived=archived):
 			if db.mtime < timelimit:
 				continue
 			c.dblist.append(db)
@@ -53,43 +79,63 @@ class BaseController(WSGIController):
 		return render_mako('/databaseselect.mako')
 
 
-	def _databaseList(self):
+	def _verifyID(self, firstname, lastname, email):
+		""" return a driver object if one matches the three tuple """
+		query = self.session.query(Driver)
+		query = query.filter(Driver.firstname.like(firstname+'%'))
+		query = query.filter(Driver.lastname.like(lastname+'%'))
+		for d in query.all():
+			if d.email.lower().strip() == email.lower().strip():
+				return d
+		return None
+
+
+	def _databaseList(self, archived=True, driver=None):
 		"""
 			Return a list of the current databases with information on lock and archive settings
-			Note, this affects the current active metadata
 		"""
 		ret = list()
-		for path in glob.glob('%s/*.db' % (config['seriesdir'])):
+		savedengine = self.session.bind
+
+		paths = glob.glob('%s/*.db' % (config['seriesdir']))
+		if archived:
+			paths.extend(glob.glob('%s/*.db' % (config['archivedir'])))
+
+		for path in paths:
 			try:
-				engine = create_engine('sqlite:///%s' % path, poolclass=NullPool)
-				metadata.bind = engine
+				engine = create_engine('sqlite:///%s' % path)
 				self.session.bind = engine
-				self.settings = Settings()
-				self.settings.load(self.session)
+				settings = Settings()
+				settings.load(self.session)
 				name = os.path.splitext(os.path.basename(path))[0] 
 				mtime = os.path.getmtime(path)
-				ret.append(DatabaseListing(name=name, mtime=mtime, locked=self.settings.locked, archived=self.settings.archived))
+				archived = (os.path.dirname(path) == config['archivedir'])
+
+				check = None
+				if driver is not None and name != self.database:
+					check = self._verifyID(driver.firstname, driver.lastname, driver.email)
+					
+				ret.append(DatabaseListing(name=name, mtime=mtime, driver=check, locked=settings.locked, archived=archived))
 				self.session.close()
 			except Exception, e:
 				log.error("available error with %s (%s) " % (name,e))
 	
+		self.session.bind = savedengine
 		return ret
 
 
-	def _findDatabase(self):
-		""" See if we can find the database as specified, if not, check without case """
-		dbpath = self.databasePath(self.database)
-		if os.path.exists(dbpath):
-			return dbpath
-		
-		dblower = dbpath.lower()
-		for name in glob.glob(self.databasePath('*')):
-			if name.lower() == dblower:
-				self.database = os.path.basename(name)[:-3]
-				return name 
-
-		self.database = None
-		return None
+	def _loadDriverFrom(self, otherseries=None, firstname=None, lastname=None, email=None):
+		"""
+			Get driver entry from another series, kept in lib/base so any users of create_engine
+			stay in this single file, hidden from others
+		"""
+		savedengine = self.session.bind
+		engine = create_engine('sqlite:///%s' % self.databasePath(otherseries))
+		self.session.bind = engine
+		driver = self._verifyID(firstname, lastname, email)
+		self.session.expunge(driver) # so we can use in another session
+		self.session.bind = savedengine
+		return driver.copy()  # just copy it, don't know what magic sqla wants to reset ids and mappings
 
 
 	def __call__(self, environ, start_response):
@@ -104,19 +150,19 @@ class BaseController(WSGIController):
 		self.database = self.routingargs.get('database', None)
 
 		if self.database is None:  # no database specified yet, allow selection later by controller
-			engine = create_engine('sqlite:///:memory:', poolclass=NullPool)
+			engine = create_engine('sqlite:///:memory:')
 		else:
-			dbpath = self._findDatabase()
+			dbpath = self.databasePath(self.database)
 			if dbpath is not None:
-				engine = create_engine('sqlite:///%s' % dbpath, poolclass=NullPool)
+				engine = create_engine('sqlite:///%s' % dbpath)
 			else:
 				return HTTPNotFound() # don't know where you are going, but it stops here for me
 
+		# setup sqlalchemy session and pull in settings
 		self.session = Session()
 		self.session.bind = engine
-		metadata.bind = engine
-
 		self.settings = Settings()
+
 		if self.database is not None:
 			self.settings.load(self.session)
 			# Check if we are the correct schema, update if possible
@@ -130,5 +176,6 @@ class BaseController(WSGIController):
 				start_response('200 OK', [('content-type', 'text/html')], None)
 				return p.data
 		finally:
-			Session.remove()
+			Session.remove() # sqlalchemy session
+
 

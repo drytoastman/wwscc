@@ -22,7 +22,7 @@ class AnnouncerController(BaseController):
 			c.events = self.session.query(Event).all()
 			return render_mako('/eventselect.mako')
 		else:
-			return databaseSelector()
+			return self.databaseSelector()
 
 
 	@jsonify

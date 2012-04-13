@@ -1,15 +1,5 @@
 <%inherit file="/base.mako" />
 
-<style>
-#titlebutton a {
-	color: black;
-	background: url("images/ui-bg_highlight-soft_100_f6f6f6_1x100.png") repeat-x scroll 50% 50% rgb(246, 246, 246);
-}
-#titlebutton a:hover {
-	border: 1px solid #DDD;
-}
-</style>
-
 <ul id='adminmenu' class='sf-menu'>
 <li id='titlebutton'><a>${c.seriesname}</a></li>
 <li><a href='javascript:void(0);'>Event Admin</a>

@@ -51,7 +51,7 @@ class ResultsController(BaseController):
 			c.events = self.session.query(Event).all()
 			return render_mako('/results/eventselect.mako')
 		else:
-			return self.databaseSelector()
+			return self.databaseSelector(archived=True)
 
 
 	@checklist

@@ -1,4 +1,4 @@
-<%def name="driverform(action=None, method='POST', driver=None)">
+<%def name="driverform(action=None, method='POST', driver=None, allowalias=False)">
 
 <style>
 #drivererror { margin: auto; text-align: center; }
@@ -6,7 +6,8 @@
 #drivereditor th { padding-left: 14px; padding-right: 5px; }
 #drivereditor th, #drivereditor td { text-align: right; font-weight: normal; }
 #namerow th, #emailrow th { font-weight: bold; }
-#emailrow th, #emailrow td { padding-bottom: 20px; }
+#aliasrow th, #aliasrow td { padding-top: 3px; padding-bottom: 20px; }
+#aliasrow td { text-align: left; }
 .error { border: 1px solid red; }
 </style>
 
@@ -38,9 +39,15 @@
 <td colspan='6'><input name='email' type='text' value='${driver.email}'/></td>
 </tr>
 
-<tr>
+<tr id='aliasrow'>
 <th>Public Alias</th>
-<td colspan='6'><input name="alias" type='text' value='${driver.alias}'></td>
+<td colspan='6'>
+%if allowalias:
+<input name="alias" type='text' value='${driver.alias}'>
+%else:
+<span name="alias">${driver.alias}</span>
+%endif
+</td>
 </tr>
 
 <tr>

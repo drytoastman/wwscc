@@ -138,6 +138,7 @@ class LoginSchema(Schema):
 	firstname = String(not_empty=True)
 	lastname = String(not_empty=True)
 	email = String(not_empty=True)
+	otherseries = String()
 
 class DriverSchema(Schema):
 	allow_extra_fields = True
@@ -152,5 +153,5 @@ class DriverSchema(Schema):
 	phone = String()
 	brag = String()
 	sponsor = String()
-	alias = String()
+	#alias = String()
 

@@ -1,6 +1,6 @@
 from sqlalchemy import Table, Column, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.orm import mapper, relation, session
-from sqlalchemy.types import Integer, SmallInteger, String, Boolean, Float, Binary, DateTime
+from sqlalchemy.types import Integer, SmallInteger, String, Boolean, Float, DateTime
 
 from meta import metadata
 from cars import Car

@@ -34,7 +34,7 @@ div.editor { margin-left: 10px; margin-bottom: 15px; width: 650px;}
 
 <br style='clear:both'/>
 
-${driverform()}
+${driverform(allowalias=True)}
 ${carform(False)}
 
 <script>

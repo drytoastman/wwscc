@@ -1,11 +1,20 @@
 
+function editdriverdirect(firstname, lastname, email)
+{
+	d = Object()
+	d.firstname = firstname
+	d.lastname = lastname
+	d.email = email
+	drivers[-2] = d
+	editdriver(-2)
+}
+
 function editdriver(did)
 {
 	if (did in drivers)
 	{
 		$('#drivereditor [name=firstname]').val(drivers[did].firstname);
 		$('#drivereditor [name=lastname]').val(drivers[did].lastname);
-		$('#drivereditor [name=alias]').val(drivers[did].alias);
 		$('#drivereditor [name=email]').val(drivers[did].email);
 		$('#drivereditor [name=address]').val(drivers[did].address);
 		$('#drivereditor [name=city]').val(drivers[did].city);
@@ -17,6 +26,8 @@ function editdriver(did)
 %for field in c.fields:
 		$('#drivereditor [name=${field.name}]').val(drivers[did].${field.name});
 %endfor
+		$('#drivereditor [name=alias]').val(drivers[did].alias);
+		$('#drivereditor [name=alias]').html(drivers[did].alias);
 	}
 	else
 	{

@@ -30,6 +30,8 @@ def load_environment(global_conf, app_conf):
     config['pylons.h'] = nwrsc.lib.helpers
     config['nwrsc.onsite'] = asbool(config.get('nwrsc.onsite', 'false'))
     config['nwrsc.private'] = asbool(config.get('nwrsc.private', 'false'))
+    if 'archivedir' not in config:
+        config['archivedir'] = '/doesnotexist'
 
     # Create the Mako TemplateLookup, with the default auto-escaping
     config['pylons.app_globals'].mako_lookup = DatabaseLookup(

@@ -5,7 +5,6 @@ import shutil
 from pylons import request, response
 from pylons.controllers.util import abort
 from sqlalchemy import create_engine
-from sqlalchemy.pool import NullPool
 
 from nwrsc.controllers.lib.base import BaseController
 from nwrsc.lib.codec import Codec, DataInput
@@ -56,9 +55,8 @@ class DbserveController(BaseController):
 		dbpost.file.close()
 		out.close()
 		
-		engine = create_engine('sqlite:///%s' % self.databasePath(self.database), poolclass=NullPool)
+		engine = create_engine('sqlite:///%s' % self.databasePath(self.database))
 		self.session.bind = engine
-		metadata.bind = engine
 		self.settings = Settings()
 		self.settings.load(self.session)
 		self.settings.locked = False

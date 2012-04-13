@@ -18,6 +18,8 @@ def row2dict(row):
 	return args
 
 def convert2011(session):
+	metadata.bind = session.bind
+
 	session.execute("ALTER TABLE classlist RENAME to oldclasslist")
 	metadata.tables['classlist'].create()
 

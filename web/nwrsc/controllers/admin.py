@@ -115,7 +115,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			c.text = "<h2>%s Adminstration</h2>" % self.routingargs['database']
 			return render_mako('/admin/simple.mako')
 		else:
-			return self.databaseSelector(True)
+			return self.databaseSelector(archived=True)
 
 
 	def email(self):

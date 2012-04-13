@@ -1,9 +1,11 @@
 import datetime
+import logging
 
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako, render_mako_def
 from pylons.controllers.util import redirect, url_for
 from pylons.decorators import jsonify, validate
+from sqlalchemy import create_engine
 
 from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.controllers.lib.paypal import PayPalIPN
@@ -11,6 +13,76 @@ from nwrsc.controllers.lib.objecteditors import ObjectEditor
 
 from nwrsc.lib.schema import *
 from nwrsc.model import *
+
+log = logging.getLogger(__name__)
+
+
+class UserSession():
+
+	def __init__(self, data, active):
+		self.data = data
+		self.active = active
+
+	def _series(self, series=None):
+		if series is None: series = self.active
+		return self.data.setdefault(series, {})
+
+	def getDriverId(self):
+		return self._series().get('driverid', -1)
+
+	def getOptionalLogin(self):
+		db = self._series()
+		a = db.setdefault('optionailLogin', [])
+		b = db.setdefault('showNewProfile', False)
+		session.save()
+		return (a, b)
+
+	def setOptionalLogin(self, otherseries, showNewProfile=True):
+		db = self._series()
+		db['optionailLogin'] = otherseries
+		db['showNewProfile'] = showNewProfile
+		session.save()
+
+	def getPreviousError(self):
+		db = self._series()
+		ret = db.get('previouserror', '')
+		db['previouserror'] = ''
+		session.save()
+		return ret
+
+	def setPreviousError(self, error):
+		db = self._series()
+		db['previouserror'] = error
+		session.save()
+
+	def setLoginInfo(self, driver=None):
+		db = self._series()
+		db['driverid'] = driver.id
+		db['creds'] = (driver.firstname, driver.lastname, driver.email)
+		session.save()
+
+	def activeCreds(self):
+		ids = set()
+		for db in self.data.itervalues():
+			creds = db.get('creds', '')
+			if len(creds) == 3:
+				ids.add(creds)
+		return ids
+
+	def clear(self):
+		""" Remove all active creds """
+		for name in self.data:
+			self.data[name] = {}
+		session.save()
+
+	def clearSeries(self):
+		""" Clear just the data from this active series (if something is kajigered) """
+		self._series().clear()
+
+	def __repr__(self):
+		return repr(self.data)
+		
+
 
 class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
@@ -23,75 +95,60 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		c.stylesheets = ['/css/register.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css']
 		c.javascript = ['/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/jquery.validate.min.js']
 
-		try:
-			c.javascript.append(url_for(action='scripts'))
-		except:
-			pass
+		if self.database is None:
+			return
+
+		c.javascript.append(url_for(action='scripts'))
+		self.user = UserSession(session.setdefault(('register', self.srcip), {}), self.database) 
 
 		c.settings = self.settings
+		c.database = self.database
+		c.driverid = self.user.getDriverId()
+		c.previouserror = self.user.getPreviousError()
 
-		ipsession = session.setdefault(self.srcip, {})
+		if action not in ('view', 'scripts') and self.settings.locked:
+			# Delete any saved session data for this person
+			raise BeforePage(render_mako('/register/locked.mako'))
 
-		if self.database is not None:
-			self.user = ipsession.setdefault(self.database, {})
-			c.driverid = self.user.get('driverid', 0)
-			c.previouserror = self.user.get('previouserror', '')
-			c.database = self.database
-			self.user['previouserror'] = ''
+		if action in ('index', 'events', 'cars', 'profile') and c.driverid < 1:
+			for cred in self.user.activeCreds():
+				driver = self._verifyID(*cred)
+				if driver is not None:
+					self.user.setLoginInfo(driver)
+					c.driverid = self.user.getDriverId()
+					return # continue on to regular page, we are now verified
 
-			if action in ['index', 'events', 'cars', 'profile'] and c.driverid < 1:
-				session.save()
-				redirect(url_for(action='login'))
+			c.fields = self.session.query(DriverField).all()
+			(c.otherseries, c.shownewprofile) = self.user.getOptionalLogin()
+			raise BeforePage(render_mako('/register/login.mako'))
 
-			if action not in ['view'] and self.settings.locked:
-				# Delete any saved session data for this person
-				del ipsession[self.database]
-				session.save()
-				raise BeforePage(render_mako('/register/locked.mako'))
-
-			session.save()
-			
 
 	def login(self):
-		c.fields = self.session.query(DriverField).all()
-		return render_mako('/register/login.mako')
+		redirect(url_for(action=''))
 
 	def logout(self):
 		# Clear session for database
-		del session[self.srcip][self.database]
-		session.save()
-		redirect(url_for(action='index'))
+		self.user.clear()
+		redirect(url_for(action=''))
 
 	def scripts(self):
 		response.headers['Cache-Control'] = 'max-age=360' 
 		response.headers.pop('Pragma', None)
 		return render_mako('/forms/careditor.mako') + render_mako('/forms/drivereditor.mako')
 
-	@validate(schema=LoginSchema(), form='login', prefix_error=False)
-	def checklogin(self):
-		query = self.session.query(Driver)
-		query = query.filter(Driver.firstname.like(self.form_result['firstname']+'%'))
-		query = query.filter(Driver.lastname.like(self.form_result['lastname']+'%'))
-		for d in query.all():
-			if d.email.lower().strip() == self.form_result['email'].lower().strip():
-				self.user['driverid'] = d.id
-				session.save()
-				redirect(url_for(action=''))
-
-		self.user['previouserror'] =  """Couldn't find a match for your information, try again.<br>
-				If you have never registered before, you can <a href='javascript;' onclick='editdriver(-1); return false;'>create a new profile</a>""" 
-		session.save()
-		redirect(url_for(action='login'))
-
 
 	def index(self):
 		if self.database is None:
 			return self.databaseSelector()
 
-		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
-		c.fields = self.session.query(DriverField).all()
-
 		now = datetime.datetime.now()
+		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
+		if c.driver is None:
+			c.previouserror = "Invalid driver ID saved in session, that is pretty weird, login again"
+			self.user.clearSeries()
+			return render_mako('/register/login.mako')
+
+		c.fields = self.session.query(DriverField).all()
 		c.events = self.session.query(Event).all()
 		for e in c.events:
 			e.regentries = self.session.query(Registration).join('car') \
@@ -114,6 +171,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		return render_mako('/register/layout.mako')
 
 
+
 	def registercar(self):
 		carid = int(request.POST.get('carid', 0))
 		regid = int(request.POST.get('regid', 0))
@@ -127,8 +185,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		else: # add car
 			event = self.session.query(Event).filter(Event.id==eventid).first()
 			if event.totlimit and event.count >= event.totlimit:
-				self.user['previouserror'] = "Sorry, prereg reached its limit of %d since your last page load" % (event.totlimit)
-				session.save()
+				self.user.setPreviousError("Sorry, prereg reached its limit of %d since your last page load" % (event.totlimit))
 			else:
 				reg = Registration(eventid, carid)
 				self.session.add(reg)
@@ -136,6 +193,36 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		self.session.commit()
 
 		 
+	@validate(schema=LoginSchema(), form='login', prefix_error=False)
+	def checklogin(self):
+		fr = self.form_result
+
+		# Try and copy user profile from another series
+		if fr['otherseries']:
+			log.info("Copy user profile from %s to %s", fr['otherseries'], self.database)
+			driver = self._loadDriverFrom(fr['otherseries'], fr['firstname'], fr['lastname'], fr['email'])
+			self.session.add(driver)
+			self.session.commit()
+			self.user.setLoginInfo(driver)
+			redirect(url_for(action=''))
+
+		# Try and login to this series
+		driver = self._verifyID(fr['firstname'], fr['lastname'], fr['email'])
+		if driver is not None:
+			log.debug("Login approved")
+			self.user.setLoginInfo(driver)
+			redirect(url_for(action=''))
+
+		# Nothing worked, find any info we can and let user know on next load
+		othermatches = list()
+		for series in self._databaseList(archived=False, driver=Driver(**fr)):
+			if series.driver is not None:
+				othermatches.append(series)
+		self.user.setOptionalLogin(othermatches, True)
+		redirect(url_for(action=''))
+
+
+
 	@validate(schema=DriverSchema(), form='profile', prefix_error=False)
 	def newprofile(self):
 		query = self.session.query(Driver)
@@ -143,17 +230,16 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		query = query.filter(Driver.lastname.like(self.form_result['lastname'])) # no case compare
 		query = query.filter(Driver.email.like(self.form_result['email'])) # no case compare
 		for d in query.all():
-			self.user['previouserror'] =  "Name and unique ID already exist, please login instead"
-			redirect(url_for(action='login'))
+			self.user.setPreviousError("Name and unique ID already exist, please login instead")
+			redirect(url_for(action=''))
 
 		driver = Driver()
 		self.session.add(driver)
 		self._extractDriver(driver)
 		self.session.commit()
 
-		self.user['driverid'] = driver.id
-		session.save()
-		redirect(url_for(action='index'))
+		self.user.setLoginInfo(driver)
+		redirect(url_for(action=''))
 
 
 	@jsonify

@@ -5,29 +5,36 @@
 <%namespace file="cars.mako" import="carlist"/>
 <%namespace file="profile.mako" import="profile"/>
 
-<%def name="leftpiece()">
-<div id='profile'>
-<div id='profilewrapper'>
-${profile()}
-</div>
-<input id='editprofile' type='button' value='Edit' onclick='editdriver(${c.driver.id})'/>
-<input id='logout' type='button' value='Logout' onclick='document.location.href="${h.url_for(action="logout")}"'/>
-</div>
-</%def>
-
-
 <div id='events'>
 <h2>Events</h2>
 <div id='eventsinner'>
 
 %for ev in sorted(c.events, key=lambda obj: obj.date):
-	<h3><a>${ev.date.strftime('%a %b %d')} - ${ev.name}</a></h3>
+	<h3>
+	<a>
+	<span class='eventdate'>${ev.date.strftime('%a %b %d')}</span>
+	<span class='eventname'>${ev.name}</span>
+	</a>
+	</h3>
+
 	<div id='event${ev.id}' class='eventholder'>
 	${eventdisplay(ev)}
 	</div>
 %endfor
 
 </div>
+</div>
+
+
+<div id='rightcol'>
+
+<div id='profile'>
+<h2>Profile</h2>
+<div id='profilewrapper'>
+${profile()}
+</div>
+<input id='editprofile' type='button' value='Edit' onclick='editdriver(${c.driver.id})'/>
+<input id='logout' type='button' value='Logout' onclick='document.location.href="${h.url_for(action="logout")}"'/>
 </div>
 
 
@@ -39,8 +46,6 @@ ${carlist()}
 <input id='createcar' type='button' name='create' value='Create New Car' onclick='editcar(${c.driver.id}, -1);'/>
 </div>
 
-
-<div id='aftercars'>
 </div>
 
 ${driverform()}
