@@ -398,6 +398,9 @@ public class ResultsPane extends JPanel
 			rawImprovement = null;
 			netImprovement = null;
 			myresult = null;
+			
+			if (erlist.size() <= 0)
+				return;
 			topresult = erlist.get(0);
 			showLast = showlast;
 			
@@ -486,7 +489,11 @@ public class ResultsPane extends JPanel
 				data = v;
 				toFirstRaw = new ArrayList<Double>();
 				toFirstIndex = new ArrayList<Double>();
-				double topindex = data.get(0).getSum();
+				double topindex;
+				if (data.size() > 0)
+					topindex = data.get(0).getSum();
+				else
+					topindex = 0;
 				
 				for (EventResult r : data)
 				{

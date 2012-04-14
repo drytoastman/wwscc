@@ -96,7 +96,7 @@ public class RunsTable extends TableBase implements MessageListener, ActionListe
 		{
 			int selectedrow = (startrow + jj) % rowcount;
 
-			for (int ii = 1; ii < getColumnCount(); ii++)
+			for (int ii = 0; ii < getColumnCount(); ii++)
 			{
 				if (getValueAt(selectedrow, ii) == null)
 				{
