@@ -17,7 +17,24 @@ from nwrsc.model import *
 log = logging.getLogger(__name__)
 
 
-class UserSession():
+class Cred(object):
+	def __init__(self, firstname, lastname, email):
+		self.firstname = firstname
+		self.lastname = lastname
+		self.email = email
+
+	def __hash__(self):
+		return hash((self.firstname, self.lastname, self.email))
+
+	def __eq__(self, other):
+		return (self.firstname, self.lastname, self.email) == (other.firstname, other.lastname, other.email)
+
+	def __repr__(self):
+		return "%s, %s, %s" % (self.firstname, self.lastname, self.email)
+
+
+
+class UserSession(object):
 
 	def __init__(self, data, active):
 		self.data = data
@@ -29,19 +46,6 @@ class UserSession():
 
 	def getDriverId(self):
 		return self._series().get('driverid', -1)
-
-	def getOptionalLogin(self):
-		db = self._series()
-		a = db.setdefault('optionailLogin', [])
-		b = db.setdefault('showNewProfile', False)
-		session.save()
-		return (a, b)
-
-	def setOptionalLogin(self, otherseries, showNewProfile=True):
-		db = self._series()
-		db['optionailLogin'] = otherseries
-		db['showNewProfile'] = showNewProfile
-		session.save()
 
 	def getPreviousError(self):
 		db = self._series()
@@ -55,17 +59,29 @@ class UserSession():
 		db['previouserror'] = error
 		session.save()
 
-	def setLoginInfo(self, driver=None):
-		db = self._series()
+	def setLoginInfo(self, driver=None, series=None):
+		db = self._series(series)
 		db['driverid'] = driver.id
-		db['creds'] = (driver.firstname, driver.lastname, driver.email)
+		db['creds'] = Cred(driver.firstname, driver.lastname, driver.email)
 		session.save()
+
+	def hasCreds(self, series):
+		db = self._series(series)
+		return db.get('driverid', -1) > 0
+
+	def activeSeries(self):
+		seriesmap = dict()
+		for name, db in self.data.iteritems():
+			creds = db.get('creds', None)
+			if creds is not None:
+				seriesmap[name] = creds
+		return seriesmap
 
 	def activeCreds(self):
 		ids = set()
 		for db in self.data.itervalues():
-			creds = db.get('creds', '')
-			if len(creds) == 3:
+			creds = db.get('creds', None)
+			if creds is not None:
 				ids.add(creds)
 		return ids
 
@@ -105,21 +121,23 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		c.database = self.database
 		c.driverid = self.user.getDriverId()
 		c.previouserror = self.user.getPreviousError()
+		c.activeSeries = self._activeSeries()
 
 		if action not in ('view', 'scripts') and self.settings.locked:
 			# Delete any saved session data for this person
 			raise BeforePage(render_mako('/register/locked.mako'))
 
 		if action in ('index', 'events', 'cars', 'profile') and c.driverid < 1:
-			for cred in self.user.activeCreds():
-				driver = self._verifyID(*cred)
+			c.activecreds = self.user.activeCreds()
+			for cred in c.activecreds:
+				driver = self._verifyID(**cred.__dict__)
 				if driver is not None:
 					self.user.setLoginInfo(driver)
 					c.driverid = self.user.getDriverId()
 					return # continue on to regular page, we are now verified
 
 			c.fields = self.session.query(DriverField).all()
-			(c.otherseries, c.shownewprofile) = self.user.getOptionalLogin()
+			c.otherseries = self.user.activeSeries()
 			raise BeforePage(render_mako('/register/login.mako'))
 
 
@@ -206,19 +224,14 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 			self.user.setLoginInfo(driver)
 			redirect(url_for(action=''))
 
-		# Try and login to this series
-		driver = self._verifyID(fr['firstname'], fr['lastname'], fr['email'])
-		if driver is not None:
-			log.debug("Login approved")
-			self.user.setLoginInfo(driver)
-			redirect(url_for(action=''))
-
-		# Nothing worked, find any info we can and let user know on next load
+		# Try and login to all matching series, may or may not be this one
 		othermatches = list()
 		for series in self._databaseList(archived=False, driver=Driver(**fr)):
 			if series.driver is not None:
 				othermatches.append(series)
-		self.user.setOptionalLogin(othermatches, True)
+				if not self.user.hasCreds(series.name):
+					self.user.setLoginInfo(series.driver, series.name)
+				
 		redirect(url_for(action=''))
 
 

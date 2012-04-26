@@ -1,41 +1,31 @@
 <%inherit file="base.mako" />
 <%namespace file="/forms/driverform.mako" import="driverform"/>
 
-<style>
-#login { margin-left: 20px; margin-top: 20px; }
-#login th { text-align: right; }
-#loginsubmit { margin-left: 230px; margin-top: 10px; font-size: 0.8em; }
-
-#loginoptions { margin-top: 10px; margin-left: 40px; margin-bottom: 30px; }
-#loginoptions ul { list-style: none; }
-#loginoptions li { padding: 3px; }
-#loginoptions li button { width: 160px; text-align: left; }
-#loginoptions span { display: block; }
-#loginoptions div { margin-bottom: 10px; }
-#loginoptions button { font-size: 0.7em !important; }
-</style>
+<%def name='otheroptions()'>
+%if c.otherseries:
 
 <div id='loginoptions' class='ui-state-error-text'>
-%if c.otherseries:
 <span>Provided name and email not found in this series, however it was found in another active series.</span>
 <span>You can click one of the matching series to copy that profile over and login.</span>
 <span>Or you can create a new profile if needed.</span>
-<ul>
-%for s in c.otherseries:
-<li><button onclick="copylogin('${s.driver.firstname}', '${s.driver.lastname}', '${s.driver.email}', '${s.name}')">Copy From ${s.name}</button></li>
-%endfor
-<li><button onclick="editdriverdirect('${s.driver.firstname}', '${s.driver.lastname}', '${s.driver.email}')">New Profile</button></li>
-</ul>
+</div>
 
 %elif c.shownewprofile:
 
+<div id='loginoptions' class='ui-state-error-text'>
 <div>Unable to find a match, please try again.  If you have never registered before you can create a </div>
 <button onclick='editdriver(-1)'>New Profile</button>
-%endif
 </div>
 
+%endif
+</%def>
+
+
+<table id='loginrow'>
+<tr>
+<td id='logincell'>
 <form id="loginForm" action="${h.url_for(action='checklogin')}" method="post">
-<div id='login'>
+<div id='logintable'>
 <input type="hidden" name="otherseries" value=""/>
 <table class='form'>
 <tr><th>First Name</th><td><input type="text" name="firstname" value="" class="required"/></td></tr>
@@ -48,6 +38,24 @@
 <input type="submit" value="Login" id='loginsubmit'/>
 </div>
 </form>
+</td>
+
+<td id='orcell'>
+OR
+</td>
+
+<td id='othercell'>
+<ul>
+%for name, creds in c.otherseries.iteritems():
+<li><button onclick="copylogin('${creds.firstname}', '${creds.lastname}', '${creds.email}', '${name}')">Copy From ${name.upper()}</button></li>
+%endfor
+<li><button onclick='editdriver(-1)'>Create New Profile</button></li>
+</ul>
+</td>
+
+</tr>
+</table>
+
 
 <!--<button id='newbutton'>New Driver</button>-->
 ${driverform(action=h.url_for(action='newprofile'), method='POST')}

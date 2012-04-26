@@ -20,7 +20,7 @@ function editdriver(did)
 		$('#drivereditor [name=city]').val(drivers[did].city);
 		$('#drivereditor [name=state]').val(drivers[did].state);
 		$('#drivereditor [name=zip]').val(drivers[did].zip);
-		$('#drivereditor [name=phone]').val(drivers[did].homephone);
+		$('#drivereditor [name=phone]').val(drivers[did].phone);
 		$('#drivereditor [name=brag]').val(drivers[did].brag);
 		$('#drivereditor [name=sponsor]').val(drivers[did].sponsor);
 %for field in c.fields:
@@ -57,10 +57,9 @@ function setupDriverDialog(title)
 		invalidHandler: function(e, validator) {
 			var errors = validator.numberOfInvalids();
 			if (errors) {
-				$("#drivererror").html("first name, last name and unique/email must be at least 3 characters each");
-				$("#drivererror").show();
+				$("#driverhelp").css('color', '#F00');
 			} else {
-				$("#drivererror").hide();
+				$("#driverhelp").css('color', '#999');
 			}
 		},
 		errorPlacement: function(error, element) {
@@ -76,8 +75,8 @@ function setupDriverDialog(title)
 
 	$("#drivereditor").dialog({
 		autoOpen: false,
-		height: 350,
 		width: 620,
+		position: [20, 100],
 		modal: true,
 		title: title,
 		buttons: {
@@ -87,7 +86,11 @@ function setupDriverDialog(title)
 					driveredited();
 				}
 			},
-			Cancel: function() { $(this).dialog('close'); }
+			Cancel: function() {
+				$(this).dialog('close');
+				$(this).validate().resetForm();
+				$("#driverhelp").css('color', '#999');
+			}
 		},
 		close: function() {
 			$("#drivererror").hide();

@@ -96,10 +96,10 @@ function setupCarDialog()
 
 	$('#careditor').dialog({
 		autoOpen: false,
-		height: 300,
 		width: 500,
 		modal: true,
 		title: 'Car Editor',
+		position: [20, 100],
 		buttons: {
 			'Ok': function() {
 				if ($('#careditor').valid()) {
@@ -118,6 +118,7 @@ function setupCarDialog()
 		autoOpen: false,
 		height: 400,
 		width: 480,
+		position: [20, 100],
 		modal: true,
 		title: 'Available Numbers',
 		close: function() {}
@@ -127,6 +128,8 @@ function setupCarDialog()
 	$('#careditor [name=classcode]').change(function() { 
 		classchange(); 
 	});
+
+	classchange();
 
 
 	$('#numberselect').button().click(function() { 

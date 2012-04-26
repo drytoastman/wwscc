@@ -1,5 +1,66 @@
 
-#header {}
+#serieslinks span {
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	float: left;
+	padding: 0px 6px;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+#serieslinks a {
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	float: left;
+	padding: 0px 6px;
+	font-weight: bold;
+	text-decoration: none;
+	color: #44F;
+}
+
+#serieslinks {
+	overflow: hidden;
+	border-bottom: 1px solid #DDD;
+}
+
+
+#loginrow {
+	margin-left: 20px;
+	margin-top: 20px;
+}
+
+#orcell {
+	font-weight: bold;
+	font-size: 1.4em;
+	padding-left: 30px;
+	padding-right: 30px;
+}
+
+#othercell ul { 
+	list-style: none; 
+	padding: 0px;
+	margin: 0px;
+	font-size: 0.9em; 
+}
+
+#othercell li {
+	padding: 3px; 
+}
+#othercell li button { 
+	width: 100%;
+	text-align: left; 
+}
+
+
+#logintable th { 
+	text-align: right; 
+}
+#submit { 
+	margin-top: 5px;
+	text-align: right;
+}
+
+#header {
+	margin-top: 6px;
+}
 
 #seriesimg {
 	float: left;
@@ -14,12 +75,12 @@
 	clear: both;
 	padding-top: 10px;
 	margin-left: 20px;
+	margin-bottom: 3px;
 	font-size: 1.5em;
 }
 
 #hrule {
 	clear: both
-	margin-top: 5px;
 	margin-bottom: 5px;
 	border-bottom: 1px solid #eee;
 }
@@ -47,6 +108,7 @@ br { clear: left; }
 #content {
 	min-width: 900px;
 	width: 900px;
+	overflow: hidden;
 }
 
 
@@ -59,16 +121,36 @@ br { clear: left; }
 
 .ui-accordion-content { }
 
+h3.ui-accordion-header a {
+	color: #0073EA;
+}
+
+h3.eventclosed span {
+	color: #999;
+}
 
 #events {
 	float: left;
-	width: 390px;
+	width: 400px;
+	margin-top: 10px;
+}
+
+#events .eventday {
+	float: left;
+	width: 27px;
+	margin-right: 2px;
+}
+
+#events .eventmonth {
+	float: left;
+	width: 27px;
+	margin-right: 2px;
 }
 
 #events .eventdate {
 	float: left;
-	width: 80px;
-	margin-right: 10px;
+	width: 23px;
+	margin-right: 2px;
 }
 
 #events .eventname {
@@ -107,10 +189,10 @@ span.elabel
 }
 
 
-
 #rightcol {
 	float: left;
-	margin-left: 10px;
+	margin-top: 10px;
+	margin-left: 20px;
 }
 
 #profile {

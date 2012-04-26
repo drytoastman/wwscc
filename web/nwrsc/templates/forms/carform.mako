@@ -26,10 +26,14 @@ text-decoration: none;
 color: blue;
 }
 
+
 #numberdisplay {
-margin-right: 10px;
+vertical-align: middle;
+margin-left: 5px;
+margin-right: 15px;
 font-size: 1.1em;
-color: #000;
+font-weight: bold;
+color: #229;
 }
 
 #carerror {

@@ -1,7 +1,7 @@
 <%def name="driverform(action=None, method='POST', driver=None, allowalias=False)">
 
 <style>
-#drivererror { margin: auto; text-align: center; }
+#driverhelp { margin: auto; text-align: center; color: #999; margin-bottom: 4px; }
 #drivereditor input { width: 100%; }
 #drivereditor th { padding-left: 14px; padding-right: 5px; }
 #drivereditor th, #drivereditor td { text-align: right; font-weight: normal; }
@@ -23,7 +23,7 @@
 %>
 
 <form id='drivereditor' ${addition}>
-<div id='drivererror' class='ui-state-error-text'></div>
+<div id='driverhelp'>First Name, Last Name and Unique/Email require at least 3 characters each</div>
 <input name='driverid' type='hidden' value='-1'/>
 <table> <tbody>
 

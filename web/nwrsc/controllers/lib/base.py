@@ -90,6 +90,10 @@ class BaseController(WSGIController):
 		return None
 
 
+	def _activeSeries(self):
+		return [os.path.basename(x)[:-3] for x in glob.glob('%s/*.db' % (config['seriesdir']))]
+
+
 	def _databaseList(self, archived=True, driver=None):
 		"""
 			Return a list of the current databases with information on lock and archive settings

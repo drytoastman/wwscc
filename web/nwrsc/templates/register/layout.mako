@@ -4,15 +4,27 @@
 <%namespace file="events.mako" import="eventdisplay"/>
 <%namespace file="cars.mako" import="carlist"/>
 <%namespace file="profile.mako" import="profile"/>
+<%
+	import datetime
+	accordindex = 0;
+	today = datetime.date.today();
+ %>
 
 <div id='events'>
 <h2>Events</h2>
 <div id='eventsinner'>
 
-%for ev in sorted(c.events, key=lambda obj: obj.date):
-	<h3>
+%for ii, ev in enumerate(sorted(c.events, key=lambda obj: obj.date)):
+	<%
+		if ev.date < today:
+			accordindex = ii + 1
+	%>
+			
+	<h3 class='${ev.closed and "eventclosed" or "eventopen"}'>
 	<a>
-	<span class='eventdate'>${ev.date.strftime('%a %b %d')}</span>
+	<span class='eventday'>${ev.date.strftime('%a')}</span>
+	<span class='eventmonth'>${ev.date.strftime('%b')}</span>
+	<span class='eventdate'>${ev.date.strftime('%d')}</span>
 	<span class='eventname'>${ev.name}</span>
 	</a>
 	</h3>
@@ -56,7 +68,7 @@ ${carform(True)}
 
 $(document).ready(function() {
 	$.ajaxSetup({ cache: false });
-	$("#eventsinner").accordion();
+	$("#eventsinner").accordion({ active: ${accordindex}});
 	$("input[type='button']").button();
 	setupCarDialog(true);
 	setupDriverDialog("Edit Profile");
