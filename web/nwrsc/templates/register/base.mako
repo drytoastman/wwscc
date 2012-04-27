@@ -12,10 +12,6 @@
 %endfor
 </div>
 
-<style>
-#header img { max-height: 70px; }
-</style>
-
 <div id='header'>
 
 <img id='seriesimg' src='${h.url_for(controller='db', name='seriesimage')}' alt='Series Image' />
@@ -30,7 +26,7 @@
 %endif
 </div>
 
-<h2 id='seriesname'>${c.database.upper()} - ${c.settings.seriesname}</h2>
+<h2 id='seriesname'>${c.database.upper()} Registration - ${c.settings.seriesname}</h2>
 
 </div> <!-- header -->
 

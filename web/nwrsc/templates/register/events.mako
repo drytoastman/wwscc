@@ -45,44 +45,51 @@
 
 <%def name="eventdisplay(ev)">
 	<span class='elabel'>Closes:</span>
-	<span class='evalue'>${ev.opened and ev.regclosed.strftime('%a %b %d at %I:%M%p') or 'Has not opened yet'}</span><br/>
+	<span class='evalue'>${ev.opened and ev.regclosed.strftime('%a %b %d at %I:%M%p') or 'Has not opened yet'}</span>
 
 	%if ev.host:
 		<span class='elabel'>Host:</span>
-		<span class='evalue'>${ev.host}</span><br/>
+		<span class='evalue'>${ev.host}</span>
 	%endif
 
 	%if ev.location:
 		<span class='elabel'>Location:</span>
-		<span class='evalue'>${ev.location}</span><br/>
+		<span class='evalue'>${ev.location}</span>
 	%endif
 
 	%if not ev.closed and ev.opened:
+			<span class='elabel'>Entries:</span>
 		%if ev.totlimit:
-			<span class='elabel'>Limit:</span>
-			<span class='evalue'>${ev.count}/${ev.totlimit}</span><br/>
+			<span class='evalue'>${ev.count}/${ev.totlimit}</span>
+		%else:
+			<span class='evalue'>${ev.count}</span>
 		%endif
+			<span class='evalue'> <a class='viewbutton' href='${h.url_for(action='view', event=ev.id)}' >View</a></span>
+
 		%if ev.cost:
 			<span class='elabel'>Cost:</span>
-			<span class='evalue'>${ev.cost}</span><br/>
+			<span class='evalue'>$${ev.cost}</span>
 		%endif
 		%if ev.paypal:
 			<span class='elabel'>Paypal:</span>
-			${paypalLink(ev)}
+			<span class='evalue'>${paypalLink(ev)}</span>
 		%endif
 		%if ev.snail:
 			<span class='elabel'>Mail:</span>
-			<div class='eaddress'>${ev.snail|n}</div>
+			<div class='evalue eaddress'>${ev.snail|n}</div>
 		%endif
 		%if ev.notes:
 			<span class='elabel'>Notes:</span>
-			<div class='enotes'>${ev.notes|n}</div>
+			<div class='evalue enotes'>${ev.notes|n}</div>
 		%endif
 	%endif
 
+	<br/>
+
 	%if ev.closed or not ev.opened:
+		<div class='erule'>Cars In Use</a></div>
 		%for reg in ev.regentries:
-			${formatCar(reg.car)}<br/>
+			<span class='evalue'>${formatCar(reg.car)}</span>
 		%endfor
 	%else:
 		<%doc> Where they add a new registration </%doc>
@@ -110,13 +117,14 @@
 		%if len(ev.payments) > 0:
 			<div class='erule'>Paypal Payments</div>
 			%for p in ev.payments:
-				${p.amount} (${p.status})<br>
+				${p.amount} (${p.status})
 			%endfor
 		%endif
 	%endif
 
 	<script>
 	$(".carselector button").button({icons: { primary:'ui-icon-closethick'}, text: false} );
+	$(".viewbutton").button();
 	</script>
 
 </%def>

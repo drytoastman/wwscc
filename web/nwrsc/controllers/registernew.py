@@ -125,6 +125,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 		if action not in ('view', 'scripts') and self.settings.locked:
 			# Delete any saved session data for this person
+			c.events = self.session.query(Event).all()
 			raise BeforePage(render_mako('/register/locked.mako'))
 
 		if action in ('index', 'events', 'cars', 'profile') and c.driverid < 1:

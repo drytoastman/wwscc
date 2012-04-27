@@ -1,4 +1,9 @@
 
+#header img 
+{
+	max-height: 80px; 
+}
+
 #serieslinks span {
 	font-family: "Trebuchet MS", Helvetica, sans-serif;
 	float: left;
@@ -157,6 +162,15 @@ h3.eventclosed span {
 	clear: left;
 }
 
+.helpbox {
+	margin-top: 20px;
+	margin-left: 10px;
+	text-align: justify;
+	font-size: 0.9em;
+	color: #666;
+	width: 600px;
+}
+
 .carspaceholder {
 	height: 22px;
 }
@@ -180,12 +194,18 @@ span.limit
 
 span.elabel
 {
+	clear: left;
 	float: left;
 	width: 65px;
 	text-align: right;
 	margin-bottom: 2px;
 	margin-right: 10px;
 	font-weight: bold;
+}
+
+.evalue
+{
+	float: left;
 }
 
 
@@ -227,9 +247,70 @@ span.elabel
 
 #carlist li span {
 	font-family: Helvetica, sans-serif;
-	font-size: 0.8em;
+}
+
+span.carclass {
+	font-weight: bold;
+	font-size: 1.0em;
+}
+
+span.cardesc, span.carindex {
+	font-size: 0.9em;
 }
 
 #createcar { margin-left: 5px; }
 
+
+/* view entries */
+
+table.carlist {
+    border: solid 1px #555;
+    border-collapse: collapse;
+    empty-cells: show;
+    font-family: arial;
+    width: 450px;  /* along with nowrap below this become min-width, even in IE */
+}
+
+table.carlist td, table.carlist th {
+    border: solid 1px #555;
+    padding: 3px;
+    font-size: 0.9em;
+    text-align: left;
+    white-space:nowrap;
+}
+
+table.carlist td.number, table.carlist td.counter {
+    text-align: center;
+}
+
+table.carlist th {
+    background: rgb(30, 115, 234);
+    color: white;
+    font-weight: bold;
+}
+
+.viewbutton {
+	margin-left: 15px;
+}
+
+.viewbutton span {
+	padding: 0px 10px 0px 10px !important;
+}
+
+
+.viewlist {
+	list-style: none; 
+	padding: 0px;
+	margin-top: 0px;
+	margin-left: 20px;
+	font-size: 1.0em; 
+}
+
+.viewlist li {
+	padding: 0px; 
+}
+
+h3 {
+	color: #333;
+}
 

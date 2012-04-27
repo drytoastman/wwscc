@@ -5,7 +5,9 @@
 	<li>
 	<input type='button' value='Edit' onclick="editcar(${c.driver.id}, ${car.id});" ${car.inuse and "disabled"} />
 	<input type='button' value='Delete' onclick="deletecar(${car.id});" ${car.inuse and "disabled"} />
-	<span>${car.number}/${car.classcode} ${car.indexcode and "(%s)" % car.indexcode} ${car.year} ${car.make} ${car.model} ${car.color}</span>
+	<span class='carclass'>${car.classcode}/${car.number}</span>
+	<span class='carindex'>${car.indexcode and "(%s)" % car.indexcode}</span>
+	<span class='cardesc'>${car.year} ${car.make} ${car.model} ${car.color}</span>
 	</li>
 %endfor
 </ul>

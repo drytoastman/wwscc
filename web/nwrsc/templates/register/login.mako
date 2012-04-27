@@ -1,25 +1,11 @@
 <%inherit file="base.mako" />
 <%namespace file="/forms/driverform.mako" import="driverform"/>
 
-<%def name='otheroptions()'>
-%if c.otherseries:
-
-<div id='loginoptions' class='ui-state-error-text'>
-<span>Provided name and email not found in this series, however it was found in another active series.</span>
-<span>You can click one of the matching series to copy that profile over and login.</span>
-<span>Or you can create a new profile if needed.</span>
+<div class='helpbox'>
+If you have a profile in this series, please login.
+If you have a profile in another active series, use that information and you will be given the option of copying the profile.
+Otherwise, create a new profile.
 </div>
-
-%elif c.shownewprofile:
-
-<div id='loginoptions' class='ui-state-error-text'>
-<div>Unable to find a match, please try again.  If you have never registered before you can create a </div>
-<button onclick='editdriver(-1)'>New Profile</button>
-</div>
-
-%endif
-</%def>
-
 
 <table id='loginrow'>
 <tr>
@@ -57,7 +43,6 @@ OR
 </table>
 
 
-<!--<button id='newbutton'>New Driver</button>-->
 ${driverform(action=h.url_for(action='newprofile'), method='POST')}
 
 <script>
