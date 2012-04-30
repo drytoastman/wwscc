@@ -262,7 +262,7 @@ span.elabel
 }
 
 #profile span.name, #profile span.email {
-	font-size: 1.0em;
+	font-size: 0.9em;
 	font-weight: bold;
 }
 
@@ -272,6 +272,8 @@ span.elabel
 }
 
 #cars  {
+	border-top: 1px solid #b8b9b8;
+	padding-top: 5px;
 	margin-top: 20px;
 }
 
