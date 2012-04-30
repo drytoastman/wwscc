@@ -14,11 +14,13 @@
 
 <div id='header'>
 
-<img id='seriesimg' src='${h.url_for(controller='db', name='seriesimage')}' alt='Series Image' />
+<div id='seriesimg'>
+<img src='${h.url_for(controller='db', name='seriesimage')}' alt='Series Image' />
+</div>
 
-<div id='sponsor'>
-%if c.sponsorlink is not None and c.sponsorlink.strip() != "":
-  <a href='${c.sponsorlink}' target='_blank'>
+<div id='sponsorimg'>
+%if c.settings.sponsorlink is not None and c.settings.sponsorlink.strip() != "":
+  <a href='${c.settings.sponsorlink}' target='_blank'>
   <img src='${h.url_for(controller='db', name='sponsorimage')}' alt='Sponsor Image'/>
   </a>
 %else:
@@ -26,7 +28,9 @@
 %endif
 </div>
 
+%if c.settings:
 <h2 id='seriesname'>${c.database.upper()} Registration - ${c.settings.seriesname}</h2>
+%endif
 
 </div> <!-- header -->
 

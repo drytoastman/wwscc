@@ -33,7 +33,7 @@ OR
 <td id='othercell'>
 <ul>
 %for name, creds in c.otherseries.iteritems():
-<li><button onclick="copylogin('${creds.firstname}', '${creds.lastname}', '${creds.email}', '${name}')">Copy From ${name.upper()}</button></li>
+<li><button onclick="copylogin('${creds.firstname}', '${creds.lastname}', '${creds.email}', '${name}')">Copy Profile From ${name.upper()}</button></li>
 %endfor
 <li><button onclick='editdriver(-1)'>Create New Profile</button></li>
 </ul>
@@ -41,7 +41,6 @@ OR
 
 </tr>
 </table>
-
 
 ${driverform(action=h.url_for(action='newprofile'), method='POST')}
 

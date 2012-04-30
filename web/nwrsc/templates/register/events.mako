@@ -1,4 +1,6 @@
-<%def name="formatCar(car)">${("%s/%s - %s %s %s %s" % (car.classcode, car.number, car.year, car.make, car.model, car.color))[:37]}</%def>
+<%def name="formatCar(car)">
+${"%s/%s - %s %s %s %s" % (car.classcode, car.number, car.year, car.make, car.model, car.color)}
+</%def>
 
 <%def name="paypalLink(event)">
 	<form class='paypalform' action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'>
@@ -123,7 +125,7 @@
 	%endif
 
 	<script>
-	$(".carselector button").button({icons: { primary:'ui-icon-closethick'}, text: false} );
+	$(".carselector button").button({icons: { primary:'ui-icon-scissors'}, text: false} );
 	$(".viewbutton").button();
 	</script>
 

@@ -10,7 +10,10 @@
 	today = datetime.date.today();
  %>
 
-<div id='events'>
+
+<table id='colcontainer'>
+<tr>
+<td id='events'>
 <h2>Events</h2>
 <div id='eventsinner'>
 
@@ -31,14 +34,15 @@
 
 	<div id='event${ev.id}' class='eventholder'>
 	${eventdisplay(ev)}
+
 	</div>
 %endfor
 
 </div>
-</div>
+</td>
 
 
-<div id='rightcol'>
+<td id='rightcol'>
 
 <div id='profile'>
 <h2>Profile</h2>
@@ -58,7 +62,9 @@ ${carlist()}
 <input id='createcar' type='button' name='create' value='Create New Car' onclick='editcar(${c.driver.id}, -1);'/>
 </div>
 
-</div>
+</td> <!-- rightcol -->
+</tr>
+</table> <!-- colcontainer -->
 
 ${driverform()}
 ${carform(True)}
@@ -112,6 +118,8 @@ function caredited()
 
 function deletecar(carid)
 {
+	if (!confirm("Are you sure you wish to delete this car?"))
+		return;
 	$.post('${h.url_for(action='deletecar')}', {carid:carid}, function() {
 		updateCars();
 		%for ev in c.events:

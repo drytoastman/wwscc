@@ -111,6 +111,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		c.stylesheets = ['/css/register.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css']
 		c.javascript = ['/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/jquery.validate.min.js']
 
+		c.activeSeries = self._activeSeries()
 		if self.database is None:
 			return
 
@@ -121,11 +122,10 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		c.database = self.database
 		c.driverid = self.user.getDriverId()
 		c.previouserror = self.user.getPreviousError()
-		c.activeSeries = self._activeSeries()
+		c.events = self.session.query(Event).all()
 
 		if action not in ('view', 'scripts') and self.settings.locked:
 			# Delete any saved session data for this person
-			c.events = self.session.query(Event).all()
 			raise BeforePage(render_mako('/register/locked.mako'))
 
 		if action in ('index', 'events', 'cars', 'profile') and c.driverid < 1:
@@ -157,18 +157,19 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 
 	def index(self):
+		""" First load of page gets all data along with it so no need for lots of ajax requests """
 		if self.database is None:
-			return self.databaseSelector()
+			return render_mako('/register/blank.mako')
 
 		now = datetime.datetime.now()
 		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
 		if c.driver is None:
 			c.previouserror = "Invalid driver ID saved in session, that is pretty weird, login again"
 			self.user.clearSeries()
+			c.otherseries = self.user.activeSeries()
 			return render_mako('/register/login.mako')
 
 		c.fields = self.session.query(DriverField).all()
-		c.events = self.session.query(Event).all()
 		for e in c.events:
 			e.regentries = self.session.query(Registration).join('car') \
 						.filter(Registration.eventid==e.id).filter(Car.driverid==c.driverid).all()
@@ -202,7 +203,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		elif regid > 0: # modify car
 			reg.carid = carid
 		else: # add car
-			event = self.session.query(Event).filter(Event.id==eventid).first()
+			event = self.session.query(Event).get(eventid)
 			if event.totlimit and event.count >= event.totlimit:
 				self.user.setPreviousError("Sorry, prereg reached its limit of %d since your last page load" % (event.totlimit))
 			else:
@@ -274,7 +275,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 	@jsonify
 	def getevent(self):
 		eventid = int(request.GET.get('eventid', 0))
-		event = self.session.query(Event).filter(Event.id==eventid).first()
+		event = self.session.query(Event).get(eventid)
 		event.regentries = self.session.query(Registration).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==c.driverid).all()
 		event.payments = self.session.query(Payment).filter(Payment.eventid==event.id).filter(Payment.driverid==c.driverid).all()
 		now = datetime.datetime.now()

@@ -1,9 +1,4 @@
 
-#header img 
-{
-	max-height: 80px; 
-}
-
 #serieslinks span {
 	font-family: "Trebuchet MS", Helvetica, sans-serif;
 	float: left;
@@ -23,6 +18,7 @@
 
 #serieslinks {
 	overflow: hidden;
+	width: 800px;
 	border-bottom: 1px solid #DDD;
 }
 
@@ -67,13 +63,28 @@
 	margin-top: 6px;
 }
 
+#header a {
+	line-height: 0px;
+}
+
+#header img 
+{
+	max-height: 60px; 
+	height: 60px;
+}
+
 #seriesimg {
 	float: left;
 }
 
-#sponsor {
+#sponsorimg {
 	float: left;
 	margin-left: 40px;
+}
+
+#sponsorimg img, #sponsorimg a {
+	outline: none;
+	border: 0px;
 }
 
 #seriesname { 
@@ -85,7 +96,8 @@
 }
 
 #hrule {
-	clear: both
+	clear: both;
+	width: 800px;
 	margin-bottom: 5px;
 	border-bottom: 1px solid #eee;
 }
@@ -111,8 +123,8 @@ br { clear: left; }
 
 
 #content {
-	min-width: 900px;
-	width: 900px;
+	min-width: 1000px;
+	width: 1000px;
 	overflow: hidden;
 }
 
@@ -124,7 +136,7 @@ br { clear: left; }
 
 .ui-button { }
 
-.ui-accordion-content { }
+.ui-accordion .ui-accordion-content { }
 
 h3.ui-accordion-header a {
 	color: #0073EA;
@@ -134,10 +146,19 @@ h3.eventclosed span {
 	color: #999;
 }
 
-#events {
-	float: left;
-	width: 400px;
+
+#colcontainer {
 	margin-top: 10px;
+}
+
+#events {
+	background: #f6f6ff;
+	width: 400px;
+	vertical-align: top;
+	border: 1px solid #ccc;
+	-moz-border-radius: 9px; -khtml-border-radius: 9px; -webkit-border-radius: 9px; border-radius: 9px;
+	padding: 10px;
+	height: 100%;
 }
 
 #events .eventday {
@@ -171,12 +192,22 @@ h3.eventclosed span {
 	width: 600px;
 }
 
+
 .carspaceholder {
-	height: 22px;
+	height: 23px;
 }
 
-.eselector { display: inline !important; width: 280px; margin-bottom: 4px; }
-.eselector + button { height: 20px; }
+.eselector {
+	display: inline !important;
+	width: 280px;
+	margin-top: 0px;
+	margin-bottom: 4px;
+	vertical-align: top;
+}
+
+.eselector + button {
+	height: 20px;
+}
 
 .erule
 {
@@ -210,13 +241,18 @@ span.elabel
 
 
 #rightcol {
-	float: left;
-	margin-top: 10px;
-	margin-left: 20px;
+	vertical-align: top;
+	margin-left: -3px;
+	background: #f6fafa;
+
+	border: 1px solid #ccc;
+	-moz-border-radius: 9px; -khtml-border-radius: 9px; -webkit-border-radius: 9px; border-radius: 9px;
+	padding: 10px;
+	height: 100%;
 }
 
 #profile {
-	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	font-family: Helvetica, sans-serif;
 }
 
 #profile span {
@@ -224,41 +260,55 @@ span.elabel
 	display: block;
 }
 
+#profile span.name, #profile span.email {
+	font-size: 1.0em;
+	font-weight: bold;
+}
+
+#profile .ui-button {
+	font-size: 0.7em !important;
+	margin-top: 10px;
+}
+
 #cars  {
 	margin-top: 20px;
 }
 
-#editprofile {
-	margin-top: 10px;
-}
-
 #carlist {
-	list-style-type: none;
 	margin-left: 0px;
-	margin-top: 30px;
 	padding: 0;
 }
 
-#carlist li {
-	margin: 6px 0px;
-	padding: 0.4em;
-	height: 18px; 
-}
 
-#carlist li span {
+#carlist td, #carlist th {
 	font-family: Helvetica, sans-serif;
 }
 
-span.carclass {
-	font-weight: bold;
+#carlist th {
+	font-size: 0.8em;
+}
+
+#carlist button {
+	height: 25px;
+}
+
+#carlist .carclass {
+	text-align: right;
+	padding-left: 3px;
+}
+
+#carlist .carnumber {
 	font-size: 1.0em;
 }
 
-span.cardesc, span.carindex {
-	font-size: 0.9em;
+#carlist .cardesc, #carlist .carindex {
+	font-size: 0.8em;
 }
 
-#createcar { margin-left: 5px; }
+#createcar {
+	margin-top: 5px; 
+	font-size: 0.7em !important;
+}
 
 
 /* view entries */
@@ -298,19 +348,27 @@ table.carlist th {
 }
 
 
+#lockedmessage {
+	margin-top: 10px;
+}
+
 .viewlist {
+	margin-top: 0px;
+	margin-left: 40px;
+}
+
+.viewlist h3 {
+	color: #333;
+}
+
+.viewlist ul {
 	list-style: none; 
 	padding: 0px;
-	margin-top: 0px;
-	margin-left: 20px;
 	font-size: 1.0em; 
+	margin-left: 10px;
 }
 
 .viewlist li {
 	padding: 0px; 
-}
-
-h3 {
-	color: #333;
 }
 
