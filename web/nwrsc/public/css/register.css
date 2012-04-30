@@ -136,7 +136,11 @@ br { clear: left; }
 
 .ui-button { }
 
-.ui-accordion .ui-accordion-content { }
+.ui-accordion {}
+
+.ui-accordion-content, .ui-accordion-header {
+	border-color: #b8b8b8 !important;
+} 
 
 h3.ui-accordion-header a {
 	color: #0073EA;
@@ -151,14 +155,22 @@ h3.eventclosed span {
 	margin-top: 10px;
 }
 
-#events {
-	background: #f6f6ff;
-	width: 400px;
+#events, #rightcol {
 	vertical-align: top;
-	border: 1px solid #ccc;
+	background: #f6f9f9;
+	border: 1px solid #b8b8b8;
 	-moz-border-radius: 9px; -khtml-border-radius: 9px; -webkit-border-radius: 9px; border-radius: 9px;
 	padding: 10px;
 	height: 100%;
+}
+
+#events {
+	background: #f6f6ff;
+	width: 400px;
+}
+
+#rightcol {
+	background: #f6f9f9;
 }
 
 #events .eventday {
@@ -239,17 +251,6 @@ span.elabel
 	float: left;
 }
 
-
-#rightcol {
-	vertical-align: top;
-	margin-left: -3px;
-	background: #f6fafa;
-
-	border: 1px solid #ccc;
-	-moz-border-radius: 9px; -khtml-border-radius: 9px; -webkit-border-radius: 9px; border-radius: 9px;
-	padding: 10px;
-	height: 100%;
-}
 
 #profile {
 	font-family: Helvetica, sans-serif;
