@@ -116,7 +116,7 @@ class BaseController(WSGIController):
 				archived = (os.path.dirname(path) == config['archivedir'])
 
 				check = None
-				if driver is not None and name != self.database:
+				if driver is not None:
 					check = self._verifyID(driver.firstname, driver.lastname, driver.email)
 					
 				ret.append(DatabaseListing(name=name, mtime=mtime, driver=check, locked=settings.locked, archived=archived))

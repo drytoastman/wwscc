@@ -42,7 +42,7 @@ class UserSession(object):
 
 	def _series(self, series=None):
 		if series is None: series = self.active
-		return self.data.setdefault(series, {})
+		return self.data.setdefault(series.upper(), {})
 
 	def getDriverId(self):
 		return self._series().get('driverid', -1)
