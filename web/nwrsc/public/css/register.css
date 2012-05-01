@@ -221,6 +221,11 @@ h3.eventclosed span {
 	height: 20px;
 }
 
+.notifier {
+	font-weight: bold;
+	height: 23px;
+}
+
 .erule
 {
 	margin-top: 10px;

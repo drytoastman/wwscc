@@ -153,7 +153,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 	def scripts(self):
 		response.headers['Cache-Control'] = 'max-age=360' 
 		response.headers.pop('Pragma', None)
-		return render_mako('/forms/careditor.mako') + render_mako('/forms/drivereditor.mako')
+		return render_mako("/register/scripts.mako") + render_mako('/forms/careditor.mako') + render_mako('/forms/drivereditor.mako')
 
 
 	def index(self):
@@ -193,24 +193,26 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 
 	def registercar(self):
-		carid = int(request.POST.get('carid', 0))
-		regid = int(request.POST.get('regid', 0))
-		eventid = int(request.POST.get('eventid', 0))
-		reg = self.session.query(Registration).filter(Registration.id==regid).first()
-
-		if carid < 0: # delete car
-			self.session.delete(reg)
-		elif regid > 0: # modify car
-			reg.carid = carid
-		else: # add car
-			event = self.session.query(Event).get(eventid)
-			if event.totlimit and event.count >= event.totlimit:
-				self.user.setPreviousError("Sorry, prereg reached its limit of %d since your last page load" % (event.totlimit))
-			else:
-				reg = Registration(eventid, carid)
-				self.session.add(reg)
-
-		self.session.commit()
+		try:
+			carid = int(request.POST.get('carid', 0))
+			regid = int(request.POST.get('regid', 0))
+			eventid = int(request.POST.get('eventid', 0))
+			reg = self.session.query(Registration).filter(Registration.id==regid).first()
+	
+			if carid < 0: # delete car
+				self.session.delete(reg)
+			elif regid > 0: # modify car
+				reg.carid = carid
+			else: # add car
+				event = self.session.query(Event).get(eventid)
+				if event.totlimit and event.count >= event.totlimit:
+					self.user.setPreviousError("Sorry, prereg reached its limit of %d since your last page load" % (event.totlimit))
+				else:
+					reg = Registration(eventid, carid)
+					self.session.add(reg)
+			self.session.commit()
+		except Exception, e:
+			self.user.setPreviousError("Possible stale browser state, try reloading page")
 
 		 
 	@validate(schema=LoginSchema(), form='login', prefix_error=False)

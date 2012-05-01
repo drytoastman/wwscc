@@ -80,30 +80,6 @@ $(document).ready(function() {
 	setupDriverDialog("Edit Profile");
 });
 		
-
-function updateEvent(eventid)
-{
-	$.getJSON('${h.url_for(action='getevent')}', {eventid:eventid}, function(json) {
-		$("#event"+eventid).html(json.data);
-	});
-}
-
-function updateCars()
-{
-	$.getJSON('${h.url_for(action='getcars')}', function(json) { 
-		$("#carswrapper").html(json.data);
-	});
-}
-
-function driveredited()
-{
-	$.post('${h.url_for(action='editdriver')}', $("#drivereditor").serialize(), function() {
-		$.getJSON('${h.url_for(action='getprofile')}', function(json) {
-			$("#profilewrapper").html(json.data)
-		});
-	});
-}
-
 function caredited()
 {
 	$.post('${h.url_for(action='editcar')}', $("#careditor").serialize(), function() {
@@ -127,35 +103,6 @@ function deletecar(carid)
 			updateEvent(${ev.id});
 		%endif
 		%endfor
-	});
-}
-
-function registerCar(s, eventid)
-{
-	var carid = s.options[s.selectedIndex].value;
-	$("#event"+eventid+" select").attr("disabled", "disabled");
-	$.post('${h.url_for(action='registercar')}', {eventid:eventid, carid:carid}, function() {
-		updateEvent(eventid);
-		updateCars();
-	});
-}
-
-function reRegisterCar(s, eventid, regid)
-{
-	var carid = s.options[s.selectedIndex].value;
-	$("#event"+eventid+" select").attr("disabled", "disabled");
-	$.post('${h.url_for(action='registercar')}', {regid:regid, carid:carid}, function() {
-		updateEvent(eventid);
-		updateCars();
-	});
-}
-
-function unregisterCar(eventid, regid)
-{
-	$("#event"+eventid+" select").attr("disabled", "disabled");
-	$.post('${h.url_for(action='registercar')}', {regid:regid, carid:-1}, function() {
-		updateEvent(eventid); 
-		updateCars();
 	});
 }
 

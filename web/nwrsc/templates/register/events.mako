@@ -39,7 +39,7 @@ ${"%s/%s - %s %s %s %s" % (car.classcode, car.number, car.year, car.make, car.mo
 </select>
 
 %if reg:
-	<button onclick='unregisterCar(${event.id}, ${reg.id});'></button>
+	<button onclick='unregisterCar(this, ${event.id}, ${reg.id});'></button>
 %endif
 </div>
 </%def>
@@ -100,6 +100,8 @@ ${"%s/%s - %s %s %s %s" % (car.classcode, car.number, car.year, car.make, car.mo
 			<span class='limit'>This event's prereg limit of ${ev.totlimit} has been met.</span>
 		%elif len(ev.regentries) >= ev.perlimit:
 			<span class='limit'>You have reached this event's prereg limit of ${ev.perlimit} car(s).</span>
+		%elif len(c.cars) == 0:
+			<span class='notifier'>You need to "Create New Car" on the right</span>
 		%else:
 			${carSelection(None, ev, c.cars, [x.carid for x in ev.regentries])}
 		%endif
