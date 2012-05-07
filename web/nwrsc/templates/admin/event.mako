@@ -14,6 +14,7 @@
 <li><a href='${h.url_for(action='editevent')}'>Edit Event Details</a></li>
 <li><a href='${h.url_for(action='list')}'>Entry Admin</a></li>
 <li><a href='${h.url_for(action='rungroups')}'>Grid Order</a></li>
+<li><a href='${h.url_for(action='deleteevent')}' onclick='return confirm("Do you really want to delete this event and and its registered entries?");'>Delete Event</a></li>
 </ul>
 
 <h3>Before The Event</h3>

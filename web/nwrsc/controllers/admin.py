@@ -21,6 +21,36 @@ from nwrsc.model import *
 log = logging.getLogger(__name__)
 
 
+class AdminSession(object):
+
+	def __init__(self, data, database):
+		self.data = data
+		self.database = database
+		self.tokens = data.setdefault('authtokens', set())
+
+	def isSeriesAdmin(self):
+		return "%s:series"%self.database in self.tokens
+
+	def isEventAdmin(self, eventid):
+		return "%s:%s" % (self.database,eventid) in self.tokens
+
+	def addSeriesAdmin(self):
+		self.tokens.add("%s:series" % self.database)
+		session.save()
+
+	def addEventAdmin(self, eventid):
+		self.tokens.add("%s:%s" % (self.database, eventid))
+		session.save()
+
+	def saveAction(self, act):
+		self.data['action'] = act
+		session.save()
+
+	def getClearAction(self):
+		return self.data.pop('action', '')
+		session.save()
+
+
 class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting, PurgeCopy):
 
 	def __before__(self):
@@ -35,48 +65,49 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			c.events = self.session.query(Event).all()
 			c.seriesname = self.database
 		self.eventid = self.routingargs.get('eventid', None)
+		self.action = self.routingargs.get('action', '')
 
 		c.isLocked = self.settings.locked
 		c.event = None
 		if self.eventid and self.eventid.isdigit():
 			c.event = self.session.query(Event).get(self.eventid)
 
-		if self.eventid and self.routingargs.get('action', '') != 'login':
+		if self.eventid and self.action not in ('login', 'scripts'):
 			self._checkauth(self.eventid, c.event)
 
 		if self.settings.locked:
-			action = self.routingargs.get('action', '')
-			if action not in ('login', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'newentrants', 'printhelp', 'forceunlock'):
+			if self.action not in ('login', 'scripts', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'newentrants', 'printhelp', 'forceunlock'):
 				c.seriesname = self.settings.seriesname
 				c.next = action
+				c.isAdmin = mysession.isSeriesAdmin()
 				raise BeforePage(render_mako('/admin/locked.mako'))
 
 
-	def _tokenName(self, authid):
-		return "%s:%s" % (self.database, authid)
-
 	def _checkauth(self, eventid, event):
-		if self.srcip == '127.0.0.1':
-			c.isAdmin = True
-			return
+		#if self.srcip == '127.0.0.1':
+		#	c.isAdmin = True
+		#	return
 	
 		if event is None and eventid != 's':
 			c.text = "<h3>No such event for %s</h3>" % eventid
 			raise BeforePage(render_mako('/admin/simple.mako'))
 	
-		ipsession = session.setdefault(('admin', self.srcip), {})
-		tokens = ipsession.setdefault('authtokens', set())
-		c.isAdmin = self._tokenName('series') in tokens
+		mysession = AdminSession(session.setdefault(('admin', self.srcip), {}), self.database)
+
+		if mysession.isSeriesAdmin():
+			return
+
+		if event is not None and mysession.isEventAdmin(eventid):
+			return
+			
 		if event is not None:
-			if self._tokenName(eventid) in tokens or self._tokenName('series') in tokens:
-				return
 			c.request = "Need authentication token for %s" % event.name
-			raise BeforePage(render_mako('/admin/login.mako'))
 		else:
-			if c.isAdmin:
-				return
 			c.request = "Need authentication token for the series"
-			raise BeforePage(render_mako('/admin/login.mako'))
+
+		print self.routingargs
+		mysession.saveAction(self.routingargs['action'])
+		raise BeforePage(render_mako('/admin/login.mako'))
 	
 
 	def forceunlock(self):
@@ -88,18 +119,17 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 	def login(self):
 		password = request.POST.get('password')
-		ipsession = session.setdefault(('admin', self.srcip), {})
-		tokens = ipsession.setdefault('authtokens', set())
+		mysession = AdminSession(session.setdefault(('admin', self.srcip), {}), self.database)
 
 		if password == self.settings.password:
-			tokens.add(self._tokenName('series'))
+			mysession.addSeriesAdmin()
 
 		for event in c.events:
 			if password == event.password:
-				tokens.add(self._tokenName(event.id))
+				mysession.addEventAdmin(event.id)
 
-		session.save()
-		redirect(url_for(action=''))
+		action = mysession.getClearAction()
+		redirect(url_for(action=action))
 			
 
 	def scripts(self):
@@ -342,6 +372,19 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		self.session.add(ev)
 		self.session.commit()
 		redirect(url_for(eventid=ev.id, action=''))
+
+
+	def deleteevent(self):
+		""" Request to delete an event, verify if we can first, then do it """
+		if self.session.query(Run).filter(Run.eventid==self.eventid).count() > 0:
+			c.text = "<h3>%s has runs assigned to it, you cannot delete it</h3>" % (c.event.name)
+			raise BeforePage(render_mako('/admin/simple.mako'))
+
+		# no runs, kill it
+		self.session.query(Registration).filter(Registration.eventid==self.eventid).delete()
+		self.session.query(Event).filter(Event.id==self.eventid).delete()
+		self.session.commit()
+		redirect(url_for(eventid='s', action=''))
 
 
 	class RegObj(object):

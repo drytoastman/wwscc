@@ -278,6 +278,9 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 	def getevent(self):
 		eventid = int(request.GET.get('eventid', 0))
 		event = self.session.query(Event).get(eventid)
+		if event is None:
+			return {'data': "Event does not exist" }
+
 		event.regentries = self.session.query(Registration).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==c.driverid).all()
 		event.payments = self.session.query(Payment).filter(Payment.eventid==event.id).filter(Payment.driverid==c.driverid).all()
 		now = datetime.datetime.now()
