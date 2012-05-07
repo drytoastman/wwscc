@@ -84,9 +84,9 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 
 	def _checkauth(self, eventid, event):
-		#if self.srcip == '127.0.0.1':
-		#	c.isAdmin = True
-		#	return
+		if self.srcip == '127.0.0.1':
+			c.isAdmin = True
+			return
 	
 		if event is None and eventid != 's':
 			c.text = "<h3>No such event for %s</h3>" % eventid
