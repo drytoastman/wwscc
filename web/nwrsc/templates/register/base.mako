@@ -47,3 +47,14 @@ ${next.body()}
 
 </div> <!-- content -->
 
+<script>
+$(document).ready(function() {
+	// ick, make me feel gross but works without lots of crap on the backend
+	imgheight = $("#sponsorimg img").height();
+	divheight = $("#sponsorimg").height();
+	if (imgheight < divheight) {
+		$("#sponsorimg img").css('margin-top', (divheight-imgheight)/2);
+	}
+});
+</script>
+		
