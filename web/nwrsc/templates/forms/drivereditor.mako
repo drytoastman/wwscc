@@ -27,13 +27,14 @@ function editdriver(did)
 		$('#drivereditor [name=${field.name}]').val(drivers[did].${field.name});
 %endfor
 		$('#drivereditor [name=alias]').val(drivers[did].alias);
-		$('#drivereditor [name=alias]').html(drivers[did].alias);
+		$('#aliasspan').html(drivers[did].alias);
 	}
 	else
 	{
 		$('#drivereditor [name=firstname]').val("");
 		$('#drivereditor [name=lastname]').val("");
 		$('#drivereditor [name=alias]').val("");
+		$('#aliasspan').html("");
 		$('#drivereditor [name=email]').val("");
 		$('#drivereditor [name=address]').val("");
 		$('#drivereditor [name=city]').val("");

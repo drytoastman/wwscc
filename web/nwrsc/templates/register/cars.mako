@@ -1,5 +1,5 @@
 <%def name="disablewarn()">
-disabled title='Cars registered or in use cannot be edited or deleted'
+disabled='disabled' title='Cars registered or in use cannot be edited or deleted'
 </%def>
 
 
@@ -19,8 +19,8 @@ disabled title='Cars registered or in use cannot be edited or deleted'
 %endfor
 </table>
 
-<script>
-cars = Array();
+<script type='text/javascript'>
+var cars = new Array();
 %for car in c.cars:
 cars[${car.id}] = ${h.encodesqlobj(car)|n}
 %endfor

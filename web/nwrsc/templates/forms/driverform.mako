@@ -1,28 +1,12 @@
-<%def name="driverform(action=None, method='POST', driver=None, allowalias=False)">
-
-<style>
-#driverhelp { margin: auto; text-align: center; color: #999; margin-bottom: 4px; }
-#drivereditor input { width: 100%; }
-#drivereditor th { padding-left: 14px; padding-right: 5px; }
-#drivereditor th, #drivereditor td { text-align: right; font-weight: normal; }
-#namerow th, #emailrow th { font-weight: bold; }
-#aliasrow th, #aliasrow td { padding-top: 3px; padding-bottom: 20px; }
-#aliasrow td { text-align: left; }
-.error { border: 1px solid red; }
-</style>
+<%def name="driverform(action='', method='post', driver=None, allowalias=False)">
 
 <%
 	from nwrsc.model import Driver
-	addition = ""
-	if action is not None:
-		addition += "action='%s' " % action
-	if method is not None:
-		addition += "method='%s' " % method
 	if driver is None:
 		driver = Driver()
 %>
 
-<form id='drivereditor' ${addition}>
+<form id='drivereditor' action='${action}' method='${method}'>
 <div id='driverhelp'>First Name, Last Name and Unique/Email require at least 3 characters each</div>
 <input name='driverid' type='hidden' value='-1'/>
 <table> <tbody>
@@ -45,7 +29,7 @@
 %if allowalias:
 <input name="alias" type='text' value='${driver.alias}'>
 %else:
-<span name="alias">${driver.alias}</span>
+<span id="aliasspan">${driver.alias}</span>
 %endif
 </td>
 </tr>
@@ -59,9 +43,9 @@
 <th>City</th>
 <td colspan='2'><input name='city' type='text' value='${driver.city}'/></td>
 <th>State</th>
-<td><input name='state' type='text' value='${driver.state}' size=2/></td>
+<td><input name='state' type='text' value='${driver.state}' size="2"/></td>
 <th>Zip</th>
-<td><input name='zip' type='text' value='${driver.zip}' size=2/></td>
+<td><input name='zip' type='text' value='${driver.zip}' size="2"/></td>
 </tr>
 
 <tr>

@@ -54,7 +54,7 @@ class AdminSession(object):
 class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting, PurgeCopy):
 
 	def __before__(self):
-		c.stylesheets = ['/css/admin.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css', '/css/anytimec.css']
+		c.stylesheets = ['/css/admin.css', '/css/forms.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css', '/css/anytimec.css']
 		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js', '/js/anytimec.js']
 		try:
 			c.javascript.append(url_for(action='scripts'))  # If we are far enough along to link to it

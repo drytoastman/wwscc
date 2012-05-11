@@ -95,7 +95,7 @@ ${"%s/%s - %s %s %s %s" % (car.classcode, car.number, car.year, car.make, car.mo
 		%endfor
 	%else:
 		<%doc> Where they add a new registration </%doc>
-		<div class='erule'>Register a Car</a></div>
+		<div class='erule'>Register a Car</div>
 		%if ev.totlimit and ev.count >= ev.totlimit:
 			<span class='limit'>This event's prereg limit of ${ev.totlimit} has been met.</span>
 		%elif len(ev.regentries) >= ev.perlimit:
@@ -126,7 +126,7 @@ ${"%s/%s - %s %s %s %s" % (car.classcode, car.number, car.year, car.make, car.mo
 		%endif
 	%endif
 
-	<script>
+	<script type='text/javascript'>
 	$(".carselector button").button({icons: { primary:'ui-icon-scissors'}, text: false} );
 	$(".viewbutton").button();
 	</script>
