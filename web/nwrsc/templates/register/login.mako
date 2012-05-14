@@ -45,8 +45,8 @@ OR
 ${driverform(action=h.url_for(action='newprofile'), method='post')}
 
 <script type='text/javascript'>
+var drivers = new Array();
 $(document).ready(function() {
-	var drivers= new Array();
 	$("#loginForm").validate(); 
 	$("#loginsubmit").button();
 	$("button").button();
