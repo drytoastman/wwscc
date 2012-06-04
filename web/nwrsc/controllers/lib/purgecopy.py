@@ -117,15 +117,17 @@ class PurgeCopy(object):
 		import nwrsc
 		root = nwrsc.__path__[0]
 
-		if not os.path.exists(self.databasePath(name)):
-			metadata.bind = create_engine('sqlite:///%s' % self.databasePath(name))
+		newpath = self.databasePath(name, mustExist=False)
+
+		if not os.path.exists(newpath):
+			metadata.bind = create_engine('sqlite:///%s' % newpath)
 			metadata.create_all()
 
 			conn = sqlite3.connect(':memory:')
 			conn.row_factory = sqlite3.Row
 			cur = conn.cursor()
 			cur.execute("attach '%s' as old" % self.databasePath(self.database))
-			cur.execute("attach '%s' as new" % self.databasePath(name))
+			cur.execute("attach '%s' as new" % newpath)
 
 			# Settings
 			if self.form_result['settings']:
@@ -169,5 +171,5 @@ class PurgeCopy(object):
 		else:
 			log.error("database exists")
 
-		redirect(url_for(database=name, action='index'))
+		redirect(url_for(database=name, action=''))
 

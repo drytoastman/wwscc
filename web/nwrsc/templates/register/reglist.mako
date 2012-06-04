@@ -1,5 +1,5 @@
 <%inherit file="/base.mako" />
-<% current = '' %>
+<% current = None; counter = 0 %>
 
 <h2>${c.event.name} - ${c.event.count} Entries</h2>
 <table class='carlist'>
