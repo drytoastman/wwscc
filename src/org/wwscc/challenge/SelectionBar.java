@@ -44,6 +44,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		Messenger.register(MT.TIMER_SERVICE_CONNECTION, this);
 		Messenger.register(MT.DATABASE_CHANGED, this);
 		Messenger.register(MT.NEW_CHALLENGE, this);
+		Messenger.register(MT.CHALLENGE_DELETED, this);
 
 		setBorder(new BevelBorder(0));
 
@@ -113,9 +114,10 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				break;
 				
 			case NEW_CHALLENGE:
+			case CHALLENGE_DELETED:
 				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(Database.d.getChallengesForEvent().toArray(new Challenge[0])));
 				challengeSelect.setSelectedIndex(challengeSelect.getItemCount() - 1);
-				break;
+				break;				
 		}
 	}
 

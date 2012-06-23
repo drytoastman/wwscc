@@ -1083,6 +1083,20 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
+	public void deleteChallenge(int challengeid)
+	{
+		try
+		{
+			executeUpdate("DELETECHALLENGE", newList(challengeid));
+		}
+		catch (Exception ioe)
+		{
+			logError("deleteChallenge", ioe);
+		}
+	}
+	
+	
+	@Override
 	public List<Challenge> getChallengesForEvent()
 	{
 		try

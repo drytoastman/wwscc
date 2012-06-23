@@ -29,6 +29,7 @@ public class SQLMap
 	{
 		sql.put("DELETECAR", "delete from cars where id=?");
 		sql.put("DELETECLASSRESULTS", "delete from eventresults where classcode=? and eventid=?");
+		sql.put("DELETECHALLENGE", "delete from challenges where id=?");
 		sql.put("DELETEDRIVER", "delete from drivers where id=?");
 		sql.put("DELETEEXTRA", "delete from driverextra where driverid=?");
 		sql.put("DELETERUN", "delete from runs where id=?");

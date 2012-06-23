@@ -17,10 +17,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -39,6 +39,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 {
 	protected HashMap<String,JTextField> fields;
 	protected HashMap<String,JComboBox> selects;
+	protected HashMap<String,JCheckBox> checks;
 	protected HashMap<String,JRadioButton> radios;
 	protected ButtonGroup buttonGroup;
 
@@ -50,8 +51,8 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 	JDialog currentDialog;
 	DialogFinisher<E> finisher;
 	
-	JButton ok;
-	JButton cancel;
+	protected JButton ok;
+	protected JButton cancel;
 	
 	protected boolean valid;
 	protected String errorMessage;
@@ -77,6 +78,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 		
 		fields = new HashMap<String,JTextField>();
 		selects = new HashMap<String,JComboBox>();
+		checks = new HashMap<String,JCheckBox>();
 		radios = new HashMap<String,JRadioButton>();
 		buttonGroup = new ButtonGroup();
 
@@ -167,7 +169,12 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 
 	protected JComboBox select(String name, Object initial, List<?> possible, ActionListener al)
 	{
-		JComboBox<Object> cb = new JComboBox<Object>(possible.toArray());
+		return select(name, initial, possible.toArray(), al);
+	}
+	
+	protected JComboBox select(String name, Object initial, Object[] possible, ActionListener al)
+	{
+		JComboBox<Object> cb = new JComboBox<Object>(possible);
 		selects.put(name, cb);
 		cb.setSelectedItem(initial);
 		if (al != null)
@@ -182,6 +189,21 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 		return cb.getSelectedItem();
 	}
 
+	protected JCheckBox checkbox(String name)
+	{
+		JCheckBox rb = new JCheckBox(name);
+		rb.setActionCommand(name);
+		checks.put(name, rb);
+		return rb;
+	}
+	
+	protected boolean isChecked(String name)
+	{
+		JCheckBox cb = new JCheckBox(name);
+		if (cb == null) return false;
+		return cb.isSelected();
+	}
+		
 	protected JRadioButton radio(String name)
 	{
 		JRadioButton rb = new JRadioButton(name);
@@ -254,6 +276,11 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 	public boolean verifyData()
 	{
 		return false;
+	}
+	
+	public boolean isValid()
+	{
+		return valid;
 	}
 
 	public E getResult()

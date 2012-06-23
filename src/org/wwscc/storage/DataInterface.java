@@ -100,6 +100,7 @@ public abstract class DataInterface
 	//** Challenge **/
 	public abstract Set<Integer> getCarIdsByChallenge(int challengeid);
 	public abstract void newChallenge(String name, int size, boolean bonus);
+	public abstract void deleteChallenge(int challengeid);
 	public abstract List<Challenge> getChallengesForEvent(); //int eventid);
 	public abstract List<ChallengeRound> getRoundsForChallenge(int challengeid);
 	public abstract List<ChallengeRun> getRunsForChallenge(int challengeid);
