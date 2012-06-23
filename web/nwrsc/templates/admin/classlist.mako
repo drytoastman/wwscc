@@ -20,10 +20,9 @@
 	<input type="checkbox" name="clslist-${ii}.carindexed" ${cls.carindexed and 'checked="yes"' or ''|n} />
 </td>
 <td title="Entire class is indexed by this index code">
-	<!-- <input type="text" name="clslist-${ii}.classindex" value="${cls.classindex}" size="6" /> -->
-	<select name='clslist-${ii}.classindex'>
+	<select name="clslist-${ii}.classindex">
 	%for code in sorted(c.indexlist):
-		<option value='${code}' ${cls.classindex==code and "selected" or ""}>${code}</option>
+		<option value="${code}" ${cls.classindex==code and "selected" or ""}>${code}</option>
 	%endfor
 	</select>
 </td>

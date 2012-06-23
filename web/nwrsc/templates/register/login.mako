@@ -42,11 +42,11 @@ OR
 </tr>
 </table>
 
-${driverform(action=h.url_for(action='newprofile'), method='POST')}
+${driverform(action=h.url_for(action='newprofile'), method='post')}
 
-<script>
+<script type='text/javascript'>
+var drivers = new Array();
 $(document).ready(function() {
-	drivers=Array();
 	$("#loginForm").validate(); 
 	$("#loginsubmit").button();
 	$("button").button();

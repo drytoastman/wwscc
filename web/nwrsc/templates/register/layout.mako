@@ -70,7 +70,7 @@ ${driverform()}
 ${carform(True)}
 
 
-<script>
+<script type='text/javascript'>
 
 $(document).ready(function() {
 	$.ajaxSetup({ cache: false });

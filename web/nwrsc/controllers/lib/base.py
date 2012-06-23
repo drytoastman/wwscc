@@ -41,7 +41,7 @@ class BaseController(WSGIController):
 	""" Base controller ala Pylons base, modified for using multiple databases based on URL """
 
 
-	def databasePath(self, name):
+	def databasePath(self, name, mustExist=True):
 		"""
 			Given a database name (no extension), return the full path where we expect to find it
 			Includes checks for case insensitive names.
@@ -64,6 +64,9 @@ class BaseController(WSGIController):
 		for path in glob.glob(os.path.join(config['archivedir'], '*.db')):
 			if os.path.basename(path)[:-3].lower() == name:
 				return path
+
+		if not mustExist:
+			return os.path.join(config['seriesdir'], '%s.db' % name)
 
 		return None
 

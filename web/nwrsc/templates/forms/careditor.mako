@@ -66,7 +66,7 @@ function setupCarDialog()
 			indexcode: {
 				required: function(element) { return ($("#classcode option:selected").attr('indexed') == '1'); },
 			},
-			'number': {
+			number: {
 				required: true,
 				min: 1,
 				max: 1999,

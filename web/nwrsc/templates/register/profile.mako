@@ -1,7 +1,7 @@
 <%def name="profile()">
 
-<script>
-drivers = Array();
+<script type='text/javascript'>
+var drivers = new Array();
 drivers[${c.driver.id}] = ${h.encodesqlobj(c.driver)|n}
 </script>
 

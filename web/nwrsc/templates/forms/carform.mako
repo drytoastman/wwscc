@@ -1,54 +1,6 @@
 <%def name="carform(numberhidden)">
 
-<style type='text/css'>
-
-ul.numbers {
-float: left;
-margin: 0;
-padding: 0;
-list-style: none;
-width: 410px;
-}
-
-ul.numbers li {
-text-align: right;
-font-size: 1.1em;
-font-family: arial;
-color: #EDD;
-float: left;
-width: 40px;
-margin: 0;
-padding: 0;
-}
-
-ul.numbers a {
-text-decoration: none;
-color: blue;
-}
-
-
-#numberdisplay {
-vertical-align: middle;
-margin-left: 5px;
-margin-right: 15px;
-font-size: 1.1em;
-font-weight: bold;
-color: #229;
-}
-
-#carerror {
-margin: auto;
-text-align: center;
-}
-
-#carerror label {
-border: 0px;
-display: block;
-}
-
-</style>
-
-<form id='careditor'>
+<form id='careditor' action='' method='post'>
 <div id='carerror' class='ui-state-error-text'></div>
 <input id='driverid' name='driverid' type='hidden'/>
 <input id='carid' name='carid' type='hidden'/>

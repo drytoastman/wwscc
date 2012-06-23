@@ -45,7 +45,7 @@ function collectgroups(frm)
 {
 	for (var ii = 0; ii < 3; ii++)
 	{
-		x = Array();
+		var x = Array();
 		$("#group"+ii+" li").each(function() {
 			x.push(this.innerHTML);
 		});
