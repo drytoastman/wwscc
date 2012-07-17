@@ -59,7 +59,7 @@ ${"%s/%s - %s %s %s %s" % (car.classcode, car.number, car.year, car.make, car.mo
 		<span class='evalue'>${ev.location}</span>
 	%endif
 
-	%if not ev.closed and ev.opened:
+	%if ev.opened:
 			<span class='elabel'>Entries:</span>
 		%if ev.totlimit:
 			<span class='evalue'>${ev.count}/${ev.totlimit}</span>
@@ -67,7 +67,9 @@ ${"%s/%s - %s %s %s %s" % (car.classcode, car.number, car.year, car.make, car.mo
 			<span class='evalue'>${ev.count}</span>
 		%endif
 			<span class='evalue'> <a class='viewbutton' href='${h.url_for(action='view', event=ev.id)}' >View</a></span>
+	%endif
 
+	%if not ev.closed and ev.opened:
 		%if ev.cost:
 			<span class='elabel'>Cost:</span>
 			<span class='evalue'>$${ev.cost}</span>
