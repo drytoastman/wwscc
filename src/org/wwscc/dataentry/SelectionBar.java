@@ -40,7 +40,6 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 	JComboBox<Event> eventSelect;
 	JComboBox<Integer> courseSelect;
 	JComboBox<Integer> groupSelect;
-	JCheckBox timeGrabsFocus;
 
 	public SelectionBar()
 	{
@@ -58,8 +57,6 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		courseSelect = createCombo("courseChange");
 		groupSelect  = createCombo("groupChange");
 		eventSelect = createCombo("eventChange");
-		timeGrabsFocus = new JCheckBox("New Time Grabs Focus");
-		timeGrabsFocus.addActionListener(this);
 
 		groupSelect.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 1, 2, 3, 4, 5, 6 }));
 
@@ -75,9 +72,6 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		add(new JLabel(""), "");
 
 		add(resultsButton, "gapright 20");
-		add(timeGrabsFocus, "al right");
-
-		timeGrabsFocus.setSelected(true);
 	}
 
 
@@ -160,10 +154,6 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		{
 			if (cmd.startsWith("results"))
 				BrowserControl.openGroupResults(new int[] {Database.d.getCurrentRunGroup()});
-		}
-		else if (cmd.equals("New Time Grabs Focus"))
-		{
-			Messenger.sendEvent(MT.TIMER_TAKES_FOCUS, timeGrabsFocus.isSelected());
 		}
 	}
 }

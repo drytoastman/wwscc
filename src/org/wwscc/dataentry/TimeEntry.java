@@ -67,13 +67,22 @@ import org.wwscc.util.TimeTextField;
 /**
  * Implements the time entry panel used in the data entry GUI
  */
-public class TimeEntry extends JPanel implements ActionListener, ListSelectionListener, ListDataListener, FocusListener, MessageListener
+@SuppressWarnings("serial")
+public class TimeEntry extends JPanel implements ActionListener, ListSelectionListener, ListDataListener, MessageListener
 {
 	private static final Logger log = Logger.getLogger(TimeEntry.class.getCanonicalName());
 
-	public enum Mode { OFF, BASIC_SERIAL, BWTIMER_SERIAL, BWTIMER_NETWORK, PROTIMER_NETWORK };
+	/**
+	 * The timer input mode
+	 */
+	public enum Mode { 
+		/** manual input only  */    OFF,
+		/** serial line timers */    BASIC_SERIAL, 
+		/** bwtimer serial line */   BWTIMER_SERIAL, 
+		/** bwtimer over network */  BWTIMER_NETWORK, 
+		/** protimer over network */ PROTIMER_NETWORK 
+	};
 
-	boolean timerTakesFocus;
 	Mode mode;
 	TimerClient tclient;
 	String commPort;
@@ -99,8 +108,29 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 
 	JLabel connectionStatus;
 	ModeButtonGroup modeGroup;
+	
+	/**
+	 * Special focus listener for cones and gates entry
+	 */
+	class SelectAllFocusListener implements FocusListener
+	{
+		@Override
+		public void focusGained(FocusEvent e) {
+			JTextField tf = (JTextField)e.getComponent();
+			tf.selectAll();
+		}
 
-
+		@Override
+		public void focusLost(FocusEvent e) {
+			JTextField tf = (JTextField)e.getComponent();
+			tf.select(0,0);
+		}
+	}
+	
+	/**
+	 * Create a new timer entry widget
+	 * @throws IOException 
+	 */
 	public TimeEntry() throws IOException
 	{
 		super();
@@ -114,7 +144,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		connectionStatus = new JLabel("");
 		modeGroup = new ModeButtonGroup();
 		
-		timerTakesFocus = false;
 		mode = Mode.OFF;
 		tclient = null;
 		commPort = null;
@@ -144,8 +173,8 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		cones = new IntTextField("0", 2);
 		gates = new IntTextField("0", 2);
 
-		cones.addFocusListener(this);
-		gates.addFocusListener(this);
+		cones.addFocusListener(new SelectAllFocusListener());
+		gates.addFocusListener(new SelectAllFocusListener());
 
 		// set ` key as tab for mistypes in time/penalty fields
 		Set<AWTKeyStroke> s = new HashSet<AWTKeyStroke>(
@@ -212,14 +241,21 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		add(enter, "spanx 2, growx, wrap");
 		add(error, "spanx 2, wrap");
 
-		switchMode(Mode.OFF);
+		switchTimerMode(Mode.OFF);
 	}
 
+	/**
+	 * @return the default enter button for use by the application
+	 */
 	public JButton getEnterButton()
 	{
 		return enter;
 	}
 
+	/**
+	 * Get the menu used for this timer
+	 * @return a JMenu for use by the application
+	 */
 	public JMenu getTimerMenu()
 	{
 		JMenu timerMenu = new JMenu("Timer");
@@ -244,12 +280,16 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		return timerMenu;
 	}
 
-	public void switchMode(Mode newMode)
+	/**
+	 * Change the timer input mode for the this TimeEntry box
+	 * @param newMode the mode to switch to
+	 */
+	private void switchTimerMode(Mode newMode)
 	{
 		try
 		{
 			String newCommPort = "";
-			FoundService newService = null;
+			FoundService newService;
 			InetSocketAddress newAddr = null;
 
 			/* First see if they can provide the necessary details */
@@ -348,7 +388,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			String msg = ioe.getMessage();
 			if ((msg != null) && !msg.equals("cancel"))
 			{
-				log.warning("Timer Select Failed (" + ioe.getMessage() + "), turning Off");
+				log.log(Level.WARNING, "Timer Select Failed ({0}), turning Off", ioe.getMessage());
 				mode = Mode.OFF;				
 			}
 
@@ -367,6 +407,9 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		connectionStatus.setText(msg);
 	}
 
+	/**
+	 * Called there is a request (button/program) to enter the current time/penalties
+	 */
 	private void enterTime()
 	{
 		String sStatus = (String)status.getSelectedItem();
@@ -402,7 +445,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		catch (IndexOutOfBoundsException iobe)
 		{
 			error.setText(iobe.getMessage());
-			iobe.printStackTrace();
             Toolkit.getDefaultToolkit().beep();
 		}
 	}
@@ -410,7 +452,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		Component compFocusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 		String cmd = e.getActionCommand();
 		if (cmd.equals("Enter Time"))
 		{
@@ -429,20 +470,36 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		else
 		{
 			try {
-				switchMode(Mode.valueOf(cmd));
+				switchTimerMode(Mode.valueOf(cmd));
 			} catch (IllegalArgumentException iae) {
-				log.info("Unknown command: " + cmd);
+				log.log(Level.INFO, "Unknown command: {0}", cmd);
 			}
 		}
 	}
 
+	/**
+	 * A new time came in via the connected timer
+	 * @param e only use the source of the list event data
+	 */
 	@Override
     public void intervalAdded(ListDataEvent e)
 	{
 		// Select first item if its brand new and we aren't editing another time
 		TimeStorage s = (TimeStorage)e.getSource();
 		if ((s.getFinishedCount() == 1) && (time.getText().equals("")))
-			selectNext(0);
+		{
+			Component compFocusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+			while (compFocusOwner != null)
+			{
+				System.out.println(compFocusOwner);
+				if ((compFocusOwner instanceof TimeEntry) || (compFocusOwner instanceof RunsTable))
+				{
+					selectNext(0);  // only select and pull focus if users isn't 'focused' doing something else
+					break;
+				}
+				compFocusOwner = compFocusOwner.getParent();
+			}
+		}
 	}
 
 	@Override
@@ -450,6 +507,11 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	@Override
     public void contentsChanged(ListDataEvent e) {}
 
+	
+	/**
+	 * Reset the selection in the index list, taking into account list size
+	 * @param index 
+	 */
 	protected void selectNext(int index)
 	{
 		int size = activeModel.getFinishedCount();
@@ -469,7 +531,10 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		}
 	}
 
-
+	
+	/**
+	 * Clear the values in all of the available entry boxes
+	 */
 	protected void clearValues()
 	{
 		reaction.setTime(0);
@@ -481,10 +546,13 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		gates.setInt(0);
 		status.setSelectedIndex(0);
 		error.setText("");
-		time.requestFocus();
 	}
 
 
+	/**
+	 * Set all the values in all of the available entry boxes
+	 * @param r the Run to take the values from
+	 */
 	protected void setValues(Run r)
 	{
 		reaction.setTime(r.getReaction());
@@ -516,8 +584,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			if (o instanceof Run)
 			{
 				setValues((Run)o);
-				if (timerTakesFocus)
-					cones.requestFocus();
+				cones.requestFocusInWindow();
 			}
 			else
 			{
@@ -525,19 +592,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			}
 		}
 	}
-
-	@Override
-	public void focusGained(FocusEvent e) {
-		JTextField tf = (JTextField)e.getComponent();
-		tf.selectAll();
-	}
-
-	@Override
-	public void focusLost(FocusEvent e) {
-		JTextField tf = (JTextField)e.getComponent();
-		tf.select(0,0);
-	}
-
 
 	@Override
 	public void event(MT type, Object o)
@@ -549,7 +603,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				{
 					timeList.clearSelection();
 					setValues((Run)o);
-					time.requestFocus();
+					time.requestFocusInWindow();
 					time.selectAll();
 				}
 				else if (o == null)
@@ -590,11 +644,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			case TIMER_SERVICE_CONNECTION:
 				if ((Boolean)o)
 					log.info("Connected");
-				break;
-
-			case TIMER_TAKES_FOCUS:
-				log.log(Level.INFO, "Timer takes focus: {0}", o);
-				timerTakesFocus = (Boolean)o;
 				break;
 				
 			case TIME_ENTER_REQUEST:
