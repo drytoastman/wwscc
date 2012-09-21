@@ -380,3 +380,31 @@ table.carlist th {
 	padding: 0px; 
 }
 
+
+.viewheader {
+	margin-top: 20px;
+	margin-left: 10px;
+	font-weight: bold;
+	color: #444;
+	font-family: Helvetica, sans-serif;
+}
+
+.viewtable {
+	margin-left: 20px;
+}
+
+.viewtable td, .viewtable th {
+	font-size: 0.85em;
+	color: #666;
+	text-align: left;
+}
+
+.viewtable td:last-child {
+	text-align: right;
+}
+
+.viewtable .vweekday {
+	padding-left: 20px;
+}
+
+
