@@ -78,8 +78,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		if self.settings.locked:
 			if self.action not in ('login', 'scripts', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'newentrants', 'printhelp', 'forceunlock'):
 				c.seriesname = self.settings.seriesname
-				c.next = action
-				c.isAdmin = mysession.isSeriesAdmin()
+				c.next = self.action
 				raise BeforePage(render_mako('/admin/locked.mako'))
 
 
@@ -95,6 +94,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		mysession = AdminSession(session.setdefault(('admin', self.srcip), {}), self.database)
 
 		if mysession.isSeriesAdmin():
+			c.isAdmin = True
 			return
 
 		if event is not None and mysession.isEventAdmin(eventid):
@@ -105,7 +105,6 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		else:
 			c.request = "Need authentication token for the series"
 
-		print self.routingargs
 		mysession.saveAction(self.routingargs['action'])
 		raise BeforePage(render_mako('/admin/login.mako'))
 	
