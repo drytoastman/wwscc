@@ -19,6 +19,7 @@ import org.wwscc.components.CarTree;
 import org.wwscc.components.CarTreeRenderer;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.Database;
+import org.wwscc.storage.Dialins;
 import org.wwscc.storage.Entrant;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
@@ -82,7 +83,10 @@ class DriverDrag extends TransferHandler
 			{
 				Entrant e = (Entrant)((DefaultMutableTreeNode)o).getUserObject();
 				if (!e.isInRunOrder())
-					return new EntrantTransfer(e);
+				{
+					Dialins dial = Database.d.loadDialins();
+					return new BracketEntryTransfer(new BracketEntry(e, dial.getDial(e.getCarId(), true)));
+				}
 			}
 		}
 		return null;
@@ -93,8 +97,9 @@ class DriverDrag extends TransferHandler
 	{
 		if (action != NONE)
 		{
-			EntrantTransfer t = (EntrantTransfer)data;
-			t.entrant.setInRunOrder(true);
+			BracketEntryTransfer t = (BracketEntryTransfer)data;
+			t.entry.entrant.setInRunOrder(true);
+			log.warning("Beware, used bonus style dialin cause I don't know which to use from here");
 			c.repaint();
 		}
 	}

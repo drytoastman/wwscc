@@ -173,9 +173,9 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 				break;
 
 			case PRELOAD_MENU:
-				BracketingList b = new BracketingList(challenge.getName(), challenge.isBonus(), baseRounds*2);
+				BracketingList b = new BracketingList(challenge.getName(), baseRounds*2);
 				b.doDialog("Auto Load", null);
-				List<Entrant> toload = b.getResult();
+				List<BracketEntry> toload = b.getResult();
 				if (toload == null)
 					break;
 
@@ -201,7 +201,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 						entry = entry.advancesTo();
 						bys--;
 					}
-					model.setEntrant(entry, toload.get(ii));
+					model.setEntrant(entry, toload.get(ii).entrant, toload.get(ii).dialin);
 				}
 
 				// call set challenge to update all of our labels
@@ -575,11 +575,11 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 			}		
 		}
 
-		private void setEntrant(Entrant e)
+		private void setEntry(BracketEntry e)
 		{
-			entrant = e;
-			setText((e == null) ? " " : e.getName());
-			model.setEntrant(new Id.Entry(challenge.getId(), round, level), entrant);
+			entrant = e.entrant;
+			setText((e == null) ? " " : e.entrant.getName());
+			model.setEntrant(new Id.Entry(challenge.getId(), round, level), entrant, e.dialin);
 		}
 
 		public void updateEntrant()
@@ -588,9 +588,9 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 			setText((entrant == null) ? " " : entrant.getName());			
 		}
 		
-		public Entrant getEntrant()
+		public BracketEntry getEntry()
 		{
-			return entrant;
+			return new BracketEntry(entrant, model.getDial(new Id.Entry(challenge.getId(), round, level)));
 		}
 	}
 
@@ -659,7 +659,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		@Override
 		protected Transferable createTransferable(JComponent c)
 		{
-			return new EntrantTransfer(((EntrantLabel)c).getEntrant());
+			return new BracketEntryTransfer(((EntrantLabel)c).getEntry());
 		}
 
 		@Override
@@ -667,7 +667,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		{
 			if (action == MOVE)
 			{
-				((EntrantLabel)c).setEntrant(null);
+				((EntrantLabel)c).setEntry(new BracketEntry(null, 0.0));
 			}
 		}
 
@@ -682,8 +682,8 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 			try 
 			{
 				EntrantLabel l = (EntrantLabel)support.getComponent();
-				Entrant e = (Entrant) support.getTransferable().getTransferData(EntrantTransfer.myFlavor);
-				if (e == l.getEntrant())
+				BracketEntry e = (BracketEntry) support.getTransferable().getTransferData(BracketEntryTransfer.myFlavor);
+				if (e.entrant == l.getEntry().entrant)
 					return false;
 			} 
 			catch (Exception ex) { return false; }
@@ -699,9 +699,9 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 			{
 				if (support.isDrop())
 				{
-					Entrant e = (Entrant)support.getTransferable().getTransferData(EntrantTransfer.myFlavor);
+					BracketEntry e = (BracketEntry)support.getTransferable().getTransferData(BracketEntryTransfer.myFlavor);
 					EntrantLabel l = (EntrantLabel)support.getComponent();
-					l.setEntrant(e);
+					l.setEntry(e);
 					return true;
 				}
 			}
