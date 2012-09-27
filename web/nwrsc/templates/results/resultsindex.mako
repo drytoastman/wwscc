@@ -89,6 +89,8 @@ padding: 0;
 %if c.event.ispro and config['nwrsc.private']:
 	<li><a href='${h.url_for(action='grid', order='number')}'>Grid By Number</a></li>
 	<li><a href='${h.url_for(action='grid', order='position')}'>Grid By Position</a></li>
+%endif
+%if c.event.ispro:
 	<li>Dialins &darr;
 	<ul>
 	<li>Ladies by <a href='${h.url_for(action='dialins', filter='Ladies')}'>Net</a>,
