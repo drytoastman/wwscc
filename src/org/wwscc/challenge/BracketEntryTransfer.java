@@ -13,23 +13,22 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import org.wwscc.storage.Entrant;
 
 
-public class EntrantTransfer implements Transferable, ClipboardOwner
+public class BracketEntryTransfer implements Transferable, ClipboardOwner
 {
-	Entrant entrant;
+	BracketEntry entry;
 	static DataFlavor myFlavor;
 
 	static
 	{
 		myFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + 
-				"; class=org.wwscc.storage.Entrant", "Entrant");
+				"; class=org.wwscc.challenge.BracketEntry", "BracketEntry");
 	}
 
-	public EntrantTransfer(Entrant e)
+	public BracketEntryTransfer(BracketEntry b)
 	{
-		entrant = e;
+		entry = b;
 	}
 
 	@Override
@@ -48,7 +47,7 @@ public class EntrantTransfer implements Transferable, ClipboardOwner
 	public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException
 	{
 		if (flavor.equals(myFlavor))
-			return entrant;
+			return entry;
 		throw new UnsupportedFlavorException(flavor);
 	}
 

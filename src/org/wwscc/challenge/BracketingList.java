@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -33,28 +34,36 @@ import org.wwscc.storage.Dialins;
 import org.wwscc.storage.Entrant;
 
 
-public class BracketingList extends BaseDialog<List<Entrant>> implements ChangeListener
+
+public class BracketingList extends BaseDialog<List<BracketEntry>> implements ChangeListener
 {
 	BracketingListModel model;
 	JSpinner spinner;
+	JCheckBox ladiesCheck;
+	JCheckBox openCheck;
+	JCheckBox bonusCheck;
+	
 	JTable table;
 	int required;
-
 	
-	public BracketingList(String cname, boolean bonus, int size)
+	public BracketingList(String cname, int size)
 	{
 		super(new MigLayout("fill"), false);
 
-		if (bonus)
-			model = new BracketingListModel(BracketingListModel.ChallengeType.BONUS);
-		else if (cname.contains("Ladies"))
-			model = new BracketingListModel(BracketingListModel.ChallengeType.LADIES);
-		else
-			model = new BracketingListModel(BracketingListModel.ChallengeType.OPEN);
-		
+		model = new BracketingListModel();
 		required = size;
+		
 		spinner = new JSpinner(new SpinnerNumberModel(size, size/2+1, size, 1));
 		spinner.addChangeListener(this);
+		
+		ladiesCheck = new JCheckBox("Ladies Classes", true);
+		ladiesCheck.addChangeListener(this);
+		
+		openCheck = new JCheckBox("Open Classes", true);
+		openCheck.addChangeListener(this);
+		
+		bonusCheck = new JCheckBox("Bonus Style Dialins", true);		
+		bonusCheck.addChangeListener(this);
 		
 		table = new JTable(model);
 		table.setAutoCreateRowSorter(true);
@@ -66,10 +75,15 @@ public class BracketingList extends BaseDialog<List<Entrant>> implements ChangeL
 		table.getColumnModel().getColumn(3).setMaxWidth(75);
 		table.getColumnModel().getColumn(4).setMaxWidth(75);
 
-		mainPanel.add(new JLabel("Number of Drivers"), "center, split");
-		mainPanel.add(spinner, "center, gapbottom 10, wrap");
+		mainPanel.add(new JLabel("Number of Drivers"), "split");
+		mainPanel.add(spinner, "gapbottom 10, wrap");
+
+		mainPanel.add(ladiesCheck, "wrap");
+		mainPanel.add(openCheck, "wrap");
+		mainPanel.add(bonusCheck, "gapbottom 10, wrap");
+		
 		mainPanel.add(new JLabel("Click on column header to sort"), "center, wrap");
-		mainPanel.add(new JScrollPane(table), "width 300, height 600, grow");
+		mainPanel.add(new JScrollPane(table), "width 400, height 600, grow");
 	}
 	
 	@Override
@@ -85,19 +99,20 @@ public class BracketingList extends BaseDialog<List<Entrant>> implements ChangeL
 	}
 
 	@Override
-	public List<Entrant> getResult()
+	public List<BracketEntry> getResult()
 	{
 		if (!valid)
 			return null;
 
-		List<Entrant> ret = new ArrayList<Entrant>();
+		List<BracketEntry> ret = new ArrayList<BracketEntry>();
 		for (int index : table.getSelectedRows())
-			ret.add((Entrant)model.getEntrantAt(table.convertRowIndexToModel(index)));
+			ret.add(model.getBracketEntry(table.convertRowIndexToModel(index)));
 
+		// sort by their net times
 		final Dialins dial = Database.d.loadDialins();
-		Collections.sort(ret, new Comparator<Entrant>() {
-			public int compare(Entrant o1, Entrant o2) {
-				return Double.compare(dial.getNet(o1.getCarId()), dial.getNet(o2.getCarId()));
+		Collections.sort(ret, new Comparator<BracketEntry>() {
+			public int compare(BracketEntry o1, BracketEntry o2) {
+				return Double.compare(dial.getNet(o1.entrant.getCarId()), dial.getNet(o2.entrant.getCarId()));
 			}
 		});
 
@@ -107,10 +122,12 @@ public class BracketingList extends BaseDialog<List<Entrant>> implements ChangeL
 	@Override
 	public void stateChanged(ChangeEvent e)
 	{
-		required = ((Number)spinner.getModel().getValue()).intValue();
+		if (e.getSource() == spinner)
+			required = ((Number)spinner.getModel().getValue()).intValue();
+		else
+			model.reload(openCheck.isSelected(), ladiesCheck.isSelected(), bonusCheck.isSelected());
 	}
 }
-
 class D3Renderer extends DefaultTableCellRenderer
 {
 	NumberFormat df;
@@ -140,20 +157,22 @@ class BracketingListModel extends AbstractTableModel
 		Entrant entrant;
 		int netposition;
 		double nettime;
+		double dialin;
 	}
 
-	enum ChallengeType { OPEN, LADIES, BONUS };
-
-	public BracketingListModel(ChallengeType type)
+	public BracketingListModel()
+	{
+		reload(true, true, true);
+	}
+	
+	public void reload(boolean useOpen, boolean useLadies, boolean bonusStyle)
 	{
 		Map<Integer, Entrant> entrants = new HashMap<Integer, Entrant>();
 		for (Entrant e : Database.d.getEntrantsByEvent())
 		{
-			if ((type == ChallengeType.OPEN) && (e.getClassCode().startsWith("L")))
-				continue;
-			else if ((type == ChallengeType.LADIES) && (!e.getClassCode().startsWith("L")))
-				continue;
-			entrants.put(e.getCarId(), e);
+			if ((useLadies && (e.getClassCode().startsWith("L"))) ||
+				(useOpen && (!e.getClassCode().startsWith("L"))))
+				entrants.put(e.getCarId(), e);
 		}
 
 		data = new ArrayList<Store>();
@@ -167,10 +186,12 @@ class BracketingListModel extends AbstractTableModel
 			s.entrant = entrants.get(id);
 			s.netposition = pos;
 			s.nettime = d.getNet(id);
+			s.dialin = d.getDial(id, bonusStyle);
 			data.add(s);
 			pos++;
 		}
 		
+		fireTableDataChanged();
 	}
 
 	@Override
@@ -182,12 +203,13 @@ class BracketingListModel extends AbstractTableModel
 	@Override
 	public int getColumnCount()
 	{
-		return 5;
+		return 6;
 	}
 
-	public Entrant getEntrantAt(int rowIndex)
+	public BracketEntry getBracketEntry(int rowIndex)
 	{
-		return data.get(rowIndex).entrant;
+		Store s = data.get(rowIndex);
+		return new BracketEntry(s.entrant, s.dialin);
 	}
 
 	@Override
@@ -215,6 +237,7 @@ class BracketingListModel extends AbstractTableModel
 			case 2: return s.entrant.getLastName();
 			case 3: return s.entrant.getClassCode();
 			case 4: return s.nettime;
+			case 5: return s.dialin;
 		}
 		return null;
 	}
@@ -228,7 +251,8 @@ class BracketingListModel extends AbstractTableModel
 			case 1: return "First";
 			case 2: return "Last";
 			case 3: return "Class";
-			case 4: return "Time";
+			case 4: return "Net";
+			case 5: return "Dialin";
 			default: return "ERROR";
 		}
 	}

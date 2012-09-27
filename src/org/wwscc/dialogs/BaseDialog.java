@@ -193,6 +193,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 	{
 		JCheckBox rb = new JCheckBox(name);
 		rb.setActionCommand(name);
+		rb.setText("");
 		checks.put(name, rb);
 		return rb;
 	}

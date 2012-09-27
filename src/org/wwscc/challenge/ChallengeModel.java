@@ -42,7 +42,6 @@ public class ChallengeModel implements MessageListener
 	Id.Run nextLeft, nextRight;
 	Id.Run thirdLeft, thirdRight;
 	TimerClient client;
-	Dialins dialins;
 		
 	public ChallengeModel()
 	{
@@ -52,7 +51,6 @@ public class ChallengeModel implements MessageListener
 		activeLeft = activeRight = null;
 		nextLeft = nextRight = null;
 		thirdLeft = thirdRight = null;
-		dialins = new Dialins();
 		client = null;
 
 		Messenger.register(MT.CONNECT_REQUEST, this);
@@ -231,14 +229,14 @@ public class ChallengeModel implements MessageListener
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
 	
-	public void setEntrant(Id.Entry eid, Entrant e)
+	public void setEntrant(Id.Entry eid, Entrant e, double dialin)
 	{
 		ChallengeRound r = getRound(eid);
 		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 		if (e != null)
 		{
 			re.setCar(e.getCarId());
-			re.setDial(dialins.getDial(e.getCarId(), isBonus(eid.challengeid)));
+			re.setDial(dialin);
 		}
 		else
 		{
@@ -456,8 +454,6 @@ public class ChallengeModel implements MessageListener
 				round.applyRun(run);
 			}
 		}
-		
-		dialins = Database.d.loadDialins();
 		
 		Messenger.sendEvent(MT.MODEL_CHANGED, this);
 	}
