@@ -20,8 +20,7 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import net.miginfocom.swing.MigLayout;
-import org.wwscc.timercomm.ServiceFinder;
-import org.wwscc.timercomm.ServiceFinder.FoundService;
+import org.wwscc.services.ServiceFinder;
 import org.wwscc.util.FileChooser;
 
 
@@ -119,9 +118,11 @@ public class DatabaseDialog extends BaseDialog<Object>
 			try {
 				ServiceFinder finder = new ServiceFinder("RemoteDatabase");
 				List<RemoteDBLabel> labels = new ArrayList<RemoteDBLabel>();
+				
+				/*
 				for (FoundService fs : finder.find())
 					for (String db : fs.args)
-						labels.add(new RemoteDBLabel(fs.host, fs.port, db));
+						labels.add(new RemoteDBLabel(fs.host, fs.port, db)); */
 
 				RemoteDBLabel select = (RemoteDBLabel)JOptionPane.showInputDialog(null,
 					"Remote Databases Found", "Find Service",

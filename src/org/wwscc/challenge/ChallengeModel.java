@@ -12,17 +12,15 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.wwscc.services.ServiceFinder;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.ChallengeRound;
 import org.wwscc.storage.ChallengeRound.RoundEntrant;
 import org.wwscc.storage.ChallengeRun;
 import org.wwscc.storage.Database;
-import org.wwscc.storage.Dialins;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.storage.Run;
-import org.wwscc.timercomm.ServiceFinder;
-import org.wwscc.timercomm.ServiceFinder.FoundService;
 import org.wwscc.timercomm.TimerClient;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
@@ -474,6 +472,7 @@ public class ChallengeModel implements MessageListener
 			case CONNECT_REQUEST:
 				try
 				{
+					/*
 					FoundService service;
 					if ((service = ServiceFinder.dialogFind("ProTimer")) == null)
 							return;
@@ -481,7 +480,7 @@ public class ChallengeModel implements MessageListener
 						client.close();
 					client = null;
 					client = new TimerClient(new InetSocketAddress(service.host, service.port));
-					new Thread(client, "ProTimerClient").start();
+					new Thread(client, "ProTimerClient").start(); */
 				}
 				catch (Exception e)
 				{

@@ -51,11 +51,12 @@ import javax.swing.event.ListSelectionListener;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.bwtimer.TimeStorage;
 import org.wwscc.bwtimer.TimerModel;
+import org.wwscc.dialogs.SimpleFinderDialog;
+import org.wwscc.services.FoundService;
+import org.wwscc.services.ServiceFinder;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Run;
 import org.wwscc.timercomm.SerialDataInterface;
-import org.wwscc.timercomm.ServiceFinder;
-import org.wwscc.timercomm.ServiceFinder.FoundService;
 import org.wwscc.timercomm.TimerClient;
 import org.wwscc.util.IntTextField;
 import org.wwscc.util.MT;
@@ -304,14 +305,18 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 						throw new Exception("cancel");
 					break;
 				case BWTIMER_NETWORK:
-					if ((newService = ServiceFinder.dialogFind("BWTimer")) == null)
+					SimpleFinderDialog dialog = new SimpleFinderDialog("BWTimer");
+					dialog.doDialog("Find BWTimers", null);
+					if ((newService = dialog.getResult()) == null)
 						throw new Exception("cancel");
-					newAddr = new InetSocketAddress(newService.host, newService.port);
+					newAddr = new InetSocketAddress(newService.getHost(), newService.getPort());
 					break;
-				case PROTIMER_NETWORK:
-					if ((newService = ServiceFinder.dialogFind("ProTimer")) == null)
+				case PROTIMER_NETWORK:					
+					SimpleFinderDialog dialog2 = new SimpleFinderDialog("ProTimer");
+					dialog2.doDialog("Find ProTimers", null);
+					if ((newService = dialog2.getResult()) == null)
 						throw new Exception("cancel");
-					newAddr = new InetSocketAddress(newService.host, newService.port);
+					newAddr = new InetSocketAddress(newService.getHost(), newService.getPort());
 					break;
 			}
 
@@ -642,8 +647,11 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				break;
 
 			case TIMER_SERVICE_CONNECTION:
-				if ((Boolean)o)
-					log.info("Connected");
+				if (!(Boolean)o)
+				{
+					connectionStatus.setForeground(Color.RED);
+					connectionStatus.setText("Not Connected");
+				}
 				break;
 				
 			case TIME_ENTER_REQUEST:

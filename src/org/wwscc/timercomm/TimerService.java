@@ -10,6 +10,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
 import java.util.logging.Logger;
+import org.wwscc.services.ServiceAnnouncer;
+import org.wwscc.services.ServiceMessage;
 import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.storage.Run;
 
@@ -32,7 +34,7 @@ public class TimerService implements Runnable
 		serversock = new ServerSocket(0);
 		log.info("Service " + name + " started on port " + serversock.getLocalPort());
 		announcer = new ServiceAnnouncer();
-		announcer.setDescription(name, serversock.getLocalPort());
+		announcer.addDescription(ServiceMessage.createType(name, serversock.getInetAddress().getHostName(), serversock.getLocalPort()));
 		clients = new Vector<TimerClient>();
 		marked = new Vector<TimerClient>();
 		new Thread(announcer).start();

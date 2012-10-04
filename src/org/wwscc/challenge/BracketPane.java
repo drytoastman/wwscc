@@ -578,7 +578,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		private void setEntry(BracketEntry e)
 		{
 			entrant = e.entrant;
-			setText((e == null) ? " " : e.entrant.getName());
+			setText((e.entrant == null) ? " " : e.entrant.getName());
 			model.setEntrant(new Id.Entry(challenge.getId(), round, level), entrant, e.dialin);
 		}
 
