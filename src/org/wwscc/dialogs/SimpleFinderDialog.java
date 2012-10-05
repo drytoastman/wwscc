@@ -9,7 +9,13 @@
 package org.wwscc.dialogs;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.services.FoundService;
 import org.wwscc.services.JServiceList;
@@ -17,36 +23,56 @@ import org.wwscc.services.ServiceFinder;
 
 
 /**
+ * Dialog that queries for a service on the network.
  */
-public class SimpleFinderDialog extends BaseDialog<FoundService>
+@SuppressWarnings("serial")
+public class SimpleFinderDialog extends BaseDialog<InetSocketAddress> implements ListSelectionListener
 {
-	private static Logger log = Logger.getLogger(SimpleFinderDialog.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(SimpleFinderDialog.class.getCanonicalName());
 
 	JServiceList list;
 	ServiceFinder finder;
 	
 	/**
+	 * shortcut when only looking for a single name
+	 * @param serviceName
+	 */
+	public SimpleFinderDialog(String serviceName)
+	{
+		this(Arrays.asList(new String[] { serviceName }));
+	}
+	
+	/**
 	 * Create the dialog
 	 * 
-	 * @param serviceName the service name to look for
+	 * @param serviceNames the service names to look for
 	 */
-    public SimpleFinderDialog(String serviceName)
+    public SimpleFinderDialog(List<String> serviceNames)
 	{
 		super(new MigLayout(""), false);
 
 		list = new JServiceList();
+		list.addListSelectionListener(this);
+		//list.mapIcon(servicename, icon) for custom icons
+		
+		JScrollPane p = new JScrollPane(list);
 		try
 		{
-			finder = new ServiceFinder(serviceName);
+			finder = new ServiceFinder(serviceNames);
 			finder.setListener(list);
-			new Thread(finder).start();
-			mainPanel.add(list, "wrap");
+			new Thread(finder, "ServiceFinder").start();
+			mainPanel.add(p, "w 300, h 400, spanx 2, wrap");
+			
 		}
 		catch (IOException ioe)
 		{
 			mainPanel.add(label("ServiceFinder failed to start: " + ioe.getMessage(), false), "wrap");
 		}
 		
+		mainPanel.add(label("Host", false), "");
+		mainPanel.add(entry("host", ""), "growx, wrap");
+		mainPanel.add(label("Port", false), "");
+		mainPanel.add(ientry("port", 0), "growx, wrap");
 		result = null;
     }
 
@@ -63,8 +89,28 @@ public class SimpleFinderDialog extends BaseDialog<FoundService>
 	@Override
 	public boolean verifyData()
 	{
-		result = list.getSelectedValue();
+		try {
+			result = new InetSocketAddress(getEntryText("host"), getEntryInt("port"));
+		} catch (Exception e) {
+			result = null;
+		}
 		return (result != null);
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) 
+	{
+		FoundService f = list.getSelectedValue();
+		if (f != null)
+		{
+			setEntryText("host", f.getHost().getHostAddress());
+			setEntryText("port", String.valueOf(f.getPort()));
+		}
+		else
+		{
+			setEntryText("host", "");
+			setEntryText("port", "");
+		}
 	}
 }
 

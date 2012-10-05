@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileSystemView;
 
@@ -84,6 +85,7 @@ public class Logging
 				l = Level.SEVERE;
 			}
 			setLevel(l);
+			setFormatter(new SimpleFormatter());
 		}
 
 		public void publish(LogRecord logRecord)
@@ -110,7 +112,7 @@ public class Logging
 					type = JOptionPane.INFORMATION_MESSAGE;
 				}
 
-				String record = logRecord.getMessage();
+				String record = getFormatter().formatMessage(logRecord);
 				if (record.contains("\n"))
 					record = "<HTML>" + record.replace("\n", "<br>");
 				JOptionPane.showMessageDialog(null, record, title, type);

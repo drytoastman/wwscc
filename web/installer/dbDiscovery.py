@@ -9,8 +9,8 @@ config = ConfigParser.ConfigParser()
 config.read(sys.argv[1])
 seriesdir = config.get('app:main', 'seriesdir', 'asdf') % { 'here': os.path.dirname(os.path.abspath(sys.argv[1])) } 
 
-MDNSAddr = "228.98.99.100";
-MDNSPort = 6789;
+MDNSAddr = "224.0.0.251"
+MDNSPortPlus = 5354;  
 
 def databaseAnnouncer():
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -22,7 +22,7 @@ def databaseAnnouncer():
 	sock.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_TTL, 5)
 	sock.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_LOOP, 1)
 	try:
-		sock.bind(('', MDNSPort))
+		sock.bind(('', MDNSPortPlus))
 	except:
 		pass
 	intf = socket.gethostbyname(socket.gethostname())
@@ -33,10 +33,12 @@ def databaseAnnouncer():
 	done = False
 	while not done:
 		data, (addr, port) = sock.recvfrom(256)
-		request = data.split()
-		if request[0] == 'FIND' and request[1] == 'RemoteDatabase':
-			dblist = [os.path.basename(db)[:-3] for db in glob.glob(seriesdir+"/*.db")]
-			sock.sendto("SERVICE RemoteDatabase 80 " + ' '.join(dblist), 0, (MDNSAddr, MDNSPort))
+		for request in data.split():
+			pieces = request.split(',')
+			if pieces[0] == 'RemoteDatabase' and pieces[2] == '0':  # looking for RemoteDatabase
+				dblist = ["RemoteDatabase,%s,80" % os.path.basename(db)[:-3] for db in glob.glob(seriesdir+"/*.db")]
+				if len(dblist) == 0: continue
+				sock.sendto('\n'.join(dblist), 0, (MDNSAddr, MDNSPortPlus))
 
 
 if __name__ == '__main__':	

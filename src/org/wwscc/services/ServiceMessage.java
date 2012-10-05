@@ -1,10 +1,15 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * This software is licensed under the GPLv3 license, included as
+ * ./GPLv3-LICENSE.txt in the source distribution.
+ *
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
+ * All rights reserved.
  */
+
 package org.wwscc.services;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -61,6 +66,41 @@ public class ServiceMessage
 		
 		return ret;
 	}
+	
+	/**
+	 * Utility for encoding list of messages
+	 * @param msgs
+	 * @return 
+	 */
+	public static String encodeList(List<ServiceMessage> msgs)
+	{
+		StringBuilder builder = new StringBuilder();
+		for (ServiceMessage out : msgs)
+		{
+			builder.append(out.encode());
+			builder.append("\n");
+		}
+		builder.deleteCharAt(builder.length()-1);
+		return builder.toString();
+	}
+				
+	/**
+	 * Utility for encoding a list of requests
+	 * @param names
+	 * @return 
+	 */
+	public static String encodeRequstList(List<String> names)			
+	{
+		StringBuilder builder = new StringBuilder();
+		for (String name : names)
+		{
+			builder.append(createRequest(name).encode());
+			builder.append('\n');
+		}
+		builder.deleteCharAt(builder.length()-1);
+		return builder.toString();
+	}
+	
 	
 	public String encode()
 	{

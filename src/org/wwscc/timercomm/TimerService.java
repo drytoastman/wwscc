@@ -6,6 +6,7 @@
 package org.wwscc.timercomm;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
@@ -34,7 +35,7 @@ public class TimerService implements Runnable
 		serversock = new ServerSocket(0);
 		log.info("Service " + name + " started on port " + serversock.getLocalPort());
 		announcer = new ServiceAnnouncer();
-		announcer.addDescription(ServiceMessage.createType(name, serversock.getInetAddress().getHostName(), serversock.getLocalPort()));
+		announcer.addDescription(ServiceMessage.createType(name, InetAddress.getLocalHost().getHostName(), serversock.getLocalPort()));
 		clients = new Vector<TimerClient>();
 		marked = new Vector<TimerClient>();
 		new Thread(announcer).start();

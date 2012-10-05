@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -52,8 +53,6 @@ import net.miginfocom.swing.MigLayout;
 import org.wwscc.bwtimer.TimeStorage;
 import org.wwscc.bwtimer.TimerModel;
 import org.wwscc.dialogs.SimpleFinderDialog;
-import org.wwscc.services.FoundService;
-import org.wwscc.services.ServiceFinder;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Run;
 import org.wwscc.timercomm.SerialDataInterface;
@@ -290,7 +289,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		try
 		{
 			String newCommPort = "";
-			FoundService newService;
 			InetSocketAddress newAddr = null;
 
 			/* First see if they can provide the necessary details */
@@ -306,17 +304,15 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 					break;
 				case BWTIMER_NETWORK:
 					SimpleFinderDialog dialog = new SimpleFinderDialog("BWTimer");
-					dialog.doDialog("Find BWTimers", null);
-					if ((newService = dialog.getResult()) == null)
+					dialog.doDialog("Find Network Timers", null);
+					if ((newAddr = dialog.getResult()) == null)
 						throw new Exception("cancel");
-					newAddr = new InetSocketAddress(newService.getHost(), newService.getPort());
 					break;
 				case PROTIMER_NETWORK:					
 					SimpleFinderDialog dialog2 = new SimpleFinderDialog("ProTimer");
 					dialog2.doDialog("Find ProTimers", null);
-					if ((newService = dialog2.getResult()) == null)
+					if ((newAddr = dialog2.getResult()) == null)
 						throw new Exception("cancel");
-					newAddr = new InetSocketAddress(newService.getHost(), newService.getPort());
 					break;
 			}
 

@@ -1,6 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * This software is licensed under the GPLv3 license, included as
+ * ./GPLv3-LICENSE.txt in the source distribution.
+ *
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
+ * All rights reserved.
  */
 
 package org.wwscc.services;
@@ -22,7 +25,7 @@ public class ServiceAnnouncer implements Runnable
 {
 	private static Logger log = Logger.getLogger(ServiceAnnouncer.class.getCanonicalName());
 	public static final String MDNSAddr = "224.0.0.251";  // mDNS address
-	public static final int MDNSPort = 5354;  // one port higher than mDNS
+	public static final int MDNSPortPlus = 5354;  // one port higher than mDNS
 	
 	protected boolean done = false;
 	protected MulticastSocket sock = null;
@@ -33,7 +36,7 @@ public class ServiceAnnouncer implements Runnable
 	{
 		descriptions = Collections.synchronizedList(new ArrayList<ServiceMessage>());
 		group = InetAddress.getByName(MDNSAddr);
-		sock = new MulticastSocket(MDNSPort);
+		sock = new MulticastSocket(MDNSPortPlus);
 		sock.joinGroup(group);
 	}
 
@@ -87,14 +90,8 @@ public class ServiceAnnouncer implements Runnable
 				
 				if (toReply.size() > 0)
 				{
-					StringBuilder builder = new StringBuilder();
-					for (ServiceMessage out : toReply)
-					{
-						builder.append(out.encode());
-						builder.append("\n");
-					}
-					String replyMessage = builder.toString();
-					DatagramPacket reply = new DatagramPacket(replyMessage.getBytes(), replyMessage.length(), group, MDNSPort);
+					String replyMessage = ServiceMessage.encodeList(toReply);
+					DatagramPacket reply = new DatagramPacket(replyMessage.getBytes(), replyMessage.length(), group, MDNSPortPlus);
 					sock.send(reply);
 				}
 			}

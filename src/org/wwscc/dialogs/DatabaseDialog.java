@@ -10,26 +10,27 @@ package org.wwscc.dialogs;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import net.miginfocom.swing.MigLayout;
+import org.wwscc.services.FoundService;
+import org.wwscc.services.JServiceList;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.util.FileChooser;
 
 
 /**
  */
-public class DatabaseDialog extends BaseDialog<Object>
+public class DatabaseDialog extends BaseDialog<Object> implements ListSelectionListener
 {
-	private static Logger log = Logger.getLogger("org.wwscc.dialogs.DatabaseDialog");
+	private static Logger log = Logger.getLogger(DatabaseDialog.class.getCanonicalName());
 
+	ServiceFinder finder;
+	JServiceList list;
 
 	/**
 	 * Create the dialog
@@ -43,8 +44,6 @@ public class DatabaseDialog extends BaseDialog<Object>
 
 		JButton chooserOpen = new JButton("...");
 		chooserOpen.addActionListener(this);
-		JButton remoteFinder = new JButton("Find");
-		remoteFinder.addActionListener(this);
 
 		if (fileDefault != null)
 		{
@@ -68,10 +67,27 @@ public class DatabaseDialog extends BaseDialog<Object>
 			else
 				radio("Network");
 			mainPanel.add(label("Host", false), "");
-			mainPanel.add(entry("Host", split.length>0 ? split[0]:""), "wmin 200, grow");
-			mainPanel.add(remoteFinder, "wrap");
+			mainPanel.add(entry("Host", split.length>0 ? split[0]:""), "wmin 200, grow, wrap");
 			mainPanel.add(label("Name", false), "");
 			mainPanel.add(entry("Name", split.length>1 ? split[1]:""), "grow, wrap");
+			
+			try
+			{
+				list = new JServiceList();
+				list.addListSelectionListener(this);
+				JScrollPane scroll = new JScrollPane(list);
+				scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+				
+				finder = new ServiceFinder("RemoteDatabase");
+				finder.setListener(list);
+				new Thread(finder, "ServiceFinder").start();
+				
+				mainPanel.add(scroll, "w 300, h 400, spanx 2, skip, wrap");
+			}
+			catch (Exception e)
+			{
+				mainPanel.add(label("Unabled to start ServiceFinder: " + e.getMessage(), false), "");
+			}
 		}
 
 		result = null;
@@ -82,26 +98,35 @@ public class DatabaseDialog extends BaseDialog<Object>
 		else
 			setSelectedRadio("File");
     }
-	 
 
-	static class RemoteDBLabel
+	@Override
+	public void close()
 	{
-		public InetAddress host;
-		public int port;
-		public String name;
-		public RemoteDBLabel(InetAddress h, int p, String n)
+		finder.stop();
+		super.close();
+	}
+	
+	/**
+	 * Called when a new selection is made in the service finder. 
+	 * @param e 
+	 */
+	@Override
+	public void valueChanged(ListSelectionEvent e) 
+	{
+		FoundService f = list.getSelectedValue();
+		if (f != null)
 		{
-			host = h;
-			port = p;
-			name = n.trim();
+			setEntryText("Host", f.getHost().getHostAddress());
+			setEntryText("Name", String.valueOf(f.getId()));
+			setSelectedRadio("Network");
 		}
-		@Override
-		public String toString()
+		else
 		{
-			return host.getHostAddress() + ":" + port + " - " + name;
+			setEntryText("Host", "");
+			setEntryText("Name", "");
 		}
 	}
-
+	
 	@Override
 	public void actionPerformed(ActionEvent ae)
 	{
@@ -112,32 +137,6 @@ public class DatabaseDialog extends BaseDialog<Object>
 			File res = FileChooser.open("Select Database", "Database", "db", new File(getEntryText("File")));
 			if (res != null)
 				setEntryText("File", res.getAbsolutePath());
-		}
-		else if (cmd.equals("Find"))
-		{
-			try {
-				ServiceFinder finder = new ServiceFinder("RemoteDatabase");
-				List<RemoteDBLabel> labels = new ArrayList<RemoteDBLabel>();
-				
-				/*
-				for (FoundService fs : finder.find())
-					for (String db : fs.args)
-						labels.add(new RemoteDBLabel(fs.host, fs.port, db)); */
-
-				RemoteDBLabel select = (RemoteDBLabel)JOptionPane.showInputDialog(null,
-					"Remote Databases Found", "Find Service",
-					JOptionPane.PLAIN_MESSAGE, null, labels.toArray(), null);
-
-				if (select != null)
-				{
-					setSelectedRadio("Network");
-					setEntryText("Host", select.host.getHostAddress());  // assume port 80 for now
-					setEntryText("Name", select.name);
-				}
-
-			} catch (IOException ex) {
-				log.log(Level.SEVERE, "Service finder failed: " + ex, ex);
-			}
 		}
 		else
 		{

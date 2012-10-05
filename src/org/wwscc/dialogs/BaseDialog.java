@@ -139,7 +139,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 
 	protected JTextField ientry(String name, Integer val)
 	{
-		NumberField tf = new NumberField(4, false);
+		NumberField tf = new NumberField(5, false);
 		if (val != null)
 			tf.setText(""+val);
 		fields.put(name, tf);
