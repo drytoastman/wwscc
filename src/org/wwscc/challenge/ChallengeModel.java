@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.wwscc.dialogs.SimpleFinderDialog;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.ChallengeRound;
@@ -472,15 +473,17 @@ public class ChallengeModel implements MessageListener
 			case CONNECT_REQUEST:
 				try
 				{
-					/*
-					FoundService service;
-					if ((service = ServiceFinder.dialogFind("ProTimer")) == null)
-							return;
-					if (client != null)
-						client.close();
-					client = null;
-					client = new TimerClient(new InetSocketAddress(service.host, service.port));
-					new Thread(client, "ProTimerClient").start(); */
+					InetSocketAddress newAddr = null;
+					SimpleFinderDialog dialog = new SimpleFinderDialog("ProTimer");
+					dialog.doDialog("Find Pro Timers", null);
+					if ((newAddr = dialog.getResult()) != null)
+					{
+						if (client != null)
+							client.close();
+						client = null;
+						client = new TimerClient(newAddr);
+						new Thread(client, "ProTimerClient").start();
+					}
 				}
 				catch (Exception e)
 				{
