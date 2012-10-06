@@ -14,7 +14,7 @@ import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 import org.wwscc.dataentry.Sounds;
 import org.wwscc.storage.Run;
-import org.wwscc.timercomm.TimerService;
+import org.wwscc.timercomm.RunServerListener;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -23,20 +23,18 @@ import org.wwscc.util.Messenger;
 public class ResultsModel extends AbstractTableModel implements MessageListener
 {
 	Vector<DualResult> runs;
-	TimerService server;
-
+	Vector<RunServerListener> listeners;
 	int nextLeftFinish;
 	int nextRightFinish;
 
 	double holdLeftDial;
 	double holdRightDial;
-
+	
 	public ResultsModel() throws IOException
 	{
 		super();
 		runs = new Vector<DualResult>();
-		server = new TimerService("ProTimer");
-		new Thread(server, "TimerService").start();
+		listeners = new Vector<RunServerListener>();
 
 		Messenger.register(MT.TREE, this);
 
@@ -73,6 +71,10 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 		holdRightDial	= Double.NaN;
 	}
 
+	public void addRunServerListener(RunServerListener l)
+	{
+		listeners.add(l);
+	}
 
 	@Override
 	public int getRowCount()
@@ -272,7 +274,8 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 			Result r = runs.get(nextLeftFinish-1).deleteLeftFinish();
 			if (r != null)
 			{
-				server.deleteRun(resultToRun(r, 1));
+				for (RunServerListener l : listeners)
+					l.deleteRun(resultToRun(r, 1));
 				nextLeftFinish--;
 			}
 		}
@@ -281,7 +284,8 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 			Result r = runs.get(nextRightFinish-1).deleteRightFinish();
 			if (r != null)
 			{
-				server.deleteRun(resultToRun(r, 2));
+				for (RunServerListener l : listeners)
+					l.deleteRun(resultToRun(r, 2));
 				nextRightFinish--;
 			}
 		}
@@ -303,7 +307,8 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 			dr.setLeftFinish(c, dial);
 			nextLeftFinish++;			
 
-			server.sendRun(resultToRun(dr.left, 1));
+			for (RunServerListener l : listeners)
+				l.sendRun(resultToRun(dr.left, 1));
 		}
 		else
 		{
@@ -317,7 +322,8 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 			dr.setRightFinish(c, dial);
 			nextRightFinish++;			
 
-			server.sendRun(resultToRun(dr.right, 2));
+			for (RunServerListener l : listeners)
+				l.sendRun(resultToRun(dr.right, 2));
 		}
 	}
 

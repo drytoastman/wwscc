@@ -2,7 +2,7 @@
  * This software is licensed under the GPLv3 license, included as
  * ./GPLv3-LICENSE.txt in the source distribution.
  *
- * Portions created by Brett Wilson are Copyright 2008 Brett Wilson.
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
  * All rights reserved.
  */
 
@@ -18,7 +18,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.wwscc.storage.Run;
-import org.wwscc.timercomm.TimerService;
+import org.wwscc.timercomm.RunServerListener;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.Prefs;
@@ -36,7 +36,7 @@ public class TimerModel implements TableModel, TimeStorage
 
 	Vector<TableModelListener> tableListeners = new Vector<TableModelListener>();
 	Vector<ListDataListener> listListeners = new Vector<ListDataListener>();
-	TimerService server;
+	Vector<RunServerListener> runListeners = new Vector<RunServerListener>();
 
 	int lights;
 	LinkedList<Long> timestamps[];
@@ -45,18 +45,14 @@ public class TimerModel implements TableModel, TimeStorage
 
 	public TimerModel() throws IOException
 	{
-		server = null;
 		setLights(Prefs.getLightCount());
-		server = new TimerService("BWTimer");
-		new Thread(server, "TimerService").start();
 		Messenger.register(MT.SERIAL_TIMESTAMP, this);
 	}
 
-	public void close()
+	public void addRunServerListener(RunServerListener l)
 	{
-		server.close();
+		runListeners.add(l);
 	}
-
 	
 	@SuppressWarnings("unchecked")
 	public void setLights(int sensorsused)
@@ -171,8 +167,8 @@ public class TimerModel implements TableModel, TimeStorage
 
 		rowUpdated(fsize-1);
 		newFinish(fsize-1);
-		if (server != null)
-			server.sendRun(getRun(fsize-1));
+		for (RunServerListener l : runListeners)
+			l.sendRun(getRun(fsize-1));
 	}
 
 	public void deleteFinish()
@@ -180,8 +176,8 @@ public class TimerModel implements TableModel, TimeStorage
 		int finishsize = timestamps[finish].size();
 		if (finishsize > 0)
 		{
-			if (server != null)
-				server.deleteRun(getRun(finishsize-1));
+			for (RunServerListener l : runListeners)
+				l.deleteRun(getRun(finishsize-1));
 			timestamps[finish].removeLast();
 			rowUpdated(finishsize-1);
 			newFinish(finishsize-1);

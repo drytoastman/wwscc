@@ -4,7 +4,6 @@
  */
 package org.wwscc.bwtimer;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -49,7 +48,7 @@ public class DebugTimer extends JPanel
 		add(defaultButton, "w 200, wrap");
 		
 		server = new TimerService("BWTimer");
-		new Thread(server, "TimerService").start();
+		server.start();
 	}
 		
 		

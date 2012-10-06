@@ -11,6 +11,7 @@ package org.wwscc.dialogs;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Font;
+import java.awt.KeyboardFocusManager;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -311,7 +312,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 			currentDialog.getRootPane().setDefaultButton(defaultButton);
 		currentDialog.pack();
 		currentDialog.setTitle(title);
-		currentDialog.setLocationRelativeTo(null);
+		currentDialog.setLocationRelativeTo(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow());
 		currentDialog.setVisible(true);
 	}
 }

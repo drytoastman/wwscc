@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.logging.Level;
@@ -35,13 +37,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.wwscc.timercomm.SerialDataInterface;
+import org.wwscc.timercomm.TimerService;
 import org.wwscc.util.Logging;
 import org.wwscc.util.Prefs;
 
@@ -49,7 +51,7 @@ import org.wwscc.util.Prefs;
  */
 public class Timer extends JPanel implements ActionListener
 {
-	private static Logger log = Logger.getLogger(Timer.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(Timer.class.getCanonicalName());
 
 	ButtonGroup lights;
 	JLabel openPort;
@@ -57,6 +59,7 @@ public class Timer extends JPanel implements ActionListener
 	TimerTable table;
 	TimerModel model;
 	SerialDataInterface serial;
+	TimerService server;
 
 	public Timer() throws IOException
 	{
@@ -79,6 +82,14 @@ public class Timer extends JPanel implements ActionListener
 		
 		lights = new ButtonGroup();
 		serial = null;
+		
+		try {
+			server = new TimerService("BWTimer");
+			model.addRunServerListener(server);
+			server.start();
+		} catch (IOException ioe) {
+			log.log(Level.SEVERE, "Timer Server Failed to start: {0}", ioe.getMessage());
+		}
 	}
 
 	private JComponent controls()
@@ -188,7 +199,7 @@ public class Timer extends JPanel implements ActionListener
 		}
 	}
 
-	class TimerTable extends JTable 
+	final class TimerTable extends JTable 
 	{
 		TimeRenderer totalRenderer;
 		TimeRenderer seqRenderer;
@@ -311,7 +322,7 @@ public class Timer extends JPanel implements ActionListener
 	}
 
 	
-	class TimeRenderer extends DefaultTableCellRenderer
+	final class TimeRenderer extends DefaultTableCellRenderer
 	{
 		NumberFormat df;
 		Color bglist[] = new Color[2];
@@ -369,7 +380,8 @@ public class Timer extends JPanel implements ActionListener
 		try
 		{
 			Logging.logSetup("bwtimer");
-			Timer t = new Timer();
+			final Timer t = new Timer();
+			t.getRootPane().setDefaultButton(t.df);
 			
 			JFrame f = new JFrame("Timer");
 			f.setJMenuBar(t.getMenuBar());
@@ -385,10 +397,11 @@ public class Timer extends JPanel implements ActionListener
 					Prefs.setTimerWindow(e.getComponent().getBounds());
 				}
 			});
-
-
-			t.getRootPane().setDefaultButton(t.df);
-			t.openPort();
+			f.addWindowListener(new WindowAdapter() {
+				 public void windowOpened(WindowEvent e) {
+					 t.openPort();
+				 }
+			});
 		}
 		catch (Throwable e)
 		{

@@ -59,10 +59,9 @@ public class SimpleFinderDialog extends BaseDialog<InetSocketAddress> implements
 		try
 		{
 			finder = new ServiceFinder(serviceNames);
-			finder.setListener(list);
-			new Thread(finder, "ServiceFinder").start();
+			finder.addListener(list);
+			finder.start();
 			mainPanel.add(p, "w 300, h 400, spanx 2, wrap");
-			
 		}
 		catch (IOException ioe)
 		{

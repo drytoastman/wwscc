@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.wwscc.dialogs.SimpleFinderDialog;
-import org.wwscc.services.ServiceFinder;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.ChallengeRound;
 import org.wwscc.storage.ChallengeRound.RoundEntrant;
@@ -479,10 +478,10 @@ public class ChallengeModel implements MessageListener
 					if ((newAddr = dialog.getResult()) != null)
 					{
 						if (client != null)
-							client.close();
+							client.stop();
 						client = null;
 						client = new TimerClient(newAddr);
-						new Thread(client, "ProTimerClient").start();
+						client.start();
 					}
 				}
 				catch (Exception e)

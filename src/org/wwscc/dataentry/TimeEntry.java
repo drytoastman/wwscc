@@ -23,7 +23,6 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.text.NumberFormat;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -329,12 +328,11 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				case BWTIMER_SERIAL:
 					SerialDataInterface.close(commPort);
 					commPort = null;
-					((TimerModel)defaultModel).close();
 					break;
 
 				case BWTIMER_NETWORK:
 				case PROTIMER_NETWORK:
-					tclient.close();
+					tclient.stop();
 					tclient = null;
 					break;
 			}
@@ -368,14 +366,14 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 
 				case BWTIMER_NETWORK:
 					tclient = new TimerClient(newAddr);
-					new Thread(tclient, "BWTimerClient").start();	
+					tclient.start();
 					defaultModel = new SimpleTimeListModel(0);
 					course2Model = defaultModel;
 					break;
 
 				case PROTIMER_NETWORK:
 					tclient = new TimerClient(newAddr);
-					new Thread(tclient, "ProTimerClient").start();
+					tclient.start();
 					defaultModel = new SimpleTimeListModel(1);
 					course2Model = new SimpleTimeListModel(2);
 					break;
@@ -643,7 +641,8 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				break;
 
 			case TIMER_SERVICE_CONNECTION:
-				if (!(Boolean)o)
+				Object[] a = (Object[])o;
+				if ((a[0] == tclient) && ((Boolean)a[1]))
 				{
 					connectionStatus.setForeground(Color.RED);
 					connectionStatus.setText("Not Connected");

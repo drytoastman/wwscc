@@ -18,26 +18,28 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.wwscc.util.ThreadedClass;
 
 /**
  */
-public class ServiceAnnouncer implements Runnable
+public class ServiceAnnouncer implements ThreadedClass
 {
-	private static Logger log = Logger.getLogger(ServiceAnnouncer.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(ServiceAnnouncer.class.getCanonicalName());
 	public static final String MDNSAddr = "224.0.0.251";  // mDNS address
 	public static final int MDNSPortPlus = 5354;  // one port higher than mDNS
 	
-	protected boolean done = false;
-	protected MulticastSocket sock = null;
-	protected InetAddress group = null;
-	final protected List<ServiceMessage> descriptions;
+	private boolean done;
+	private MulticastSocket sock;
+	private InetAddress group;
+	final private List<ServiceMessage> descriptions;
 
 	public ServiceAnnouncer() throws UnknownHostException, IOException
 	{
 		descriptions = Collections.synchronizedList(new ArrayList<ServiceMessage>());
 		group = InetAddress.getByName(MDNSAddr);
 		sock = new MulticastSocket(MDNSPortPlus);
-		sock.joinGroup(group);
+		sock.joinGroup(group);	
+		done = true;
 	}
 
 	public void addDescription(ServiceMessage desc)
@@ -50,56 +52,68 @@ public class ServiceAnnouncer implements Runnable
 		descriptions.remove(desc);
 	}
 
-	public void close() throws IOException
+	@Override
+	public void start()
+	{
+		if (!done) return;
+		done = false;
+		new Thread(new AnnouncerThread()).start();
+	}
+	
+	@Override
+	public void stop()
 	{
 		done = true;
-		sock.leaveGroup(group);
-		sock.close();
 	}
 
-	@Override
-	public void run()
+	class AnnouncerThread implements Runnable
 	{
-		while (!done)
+		@Override
+		public void run()
 		{
-			byte[] buf = new byte[1500];
-			List<ServiceMessage> toReply = new ArrayList<ServiceMessage>();
-			
-			try
+			while (!done)
 			{
-				DatagramPacket recv = new DatagramPacket(buf, buf.length);
-				ServiceMessage requestMessage;
-				sock.receive(recv);
-				log.log(Level.INFO, "announcer receives: {0}", new String(recv.getData()));
+				byte[] buf = new byte[1500];
+				List<ServiceMessage> toReply = new ArrayList<ServiceMessage>();
 
-				toReply.clear();
-				for (String incoming : new String(recv.getData(), 0, recv.getLength()).split("\n"))
+				try
 				{
-					requestMessage = ServiceMessage.decodeMessage(incoming);
-					if (requestMessage.isRequest())
+					DatagramPacket recv = new DatagramPacket(buf, buf.length);
+					ServiceMessage requestMessage;
+					sock.receive(recv);
+					log.log(Level.INFO, "announcer receives: {0}", new String(recv.getData()));
+
+					toReply.clear();
+					for (String incoming : new String(recv.getData(), 0, recv.getLength()).split("\n"))
 					{
-						synchronized (descriptions) {
-							for (ServiceMessage desc : descriptions) {
-								if (desc.getService().equals(requestMessage.getService())) {
-									toReply.add(desc);
+						requestMessage = ServiceMessage.decodeMessage(incoming);
+						if (requestMessage.isRequest())
+						{
+							synchronized (descriptions) {
+								for (ServiceMessage desc : descriptions) {
+									if (desc.getService().equals(requestMessage.getService())) {
+										toReply.add(desc);
+									}
 								}
 							}
 						}
 					}
+
+					if (toReply.size() > 0)
+					{
+						String replyMessage = ServiceMessage.encodeList(toReply);
+						DatagramPacket reply = new DatagramPacket(replyMessage.getBytes(), replyMessage.length(), group, MDNSPortPlus);
+						sock.send(reply);
+					}
 				}
-				
-				if (toReply.size() > 0)
+				catch (Exception ioe)
 				{
-					String replyMessage = ServiceMessage.encodeList(toReply);
-					DatagramPacket reply = new DatagramPacket(replyMessage.getBytes(), replyMessage.length(), group, MDNSPortPlus);
-					sock.send(reply);
+					log.log(Level.INFO, "serviceannouncer: {0}", ioe);
+					try { Thread.sleep(1000); } catch (InterruptedException ie) {}
 				}
 			}
-			catch (Exception ioe)
-			{
-				log.info("serviceannouncer: " + ioe);
-				try { Thread.sleep(1000); } catch (InterruptedException ie) {}
-			}
+			
+			sock.close();
 		}
 	}
 
@@ -108,6 +122,6 @@ public class ServiceAnnouncer implements Runnable
 		ServiceAnnouncer f = new ServiceAnnouncer();
 		f.addDescription(ServiceMessage.createType("ProTimer", InetAddress.getLocalHost().getHostName(), 62608));
 		f.addDescription(ServiceMessage.createType("RemoteDatabase", "ww2012", 3332));
-		new Thread(f, "ServiceAnnouncer").start();
+		f.start();
 	}
 }

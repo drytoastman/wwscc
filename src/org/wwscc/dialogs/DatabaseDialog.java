@@ -79,9 +79,8 @@ public class DatabaseDialog extends BaseDialog<Object> implements ListSelectionL
 				scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 				
 				finder = new ServiceFinder("RemoteDatabase");
-				finder.setListener(list);
-				new Thread(finder, "ServiceFinder").start();
-				
+				finder.addListener(list);
+				finder.start();
 				mainPanel.add(scroll, "w 300, h 400, spanx 2, skip, wrap");
 			}
 			catch (Exception e)

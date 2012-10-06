@@ -17,6 +17,9 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -28,11 +31,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
-import javax.swing.UIManager;
 import org.wwscc.timercomm.SerialDataInterface;
+import org.wwscc.timercomm.TimerService;
 import org.wwscc.util.Logging;
-import org.wwscc.util.MessageListener;
 import org.wwscc.util.MT;
+import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 
 
@@ -45,6 +48,7 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 	protected ResultsPane results;
 	protected AuditLog audit;
     protected TimingInterface timing;
+	protected TimerService server;
 
 	protected DialinPane dialins;
 	protected JLabel alignModeLabel;
@@ -58,6 +62,15 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 		
 		debug = new DebugPane();
 		model = new ResultsModel();
+		
+		try {
+			server = new TimerService("ProTimer");
+			model.addRunServerListener(server);
+			server.start();
+		} catch (IOException ioe) {
+			log.log(Level.SEVERE, "Timer Server Failed to start: {0}", ioe.getMessage());
+		}
+		
 		results = new ResultsPane(model);
 		audit = new AuditLog();
 		dialins = new DialinPane();
@@ -86,8 +99,6 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 
 		dialins.doFocus(this);
         timing = new TimingInterface();
-
-		actionPerformed(new ActionEvent(this, 1, "Open Comm Port"));
     }
 
 
@@ -204,7 +215,12 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 		try
 		{
 			Logging.logSetup("prointerface");
-			new ProSoloInterface();
+			final ProSoloInterface frame = new ProSoloInterface();
+			frame.addWindowListener(new WindowAdapter() {
+				public void windowOpened(WindowEvent e) {
+					frame.actionPerformed(new ActionEvent(frame, 1, "Open Comm"));
+				}
+			});
 		}
 		catch (Throwable e)
 		{

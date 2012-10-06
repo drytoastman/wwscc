@@ -1,6 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * This software is licensed under the GPLv3 license, included as
+ * ./GPLv3-LICENSE.txt in the source distribution.
+ *
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
+ * All rights reserved.
  */
 
 package org.wwscc.timercomm;
@@ -17,19 +20,20 @@ import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
+import org.wwscc.util.ThreadedClass;
 
 /**
  *
  * @author bwilson
  */
-public class TimerClient implements Runnable
+public final class TimerClient implements RunServerListener, ThreadedClass
 {
-	private static Logger log = Logger.getLogger(TimerClient.class.getName());
+	private static final Logger log = Logger.getLogger(TimerClient.class.getName());
 
 	Socket sock;
 	BufferedReader in;
 	OutputStream out;
-	boolean done = false;
+	boolean done;
 
 	public TimerClient(String host, int port) throws IOException
 	{
@@ -42,6 +46,7 @@ public class TimerClient implements Runnable
 		sock.connect(addr);
 		in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 		out = sock.getOutputStream();
+		done = true;
 	}
 
 	public TimerClient(Socket s) throws IOException
@@ -49,12 +54,21 @@ public class TimerClient implements Runnable
 		sock = s;
 		in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		out = s.getOutputStream();
+		done = true;
 	}
 
-	public void close() throws IOException
+	@Override
+	public void start()
+	{
+		if (!done) return;
+		done = false;
+		new Thread(new ClientThread()).start();
+	}
+	
+	@Override
+	public void stop()
 	{
 		done = true;
-		sock.close();
 	}
 	
 	public boolean send(String s)
@@ -70,58 +84,64 @@ public class TimerClient implements Runnable
 		return false;
 	}
 
+	@Override
 	public boolean sendDial(LeftRightDialin d)
 	{
 		return send(("DIAL " + d.encode() + "\n"));
 	}
 
+	@Override
 	public boolean sendRun(Run r)
 	{
 		return send(("RUN " + r.encode() + "\n"));
 	}
 
+	@Override
 	public boolean deleteRun(Run r)
 	{
 		return send(("DELETE " + r.encode() + "\n"));
 	}
 
-	@Override
-	public void run()
+	class ClientThread implements Runnable
 	{
-		try
+		@Override
+		public void run()
 		{
-			Messenger.sendEvent(MT.TIMER_SERVICE_CONNECTION, true);
-
-			while (!done)
+			try
 			{
-				String line = in.readLine();
-				log.info("TimerClient reads: " + line);
-				if (line.startsWith("DIAL "))
+				Messenger.sendEvent(MT.TIMER_SERVICE_CONNECTION, new Object[] { TimerClient.this, true });
+
+				while (!done)
 				{
-					LeftRightDialin d = new LeftRightDialin();
-					d.decode(line.substring(5));
-					Messenger.sendEvent(MT.TIMER_SERVICE_DIALIN, d);
-				}
-				else if (line.startsWith("RUN "))
-				{
-					Run r = new Run();
-					r.decode(line.substring(4));
-					Messenger.sendEvent(MT.TIMER_SERVICE_RUN, r);
-				}
-				else if (line.startsWith("DELETE "))
-				{
-					Run r = new Run();
-					r.decode(line.substring(7));
-					Messenger.sendEvent(MT.TIMER_SERVICE_DELETE, r);
+					String line = in.readLine();
+					log.info("TimerClient reads: " + line);
+					if (line.startsWith("DIAL "))
+					{
+						LeftRightDialin d = new LeftRightDialin();
+						d.decode(line.substring(5));
+						Messenger.sendEvent(MT.TIMER_SERVICE_DIALIN, d);
+					}
+					else if (line.startsWith("RUN "))
+					{
+						Run r = new Run();
+						r.decode(line.substring(4));
+						Messenger.sendEvent(MT.TIMER_SERVICE_RUN, r);
+					}
+					else if (line.startsWith("DELETE "))
+					{
+						Run r = new Run();
+						r.decode(line.substring(7));
+						Messenger.sendEvent(MT.TIMER_SERVICE_DELETE, r);
+					}
 				}
 			}
-		}
-		catch (IOException ex)
-		{
-			log.log(Level.INFO, "read failure: " + ex, ex);
-		}
+			catch (IOException ex)
+			{
+				log.log(Level.INFO, "read failure: " + ex, ex);
+			}
 
-		try { sock.close(); } catch (IOException ioe)  {}
-		Messenger.sendEvent(MT.TIMER_SERVICE_CONNECTION, false);
+			try { sock.close(); } catch (IOException ioe)  {}
+			Messenger.sendEvent(MT.TIMER_SERVICE_CONNECTION, new Object[] { TimerClient.this, false });
+		}
 	}
 }

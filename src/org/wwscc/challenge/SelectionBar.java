@@ -95,7 +95,8 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		switch (type)
 		{
 			case TIMER_SERVICE_CONNECTION:
-				if ((Boolean)o)
+				Object a[] = (Object[])o;
+				if ((Boolean)a[1])
 					connectLabel.setVisible(false);
 				else
 					connectLabel.setVisible(true);
