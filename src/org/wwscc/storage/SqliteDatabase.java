@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,7 +19,7 @@ import java.util.logging.Logger;
  */
 public class SqliteDatabase extends SQLDataInterface
 {
-	private static Logger log = Logger.getLogger(SqliteDatabase.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(SqliteDatabase.class.getCanonicalName());
 
 	public static final int SQLITE_OK		= 0;
 	public static final int SQLITE_BUSY		= 5;
@@ -30,10 +29,10 @@ public class SqliteDatabase extends SQLDataInterface
 	static 
 	{
 		System.loadLibrary("sqliteintf");
-		log.info("Sqlite version " + libversion());
+		log.log(Level.INFO, "Sqlite version {0}", libversion());
 	}
 
-	class Prepared
+	final class Prepared
 	{
 		long pointer;
 		int paramcount;
@@ -99,7 +98,11 @@ public class SqliteDatabase extends SQLDataInterface
 				throw new IOException("Don't know how to convert type " + lower);
 		}
 
-		public String toString() { return "Prepared: " + sql; }
+		@Override
+		public String toString() 
+		{ 
+			return "Prepared: " + sql; 
+		}
 	}
 
 		
@@ -110,7 +113,7 @@ public class SqliteDatabase extends SQLDataInterface
 
 	public SqliteDatabase(File f) throws IOException
 	{
-		log.info("Opening local database file " + f);
+		log.log(Level.INFO, "Opening local database file {0}", f);
 		if (f == null)
 			throw new IOException("File is null");
 
@@ -136,7 +139,7 @@ public class SqliteDatabase extends SQLDataInterface
 		try	{
 			close(dbptr);
 		} catch (IOException ioe) {
-			log.severe("Problems closing sqlite file: " + ioe);
+			log.log(Level.SEVERE, "Problems closing sqlite file: {0}", ioe);
 		}
 		dbptr = 0;
 	}
@@ -257,7 +260,7 @@ public class SqliteDatabase extends SQLDataInterface
 			} else if (type == Double.class) {
 				row.put(name, column_double(p.pointer, ii));
 			} else if (type == Boolean.class) {
-				row.put(name, new Boolean(column_int(p.pointer, ii)!=0));
+				row.put(name, (column_int(p.pointer, ii)!=0));
 			} else if (type == String.class) {
 				row.put(name, column_text(p.pointer, ii));
 			} else if (type == byte[].class) {

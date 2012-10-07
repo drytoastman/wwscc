@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  */
 public class Run implements Serial, Cloneable
 {
-	private static Logger log = Logger.getLogger("org.wwscc.storage.Run");
+	private static Logger log = Logger.getLogger(Run.class.getCanonicalName());
 	public static final int LEFT = 1;
 	public static final int RIGHT = 2;
 	public static final int SEGMENTS = 5;

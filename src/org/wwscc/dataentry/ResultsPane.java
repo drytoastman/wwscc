@@ -6,20 +6,15 @@
  * All rights reserved.
  */
 
-
 package org.wwscc.dataentry;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -333,7 +328,7 @@ public class ResultsPane extends JPanel
 	}
 
 	private static final int MOVE=2, FIRST=1, NEXT=0, RAW=3, NET=4; 
-	class RandomThoughtsModel extends AbstractTableModel
+	static class RandomThoughtsModel extends AbstractTableModel
 	{
 		Integer origpos = null;
 		Double rawImprovement = null, netImprovement = null;
@@ -432,9 +427,10 @@ public class ResultsPane extends JPanel
 						
 			if (last.run() == one.run())
 			{
+				erlist.remove(myresult); // remove our current result
 				for (EventResult er : erlist) {
-					if (er.getSum() > two.getNet()) {
-						origpos = er.getPosition();
+					if (two.getNet() < er.getSum()) {
+						origpos = erlist.indexOf(er)+1;
 						break;
 				}}
 				if (origpos == null)
