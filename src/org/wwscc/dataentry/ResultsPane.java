@@ -327,7 +327,7 @@ public class ResultsPane extends JPanel
 		}
 	}
 
-	private static final int MOVE=2, FIRST=1, NEXT=0, RAW=3, NET=4; 
+	public static final int MOVE=2, FIRST=1, NEXT=0, RAW=3, NET=4; 
 	static class RandomThoughtsModel extends AbstractTableModel
 	{
 		Integer origpos = null;
@@ -367,7 +367,7 @@ public class ResultsPane extends JPanel
 						return "none";
 					case NEXT:
 						if (myresult.getPosition() != 1)
-							return df.format(myresult.getDiff());
+							return df.format(myresult.getDiff()/myresult.getIndex());
 						return "";
 					case FIRST: 
 						if (myresult.getPosition() != 1)
@@ -427,12 +427,15 @@ public class ResultsPane extends JPanel
 						
 			if (last.run() == one.run())
 			{
-				erlist.remove(myresult); // remove our current result
+				int found = 1;
 				for (EventResult er : erlist) {
 					if (two.getNet() < er.getSum()) {
-						origpos = erlist.indexOf(er)+1;
+						origpos = found;
 						break;
-				}}
+					}
+					if (er.getCarId() != entrant.getCarId())
+						found++;
+				}
 				if (origpos == null)
 					origpos = erlist.size();
 			}
