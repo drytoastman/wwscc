@@ -9,19 +9,16 @@
 
 package org.wwscc.protimer;
 
-import java.text.*;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.*;
-import javax.swing.border.*;
+import org.wwscc.util.NF;
 
 /**
  * Cell renderer for a Double that always creates three decimal places (123.000)
  */
 public class DifferenceRenderer extends JPanel implements TableCellRenderer
 {
-	private NumberFormat df;
-
 	private JLabel overleft, overlbl, overright;
 	private JLabel coverleft, coverlbl, coverright;
 	private JLabel newdialleft, newdiallbl, newdialright;
@@ -41,7 +38,7 @@ public class DifferenceRenderer extends JPanel implements TableCellRenderer
 		colorA = new Color(210, 150, 0);
 		colorB = new Color(0, 140, 160);
 
-		Border b = new LineBorder(Color.BLACK);
+		//Border b = new LineBorder(Color.BLACK);
 
 		setOpaque(true);
 		//setBackground(new Color(222, 222, 222));
@@ -108,10 +105,6 @@ public class DifferenceRenderer extends JPanel implements TableCellRenderer
 		g.gridwidth = 3;
 		g.gridx = 0; g.gridy = 3; add(msg1, g); 
 		g.gridx = 0; g.gridy = 4; add(msg2, g);
-
-
-		df = NumberFormat.getNumberInstance();
-		df.setMinimumFractionDigits(3);
 	}
 
 
@@ -132,7 +125,7 @@ public class DifferenceRenderer extends JPanel implements TableCellRenderer
 		if (Double.isNaN(num))
 			return "...";
 		else
-			return df.format(num);
+			return NF.format(num);
 	}
 
 	
@@ -142,9 +135,9 @@ public class DifferenceRenderer extends JPanel implements TableCellRenderer
 		double right = dr.getRightDial();
 
 		if (right < left)
-			return new String("Right returns faster by " + format(dr.getLeftDial() - dr.getRightDial()));
+			return "Right returns faster by " + format(dr.getLeftDial() - dr.getRightDial());
 		else
-			return new String("Left returns faster by " + format(dr.getRightDial() - dr.getLeftDial()));
+			return "Left returns faster by " + format(dr.getRightDial() - dr.getLeftDial());
 	}
 
 	
@@ -154,20 +147,20 @@ public class DifferenceRenderer extends JPanel implements TableCellRenderer
 		ColorTime right = dr.getRightFinish();
 
 		if ((left.state != 0) && (right.state != 0))
-			return new String("Nobody wins");
+			return "Nobody wins";
 		else if (left.state != 0)
-			return new String("Right wins by default");
+			return "Right wins by default";
 		else if (right.state != 0)
-			return new String("Left wins by default");
+			return "Left wins by default";
 		else if (!Double.isNaN(left.time) && !Double.isNaN(right.time))
 		{
 			if (right.time < left.time)
-				return new String("Right wins by " + format(left.time - right.time));
+				return "Right wins by " + format(left.time - right.time);
 			else
-				return new String("Left wins by " + format(right.time - left.time));
+				return "Left wins by " + format(right.time - left.time);
 		}
 
-		return new String("");
+		return "";
 	}
 
 	protected String cWinsBy(DualResult dr)
@@ -176,23 +169,24 @@ public class DifferenceRenderer extends JPanel implements TableCellRenderer
 		double right = dr.getRightChallengeDial();
 
 		if (Double.isNaN(left) && Double.isNaN(right))
-			return new String("Nobody wins");
+			return "Nobody wins";
 		else if (Double.isNaN(left))
-			return new String("Right wins by default");
+			return "Right wins by default";
 		else if (Double.isNaN(right))
-			return new String("Left wins by default");
+			return "Left wins by default";
 		else if (!Double.isNaN(left) && !Double.isNaN(right))
 		{
 			if (right < left)
-				return new String("Right wins Challenge by " + format(left - right));
+				return "Right wins Challenge by " + format(left - right);
 			else
-				return new String("Left wins Challenge by " + format(right - left));
+				return "Left wins Challenge by " + format(right - left);
 		}
 
-		return new String("");
+		return "";
 	}
 
 
+	@Override
 	public Component getTableCellRendererComponent(JTable table, Object o, boolean isSel, boolean hasFocus, int row, int col)
 	{
 		overleft.setText("");

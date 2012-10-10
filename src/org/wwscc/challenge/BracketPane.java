@@ -8,6 +8,7 @@
 
 package org.wwscc.challenge;
 
+import org.wwscc.challenge.viewer.RoundViewer;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;

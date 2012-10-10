@@ -12,7 +12,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JLabel;
@@ -30,6 +29,7 @@ import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.EventResult;
 import org.wwscc.storage.Run;
+import org.wwscc.util.NF;
 
 
 /** 
@@ -37,14 +37,6 @@ import org.wwscc.storage.Run;
  */
 public class ResultsPane extends JPanel
 {
-	static final NumberFormat df;
-	static
-	{
-		df = NumberFormat.getNumberInstance();
-		df.setMinimumFractionDigits(3);
-		df.setMaximumFractionDigits(3);
-	}
-
 	JLabel nameLabel;
 	JLabel detailsLabel;
 	JLabel classLabel;
@@ -318,10 +310,10 @@ public class ResultsPane extends JPanel
 
 			switch (col)
 			{
-				case 0: return df.format(r.getRaw());
+				case 0: return NF.format(r.getRaw());
 				case 1: return r.getCones();
 				case 2: return r.getGates();
-				case 3: return df.format(r.getNet());
+				case 3: return NF.format(r.getNet());
 			}
 			return null;
 		}
@@ -367,19 +359,19 @@ public class ResultsPane extends JPanel
 						return "none";
 					case NEXT:
 						if (myresult.getPosition() != 1)
-							return df.format(myresult.getDiff()/myresult.getIndex());
+							return NF.format(myresult.getDiff()/myresult.getIndex());
 						return "";
 					case FIRST: 
 						if (myresult.getPosition() != 1)
-							return df.format((myresult.getSum() - topresult.getSum())/myresult.getIndex());
+							return NF.format((myresult.getSum() - topresult.getSum())/myresult.getIndex());
 						return "";
 					case RAW: 
 						if ((rawImprovement != null))
-							return df.format(rawImprovement);
+							return NF.format(rawImprovement);
 						return "";
 					case NET: 
 						if ((netImprovement != null))
-							return df.format(netImprovement);
+							return NF.format(netImprovement);
 						return "";
 				}
 			}
@@ -427,14 +419,14 @@ public class ResultsPane extends JPanel
 						
 			if (last.run() == one.run())
 			{
-				int found = 1;
+				int index = 1;
 				for (EventResult er : erlist) {
 					if (two.getNet() < er.getSum()) {
-						origpos = found;
+						origpos = index;
 						break;
 					}
 					if (er.getCarId() != entrant.getCarId())
-						found++;
+						index++;
 				}
 				if (origpos == null)
 					origpos = erlist.size();
@@ -534,7 +526,7 @@ public class ResultsPane extends JPanel
 				case 0: return new Integer(row+1);
 				case 1: return e.getFullName();
 				case 2: return e.getIndexCode();
-				case 3: return df.format(e.getSum());
+				case 3: return NF.format(e.getSum());
 			}
 			return null;
 		}

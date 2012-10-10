@@ -1,11 +1,14 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * This software is licensed under the GPLv3 license, included as
+ * ./GPLv3-LICENSE.txt in the source distribution.
+ *
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
+ * All rights reserved.
  */
 
 package org.wwscc.storage;
 
-import java.text.NumberFormat;
+import org.wwscc.util.NF;
 
 /**
  *
@@ -13,13 +16,6 @@ import java.text.NumberFormat;
  */
 public class LeftRightDialin implements Serial
 {
-	static NumberFormat df;
-	static
-	{
-		df = NumberFormat.getNumberInstance();
-		df.setMinimumFractionDigits(3);
-		df.setMaximumFractionDigits(3);
-	}
 	public double left;
 	public double right;
 
@@ -36,7 +32,7 @@ public class LeftRightDialin implements Serial
 	@Override
 	public String encode()
 	{
-		return df.format(left) + " " + df.format(right);
+		return NF.format(left) + " " + NF.format(right);
 	}
 
 	@Override

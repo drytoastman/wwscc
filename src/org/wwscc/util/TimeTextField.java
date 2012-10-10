@@ -6,23 +6,13 @@
  * All rights reserved.
  */
 
-
 package org.wwscc.util;
 
-import java.text.NumberFormat;
 import javax.swing.JTextField;
 import javax.swing.text.AbstractDocument;
 
 public class TimeTextField extends JTextField
 {
-	protected final static NumberFormat df;
-	static
-	{
-		df = NumberFormat.getNumberInstance();
-		df.setMinimumFractionDigits(3);
-		df.setMaximumFractionDigits(3);
-	}
-
 	public TimeTextField(String initial, int cols)
 	{
 		super(initial, cols);
@@ -40,7 +30,7 @@ public class TimeTextField extends JTextField
 
 	public void setTime(double t)
 	{
-		setText(df.format(t));
+		setText(NF.format(t));
 	}
 }
 

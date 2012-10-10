@@ -22,7 +22,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.text.NumberFormat;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -60,6 +59,7 @@ import org.wwscc.util.IntTextField;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
+import org.wwscc.util.NF;
 import org.wwscc.util.TimeTextField;
 
 
@@ -684,14 +684,10 @@ class ModeButtonGroup extends ButtonGroup
 
 class RunListRenderer extends DefaultListCellRenderer
 {
-	protected NumberFormat df;
 	protected Font font;
 
 	public RunListRenderer()
 	{
-		df = NumberFormat.getNumberInstance();
-		df.setMinimumFractionDigits(3);
-		df.setMaximumFractionDigits(3);
 		font = new Font("sansserif", Font.PLAIN, 22);
 	}
 
@@ -703,11 +699,11 @@ class RunListRenderer extends DefaultListCellRenderer
 		if (o instanceof Run)
 		{
 			Run r = (Run)o;
-			setText(df.format(r.getRaw()));
+			setText(NF.format(r.getRaw()));
 		}
 		else if (o instanceof Double)
 		{
-			setText(df.format(o));
+			setText(NF.format((Double)o));
 		}
 
 		setFont(font);

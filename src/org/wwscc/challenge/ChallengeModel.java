@@ -200,7 +200,7 @@ public class ChallengeModel implements MessageListener
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
 
-	
+
 	public void setCones(Id.Run rid, int cones)
 	{
 		ChallengeRun r = getRun(rid);
@@ -213,7 +213,21 @@ public class ChallengeModel implements MessageListener
 		checkForWinner(rid);
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
-	
+
+	public void setGates(Id.Run rid, int gates)
+	{
+		ChallengeRun r = getRun(rid);
+		if (r != null)
+		{
+			r.setGates(gates);
+			Database.d.updateRun(r);
+		}
+		
+		checkForWinner(rid);
+		Messenger.sendEvent(MT.RUN_CHANGED, r);
+	}
+
+		
 	public void setStatus(Id.Run rid, String status)
 	{
 		ChallengeRun r = getRun(rid);
@@ -353,47 +367,54 @@ public class ChallengeModel implements MessageListener
 
 	private void checkForWinner(Id.Round rid)
 	{
-		ChallengeRound r = getRound(rid);
-		ChallengeRun tl = r.getTopCar().getLeft();
-		ChallengeRun tr = r.getTopCar().getRight();
-		ChallengeRun bl = r.getBottomCar().getLeft();
-		ChallengeRun br = r.getBottomCar().getRight();
+		ChallengeRound round = getRound(rid);
+		ChallengeRun topLeft = round.getTopCar().getLeft();
+		ChallengeRun topRight = round.getTopCar().getRight();
+		ChallengeRun bottomLeft = round.getBottomCar().getLeft();
+		ChallengeRun bottomRight = round.getBottomCar().getRight();
 		ChallengeRound.RoundEntrant winner = null;
 		
-		switch (r.getState())
+		switch (round.getState())
 		{
 			case HALFNORMAL:
-				if (!tl.isOK())
-					winner = r.getBottomCar();
-				else if (!br.isOK())
-					winner = r.getTopCar();
+				if (topLeft.statusLevel() == bottomRight.statusLevel()) // both OK, both DNF or both RL
+					break;
+				else if (topLeft.statusLevel() < bottomRight.statusLevel())
+					winner = round.getTopCar();
+				else
+					winner = round.getBottomCar();
 				break;
 				
 			case HALFINVERSE:
-				if (!tr.isOK())
-					winner = r.getBottomCar();
-				if (!bl.isOK())
-					winner = r.getTopCar();
+				if (topRight.statusLevel() == bottomLeft.statusLevel()) // both OK, both DNF or both RL
+					break;
+				else if (topRight.statusLevel() < bottomLeft.statusLevel())
+					winner = round.getBottomCar();
+				else
+					winner = round.getTopCar();
 				break;
 				
 			case DONE:
-				r.getTopCar().setResultByNet(tl.getNet() + tr.getNet());
-				r.getBottomCar().setResultByNet(bl.getNet() + br.getNet());
+				round.getTopCar().setResultByNet(topLeft.getNet() + topRight.getNet());
+				round.getBottomCar().setResultByNet(bottomLeft.getNet() + bottomRight.getNet());
+				int topLevel = topLeft.statusLevel() + topRight.statusLevel();
+				int botLevel = bottomLeft.statusLevel() + bottomRight.statusLevel();
 				
-				if ((!tl.isOK()) || (!tr.isOK()))
-					winner = r.getBottomCar();
-				else if ((!bl.isOK()) || (!br.isOK()))
-					winner = r.getTopCar();
-				else if (r.getTopCar().getResult() < r.getBottomCar().getResult())
-					winner = r.getTopCar();
-				else if (r.getBottomCar().getResult() < r.getTopCar().getResult())
-					winner = r.getBottomCar();
-				else
-					log.warning("Strange state checking for winner, there is none");
+				if ((topLevel > 1) && (botLevel > 1))
+					break; // no winner
+				else if (topLevel > 0)
+					winner = round.getBottomCar();
+				else if (botLevel > 0)
+					winner = round.getTopCar();
+				else if (round.getTopCar().getResult() < round.getBottomCar().getResult())
+					winner = round.getTopCar();
+				else if (round.getBottomCar().getResult() < round.getTopCar().getResult())
+					winner = round.getBottomCar();
+				//else no winner due to tie
 				break;
 		}
 		
-		Database.d.updateChallengeRound(r);
+		Database.d.updateChallengeRound(round);
 		if (winner == null)
 			return;
 		
@@ -412,7 +433,7 @@ public class ChallengeModel implements MessageListener
 		if (thirdid != null)
 		{
 			ChallengeRound.RoundEntrant loser;
-			loser = (winner == r.getTopCar()) ? r.getBottomCar() : r.getTopCar();
+			loser = (winner == round.getTopCar()) ? round.getBottomCar() : round.getTopCar();
 			ChallengeRound third = getRound(thirdid);
 			if (thirdid.isUpper())
 				third.getTopCar().setTo(loser);
@@ -421,7 +442,6 @@ public class ChallengeModel implements MessageListener
 			Database.d.updateChallengeRound(third);
 			Messenger.sendEvent(MT.ENTRANT_CHANGED, thirdid);
 		}
-
 	}
 	
 	/**

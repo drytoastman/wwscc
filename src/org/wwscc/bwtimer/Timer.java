@@ -20,7 +20,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
@@ -45,6 +44,7 @@ import javax.swing.table.TableColumnModel;
 import org.wwscc.timercomm.SerialDataInterface;
 import org.wwscc.timercomm.TimerService;
 import org.wwscc.util.Logging;
+import org.wwscc.util.NF;
 import org.wwscc.util.Prefs;
 
 /**
@@ -324,7 +324,6 @@ public class Timer extends JPanel implements ActionListener
 	
 	final class TimeRenderer extends DefaultTableCellRenderer
 	{
-		NumberFormat df;
 		Color bglist[] = new Color[2];
 		Color bg;
 
@@ -333,9 +332,6 @@ public class Timer extends JPanel implements ActionListener
 			super();
 			setHorizontalAlignment(CENTER);
 			setSize(size);
-			df = NumberFormat.getNumberInstance();
-			df.setMinimumFractionDigits(3);
-			df.setMaximumFractionDigits(3);
 			bglist[0] = new Color(170, 170, 255);
 			bglist[1] = new Color(170, 255, 170);
 			setHighlight(0);
@@ -363,7 +359,7 @@ public class Timer extends JPanel implements ActionListener
 			{
 				Double d = (Double)o;
 				if (d > 0)
-					setText(df.format(o));
+					setText(NF.format(d));
 				else
 					setText("-");
 			}

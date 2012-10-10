@@ -11,10 +11,10 @@ package org.wwscc.protimer;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.text.NumberFormat;
 import java.util.logging.Logger;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.wwscc.util.NF;
 
 
 /**
@@ -22,8 +22,7 @@ import javax.swing.table.DefaultTableCellRenderer;
  */
 public class ColorTimeRenderer extends DefaultTableCellRenderer
 {
-	private static Logger log = Logger.getLogger(ColorTimeRenderer.class.getCanonicalName());
-	private NumberFormat df;
+	private static final Logger log = Logger.getLogger(ColorTimeRenderer.class.getCanonicalName());
 	private int size;
 
 	/**
@@ -33,8 +32,6 @@ public class ColorTimeRenderer extends DefaultTableCellRenderer
 	{
 		super();
 		setHorizontalAlignment(TRAILING);
-		df = NumberFormat.getNumberInstance();
-		df.setMinimumFractionDigits(3);
 		size = fsize;
 	}
 
@@ -59,14 +56,14 @@ public class ColorTimeRenderer extends DefaultTableCellRenderer
 			else
 			{
 				String color = bt.getColorString();
-				String time = df.format(bt.time);
+				String time = NF.format(bt.time);
 				String msg = bt.getColorMsg();
 
 				if ((bt.state == ColorTime.NORMAL) && !Double.isNaN(bt.dial))
 				{
 					setText("<HTML><FONT face=fixed size=+" + size + " color=" + color + ">" + time + " </FONT></HTML>");
 					setText("<HTML><FONT face=fixed size=+"+size+" color="+color+">"+time+" </FONT>" +
-							"<br><center><FONT size=3 color="+color+">dial "+df.format(bt.dial)+"</FONT></center></HTML>");
+							"<br><center><FONT size=3 color="+color+">dial "+NF.format(bt.dial)+"</FONT></center></HTML>");
 				}
 				else if (bt.state == ColorTime.NORMAL)
 				{

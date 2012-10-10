@@ -9,7 +9,6 @@
 package org.wwscc.challenge;
 
 import java.awt.Component;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,6 +31,7 @@ import org.wwscc.dialogs.BaseDialog;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Dialins;
 import org.wwscc.storage.Entrant;
+import org.wwscc.util.NF;
 
 
 
@@ -130,20 +130,15 @@ public class BracketingList extends BaseDialog<List<BracketEntry>> implements Ch
 }
 class D3Renderer extends DefaultTableCellRenderer
 {
-	NumberFormat df;
-	public D3Renderer()
-	{
-		df = NumberFormat.getNumberInstance();
-		df.setMinimumFractionDigits(3);
-		df.setMaximumFractionDigits(3);
-	}
-
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value,
                           boolean isSelected, boolean hasFocus, int row, int column)
 	{
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-		setText(df.format(value));
+		if (value instanceof Double)
+			setText(NF.format((Double)value));
+		else
+			setText(""+value);
 		return this;
 	}
 }

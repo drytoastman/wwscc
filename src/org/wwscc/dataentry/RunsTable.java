@@ -19,7 +19,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.InputMap;
@@ -38,6 +37,7 @@ import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
+import org.wwscc.util.NF;
 
 
 /**
@@ -158,7 +158,6 @@ class TimeRenderer extends DefaultTableCellRenderer
 	private Color backgroundSelectNoFocus;
 	private Color backgroundDone;
 	private Color backgroundBest;
-	private NumberFormat df;
 
 	public TimeRenderer()
 	{
@@ -169,9 +168,6 @@ class TimeRenderer extends DefaultTableCellRenderer
 		backgroundBest = new Color(255, 190, 80);
 	
 		setHorizontalAlignment(CENTER);
-		df = NumberFormat.getNumberInstance();
-		df.setMinimumFractionDigits(3);
-		df.setMaximumFractionDigits(3);
 	}
 
 
@@ -207,7 +203,7 @@ class TimeRenderer extends DefaultTableCellRenderer
 					setBackground(backgroundDone);
 			}
 
-			String display = df.format(r.getRaw()) + " (" + r.getCones() + "," + r.getGates() + ")";
+			String display = NF.format(r.getRaw()) + " (" + r.getCones() + "," + r.getGates() + ")";
 			if (!r.isOK())
 				display= "<HTML><center>" + r.getStatus() + "<br><FONT size=-2>" + display;
 

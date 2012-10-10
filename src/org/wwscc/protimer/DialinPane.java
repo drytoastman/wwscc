@@ -9,12 +9,10 @@
 
 package org.wwscc.protimer;
 
-import java.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.*;
-
 import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.util.*;
 
@@ -25,15 +23,10 @@ public class DialinPane extends JPanel implements ActionListener, MessageListene
 	private JTextField leftField;
 	private JTextField rightField;
 	private JButton set;
-	private NumberFormat df;
 
 	public DialinPane()
 	{
 		super(new GridBagLayout());
-
-		df = NumberFormat.getNumberInstance();
-		df.setMinimumFractionDigits(3);
-		df.setMaximumFractionDigits(3);
 
 		GridBagConstraints c = new GridBagConstraints();
 		Font f = new Font("serif", Font.BOLD, 20);
@@ -114,10 +107,10 @@ public class DialinPane extends JPanel implements ActionListener, MessageListene
 		switch (type)
 		{
 			case DIALIN_LEFT:
-				leftDial.setText(df.format((Double)o));
+				leftDial.setText(NF.format((Double)o));
 				break;
 			case DIALIN_RIGHT:
-				rightDial.setText(df.format((Double)o));
+				rightDial.setText(NF.format((Double)o));
 				break;
 
 			case INPUT_RESET_SOFT:

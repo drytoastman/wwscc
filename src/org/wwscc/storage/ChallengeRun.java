@@ -66,4 +66,11 @@ public class ChallengeRun extends Run
 	
 	public int getChallengeId() { return challengeid; }
 	public int getRound() { return round; }
+	
+	public int statusLevel()
+	{
+		if (status.equals("RL") || status.equals("NS")) return 2;
+		if (status.endsWith("DNF")) return 1;
+		return 0;
+	}	
 }
