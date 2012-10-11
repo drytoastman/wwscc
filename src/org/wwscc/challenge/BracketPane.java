@@ -55,10 +55,10 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 	private static final int roundWidth = 100;
 	private static final int initialSpacing = 36;
 
-    public static final int[] RANK4 =  new int[] { 1, 4, 2, 3 };
-    public static final int[] RANK8 =  new int[] { 1, 8, 4, 5, 2, 7, 3, 6 };
-    public static final int[] RANK16 = new int[] { 1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11 };
-    public static final int[] RANK32 = new int[] { 1, 32, 16, 17, 8, 25, 9, 24, 4, 29, 13, 20, 5, 28, 12, 21, 2, 31, 15, 18, 7, 26, 10, 23, 3, 30, 14, 19, 6, 27, 11, 22 };
+    public static final int[] RANK4 =  new int[] { 3, 2, 4, 1 };
+    public static final int[] RANK8 =  new int[] { 6, 3, 7, 2, 5, 4, 8, 1 };
+    public static final int[] RANK16 = new int[] { 11, 6, 14, 3, 10, 7, 15, 2, 12, 5, 13, 4, 9, 8, 16, 1 };
+	public static final int[] RANK32 = new int[] { 22, 11, 27, 6, 19, 14, 30, 3, 23, 10, 26, 7, 18, 15, 31, 2, 21, 12, 28, 5, 20, 13, 29, 4, 24, 9, 25, 8, 17, 16, 32, 1 };
 
 	public static final int[] POS4 = new int[4];
 	public static final int[] POS8 = new int[8];
