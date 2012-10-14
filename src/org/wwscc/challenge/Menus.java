@@ -11,8 +11,10 @@ package org.wwscc.challenge;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -29,14 +31,14 @@ import org.wwscc.util.Messenger;
 
 public class Menus extends JMenuBar implements ActionListener
 {
-	private static Logger log = Logger.getLogger("org.wwscc.challenge.Menus");
+	private static final Logger log = Logger.getLogger(Menus.class.getCanonicalName());
 
-	Hashtable <String,JMenuItem> items;
+	Map <String,JMenuItem> items;
 	JFileChooser chooser;
 
 	public Menus()
 	{
-		items = new Hashtable <String,JMenuItem>();
+		items = new HashMap <String,JMenuItem>();
 		chooser = new JFileChooser();
 
 		/* File Menu */
@@ -58,7 +60,7 @@ public class Menus extends JMenuBar implements ActionListener
 		timer.add(createItem("Connect", null));
 	}
 
-	protected JMenuItem createItem(String title, Character key)
+	protected final JMenuItem createItem(String title, Character key)
 	{ 
 		JMenuItem item = new JMenuItem(title); 
 
@@ -76,7 +78,7 @@ public class Menus extends JMenuBar implements ActionListener
 		if (!d.isValid())
 			return;
 		
-		Database.d.newChallenge(d.getChallengeName(), d.getChallengeSize(), d.isBonusChallenge());
+		Database.d.newChallenge(d.getChallengeName(), d.getChallengeSize(), false);
 		Messenger.sendEvent(MT.NEW_CHALLENGE, null);
 	}
 	
@@ -116,7 +118,7 @@ public class Menus extends JMenuBar implements ActionListener
 			int returnVal = chooser.showSaveDialog(null);
 			if (returnVal == JFileChooser.APPROVE_OPTION) 
 			{
-				log.fine("Saving image to : " + chooser.getSelectedFile().getName());
+				log.log(Level.FINE, "Saving image to : {0}", chooser.getSelectedFile().getName());
 				Messenger.sendEvent(MT.PRINT_BRACKET, chooser.getSelectedFile());
 			}
 		}
@@ -128,6 +130,10 @@ public class Menus extends JMenuBar implements ActionListener
 		{
 			createChallenge();
 		}
+		else if (cmd.equals("Edit Challenge"))
+		{
+			Messenger.sendEvent(MT.CHALLENGE_EDIT_REQUEST, null);
+		}
 		else if (cmd.equals("Delete Challenge"))
 		{
 			deleteChallenge();
@@ -138,7 +144,7 @@ public class Menus extends JMenuBar implements ActionListener
 		}
 		else
 		{ 
-			log.info("Unknown command from menubar: " + cmd); 
+			log.log(Level.INFO, "Unknown command from menubar: {0}", cmd); 
 		} 
 	} 
 }

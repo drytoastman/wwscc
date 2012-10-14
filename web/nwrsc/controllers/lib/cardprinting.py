@@ -2,6 +2,7 @@ import cStringIO
 
 from sqlalchemy.sql import func
 from pylons import request, response, tmpl_context as c
+from pylons.templating import render_mako
 
 from nwrsc.model import *
 

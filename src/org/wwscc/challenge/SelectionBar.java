@@ -30,7 +30,7 @@ import org.wwscc.util.Prefs;
 
 class SelectionBar extends JPanel implements ActionListener, MessageListener
 {
-	private static Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
 
 	JLabel seriesLabel, connectLabel;
 	JComboBox<Event> eventSelect;
@@ -68,8 +68,9 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 
 		add(createLabel("Challenge:", f));
 		add(challengeSelect);
-		add(Box.createHorizontalStrut(10));
+		add(Box.createHorizontalStrut(15));
 		
+		add(createLabel("Timer:", f));
 		add(connectLabel);
 	}
 
@@ -97,9 +98,15 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 			case TIMER_SERVICE_CONNECTION:
 				Object a[] = (Object[])o;
 				if ((Boolean)a[1])
-					connectLabel.setVisible(false);
+				{
+					connectLabel.setText("Connected");
+					connectLabel.setForeground(Color.BLACK);
+				}
 				else
-					connectLabel.setVisible(true);
+				{
+					connectLabel.setText("Not Connected");
+					connectLabel.setForeground(Color.RED);
+				}
 				break;
 				
 			case DATABASE_CHANGED:

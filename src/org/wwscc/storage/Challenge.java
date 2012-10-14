@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  */
 public class Challenge
 {
-	private static Logger log = Logger.getLogger("org.wwscc.storage.Challenge");
+	private static final Logger log = Logger.getLogger("org.wwscc.storage.Challenge");
 
 	protected int id;
 	protected int eventid;

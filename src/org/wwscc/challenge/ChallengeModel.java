@@ -11,6 +11,7 @@ package org.wwscc.challenge;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.wwscc.dialogs.SimpleFinderDialog;
 import org.wwscc.storage.Challenge;
@@ -54,6 +55,7 @@ public class ChallengeModel implements MessageListener
 		Messenger.register(MT.CONNECT_REQUEST, this);
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.NEW_CHALLENGE, this);
+		Messenger.register(MT.CHALLENGE_EDIT_REQUEST, this);
 		Messenger.register(MT.TIMER_SERVICE_RUN, this);
 		Messenger.register(MT.TIMER_SERVICE_DELETE, this);
 		Messenger.register(MT.AUTO_WIN, this);
@@ -68,19 +70,12 @@ public class ChallengeModel implements MessageListener
 		return c.getDepth();
 	}
 	
-	public boolean isBonus(int id)
-	{
-		Challenge c = challenges.get(id);
-		if (c == null)
-			return true;
-		return c.isBonus();
-	}
 	
 	public void makeActive(Id.Run rid)
 	{
 		ChallengeRound r = getRound(rid);
-		boolean topleft = false;
 		LeftRightDialin msg = new LeftRightDialin();
+		boolean topleft;
 
 		if (rid.isUpper())
 		{
@@ -489,10 +484,15 @@ public class ChallengeModel implements MessageListener
 				loadEventData();
 				break;
 				
+			case CHALLENGE_EDIT_REQUEST:
+				challenges.get(Database.d.getCurrentChallenge());
+				
+				break;
+				
 			case CONNECT_REQUEST:
 				try
 				{
-					InetSocketAddress newAddr = null;
+					InetSocketAddress newAddr;
 					SimpleFinderDialog dialog = new SimpleFinderDialog("ProTimer");
 					dialog.doDialog("Find Pro Timers", null);
 					if ((newAddr = dialog.getResult()) != null)
@@ -506,7 +506,7 @@ public class ChallengeModel implements MessageListener
 				}
 				catch (Exception e)
 				{
-					log.severe("Failed to connect: " + e);
+					log.log(Level.SEVERE, "Failed to connect: {0}", e);
 				}
 				break;
 

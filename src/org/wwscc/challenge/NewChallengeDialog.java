@@ -33,9 +33,6 @@ public class NewChallengeDialog extends BaseDialog<String>
 		
 		mainPanel.add(label("Size", false), "");
 		mainPanel.add(select("size", 4, new Integer[] { 4, 8, 16, 32, 64 }, this), "wrap");
-		
-		mainPanel.add(label("Bonus Style Dialins", false), "");
-		mainPanel.add(checkbox("bonus"), "wrap");
 	}
 	
 	
@@ -57,5 +54,4 @@ public class NewChallengeDialog extends BaseDialog<String>
 	
 	public String getChallengeName() { return getEntryText("name"); }
 	public int getChallengeSize() { return (Integer)getSelect("size"); }
-	public boolean isBonusChallenge() { return isChecked("bonus"); }
 }

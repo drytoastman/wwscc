@@ -18,6 +18,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.SoftBevelBorder;
+import javax.swing.border.TitledBorder;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.challenge.ChallengeModel;
 import org.wwscc.challenge.Id;
@@ -78,7 +79,7 @@ class RunDisplay extends JComponent
 		info.setFont(timeFont);
 
 		setLayout(new MigLayout(""));
-		setBorder(new SoftBevelBorder(BevelBorder.RAISED));
+		//setBorder(new SoftBevelBorder(BevelBorder.RAISED));
 
 		add(value, "");
 		add(cones, "width 34!");
@@ -119,6 +120,7 @@ class RunDisplay extends JComponent
 	public void updateColor()
 	{
 		setBackground(state2Color(model.getState(runId)));
+		//setBorder(new TitledBorder("title"));
 	}
 
 	private Color state2Color(ChallengeModel.RunState s)
