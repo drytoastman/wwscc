@@ -61,6 +61,7 @@ sqlmap = {
 'TRACKCLEAR':'delete from changes',
 'UNREGISTERCAR':'delete from registered where eventid=:h1 and carid=:h2',
 'UPDATECAR':'update cars set driverid=:h1,year=:h2,make=:h3,model=:h4,color=:h5,number=:h6,classcode=:h7,indexcode=:h8 where id=:h9',
+'UPDATECHALLENGE':'update challenges set eventid=:h1,name=:h2,depth=:h3,bonus=:h4 where id=:h5',
 'UPDATECHALLENGEROUND':'update challengerounds set challengeid=:h1,round=:h2,swappedstart=:h3,car1id=:h4,car1dial=:h5,car1result=:h6,car1newdial=:h7,car2id=:h8,car2dial=:h9,car2result=:h10,car2newdial=:h11 where id=:h12',
 'UPDATEDRIVER':'update drivers set firstname=:h1,lastname=:h2,alias=:h3,email=:h4,address=:h5,city=:h6,state=:h7,zip=:h8,phone=:h9,brag=:h10,sponsor=:h11 where id=:h12',
 'UPDATEEVENTS':'update events set ispro=:h1,practice=:h2,courses=:h3,runs=:h4,countedruns=:h5,conepen=:h6,gatepen=:h7,segments=:h8,password=:h9,name=:h10,date=:h11,location=:h12,sponsor=:h13,host=:h14,designer=:h15,regopened=:h16,regclosed=:h17,perlimit=:h18,totlimit=:h19,cost=:h20,paypal=:h21,snail=:h22,notes=:h23 where id=:h24',

@@ -105,6 +105,7 @@ public abstract class DataInterface
 	public abstract List<ChallengeRound> getRoundsForChallenge(int challengeid);
 	public abstract List<ChallengeRun> getRunsForChallenge(int challengeid);
 	public abstract Dialins loadDialins(); //int eventid);
+	public abstract void updateChallenge(Challenge c);
 	public abstract void updateChallengeRound(ChallengeRound r);
 
 	//** Cachable ??? ***/

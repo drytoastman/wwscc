@@ -52,6 +52,7 @@ public class Menus extends JMenuBar implements ActionListener
 		JMenu chl = new JMenu("Challenge");
 		add(chl);
 		chl.add(createItem("New Challenge", null));
+		chl.add(createItem("Edit Challenge", null));
 		chl.add(createItem("Delete Challenge", null));
 		chl.add(createItem("Auto Load Current", null));
 
@@ -80,6 +81,24 @@ public class Menus extends JMenuBar implements ActionListener
 		
 		Database.d.newChallenge(d.getChallengeName(), d.getChallengeSize(), false);
 		Messenger.sendEvent(MT.NEW_CHALLENGE, null);
+	}
+	
+	protected void editChallenge()
+	{
+		int curid = Database.d.getCurrentChallenge();
+		for (Challenge c : Database.d.getChallengesForEvent())
+		{
+			if (c.getId() == curid)
+			{
+				String response = (String)JOptionPane.showInputDialog(null, "Edit Challenge", c.getName());
+				if (response != null)
+				{
+					c.setName(response);
+					Database.d.updateChallenge(c);
+					Messenger.sendEvent(MT.NEW_CHALLENGE, c);
+				}
+			}
+		}
 	}
 	
 	protected void deleteChallenge()
@@ -132,7 +151,7 @@ public class Menus extends JMenuBar implements ActionListener
 		}
 		else if (cmd.equals("Edit Challenge"))
 		{
-			Messenger.sendEvent(MT.CHALLENGE_EDIT_REQUEST, null);
+			editChallenge();
 		}
 		else if (cmd.equals("Delete Challenge"))
 		{

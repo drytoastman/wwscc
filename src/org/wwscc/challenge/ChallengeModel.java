@@ -484,11 +484,6 @@ public class ChallengeModel implements MessageListener
 				loadEventData();
 				break;
 				
-			case CHALLENGE_EDIT_REQUEST:
-				challenges.get(Database.d.getCurrentChallenge());
-				
-				break;
-				
 			case CONNECT_REQUEST:
 				try
 				{
@@ -506,7 +501,7 @@ public class ChallengeModel implements MessageListener
 				}
 				catch (Exception e)
 				{
-					log.log(Level.SEVERE, "Failed to connect: {0}", e);
+					log.log(Level.SEVERE, "Failed to connect: {0}", e.getMessage());
 				}
 				break;
 

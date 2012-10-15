@@ -569,41 +569,6 @@ public abstract class SQLDataInterface extends DataInterface
 		currentCourse = save;
 	}
 
-/*
-	protected void swapEntrant(int oldcarid, int newcarid, int course) // swap entrants
-	{
-		try
-		{
-			start();
-			registerCar(newcarid);
-			List<Object> vals = newList(newcarid, currentEvent.id, course, currentRunGroup, oldcarid);
-			executeUpdate("SWAPRUNORDER", vals);
-			vals.remove(3);
-			executeUpdate("SWAPRUNS", vals);
-			commit();
-		}
-		catch (Exception ioe)
-		{
-			rollback();
-			logError("swapEntrant", ioe);
-		}
-
-	}
-
-	@Override
-	public void swapEntrant(int oldcarid, int newcarid) // swap entrants
-	{
-		swapEntrant(oldcarid, newcarid, currentCourse);
-	}
-
-	@Override
-	public void swapEntrantOpposite(int oldcarid, int newcarid) // swap entrants on opposite course
-	{
-		swapEntrant(oldcarid, newcarid, oppositeCourse());
-	}
-*/
-
-	
 	protected boolean hasRuns(int carid, int course)
 	{
 		try
@@ -1221,6 +1186,22 @@ public abstract class SQLDataInterface extends DataInterface
 		{
 			logError("loadDialins", ioe);
 			return null;
+		}
+	}
+
+	@Override
+	public void updateChallenge(Challenge c)
+	{
+		try
+		{
+			List<Object> vals = new ArrayList<Object>();
+			AUTO.addChallengeValues(c, vals);
+			vals.add(c.id);
+			executeUpdate("UPDATECHALLENGE", vals);
+		}
+		catch (IOException ioe)
+		{
+			logError("updateChallenge", ioe);
 		}
 	}
 

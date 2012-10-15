@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
@@ -122,7 +123,14 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				
 			case NEW_CHALLENGE:
 			case CHALLENGE_DELETED:
-				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(Database.d.getChallengesForEvent().toArray(new Challenge[0])));
+				List<Challenge> challenges = Database.d.getChallengesForEvent();
+				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(challenges.toArray(new Challenge[0])));
+				for (Challenge c : challenges) {
+					if (c.getId() == Database.d.getCurrentChallenge()) {
+						challengeSelect.setSelectedItem(c);
+						return;
+					}
+				}
 				challengeSelect.setSelectedIndex(challengeSelect.getItemCount() - 1);
 				break;				
 		}
@@ -154,10 +162,14 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				else if (challengeSelect.getItemCount() > 0)
 					challengeSelect.setSelectedIndex(0);
 				else
+				{
+					Database.d.setCurrentChallenge(0);
 					Messenger.sendEvent(MT.CHALLENGE_CHANGED, null);
+				}
 			}
 			else if (cmd.startsWith("challenge"))
 			{
+				Database.d.setCurrentChallenge(((Challenge)o).getId());
 				Messenger.sendEvent(MT.CHALLENGE_CHANGED, (Challenge)o);
 				Prefs.setChallengeId(challengeSelect.getSelectedIndex());
 			}

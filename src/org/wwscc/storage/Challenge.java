@@ -43,6 +43,8 @@ public class Challenge
 	public String getName() { return name; }
 	public int getDepth() { return depth; }
 	public boolean isBonus() { return bonus; }
+
+	public void setName(String s) { name = s; }
 	
 	@Override
 	public String toString()

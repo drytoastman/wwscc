@@ -111,6 +111,7 @@ public class SQLMap
 		
 		sql.put("UNREGISTERCAR", "delete from registered where eventid=? and carid=?");
 		sql.put("UPDATECAR", "update cars set "+ AUTO.getCarSetStr() + " where id=?");
+		sql.put("UPDATECHALLENGE", "update challenges set "+ AUTO.getChallengeSetStr() + " where id=?");
 		sql.put("UPDATECHALLENGEROUND", "update challengerounds set challengeid=?,round=?,swappedstart=?,"+
 					"car1id=?,car1dial=?,car1result=?,car1newdial=?,"+
 					"car2id=?,car2dial=?,car2result=?,car2newdial=? "+
