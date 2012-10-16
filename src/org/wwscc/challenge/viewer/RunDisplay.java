@@ -9,6 +9,8 @@ package org.wwscc.challenge.viewer;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -30,12 +32,12 @@ import org.wwscc.util.TimeTextField;
  */
 class RunDisplay extends JComponent
 {
-	static Font timeFont = new Font("SansSerif", Font.PLAIN, 12);
+	static Font timeFont = new Font("SansSerif", Font.PLAIN, 14);
 	static Font titleFont = new Font("SansSerif", Font.BOLD, 10);
+	static Font comboFont = new Font("SansSerif", Font.PLAIN, 10);
 	static Border plainBorder = new LineBorder(Color.GRAY, 1);
 	static Border nextBorder = new MatteBorder(1, 4, 1, 4, new Color(10, 200, 10));
 	static Border next2Border = new MatteBorder(1, 3, 1, 3, new Color(40, 80, 10));
-	
 	
 	JLabel reaction;
 	JLabel sixty;
@@ -65,24 +67,26 @@ class RunDisplay extends JComponent
 
 		InternalListener l = new InternalListener();
 		
-		reaction = new JLabel("0.000");
-		sixty = new JLabel("0.000");
+		reaction = new JLabel("", JLabel.CENTER);
+		sixty = new JLabel("", JLabel.CENTER);
+
 		value = new TimeTextField("00.000", 5);
 		value.addFocusListener(l);
 		value.setFont(timeFont);
+
 		cones = new JComboBox<Integer>(new Integer[] {0, 1, 2, 3, 4, 5});
 		cones.addActionListener(l);
+		cones.setFont(comboFont);
+
 		gates = new JComboBox<Integer>(new Integer[] {0, 1, 2, 3, 4, 5});
 		gates.addActionListener(l);
-		status = new JComboBox<String>(new String[] {"OK", "RL", "NS", "DNF"});
-		status.addActionListener(l);
-		
-		Font f = new Font("SansSerif", Font.PLAIN, 10);
-		cones.setFont(f);
-		gates.setFont(f);
-		status.setFont(f);
+		gates.setFont(comboFont);
 
-		rundiff = new JLabel("0.000");
+		status = new JComboBox<String>(new String[] {"OK", "RL", "NS", "DNF"});
+		status.addActionListener(l);		
+		status.setFont(comboFont);
+
+		rundiff = new JLabel("", JLabel.CENTER);
 		rundiff.setFont(timeFont);
 
 		setLayout(new MigLayout("ins 0"));
@@ -93,14 +97,18 @@ class RunDisplay extends JComponent
 		add(title("gates"), "center");
 		add(title("status"), "center");
 		add(title("diff"), "center, wrap");
+
+		int reactionWidth = reaction.getFontMetrics(reaction.getFont()).stringWidth("0.000");
+		int reactionHeight = reaction.getFontMetrics(reaction.getFont()).getHeight();
+		int diffSize = rundiff.getFontMetrics(rundiff.getFont()).stringWidth("-20.000");
 		
-		add(reaction, "flowy, split 2, gapright 5, gapleft 5");
-		add(sixty, "gapleft 5");
+		add(reaction, String.format("flowy, split 2, gapright 5, gapleft 5, width %d!, height %d!", reactionWidth, reactionHeight));
+		add(sixty, String.format("gapleft 5, height %d!", reactionHeight));
 		add(value, "");
 		add(cones, "width 34!");
 		add(gates, "width 34!");
 		add(status, "");
-		add(rundiff, "width 36!, gapleft 5, gapright 5");
+		add(rundiff, String.format("width %d!, gapleft 5, gapright 5", diffSize));
 	}
 
 	private JLabel title(String s)
@@ -115,13 +123,13 @@ class RunDisplay extends JComponent
 		updating = true;
 		try
 		{
-			reaction.setText("0.000");
-			sixty.setText("0.000");
+			reaction.setText("");
+			sixty.setText("");
 			value.setText("00.000");
 			cones.setSelectedIndex(0);
 			gates.setSelectedIndex(0);
 			status.setSelectedIndex(0);
-			rundiff.setText("0.000");
+			rundiff.setText("");
 
 			run = model.getRun(runId);
 			if (run == null)

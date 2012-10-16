@@ -337,7 +337,6 @@ public class ResultsPane extends JPanel
 		{
 			if (col == 0)
 			{
-				System.out.println("");
 				switch (row)
 				{
 					case  MOVE: return "Movement";

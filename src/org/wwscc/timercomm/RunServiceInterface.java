@@ -14,7 +14,7 @@ import org.wwscc.storage.Run;
 /**
  * Abstraction of timer service so it can be a listener for others
  */
-public interface RunServerListener extends EventListener
+public interface RunServiceInterface extends EventListener
 {
 	public boolean sendDial(LeftRightDialin d);
 	public boolean deleteRun(Run r);

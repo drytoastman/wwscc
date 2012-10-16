@@ -11,10 +11,12 @@ package org.wwscc.protimer;
 
 import java.io.IOException;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
 import org.wwscc.dataentry.Sounds;
 import org.wwscc.storage.Run;
-import org.wwscc.timercomm.RunServerListener;
+import org.wwscc.timercomm.RunServiceInterface;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -22,8 +24,10 @@ import org.wwscc.util.Messenger;
 
 public class ResultsModel extends AbstractTableModel implements MessageListener
 {
+	private static final Logger log = Logger.getLogger(ResultsModel.class.getCanonicalName());
+	
 	Vector<DualResult> runs;
-	Vector<RunServerListener> listeners;
+	Vector<RunServiceInterface> listeners;
 	int nextLeftFinish;
 	int nextRightFinish;
 
@@ -34,7 +38,7 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 	{
 		super();
 		runs = new Vector<DualResult>();
-		listeners = new Vector<RunServerListener>();
+		listeners = new Vector<RunServiceInterface>();
 
 		Messenger.register(MT.TREE, this);
 
@@ -71,7 +75,7 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 		holdRightDial	= Double.NaN;
 	}
 
-	public void addRunServerListener(RunServerListener l)
+	public void addRunServerListener(RunServiceInterface l)
 	{
 		listeners.add(l);
 	}
@@ -155,7 +159,7 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 
 	protected DualResult lastEntry()
 	{
-		if (runs.size() == 0)
+		if (runs.isEmpty())
 			return null;
 		else
 			return runs.lastElement();
@@ -187,18 +191,18 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 				case DIALIN_RIGHT: holdRightDial = (Double)o; break;
 
 				case REACTION_LEFT:
-					lastEntry().setLeftReaction((ColorTime)o);
-					lastEntry().setLeftDial(holdLeftDial);
-					holdLeftDial = Double.NaN;
+					addReaction(true, (ColorTime)o);
 					break;
 				case REACTION_RIGHT:
-					lastEntry().setRightReaction((ColorTime)o);
-					lastEntry().setRightDial(holdRightDial);
-					holdRightDial = Double.NaN;
+					addReaction(false, (ColorTime)o);
 					break;
 
-				case SIXTY_LEFT:		lastEntry().setLeftSixty((ColorTime)o); break;
-				case SIXTY_RIGHT:		lastEntry().setRightSixty((ColorTime)o); break;
+				case SIXTY_LEFT:		
+					addSixty(true, (ColorTime)o); 
+					break;
+				case SIXTY_RIGHT:		
+					addSixty(false, (ColorTime)o); 
+					break;
 
 				case FINISH_LEFT:
 					result = (Object[])o;
@@ -243,16 +247,15 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 		}
 		catch (PSIException e)
 		{
-			System.out.println("PSI error in processing " + e);
+			log.log(Level.INFO, "PSI error in processing {0}", e);
 		}
 		catch (NullPointerException npe)
 		{
-			System.out.println("null returned in processing");
+			log.info("null returned in processing");
 		}
 		catch (ArrayIndexOutOfBoundsException aobe)
 		{
-			System.out.println("error in processing: " + aobe);
-			aobe.printStackTrace();
+			log.log(Level.INFO, "error in processing: " + aobe.getMessage(), aobe);
 		}
 	}
 
@@ -266,6 +269,46 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 		}
 	}
 
+	
+	public void addReaction(boolean left, ColorTime c) throws PSIException
+	{
+		DualResult dr = lastEntry();
+		if (left)
+		{
+			dr.setLeftReaction((ColorTime)c);
+			dr.setLeftDial(holdLeftDial);
+			holdLeftDial = Double.NaN;
+			for (RunServiceInterface l : listeners)
+				l.sendRun(resultToRun(dr.left, 1));
+		}
+		else
+		{
+			dr.setRightReaction((ColorTime)c);
+			dr.setRightDial(holdRightDial);
+			holdRightDial = Double.NaN;
+			for (RunServiceInterface l : listeners)
+				l.sendRun(resultToRun(dr.right, 2));
+		}
+	}
+
+
+	public void addSixty(boolean left, ColorTime c) throws PSIException
+	{
+		DualResult dr = lastEntry();
+		if (left)
+		{
+			dr.setLeftSixty((ColorTime)c);
+			for (RunServiceInterface l : listeners)
+				l.sendRun(resultToRun(dr.left, 1));
+		}
+		else
+		{
+			dr.setRightSixty((ColorTime)c);
+			for (RunServiceInterface l : listeners)
+				l.sendRun(resultToRun(dr.right, 2));
+		}
+	}
+
 
 	public void deleteFinish(boolean left)
 	{
@@ -274,7 +317,7 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 			Result r = runs.get(nextLeftFinish-1).deleteLeftFinish();
 			if (r != null)
 			{
-				for (RunServerListener l : listeners)
+				for (RunServiceInterface l : listeners)
 					l.deleteRun(resultToRun(r, 1));
 				nextLeftFinish--;
 			}
@@ -284,14 +327,14 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 			Result r = runs.get(nextRightFinish-1).deleteRightFinish();
 			if (r != null)
 			{
-				for (RunServerListener l : listeners)
+				for (RunServiceInterface l : listeners)
 					l.deleteRun(resultToRun(r, 2));
 				nextRightFinish--;
 			}
 		}
 	}
 
-
+	
 	public void addFinish(boolean left, ColorTime c, double dial) throws PSIException
 	{
 		Sounds.playBlocked();
@@ -307,7 +350,7 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 			dr.setLeftFinish(c, dial);
 			nextLeftFinish++;			
 
-			for (RunServerListener l : listeners)
+			for (RunServiceInterface l : listeners)
 				l.sendRun(resultToRun(dr.left, 1));
 		}
 		else
@@ -322,7 +365,7 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 			dr.setRightFinish(c, dial);
 			nextRightFinish++;			
 
-			for (RunServerListener l : listeners)
+			for (RunServiceInterface l : listeners)
 				l.sendRun(resultToRun(dr.right, 2));
 		}
 	}

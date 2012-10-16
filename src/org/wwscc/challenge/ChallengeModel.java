@@ -340,8 +340,12 @@ public class ChallengeModel implements MessageListener
 			cr.setStatus(run.getStatus());
 			Database.d.updateRun(cr);
 		}
-		
-		if (run.course() == Run.LEFT)
+
+		if (cr.getRaw() == 0)
+		{
+			// updated reaction or sixty from timer
+		}
+		else if (run.course() == Run.LEFT)
 		{
 			checkForWinner(activeLeft);
 			activeLeft = nextLeft;
@@ -517,7 +521,7 @@ public class ChallengeModel implements MessageListener
 				Id.Round[] rnds = (Id.Round[])data;
 				ChallengeRound src = getRound(rnds[0]);
 				ChallengeRound dst = getRound(rnds[1]);
-				System.out.println("Transfer " + src + " to " + dst);
+				log.log(Level.FINE, "Transfer {0} to {1}", new Object[]{src, dst});
 				break;
 				
 			case AUTO_WIN:

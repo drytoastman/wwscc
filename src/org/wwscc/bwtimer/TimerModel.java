@@ -18,7 +18,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.wwscc.storage.Run;
-import org.wwscc.timercomm.RunServerListener;
+import org.wwscc.timercomm.RunServiceInterface;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.Prefs;
@@ -36,7 +36,7 @@ public class TimerModel implements TableModel, TimeStorage
 
 	Vector<TableModelListener> tableListeners = new Vector<TableModelListener>();
 	Vector<ListDataListener> listListeners = new Vector<ListDataListener>();
-	Vector<RunServerListener> runListeners = new Vector<RunServerListener>();
+	Vector<RunServiceInterface> runListeners = new Vector<RunServiceInterface>();
 
 	int lights;
 	LinkedList<Long> timestamps[];
@@ -49,7 +49,7 @@ public class TimerModel implements TableModel, TimeStorage
 		Messenger.register(MT.SERIAL_TIMESTAMP, this);
 	}
 
-	public void addRunServerListener(RunServerListener l)
+	public void addRunServerListener(RunServiceInterface l)
 	{
 		runListeners.add(l);
 	}
@@ -167,7 +167,7 @@ public class TimerModel implements TableModel, TimeStorage
 
 		rowUpdated(fsize-1);
 		newFinish(fsize-1);
-		for (RunServerListener l : runListeners)
+		for (RunServiceInterface l : runListeners)
 			l.sendRun(getRun(fsize-1));
 	}
 
@@ -176,7 +176,7 @@ public class TimerModel implements TableModel, TimeStorage
 		int finishsize = timestamps[finish].size();
 		if (finishsize > 0)
 		{
-			for (RunServerListener l : runListeners)
+			for (RunServiceInterface l : runListeners)
 				l.deleteRun(getRun(finishsize-1));
 			timestamps[finish].removeLast();
 			rowUpdated(finishsize-1);

@@ -11,13 +11,15 @@ package org.wwscc.protimer;
 
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
 import java.io.*;
-
+import java.util.logging.Logger;
+import javax.swing.*;
 import org.wwscc.util.*;
 
 public class DebugPane extends JPanel implements ActionListener
 {
+	private static final Logger log = Logger.getLogger(DebugPane.class.getCanonicalName());
+	
 	JTextArea text;
 	JTextField input;
 	JButton enter;
@@ -41,7 +43,7 @@ public class DebugPane extends JPanel implements ActionListener
 		try {
 			file = new FileWriter("debug.log", true);
 		} catch (IOException ioe) {
-			System.out.println("Can't open debug log");
+			log.severe("Can't open debug log");
 		}
 
 		JScrollPane sp = new JScrollPane(text);
@@ -55,7 +57,7 @@ public class DebugPane extends JPanel implements ActionListener
 		add(sp, BorderLayout.CENTER);
 	}
 
-
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		String s = input.getText();

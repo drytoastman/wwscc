@@ -15,6 +15,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
@@ -30,6 +32,8 @@ import org.wwscc.util.Messenger;
 
 public class ClassTree extends CarTree implements MessageListener, ActionListener
 {
+	private static final Logger log = Logger.getLogger(ClassTree.class.getCanonicalName());
+	
 	public ClassTree()
 	{
 		super();
@@ -88,7 +92,7 @@ public class ClassTree extends CarTree implements MessageListener, ActionListene
 				makeTree(reg, runorder);
 				break;
 			case RUNGROUP_CHANGED:
-				System.out.println(Database.d.getRunGroupMapping());
+				log.log(Level.FINE, "group changed: {0}", Database.d.getRunGroupMapping());
 				break;
 		}
 	}

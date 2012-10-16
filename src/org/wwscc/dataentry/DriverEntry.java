@@ -103,20 +103,7 @@ public class DriverEntry extends DriverCarPanel
 		c.gridx = 0; c.gridy = y;   c.gridwidth = 1; c.weighty = 0.0; add(addit, c);
 		c.gridx = 1; c.gridy = y++; c.gridwidth = 1; c.weighty = 0.0; add(changeit, c);
 		/* Fill vertical space so everything stays at the top */
-		c.gridx = 0; c.gridy = y++; c.gridwidth = 2; c.weighty = 1;   add(new JLabel(""), c);
-		
-		firstSearch.addFocusListener(new FocusListener() {
-
-			@Override
-			public void focusGained(FocusEvent e) {
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-				System.err.println("Focus lost to " + e.getOppositeComponent());
-			}
-		});
+		c.gridx = 0; c.gridy = y++; c.gridwidth = 2; c.weighty = 1;   add(new JLabel(""), c);		
 	}
 
 

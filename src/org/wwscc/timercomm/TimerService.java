@@ -28,14 +28,14 @@ import org.wwscc.util.ThreadedClass;
  * A server that create TimerClients for each connection as well as running a
  * TimerService to advertise our location.
  */
-public class TimerService implements RunServerListener, ThreadedClass
+public class TimerService implements RunServiceInterface, ThreadedClass
 {
 	private static final Logger log = Logger.getLogger(TimerService.class.getName());
 
 	ServerSocket serversock;
 	ServiceAnnouncer announcer;
-	Vector<RunServerListener> clients;
-	Vector<RunServerListener> marked;
+	Vector<RunServiceInterface> clients;
+	Vector<RunServiceInterface> marked;
 	boolean done;
 
 	
@@ -47,8 +47,8 @@ public class TimerService implements RunServerListener, ThreadedClass
 		announcer = new ServiceAnnouncer();
 		announcer.addDescription(ServiceMessage.createType(name, InetAddress.getLocalHost().getHostName(), serversock.getLocalPort()));
 		announcer.start();
-		clients = new Vector<RunServerListener>();
-		marked = new Vector<RunServerListener>();
+		clients = new Vector<RunServiceInterface>();
+		marked = new Vector<RunServiceInterface>();
 		done = true;
 	}
 
@@ -70,7 +70,7 @@ public class TimerService implements RunServerListener, ThreadedClass
 	public boolean sendDial(LeftRightDialin d)
 	{
 		boolean ret = true;
-		for (RunServerListener c : clients) {
+		for (RunServiceInterface c : clients) {
 			if (!c.sendDial(d))
 			{
 				marked.add(c);
@@ -86,7 +86,7 @@ public class TimerService implements RunServerListener, ThreadedClass
 	public boolean sendRun(Run r)
 	{
 		boolean ret = true;
-		for (RunServerListener c : clients) {
+		for (RunServiceInterface c : clients) {
 			if (!c.sendRun(r)) 
 			{
 				marked.add(c);
@@ -102,7 +102,7 @@ public class TimerService implements RunServerListener, ThreadedClass
 	public boolean deleteRun(Run r)
 	{
 		boolean ret = true;
-		for (RunServerListener c : clients) {
+		for (RunServiceInterface c : clients) {
 			if (!c.deleteRun(r))
 			{
 				marked.add(c);
@@ -140,7 +140,7 @@ public class TimerService implements RunServerListener, ThreadedClass
 				}
 			}
 			
-			for (RunServerListener tc : clients)
+			for (RunServiceInterface tc : clients)
 			{
 				((TimerClient)tc).stop();
 			}

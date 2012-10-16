@@ -506,7 +506,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		}
 		catch(IOException ioe) 
 		{
-			System.out.println(ioe.getMessage());
+			log.severe(ioe.getMessage());
 		}
 	}
 

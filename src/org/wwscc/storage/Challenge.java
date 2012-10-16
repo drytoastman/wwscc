@@ -29,20 +29,20 @@ public class Challenge
 		eventid = -1;
 	}
 
-	public Challenge(int inEvent, String inName, int inDepth, boolean inBonus)
+	public Challenge(int inEvent, String inName, int inDepth)
 	{
 		id = -1;
 		eventid = inEvent;
 		name = inName;
 		depth = inDepth;
-		bonus = inBonus;
+		bonus = false;
 	}
 
 	public int getId() { return id; }
 	public int getEventId() { return eventid; }
 	public String getName() { return name; }
 	public int getDepth() { return depth; }
-	public boolean isBonus() { return bonus; }
+	//public boolean isBonus() { return bonus; }
 
 	public void setName(String s) { name = s; }
 	

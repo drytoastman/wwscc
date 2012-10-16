@@ -26,7 +26,7 @@ import org.wwscc.util.ThreadedClass;
  *
  * @author bwilson
  */
-public final class TimerClient implements RunServerListener, ThreadedClass
+public final class TimerClient implements RunServiceInterface, ThreadedClass
 {
 	private static final Logger log = Logger.getLogger(TimerClient.class.getName());
 
@@ -74,7 +74,7 @@ public final class TimerClient implements RunServerListener, ThreadedClass
 	public boolean send(String s)
 	{
 		try {
-			log.fine("Sending '" + s + "' to the timer");
+			log.log(Level.FINE, "Sending ''{0}'' to the timer", s);
 			out.write(s.getBytes());
 			return true;
 		} catch (IOException ioe) {
@@ -114,7 +114,7 @@ public final class TimerClient implements RunServerListener, ThreadedClass
 				while (!done)
 				{
 					String line = in.readLine();
-					log.info("TimerClient reads: " + line);
+					log.log(Level.INFO, "TimerClient reads: {0}", line);
 					if (line.startsWith("DIAL "))
 					{
 						LeftRightDialin d = new LeftRightDialin();

@@ -143,7 +143,7 @@ public class SerialDataInterface implements SerialPortEventListener
 				break;
 
 			default:
-				System.out.println("Recieved serialEvent " + type);
+				log.log(Level.INFO, "Recieved serialEvent {0}", type);
 				break;
 		}
 	}   
@@ -169,7 +169,7 @@ public class SerialDataInterface implements SerialPortEventListener
 				byte[] newbuffer = new byte[buffer.length*2];
 				System.arraycopy(buffer, 0, newbuffer, 0, count);
 				buffer = newbuffer;
-				log.info("Increased byte buffer size to: " + buffer.length);
+				log.log(Level.INFO, "Increased byte buffer size to: {0}", buffer.length);
 			}
 			is.read(buffer, count, size);
 			count += size;
@@ -206,7 +206,7 @@ public class SerialDataInterface implements SerialPortEventListener
 		while (list.hasMoreElements())
 		{
 			CommPortIdentifier c = (CommPortIdentifier)list.nextElement();
-			log.fine("RXTX found " + c.getName());
+			log.log(Level.FINE, "RXTX found {0}", c.getName());
 			if (c.getPortType() == CommPortIdentifier.PORT_SERIAL)
 				found.add(c);
 		}

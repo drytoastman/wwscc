@@ -490,7 +490,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			Component compFocusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 			while (compFocusOwner != null)
 			{
-				System.out.println(compFocusOwner);
 				if ((compFocusOwner instanceof TimeEntry) || (compFocusOwner instanceof RunsTable))
 				{
 					selectNext(0);  // only select and pull focus if users isn't 'focused' doing something else

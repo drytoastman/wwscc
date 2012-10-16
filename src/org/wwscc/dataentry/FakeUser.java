@@ -8,6 +8,8 @@
 
 package org.wwscc.dataentry;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
@@ -20,6 +22,8 @@ import org.wwscc.util.Messenger;
  */
 public class FakeUser implements MessageListener
 {
+	private static final Logger log = Logger.getLogger(FakeUser.class.getCanonicalName());
+	
 	TimeEntry time;
 	RunsTable table;
 	Run toset;
@@ -69,6 +73,7 @@ public class FakeUser implements MessageListener
 	class UserThread implements Runnable
 	{
 		boolean running = false;
+		@Override
 		public void run()
 		{	while (true) { try {
 
@@ -91,13 +96,13 @@ public class FakeUser implements MessageListener
                                 if (t < min) min = t;
                                 all += t;
                                 cnt++;
-				System.out.println(String.format("%d (%d, %d, %d)", t, min, all/cnt, max));
+				log.info(String.format("%d (%d, %d, %d)", t, min, all/cnt, max));
 			}
 
 			Thread.sleep(waitTime);
 
 			} catch (Exception x) {
-				System.out.println("err: " + x);
+				log.log(Level.SEVERE, "err: {0}", x.getMessage());
 			}}
 		}
 	}

@@ -9,6 +9,7 @@
 package org.wwscc.protimer;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.timercomm.SerialDataInterface;
@@ -113,13 +114,13 @@ public class TimingInterface implements MessageListener
 		{
 			if (serial != null)
 			{
-				System.out.println("OUT: " + command);
+				log.log(Level.INFO, "OUT: {0}", command);
 				serial.write(command + "\r");
 			}
 		}
 		catch (Exception e)
 		{
-			System.out.println("Write error: " + e);
+			log.log(Level.WARNING, "Write error: {0}", e);
 		}
 	}
 
@@ -171,7 +172,7 @@ public class TimingInterface implements MessageListener
 
 	public void processData(String input) throws PSIException
 	{
-		System.out.println("Process: (" + input + ")");
+		log.log(Level.FINE, "Process: ({0})", input);
 		String args[] = input.split("[ \r\n]");
 
 		boolean left;
