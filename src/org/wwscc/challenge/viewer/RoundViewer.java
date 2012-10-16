@@ -42,7 +42,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 
 	ChallengeModel model;
 	JButton stage, swap, reset;
-	JLabel firstresult, secondresult, finalresult, rldiff, lrdiff;
+	JLabel firstresult, secondresult, finalresult, rndial, lndial;
 	EntrantDisplay top, bottom;
 	Id.Round roundId;
 	boolean swapped;
@@ -63,6 +63,14 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		secondresult.setFont(midResultFont);
 		finalresult = new JLabel("No comment yet");
 		finalresult.setFont(finalResultFont);
+
+		lndial = new JLabel("");
+		lndial.setFont(finalResultFont);
+		lndial.setForeground(Color.RED);
+		
+		rndial = new JLabel("");
+		rndial.setFont(finalResultFont);
+		rndial.setForeground(Color.RED);
 
 		stage = new JButton("Stage");
 		stage.addActionListener(new AbstractAction() {
@@ -160,7 +168,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		add(left.leftRun, "");
 		add(right.rightRun, "wrap");
 
-		add(firstresult, "al center center, span 2, wrap");
+		add(firstresult, "al center center, span 2, wrap, gapbottom 5");
 
 		add(new JLabel("Right Run"), "");
 		add(new JLabel("Left Run"), "wrap");
@@ -169,7 +177,8 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 
 		add(secondresult, "al center center, span 2, wrap");
 		add(finalresult, "al center center, span 2, wrap");
-		
+		add(lndial, "center");
+		add(rndial, "center, wrap");
 		pack();
 		revalidate();
 	}
@@ -299,21 +308,16 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			double val;
 			double topdiff = top.getDiff();
 			double bottomdiff = bottom.getDiff();
-			double newdial = 0;
 
 			if (topdiff > bottomdiff)
 			{
 				name = bottom.getName();
 				val = topdiff - bottomdiff;
-				if (round.getBottomCar().breakout())
-					newdial = round.getBottomCar().getNewDial();
 			}
 			else
 			{
 				name = top.getName();
 				val = bottomdiff - topdiff;
-				if (round.getTopCar().breakout())
-					newdial = round.getTopCar().getNewDial();
 			}
 
 			String result;
@@ -330,9 +334,27 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 				result = name + " wins by " + NF.format(val);
 			else
 				result = "It's a tie!";
+
+			lndial.setText(" ");
+			rndial.setText(" ");
 			
-			if (newdial > 0)
-				result += " and breaks out! New dialin is " + NF.format(newdial);
+			if (round.getTopCar().breakout())
+			{
+				String nd = "Breakout! New Dial: " + NF.format(round.getTopCar().getNewDial());
+				if (round.isSwappedStart())
+					rndial.setText(nd);
+				else
+					lndial.setText(nd);
+			}
+			
+			if (round.getBottomCar().breakout())
+			{
+				String nd = "Breakout! New Dial: " + NF.format(round.getBottomCar().getNewDial());
+				if (round.isSwappedStart())
+					lndial.setText(nd);
+				else
+					rndial.setText(nd);
+			}
 
 			if (state == RoundState.DONE) // can enter this area after first half default
 				secondresult.setText(secondHalfData.msg);

@@ -8,6 +8,7 @@
 
 package org.wwscc.storage;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -128,7 +129,7 @@ public class ChallengeRound
 			else if (r.course == Run.RIGHT)
 				right = r;
 			else
-				log.info("Throwing away run as it isn't left or right: " + r);
+				log.log(Level.INFO, "Throwing away run as it isn''t left or right: {0}", r);
 		}
 		
 		public void setTo(RoundEntrant re)
