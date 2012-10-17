@@ -17,13 +17,13 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.wwscc.util.MT;
-import org.wwscc.util.Messenger;
 import org.wwscc.util.MessageListener;
+import org.wwscc.util.Messenger;
 
 
 public class AuditLog implements MessageListener
 {
-	private static Logger log = Logger.getLogger(AuditLog.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(AuditLog.class.getCanonicalName());
 
 	public PrintWriter audit;
 	public DateFormat dformat;
@@ -65,7 +65,7 @@ public class AuditLog implements MessageListener
 		}
 		catch (Exception e)
 		{
-			log.info("audit log error: " + e);
+			log.log(Level.INFO, "audit log error: {0}", e);
 		}
 	}
 }

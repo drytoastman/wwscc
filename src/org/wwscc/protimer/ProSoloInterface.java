@@ -120,6 +120,7 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
         other.add(createMenu("Show In Progress", 0, 0));
 		other.add(createMenu("Show State", 0, 0));
         other.add(createMenu("Hard", 0, 0));
+		other.add(createMenu("Simulator", 0, 0));
 
         JMenuBar bar = new JMenuBar();
         bar.add(file);
@@ -171,6 +172,7 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 
 		else if (com.equals("Reset")) { Messenger.sendEvent(MT.INPUT_RESET_SOFT, null); }
 		else if (com.equals("Hard")) { Messenger.sendEvent(MT.INPUT_RESET_HARD, null); }
+		else if (com.equals("Simulator")) { new SimulatorPanel(); } 
 
 		else if (com.startsWith("Show/Hide"))
 		{

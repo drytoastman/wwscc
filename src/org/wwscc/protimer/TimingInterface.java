@@ -13,9 +13,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.timercomm.SerialDataInterface;
+import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
-import org.wwscc.util.MT;
 
 
 public class TimingInterface implements MessageListener
@@ -67,7 +67,7 @@ public class TimingInterface implements MessageListener
 				try {
 					processData(new String((byte[])o));
 				} catch (PSIException pse) {
-					log.warning("Error processing data: " + pse);
+					log.log(Level.WARNING, "Error processing data: {0}", pse);
 				}
 				break;
 
@@ -253,7 +253,7 @@ public class TimingInterface implements MessageListener
 		else if (args[0].equalsIgnoreCase("open"))
 		{
 			left = get_side(args, 1);
-			Messenger.sendEvent(MT.OPEN_SENSOR, new Object[] { new Boolean(left), args[2] });
+			Messenger.sendEvent(MT.OPEN_SENSOR, new Object[] { left, args[2] });
 		}
 		else if (args[0].equalsIgnoreCase("tree"))
 		{

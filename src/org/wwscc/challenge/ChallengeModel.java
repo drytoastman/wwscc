@@ -341,7 +341,8 @@ public class ChallengeModel implements MessageListener
 			Database.d.updateRun(cr);
 		}
 
-		if (cr.getRaw() == 0)
+		Double raw = cr.getRaw();
+		if (raw.isNaN() || (raw == 0))
 		{
 			// updated reaction or sixty from timer
 		}

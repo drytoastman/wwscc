@@ -19,7 +19,6 @@ public class ColorTime
 	public static final int REDLIGHT = 1;
 	public static final int NOTSTAGED = 2;
 
-
 	public ColorTime()
 	{
 		time = Double.NaN;
@@ -27,7 +26,13 @@ public class ColorTime
 		state = 0;
 	}
 
-
+	public ColorTime(double inTime)
+	{
+		time = inTime;
+		dial = 0.0;
+		state = 0;
+	}
+	
 	public ColorTime(double inTime, int inState)
 	{
 		time = inTime;
