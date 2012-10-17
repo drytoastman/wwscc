@@ -60,9 +60,9 @@ class FoundServiceRenderer extends DefaultListCellRenderer
 	public FoundServiceRenderer()
 	{
 		// some defaults
-		iconMap.put("BWTimer", new ImageIcon(getClass().getResource("/org/wwscc/services/timer.gif")));
-		iconMap.put("ProTimer", new ImageIcon(getClass().getResource("/org/wwscc/services/draglight.gif")));
-		iconMap.put("RemoteDatabase", new ImageIcon(getClass().getResource("/org/wwscc/services/server.gif")));
+		iconMap.put("BWTimer", new ImageIcon(getClass().getResource("/org/wwscc/images/timer.gif")));
+		iconMap.put("ProTimer", new ImageIcon(getClass().getResource("/org/wwscc/images/draglight.gif")));
+		iconMap.put("RemoteDatabase", new ImageIcon(getClass().getResource("/org/wwscc/images/server.gif")));
 	}
 	
 	public void mapIcon(String service, Icon icon)
