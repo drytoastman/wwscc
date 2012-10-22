@@ -10,6 +10,7 @@ package org.wwscc.challenge;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,21 +38,23 @@ public class ChallengeModel implements MessageListener
 	Map<Integer, Map<Integer, ChallengeRound>> rounds;
 	Map<Integer, Challenge> challenges;
 	Map<Integer, Entrant> entrantcache;
-	Id.Run activeLeft, activeRight;
-	Id.Run nextLeft, nextRight;
-	Id.Run thirdLeft, thirdRight;
+	LinkedList<Id.Run> leftTargets;
+	LinkedList<Id.Run> rightTargets;
 	TimerClient client;
 		
+	/**
+	 * Create new model
+	 */
 	public ChallengeModel()
 	{
 		entrantcache = new HashMap<Integer,Entrant>();
 		challenges = new HashMap<Integer, Challenge>();
 		rounds = new HashMap<Integer, Map<Integer,ChallengeRound>>();
-		activeLeft = activeRight = null;
-		nextLeft = nextRight = null;
-		thirdLeft = thirdRight = null;
+		leftTargets = new LinkedList<Id.Run>();
+		rightTargets = new LinkedList<Id.Run>();
 		client = null;
 
+		Messenger.register(MT.ACTIVE_CHANGE_REQUEST, this);
 		Messenger.register(MT.CONNECT_REQUEST, this);
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.NEW_CHALLENGE, this);
@@ -62,105 +65,94 @@ public class ChallengeModel implements MessageListener
 		Messenger.register(MT.MOVE_ROUND, this);
 	}
 	
-	public int getDepth(int id)
-	{
-		Challenge c = challenges.get(id);
-		if (c == null)
-			return 0;
-		return c.getDepth();
-	}
 	
-	
-	public void makeActive(Id.Run rid)
+	/**
+	 * Called when there is a request to change the focus for incoming runs
+	 * @param request the request being made
+	 */
+	protected void makeActive(ActivationRequest request)
 	{
+		Id.Run rid = request.runToChange;
 		ChallengeRound r = getRound(rid);
-		LeftRightDialin msg = new LeftRightDialin();
-		boolean topleft;
-
-		if (rid.isUpper())
+		boolean topleft = (rid.isUpper()&& rid.isLeft()) || (rid.isLower() && rid.isRight());
+		
+		if (request.sendDials)
 		{
-			if (rid.isLeft())
+			if (client == null)
 			{
-				topleft = true;
+				log.severe("Unabled to send dialins, not connected");
+				return;
+			}
+			
+			LeftRightDialin msg = new LeftRightDialin();
+			if (topleft)
+			{
 				msg.left = r.getTopCar().getDial();
 				msg.right = r.getBottomCar().getDial();
 			}
-			else
+			else	
 			{
-				topleft = false;
 				msg.left = r.getBottomCar().getDial();
 				msg.right = r.getTopCar().getDial();
+			}
+			client.sendDial(msg);
+		}
+		
+		if (request.makeActive)
+		{
+			switch (leftTargets.size())
+			{
+				default:
+					leftTargets.clear();  // reseting and starting like fresh
+					rightTargets.clear();
+					// fallthrough on purpose
+				case 0:
+				case 1:
+					if (topleft)
+					{
+						leftTargets.add(rid.makeUpperLeft());
+						leftTargets.add(rid.makeLowerLeft());
+						rightTargets.add(rid.makeLowerRight());
+						rightTargets.add(rid.makeUpperRight());
+					}
+					else
+					{
+						leftTargets.add(rid.makeLowerLeft());
+						leftTargets.add(rid.makeUpperLeft());
+						rightTargets.add(rid.makeUpperRight());
+						rightTargets.add(rid.makeLowerRight());
+					}
+					break;
 			}
 		}
 		else
 		{
 			if (rid.isLeft())
-			{
-				topleft = false;
-				msg.left = r.getBottomCar().getDial();
-				msg.right = r.getTopCar().getDial();
-			}
+				leftTargets.remove(rid);
 			else
-			{
-				topleft = true;
-				msg.left = r.getTopCar().getDial();
-				msg.right = r.getBottomCar().getDial();
-			}
-		}
-
-		if (client != null)
-			client.sendDial(msg);
-		
-		if ((activeLeft == null) || (nextLeft != null))
-		{
-			thirdLeft = thirdRight = null;
-			if (topleft)
-			{
-				activeLeft = rid.makeUpperLeft();
-				activeRight = rid.makeLowerRight();
-				nextLeft = rid.makeLowerLeft();
-				nextRight = rid.makeUpperRight();
-			}
-			else
-			{
-				activeLeft = rid.makeLowerLeft();
-				activeRight = rid.makeUpperRight();
-				nextLeft = rid.makeUpperLeft();
-				nextRight = rid.makeLowerRight();
-			}
-		}
-		else if (nextLeft == null)
-		{
-			if (topleft)
-			{
-				nextLeft = rid.makeUpperLeft();
-				nextRight = rid.makeLowerRight();
-				thirdLeft = rid.makeLowerLeft();
-				thirdRight = rid.makeUpperRight();
-			}
-			else
-			{
-				nextLeft = rid.makeLowerLeft();
-				nextRight = rid.makeUpperRight();
-				thirdLeft = rid.makeUpperLeft();
-				thirdRight = rid.makeLowerRight();
-			}
+				rightTargets.remove(rid);
 		}
 
 		Messenger.sendEvent(MT.ACTIVE_CHANGE, null);
 	}
 	
-	public enum RunState { NONE, PENDING, ACTIVE };
-	public RunState getState(Id.Run rid)
+	/**
+	 * Get the timer receiving state for a run in the tree
+	 * @param rid the run identifier (round, top/bottom, left/right)
+	 * @return an index for where it is in the queue, -1 for not in the queue
+	 */
+	public int getState(Id.Run rid)
 	{
-		if (rid.equals(activeLeft) || rid.equals(activeRight))
-			return RunState.ACTIVE;
-		else if (rid.equals(nextLeft) || rid.equals(nextRight))
-			return RunState.PENDING;
+		if (rid.isLeft())
+			return leftTargets.indexOf(rid);
 		else
-			return RunState.NONE;		
+			return rightTargets.indexOf(rid);		
 	}
 
+	/**
+	 * @param rid the run identifier (round, top/bottom, left/right)
+	 * @return the associated run from the model
+	 */
 	public ChallengeRun getRun(Id.Run rid)
 	{
 		ChallengeRound r = getRound(rid);
@@ -169,6 +161,11 @@ public class ChallengeModel implements MessageListener
 	}
 
 
+	/**
+	 * Find the associated run, set a new time value, update round, let everyone know
+	 * @param rid the run in question
+	 * @param time the new time value
+	 */
 	public void setTime(Id.Run rid, double time)
 	{
 		ChallengeRun r = getRun(rid);
@@ -196,6 +193,11 @@ public class ChallengeModel implements MessageListener
 	}
 
 
+	/**
+	 * Find the associated run, set a new cones value, update round, let everyone know
+	 * @param rid the run in question
+	 * @param cones the new cones value
+	 */
 	public void setCones(Id.Run rid, int cones)
 	{
 		ChallengeRun r = getRun(rid);
@@ -209,6 +211,11 @@ public class ChallengeModel implements MessageListener
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
 
+	/**
+	 * Find the associated run, set a new gates value, update round, let everyone know
+	 * @param rid the run in question
+	 * @param gates the new gates value
+	 */
 	public void setGates(Id.Run rid, int gates)
 	{
 		ChallengeRun r = getRun(rid);
@@ -222,7 +229,12 @@ public class ChallengeModel implements MessageListener
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
 
-		
+
+	/**
+	 * Find the associated run, set a new status value, update round, let everyone know
+	 * @param rid the run in question
+	 * @param status the new status value
+	 */
 	public void setStatus(Id.Run rid, String status)
 	{
 		ChallengeRun r = getRun(rid);
@@ -236,6 +248,12 @@ public class ChallengeModel implements MessageListener
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
 	
+	/**
+	 * Set an entrant in the tree
+	 * @param eid the pointer to a round and side (upper/lower)
+	 * @param e the entrant to place there
+	 * @param dialin the dialin to associated with this round placement
+	 */
 	public void setEntrant(Id.Entry eid, Entrant e, double dialin)
 	{
 		ChallengeRound r = getRound(eid);
@@ -253,6 +271,10 @@ public class ChallengeModel implements MessageListener
 		Database.d.updateChallengeRound(r);
 	}
 	
+	/**
+	 * @param eid the round and side (upper/lower) identifier
+	 * @return the current entrant at a particular location in the tree
+	 */
 	public Entrant getEntrant(Id.Entry eid)
 	{
 		ChallengeRound r = getRound(eid);
@@ -266,6 +288,10 @@ public class ChallengeModel implements MessageListener
 		return e;
 	}
 	
+	/**
+	 * @param eid the round and side (upper/lower) identifier
+	 * @return gets he dialin used for the specified location in the tree
+	 */
 	public Double getDial(Id.Entry eid)
 	{
 		ChallengeRound r = getRound(eid);
@@ -273,6 +299,11 @@ public class ChallengeModel implements MessageListener
 		return re.getDial();
 	}
 
+	/**
+	 * Set a new dial value for an entrant in the tree
+	 * @param eid the round and side (upper/lower) identifier
+	 * @param newDial the new dialin to set for this round
+	 */
 	public void overrideDial(Id.Entry eid, double newDial)
 	{
 		ChallengeRound r = getRound(eid);
@@ -282,6 +313,10 @@ public class ChallengeModel implements MessageListener
 		Database.d.updateChallengeRound(r);
 	}
 	
+	/**
+	 * @param rid a round identifier in the challenge bracket
+	 * @return the round information for the requested round
+	 */
 	public ChallengeRound getRound(Id.Round rid)
 	{
 		if (rid == null)
@@ -292,6 +327,10 @@ public class ChallengeModel implements MessageListener
 		return m.get(rid.round);
 	}
 
+	/**
+	 * Remove all run information associated with a round in case the data is bad
+	 * @param rid the round identifier
+	 */
 	public void resetRound(Id.Round rid)
 	{
 		ChallengeRound r = getRound(rid);
@@ -318,7 +357,7 @@ public class ChallengeModel implements MessageListener
 	private void setRun(Run run)
 	{
 		/* Get the active left or right run */
-		Id.Run rid = (run.course() == Run.LEFT) ? activeLeft: activeRight;
+		Id.Run rid = (run.course() == Run.LEFT) ? leftTargets.peekFirst() : rightTargets.peekFirst();
 		ChallengeRound rnd = getRound(rid);
 		RoundEntrant re = (rid.isUpper()) ? rnd.getTopCar() : rnd.getBottomCar();
 		ChallengeRun cr = (rid.isLeft()) ? re.getLeft() : re.getRight();
@@ -346,22 +385,12 @@ public class ChallengeModel implements MessageListener
 		{
 			// updated reaction or sixty from timer
 		}
-		else if (run.course() == Run.LEFT)
-		{
-			checkForWinner(activeLeft);
-			activeLeft = nextLeft;
-			nextLeft = thirdLeft;
-			thirdLeft = null;
-		}
 		else
-		{
-			checkForWinner(activeRight);
-			activeRight = nextRight;
-			nextRight = thirdRight;
-			thirdRight = null;
+		{  // pull out the active pointer, check for winner and let everyone know the active has changed
+			checkForWinner((run.course() == Run.LEFT) ? leftTargets.pollFirst() : rightTargets.pollFirst());
+			Messenger.sendEvent(MT.ACTIVE_CHANGE, null);
 		}
 		
-		Messenger.sendEvent(MT.ACTIVE_CHANGE, null);
 		Messenger.sendEvent(MT.RUN_CHANGED, cr);
 	}
 
@@ -476,6 +505,11 @@ public class ChallengeModel implements MessageListener
 		Messenger.sendEvent(MT.MODEL_CHANGED, this);
 	}
 
+	/**
+	 * Process incoming events
+	 * @param type the event type
+	 * @param data event dependant
+	 */
 	@Override
 	public void event(MT type, Object data)
 	{
@@ -488,7 +522,7 @@ public class ChallengeModel implements MessageListener
 			case NEW_CHALLENGE:
 				loadEventData();
 				break;
-				
+
 			case CONNECT_REQUEST:
 				try
 				{
@@ -518,6 +552,10 @@ public class ChallengeModel implements MessageListener
 				setRun((Run)data);
 				break;
 
+			case ACTIVE_CHANGE_REQUEST:
+				makeActive((ActivationRequest)data);
+				break;
+				
 			case MOVE_ROUND:
 				Id.Round[] rnds = (Id.Round[])data;
 				ChallengeRound src = getRound(rnds[0]);

@@ -9,8 +9,6 @@ package org.wwscc.challenge.viewer;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -18,6 +16,7 @@ import java.awt.event.FocusListener;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
@@ -32,13 +31,18 @@ import org.wwscc.util.TimeTextField;
  */
 class RunDisplay extends JComponent
 {
+	static Font reactionFont = new Font("SansSerif", Font.PLAIN, 12);
 	static Font timeFont = new Font("SansSerif", Font.PLAIN, 14);
 	static Font titleFont = new Font("SansSerif", Font.BOLD, 10);
+	static Font bigTitleFont = new Font("SansSerif", Font.BOLD, 12);
 	static Font comboFont = new Font("SansSerif", Font.PLAIN, 10);
+	
 	static Border plainBorder = new LineBorder(Color.GRAY, 1);
 	static Border nextBorder = new MatteBorder(1, 4, 1, 4, new Color(10, 200, 10));
 	static Border next2Border = new MatteBorder(1, 3, 1, 3, new Color(40, 80, 10));
 	
+	FocusButton nextButton;
+	JPanel runPanel;
 	JLabel reaction;
 	JLabel sixty;
 	TimeTextField value;
@@ -49,26 +53,28 @@ class RunDisplay extends JComponent
 
 	ChallengeModel model;
 	ChallengeRun run;
-	Id.Entry entryId;
 	Id.Run runId;		
 	double diff;
 	double savetime;
 	boolean updating;
-
-	public RunDisplay(ChallengeModel m, Id.Entry eid, Id.Run rid)
+	
+	
+	public RunDisplay(ChallengeModel m, Id.Run rid)
 	{
 		runId = rid;
 		run = null;
 		diff = Double.NaN;
 		model = m;
-		entryId = eid;
 		savetime = 0;
 		updating = false;
 
 		InternalListener l = new InternalListener();
 		
 		reaction = new JLabel("", JLabel.CENTER);
+		reaction.setFont(reactionFont);
+		
 		sixty = new JLabel("", JLabel.CENTER);
+		sixty.setFont(reactionFont);
 
 		value = new TimeTextField("00.000", 5);
 		value.addFocusListener(l);
@@ -89,26 +95,39 @@ class RunDisplay extends JComponent
 		rundiff = new JLabel("", JLabel.CENTER);
 		rundiff.setFont(timeFont);
 
-		setLayout(new MigLayout("ins 0"));
+		setLayout(new MigLayout());
+		runPanel = new JPanel(new MigLayout("ins 0"));
+		runPanel.setBorder(plainBorder);
+
+		JLabel title = new JLabel();
+		title.setFont(bigTitleFont);
+		title.setText(rid.isLeft() ? "Left Run" : "Right Run");
+
+		nextButton = new FocusButton(rid);
+		nextButton.setFont(titleFont);
 		
-		add(title("start"), "center");
-		add(title("time"), "center");
-		add(title("cones"), "center");
-		add(title("gates"), "center");
-		add(title("status"), "center");
-		add(title("diff"), "center, wrap");
+		add(title, "split 3, w 33%");
+		add(nextButton, "h 24!, w 70!, wrap");
+		add(runPanel, "wrap");
+		
+		runPanel.add(title("start"), "center");
+		runPanel.add(title("time"), "center");
+		runPanel.add(title("cones"), "center");
+		runPanel.add(title("gates"), "center");
+		runPanel.add(title("status"), "center");
+		runPanel.add(title("diff"), "center, wrap");
 
 		int reactionWidth = reaction.getFontMetrics(reaction.getFont()).stringWidth("0.000");
 		int reactionHeight = reaction.getFontMetrics(reaction.getFont()).getHeight();
 		int diffSize = rundiff.getFontMetrics(rundiff.getFont()).stringWidth("-20.000");
 		
-		add(reaction, String.format("flowy, split 2, gapright 5, gapleft 5, width %d!, height %d!", reactionWidth, reactionHeight));
-		add(sixty, String.format("gapleft 5, height %d!", reactionHeight));
-		add(value, "");
-		add(cones, "width 34!");
-		add(gates, "width 34!");
-		add(status, "");
-		add(rundiff, String.format("width %d!, gapleft 5, gapright 5", diffSize));
+		runPanel.add(reaction, String.format("flowy, split 2, gapright 5, gapleft 5, width %d!, height %d!", reactionWidth, reactionHeight));
+		runPanel.add(sixty, String.format("gapleft 5, height %d!", reactionHeight));
+		runPanel.add(value, "");
+		runPanel.add(cones, "width 34!");
+		runPanel.add(gates, "width 34!");
+		runPanel.add(status, "");
+		runPanel.add(rundiff, String.format("width %d!, gapleft 5, gapright 5", diffSize));
 	}
 
 	private JLabel title(String s)
@@ -136,14 +155,19 @@ class RunDisplay extends JComponent
 				return;
 
 			savetime = run.getRaw();			
-			reaction.setText(NF.format(run.getReaction()));
-			sixty.setText(NF.format(run.getSixty()));
-			value.setTime(run.getRaw());
+			if (!Double.isNaN(run.getReaction()))
+				reaction.setText(NF.format(run.getReaction()));
+			if (!Double.isNaN(run.getSixty()))
+				sixty.setText(NF.format(run.getSixty()));
+			if (!Double.isNaN(run.getRaw()))
+				value.setTime(run.getRaw());
 			cones.setSelectedItem(run.getCones());
 			gates.setSelectedItem(run.getGates());
 			status.setSelectedItem(run.getStatus());
-			diff = run.getNet() - model.getDial(entryId);
-			if (diff > 900)
+			diff = run.getNet() - model.getDial(runId);
+			if (Double.isNaN(diff))
+				rundiff.setText("");
+			else if (diff > 900)
 				rundiff.setText("DEF");
 			else
 				rundiff.setText(NF.format(diff));
@@ -156,12 +180,8 @@ class RunDisplay extends JComponent
 
 	public void updateColor()
 	{
-		switch (model.getState(runId))
-		{
-			case ACTIVE: setBorder(nextBorder); break;
-			case PENDING: setBorder(next2Border); break;
-			default: setBorder(plainBorder); break;
-		}
+		nextButton.setStage(model.getState(runId));
+		nextButton.repaint();
 	}
 
 	/**

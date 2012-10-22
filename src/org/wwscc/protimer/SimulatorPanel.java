@@ -5,6 +5,7 @@
 package org.wwscc.protimer;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -28,7 +29,7 @@ public class SimulatorPanel extends JFrame
 	public SimulatorPanel()
 	{
 		super("Simulator");
-		JPanel main = new JPanel(new MigLayout(""));
+		JPanel main = new JPanel(new MigLayout("", "[fill][fill]"));
 		main.setOpaque(true);
 		main.setBackground(Color.WHITE);
 		setContentPane(main);
@@ -38,19 +39,24 @@ public class SimulatorPanel extends JFrame
 		time = new TimeTextField("0.000", 6);
 		dial = new TimeTextField("0.000", 6);
 		
-		main.add(new JLabel("Time"), "split 4");
+		JLabel timel = new JLabel("Time");
+		timel.setFont(timel.getFont().deriveFont(14).deriveFont(Font.BOLD));
+		JLabel diall = new JLabel("Dial");
+		diall.setFont(diall.getFont().deriveFont(14).deriveFont(Font.BOLD));
+		
+		main.add(timel, "split 2");
 		main.add(time, "");
-		main.add(new JLabel("Dial"), "");
+		main.add(diall, "split 2");
 		main.add(dial, "wrap");
 		
-		main.add(new JSeparator(), "wrap");
+		main.add(new JSeparator(), "spanx 2, wrap");
 		
-		main.add(button("tree"), "wrap");
-		main.add(button("reaction left"), "split 2");
+		main.add(button("tree"), "spanx 2, wrap");
+		main.add(button("reaction left"), "");
 		main.add(button("reaction right"), "wrap");
-		main.add(button("sixty left"), "split 2");
+		main.add(button("sixty left"), "");
 		main.add(button("sixty right"), "wrap");
-		main.add(button("finish left"), "split 2");
+		main.add(button("finish left"), "");
 		main.add(button("finish right"), "wrap");
 		
 		pack();
@@ -72,9 +78,9 @@ public class SimulatorPanel extends JFrame
 			if (s.equals("tree"))
 				sim.tree();
 			else if (s.equals("reaction left"))
-				sim.reaction(true, time.getTime(), ColorTime.NORMAL);
+				sim.reaction(true, time.getTime(), time.getTime() < 0.500 ? ColorTime.REDLIGHT : ColorTime.NORMAL );
 			else if (s.equals("reaction right"))
-				sim.reaction(false, time.getTime(), ColorTime.NORMAL);
+				sim.reaction(false, time.getTime(), time.getTime() < 0.500 ? ColorTime.REDLIGHT : ColorTime.NORMAL);
 			else if (s.equals("sixty left"))
 				sim.sixty(true, time.getTime(), ColorTime.NORMAL);
 			else if (s.equals("sixty right"))

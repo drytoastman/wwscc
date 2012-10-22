@@ -14,10 +14,8 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.storage.Database;
@@ -40,7 +38,7 @@ public class ChallengeGUI extends JFrame
 	 * Create the main GUI window.
 	 * @throws SQLException 
 	 */
-	public ChallengeGUI() throws SQLException
+	public ChallengeGUI()
 	{
 		super("Challenge");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -93,7 +91,7 @@ public class ChallengeGUI extends JFrame
 			SwingUtilities.invokeLater(new Runnable() { public void run() {
 				try {
 					ChallengeGUI g = new ChallengeGUI();
-				} catch (SQLException sqle) {
+				} catch (Exception sqle) {
 					log.log(Level.SEVERE, "Failed to start Challenge GUI: " + sqle, sqle);
 				}
 			}});

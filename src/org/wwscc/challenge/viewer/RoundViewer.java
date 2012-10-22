@@ -14,12 +14,14 @@ import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import net.miginfocom.swing.MigLayout;
+import org.wwscc.challenge.ActivationRequest;
 import org.wwscc.challenge.ChallengeModel;
 import org.wwscc.challenge.Id;
 import org.wwscc.components.UnderlineBorder;
@@ -37,13 +39,13 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 {
 	private static final Logger log = Logger.getLogger(RoundViewer.class.getCanonicalName());
 	
-	static Font midResultFont = new Font(Font.DIALOG, Font.BOLD, 12);
-	static Font finalResultFont = new Font(Font.DIALOG, Font.BOLD, 14);
+	static Font midResultFont = new Font(Font.DIALOG, Font.BOLD, 14);
+	static Font finalResultFont = new Font(Font.DIALOG, Font.BOLD, 16);
 
 	ChallengeModel model;
 	JButton stage, swap, reset;
 	JLabel firstresult, secondresult, finalresult, rndial, lndial;
-	EntrantDisplay top, bottom;
+	EntrantStruct top, bottom;
 	Id.Round roundId;
 	boolean swapped;
 
@@ -54,8 +56,8 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		roundId = rid;
 		swapped = model.getRound(roundId).isSwappedStart();
 
-		top = new EntrantDisplay(model, rid.makeUpper());
-		bottom = new EntrantDisplay(model, rid.makeLower());
+		top = new EntrantStruct(model, rid.makeUpper());
+		bottom = new EntrantStruct(model, rid.makeLower());
 
 		firstresult = new JLabel();
 		firstresult.setFont(midResultFont);
@@ -77,11 +79,10 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (model.getRound(roundId).isSwappedStart())
-					model.makeActive(roundId.makeUpperRight());
+					Messenger.sendEvent(MT.ACTIVE_CHANGE_REQUEST, new ActivationRequest(roundId.makeUpperRight(), true, true));
 				else
-					model.makeActive(roundId.makeUpperLeft());
-
-			}
+					Messenger.sendEvent(MT.ACTIVE_CHANGE_REQUEST, new ActivationRequest(roundId.makeUpperLeft(), true, true));
+			};
 		});
 
 		swap = new JButton("Swap");
@@ -128,10 +129,10 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 	protected void buildLayout()
 	{
 		getContentPane().removeAll();
-		setLayout(new MigLayout("ins 3, fill", "[]30[]"));
+		setLayout(new MigLayout("ins 5, fill", "[]30[]"));
 		setBackground(Color.WHITE);
 
-		EntrantDisplay left, right;
+		EntrantStruct left, right;
 		if (swapped)
 		{
 			log.fine("building layout with swapped start order");
@@ -149,40 +150,39 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		add(swap, "");
 		add(reset, "wrap");
 
-
-		add(left.nameLbl, "al center, split 2");
-		add(left.dialLbl, "");
-		add(right.nameLbl, "al center, split 2");
-		add(right.dialLbl, "wrap");
-
-		add(left.autoWin, "hmax 15, al center, split 2");
-		add(left.changeDial, "hmax 15, al center");
-		add(right.autoWin, "hmax 15, al center, split 2");
-		add(right.changeDial, "hmax 15, al center, wrap");
-
+		add(left.display, "center");
+		add(right.display, "center, wrap");
+		
 		JLabel border = new JLabel(" ");
 		border.setBorder(new UnderlineBorder());
 		add(border, "growx, span 2, gaptop 3, gapbottom 5, wrap");
-		add(new JLabel("Left Run"), "");
-		add(new JLabel("Right Run"), "wrap");
 		add(left.leftRun, "");
 		add(right.rightRun, "wrap");
 
-		add(firstresult, "al center center, span 2, wrap, gapbottom 5");
+		add(firstresult, String.format("al center center, span 2, wrap, gapbottom 5, h %d!", compHeight(firstresult)));
 
-		add(new JLabel("Right Run"), "");
-		add(new JLabel("Left Run"), "wrap");
 		add(left.rightRun, "");
 		add(right.leftRun, "wrap");
-
-		add(secondresult, "al center center, span 2, wrap");
-		add(finalresult, "al center center, span 2, wrap");
-		add(lndial, "center");
+		
+		add(secondresult, String.format("al center center, span 2, wrap, h %d!", compHeight(secondresult)) );
+		add(finalresult, String.format("al center center, span 2, wrap, h %d!", compHeight(finalresult)));
+		add(lndial, String.format("center, h %d!", compHeight(lndial)));
 		add(rndial, "center, wrap");
 		pack();
 		revalidate();
 	}
 
+	/**
+	 * Utility for calculating height of font based component
+	 * @param c the component we are using
+	 * @return the pixel height based on current font
+	 */
+	public static int compHeight(JComponent c)
+	{
+		return c.getFontMetrics(c.getFont()).getHeight();
+	}
+	
+	
 	private static class ResultTuple
 	{
 		public String msg = "";
@@ -200,7 +200,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 
 	private ResultTuple getRunResult(boolean first)
 	{
-		EntrantDisplay e1, e2;
+		EntrantStruct e1, e2;
 		RunDisplay r1, r2;
 		double d1, d2;
 		int p1, p2;
@@ -230,7 +230,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 
 		if ((r1.run == null) || (r2.run == null))
 		{
-			ret.msg = " -*- ";
+			ret.msg = "";
 			return ret;
 		}
 
@@ -241,7 +241,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 
 		if (Double.isNaN(d1) || Double.isNaN(d2))
 		{
-			ret.msg = " --- ";
+			ret.msg = "Uh oh. Someone had NaN!";
 		}
 		else if (!r1.run.isOK() || !r2.run.isOK())
 		{
@@ -282,9 +282,9 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 	
 	public void updateResults()
 	{	
-		firstresult.setText(" Run 1 Result ");
-		secondresult.setText(" Run 2 Result ");
-		finalresult.setText(" Final Result ");
+		firstresult.setText("");
+		secondresult.setText("");
+		finalresult.setText("");
 
 		ChallengeRound round = model.getRound(roundId);
 		RoundState state = round.getState();
@@ -338,26 +338,28 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			lndial.setText(" ");
 			rndial.setText(" ");
 			
-			if (round.getTopCar().breakout())
-			{
-				String nd = "Breakout! New Dial: " + NF.format(round.getTopCar().getNewDial());
-				if (round.isSwappedStart())
-					rndial.setText(nd);
-				else
-					lndial.setText(nd);
-			}
-			
-			if (round.getBottomCar().breakout())
-			{
-				String nd = "Breakout! New Dial: " + NF.format(round.getBottomCar().getNewDial());
-				if (round.isSwappedStart())
-					lndial.setText(nd);
-				else
-					rndial.setText(nd);
-			}
-
 			if (state == RoundState.DONE) // can enter this area after first half default
+			{
+				if (round.getTopCar().breakout())
+				{
+					String nd = "Breakout! New Dial: " + NF.format(round.getTopCar().getNewDial());
+					if (round.isSwappedStart())
+						rndial.setText(nd);
+					else
+						lndial.setText(nd);
+				}
+
+				if (round.getBottomCar().breakout())
+				{
+					String nd = "Breakout! New Dial: " + NF.format(round.getBottomCar().getNewDial());
+					if (round.isSwappedStart())
+						lndial.setText(nd);
+					else
+						rndial.setText(nd);
+				}
+
 				secondresult.setText(secondHalfData.msg);
+			}
 			
 			finalresult.setText(result);
 		}

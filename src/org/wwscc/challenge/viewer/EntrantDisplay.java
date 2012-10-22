@@ -14,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import net.miginfocom.swing.MigLayout;
 import org.wwscc.challenge.ChallengeModel;
 import org.wwscc.challenge.Id;
 import org.wwscc.storage.Entrant;
@@ -22,15 +23,19 @@ import org.wwscc.util.Messenger;
 import org.wwscc.util.NF;
 
 /**
+ * Simple collection of pieces used to display each entrant in a round viewer
  */
 class EntrantDisplay extends JComponent
 {
+	static Font nameFont = new Font(Font.DIALOG, Font.BOLD, 13);
+	static Font dialFont = new Font(Font.DIALOG, Font.PLAIN, 12);
+	static Font buttonFont = new Font(Font.DIALOG, Font.PLAIN, 10);
+	
 	String name;
 	JLabel nameLbl;
 	JLabel dialLbl;
 	JButton autoWin;
 	JButton changeDial;
-	RunDisplay leftRun, rightRun;
 	Id.Entry entryId;
 	ChallengeModel model;
 	
@@ -45,7 +50,7 @@ class EntrantDisplay extends JComponent
 			name = "(none)";
 
 		autoWin = new JButton("AutoWin");
-		autoWin.setFont(new Font(Font.DIALOG, Font.PLAIN, 10));
+		autoWin.setFont(buttonFont);
 		autoWin.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -54,7 +59,7 @@ class EntrantDisplay extends JComponent
 		});
 
 		changeDial = new JButton("Dial");
-		changeDial.setFont(new Font(Font.DIALOG, Font.PLAIN, 10));
+		changeDial.setFont(buttonFont);
 		changeDial.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -69,42 +74,14 @@ class EntrantDisplay extends JComponent
 		});
 
 		nameLbl = new JLabel(name);
-		nameLbl.setFont(new Font(Font.DIALOG, Font.BOLD, 13));
+		nameLbl.setFont(nameFont);
 		dialLbl = new JLabel(NF.format(model.getDial(entryId)));
-		dialLbl.setFont(new Font(Font.DIALOG, Font.PLAIN, 12));
-		leftRun = new RunDisplay(model, eid, eid.makeLeft());
-		rightRun = new RunDisplay(model, eid, eid.makeRight());
-	}
-
-	@Override
-	public String getName()
-	{
-		return name;
-	}
-
-	public void updateRun()
-	{
-		leftRun.updateRun();
-		rightRun.updateRun();
-	}
-
-	public void updateColors()
-	{
-		leftRun.updateColor();
-		rightRun.updateColor();
-	}
-
-	public double getDiff()
-	{
-		double d1 = leftRun.diff;
-		double d2 = rightRun.diff;
-		if (Double.isNaN(d1) && Double.isNaN(d2))
-			return 0.0;
-		else if (Double.isNaN(d1))
-			return d2;
-		else if (Double.isNaN(d2))
-			return d1;
-		else
-			return d1 + d2;
+		dialLbl.setFont(dialFont);
+		
+		setLayout(new MigLayout());
+		add(nameLbl, "al center, split 2");
+		add(dialLbl, "wrap");
+		add(autoWin, "hmax 15, al center, split 2");
+		add(changeDial, "hmax 15, al center");
 	}
 }

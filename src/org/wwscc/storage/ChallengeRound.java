@@ -63,10 +63,10 @@ public class ChallengeRound
 	public RoundState getState()
 	{
 		int val = 0;
-		if (car1.getLeft() != null) val |= 0x08;
-		if (car1.getRight() != null) val |= 0x04;
-		if (car2.getLeft() != null) val |= 0x02;
-		if (car2.getRight() != null) val |= 0x01;
+		if (car1.getLeft() != null && !Double.isNaN(car1.getLeft().getRaw())) val |= 0x08;
+		if (car1.getRight() != null  && !Double.isNaN(car1.getRight().getRaw())) val |= 0x04;
+		if (car2.getLeft() != null && !Double.isNaN(car2.getLeft().getRaw())) val |= 0x02;
+		if (car2.getRight() != null && !Double.isNaN(car2.getRight().getRaw())) val |= 0x01;
 		
 		switch (val)
 		{

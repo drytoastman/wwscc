@@ -70,6 +70,11 @@ public class Id
 			Round other = (Round)o;
 			return ((other.challengeid == challengeid) && (other.round ==  round));
 		}
+		
+		public String toString()
+		{
+			return String.format("Round %s", round);
+		}
 	}
 
 	
@@ -112,6 +117,11 @@ public class Id
 			Entry e = (Entry)o;
 			return ((e.level == level) && super.equals(o));
 		}
+		
+		public String toString()
+		{
+			return String.format("Entry %s/%s", round, level);
+		}
 	}
 	
 	
@@ -151,6 +161,11 @@ public class Id
 			if (o == null) return false;
 			Run r = (Run)o;
 			return ((r.runType == runType) && super.equals(o));
+		}
+		
+		public String toString()
+		{
+			return String.format("Run %s/%s/%s", round, level, runType);
 		}
 	}
 }

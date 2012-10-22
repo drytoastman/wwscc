@@ -62,7 +62,7 @@ public final class TimerClient implements RunServiceInterface, ThreadedClass
 	{
 		if (!done) return;
 		done = false;
-		new Thread(new ClientThread()).start();
+		new Thread(new ReceiverThread()).start();
 	}
 	
 	@Override
@@ -102,7 +102,7 @@ public final class TimerClient implements RunServiceInterface, ThreadedClass
 		return send(("DELETE " + r.encode() + "\n"));
 	}
 
-	class ClientThread implements Runnable
+	class ReceiverThread implements Runnable
 	{
 		@Override
 		public void run()
