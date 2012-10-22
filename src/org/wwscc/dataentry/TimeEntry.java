@@ -20,6 +20,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
@@ -67,7 +68,7 @@ import org.wwscc.util.TimeTextField;
  * Implements the time entry panel used in the data entry GUI
  */
 @SuppressWarnings("serial")
-public class TimeEntry extends JPanel implements ActionListener, ListSelectionListener, ListDataListener, MessageListener
+public class TimeEntry extends JPanel implements ActionListener, ListSelectionListener, ListDataListener, MessageListener, KeyListener
 {
 	private static final Logger log = Logger.getLogger(TimeEntry.class.getCanonicalName());
 
@@ -169,6 +170,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			segLabel[ii] = new JLabel("Seg" + (ii+1));
 		}
 		time = new TimeTextField("", 6);
+		time.setToolTipText("Enter Time Here. Press c or g here to add cones or gates, shift+c/g to remove them");
 		cones = new IntTextField("0", 2);
 		gates = new IntTextField("0", 2);
 
@@ -191,7 +193,6 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
 			JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
 		);
-
 		
 		status = new JComboBox<String>(new String[] { "OK", "DNF", "DNS", "RL", "NS", "DSQ" });
 		enter = new JButton("Enter Time");
@@ -241,9 +242,17 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		add(error, "spanx 2, wrap");
 
 		switchTimerMode(Mode.OFF);
+		
+		time.addKeyListener(this);
+		cones.addKeyListener(this);
+		gates.addKeyListener(this);
+		reaction.addKeyListener(this);
+		sixty.addKeyListener(this);
+		enter.addKeyListener(this);
+		
 	}
-
 	/**
+
 	 * @return the default enter button for use by the application
 	 */
 	public JButton getEnterButton()
@@ -407,7 +416,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	}
 
 	/**
-	 * Called there is a request (button/program) to enter the current time/penalties
+	 * Called when there is a request (button/program) to enter the current time/penalties
 	 */
 	private void enterTime()
 	{
@@ -653,6 +662,34 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				break;
 		}
 	}
+	
+	@Override
+	public void keyTyped(KeyEvent e)
+	{
+		Object o = e.getSource();
+		if(o instanceof JTextField || o == enter)
+		{
+			int increment = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == ActionEvent.SHIFT_MASK) ? -1 : 1;
+			
+			switch(e.getKeyChar())
+			{
+				case 'c':
+				case 'C':
+					cones.setText(Integer.toString(cones.getInt() + increment));
+					e.consume();
+					break;
+				case 'g':
+				case 'G':
+					gates.setText(Integer.toString(gates.getInt() + increment));
+					e.consume();
+					break;
+			}
+		}
+	}
+	@Override
+	public void keyPressed(KeyEvent e) { /* do nothing */ }
+	@Override
+	public void keyReleased(KeyEvent e) { /* do nothing */ }
 }
 
 
@@ -674,8 +711,12 @@ class ModeButtonGroup extends ButtonGroup
 	{
 		ButtonModel m = getSelection();
 		for (AbstractButton b : buttons)
+		{
 			if (b.getModel() == m)
+			{
 				return b.getText();
+			}
+		}
 		return null;
 	}
 }
