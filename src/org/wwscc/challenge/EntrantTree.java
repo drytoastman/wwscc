@@ -26,15 +26,19 @@ import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 
 
+
 public class EntrantTree extends CarTree implements MessageListener
 {
-	private static Logger log = Logger.getLogger("org.wwscc.challenge.EntrantTree");
+	private static final Logger log = Logger.getLogger(EntrantTree.class.getCanonicalName());
 
+	protected boolean useBonusDialins;
+	
 	public EntrantTree()
 	{
 		setCellRenderer(new CarTreeRenderer());
 		Messenger.register(MT.CHALLENGE_CHANGED, this);
 		setTransferHandler(new DriverDrag());
+		useBonusDialins = true;
 	}
 	
 	@Override
@@ -61,46 +65,56 @@ public class EntrantTree extends CarTree implements MessageListener
 				break;
 		}
 	}
-}
 
-class DriverDrag extends TransferHandler
-{
-	private static Logger log = Logger.getLogger("org.wwscc.challenge.DriverDrag");
-
-	@Override
-	public int getSourceActions(JComponent c)
+	/**
+	 * Sets the type of dialins that will be used when an entrant is dragged over.
+	 * @param bonus true for bonus, false for regular dialins
+	 */
+	public void useBonusDialins(boolean bonus)
 	{
-		return COPY;
+		useBonusDialins = bonus;
 	}
 
-	@Override
-	protected Transferable createTransferable(JComponent c)
-	{ 
-		if (c instanceof EntrantTree) 
+	
+	/**
+	* Takes care of the drag from the entrant tree, nothing else
+	*/
+	class DriverDrag extends TransferHandler
+	{
+		@Override
+		public int getSourceActions(JComponent c)
 		{
-			Object o = ((EntrantTree)c).getLastSelectedPathComponent();
-			if (o instanceof DefaultMutableTreeNode)
+			return COPY;
+		}
+
+		@Override
+		protected Transferable createTransferable(JComponent c)
+		{ 
+			if (c instanceof EntrantTree) 
 			{
-				Entrant e = (Entrant)((DefaultMutableTreeNode)o).getUserObject();
-				if (!e.isInRunOrder())
+				Object o = ((EntrantTree)c).getLastSelectedPathComponent();
+				if (o instanceof DefaultMutableTreeNode)
 				{
-					Dialins dial = Database.d.loadDialins();
-					return new BracketEntryTransfer(new BracketEntry(e, dial.getDial(e.getCarId(), true)));
+					Entrant e = (Entrant)((DefaultMutableTreeNode)o).getUserObject();
+					if (!e.isInRunOrder())
+					{
+						Dialins dial = Database.d.loadDialins();
+						return new BracketEntryTransfer(new BracketEntry(e, dial.getDial(e.getCarId(), useBonusDialins)));
+					}
 				}
 			}
+			return null;
 		}
-		return null;
-	}
-	
-	@Override
-	protected void exportDone(JComponent c, Transferable data, int action)
-	{
-		if (action != NONE)
+
+		@Override
+		protected void exportDone(JComponent c, Transferable data, int action)
 		{
-			BracketEntryTransfer t = (BracketEntryTransfer)data;
-			t.entry.entrant.setInRunOrder(true);
-			log.warning("Beware, used bonus style dialin cause I don't know which to use from here");
-			c.repaint();
+			if (action != NONE)
+			{
+				BracketEntryTransfer t = (BracketEntryTransfer)data;
+				t.entry.entrant.setInRunOrder(true);
+				c.repaint();
+			}
 		}
 	}
 }

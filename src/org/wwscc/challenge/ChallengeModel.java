@@ -505,11 +505,7 @@ public class ChallengeModel implements MessageListener
 		Messenger.sendEvent(MT.MODEL_CHANGED, this);
 	}
 
-	/**
-	 * Process incoming events
-	 * @param type the event type
-	 * @param data event dependant
-	 */
+	
 	@Override
 	public void event(MT type, Object data)
 	{

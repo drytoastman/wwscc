@@ -26,7 +26,7 @@ import org.wwscc.storage.*;
 
 public class CarTree extends JTree
 {
-	private static Logger log = Logger.getLogger("org.wwscc.dataentry.ClassTree");
+	private static Logger log = Logger.getLogger(CarTree.class.getCanonicalName());
 	HashSet<ClassNode> saved;
 
 	public CarTree()

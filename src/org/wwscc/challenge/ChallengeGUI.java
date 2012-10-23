@@ -10,10 +10,14 @@ package org.wwscc.challenge;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -32,6 +36,7 @@ public class ChallengeGUI extends JFrame
 	ChallengeModel model;
 	JScrollPane bracketScroll;
 	BracketPane bracket;
+	JComboBox bonusSelect;
 	EntrantTree tree;
 	
 	/**
@@ -54,15 +59,29 @@ public class ChallengeGUI extends JFrame
 		
 		tree = new EntrantTree();
 		tree.setDragEnabled(true);
+		
+		bonusSelect = new JComboBox<String>(new String[] { "Bonus", "Regular" });
+		bonusSelect.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				tree.useBonusDialins(bonusSelect.getSelectedItem().equals("Bonus"));
+			}
+		});
+		bonusSelect.setSelectedItem("Bonus");  // just to make sure everyone is on the same page
+		
 		SelectionBar selectBar = new SelectionBar();
 
 		JScrollPane tpane = new JScrollPane(tree);
 		tpane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		tpane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-		JPanel main = new JPanel(new MigLayout("fill", "[grow 0][fill]", "[fill]"));
-		main.add(tpane, "w 200");
-		main.add(bracketScroll, "");
+		JPanel main = new JPanel(new MigLayout("fill", "[grow 0][fill]", "[grow 0][]"));
+		
+		main.add(new JLabel("Drag drives with"), "split 3");
+		main.add(bonusSelect, "");
+		main.add(new JLabel("dialins"), "");
+		main.add(bracketScroll, "spany 2, grow, wrap");
+		main.add(tpane, "growy, w 200!");
 
 		BorderLayout layout = new BorderLayout();
 		layout.setHgap(5);
@@ -70,7 +89,6 @@ public class ChallengeGUI extends JFrame
 		JPanel content = new JPanel(layout);
 		content.add(selectBar, BorderLayout.NORTH);
 		content.add(main, BorderLayout.CENTER);
-		//content.add(new JLabel("here I am"), BorderLayout.SOUTH);
 
 		Database.openDefault();
 		
