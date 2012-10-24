@@ -334,19 +334,29 @@ public class ChallengeModel implements MessageListener
 	public void resetRound(Id.Round rid)
 	{
 		ChallengeRound r = getRound(rid);
-		try {
-			Database.d.deleteRun(r.getTopCar().getLeft().getId());
-		} catch (NullPointerException npe) {}
-		try {
-			Database.d.deleteRun(r.getTopCar().getRight().getId());
-		} catch (NullPointerException npe) {}
-		try {
-			Database.d.deleteRun(r.getBottomCar().getLeft().getId());
-		} catch (NullPointerException npe) {}
-		try {
-			Database.d.deleteRun(r.getBottomCar().getRight().getId());
-		} catch (NullPointerException npe) {}
-		loadEventData();
+		
+		RoundEntrant top = r.getTopCar();
+		RoundEntrant bottom = r.getBottomCar();
+		
+		if (top != null)
+		{
+			if (top.getLeft() != null)
+				Database.d.deleteRun(top.getLeft().getId());
+			if (top.getRight() != null)
+				Database.d.deleteRun(top.getRight().getId());
+			top.reset();
+		}
+		
+		if (bottom != null)
+		{
+			if (bottom.getLeft() != null)
+				Database.d.deleteRun(bottom.getLeft().getId());
+			if (bottom.getRight() != null)
+				Database.d.deleteRun(bottom.getRight().getId());
+			bottom.reset();
+		}
+
+		Database.d.updateChallengeRound(r);
 	}
 
 	/**

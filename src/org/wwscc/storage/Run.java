@@ -189,6 +189,8 @@ public class Run implements Serial, Cloneable
 			else
 				net = (raw * index) + (Database.d.currentEvent.conepen * cones) + (Database.d.currentEvent.gatepen * gates);
 		}
+		else if (status.equals("RL") || status.equals("NS"))
+			net = 1999.999;
 		else
 			net = 999.999;
 	}

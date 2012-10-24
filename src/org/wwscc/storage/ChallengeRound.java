@@ -47,7 +47,7 @@ public class ChallengeRound
 	public RoundEntrant getTopCar() { return car1; }
 	public RoundEntrant getBottomCar() { return car2; }
 	public boolean isSwappedStart() { return swappedstart; }
-	public void swapStart() { swappedstart = !swappedstart; }
+	public void setSwappedStart(boolean swapped) { swappedstart = swapped; }
 
 	public void applyRun(ChallengeRun r)
 	{
@@ -121,6 +121,13 @@ public class ChallengeRound
 		public void setCar(int i) { carid = i; }
 		public void setDial(double d) { dial = d; }
 		public void setNewDial(double d) { newdial = d; }
+		
+		public void reset()
+		{
+			newdial = dial;
+			left = null;
+			right = null;
+		}
 
 		public void applyRun(ChallengeRun r)
 		{
@@ -152,6 +159,9 @@ public class ChallengeRound
 				newdial = dial - ((dial - hresult)*1.5);
 			else
 				newdial = dial;
+			
+			if (newdial <= 0)
+				newdial = 0.001;
 		}
 
 		public boolean breakout() { return newdial != dial; }

@@ -79,7 +79,7 @@ public class Id
 
 	
 	/**
-	 * Represents a pointer to a particular person's location in the tree
+	 * Represents a pointer to an entrant side in a specific round
 	 */
 	public static class Entry extends Round
 	{
@@ -126,7 +126,7 @@ public class Id
 	
 	
 	/**
-	 * Represents a pointer to a particular run in the tree
+	 * Represents a pointer to a single run for an entrant in a specific round
 	 */
 	public static class Run extends Entry
 	{

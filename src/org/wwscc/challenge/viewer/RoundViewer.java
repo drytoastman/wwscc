@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -33,7 +34,7 @@ import org.wwscc.util.Messenger;
 import org.wwscc.util.NF;
 
 /**
- *
+ *  Implementation for the internal window used to view rounds as the challenge is run
  */
 public class RoundViewer extends JInternalFrame implements MessageListener
 {
@@ -43,18 +44,22 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 	static Font finalResultFont = new Font(Font.DIALOG, Font.BOLD, 16);
 
 	ChallengeModel model;
-	JButton stage, swap, reset;
+	JButton stage, reset;
+	JCheckBox swap;
 	JLabel firstresult, secondresult, finalresult, rndial, lndial;
 	EntrantStruct top, bottom;
 	Id.Round roundId;
-	boolean swapped;
 
+	/**
+	 * Create a new round viewer based on the model and specified round
+	 * @param m the model for data 
+	 * @param rid the identifier to a specific round
+	 */
 	public RoundViewer(ChallengeModel m, Id.Round rid)
 	{
 		super("Round " + rid.round, false, true);
 		model = m;
 		roundId = rid;
-		swapped = model.getRound(roundId).isSwappedStart();
 
 		top = new EntrantStruct(model, rid.makeUpper());
 		bottom = new EntrantStruct(model, rid.makeLower());
@@ -85,12 +90,12 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			};
 		});
 
-		swap = new JButton("Swap");
+		swap = new JCheckBox("Swapped Start", model.getRound(roundId).isSwappedStart());
+		swap.setOpaque(false);
 		swap.addActionListener(new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				model.getRound(roundId).swapStart();
-				swapped = model.getRound(roundId).isSwappedStart();
+				model.getRound(roundId).setSwappedStart(swap.isSelected());
 				updateResults();
 				buildLayout();
 			}
@@ -104,7 +109,6 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 					return;
 				model.resetRound(roundId);
 				event(MT.RUN_CHANGED, null);
-				buildLayout();
 			}
 		});
 
@@ -133,7 +137,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		setBackground(Color.WHITE);
 
 		EntrantStruct left, right;
-		if (swapped)
+		if (swap.isSelected())
 		{
 			log.fine("building layout with swapped start order");
 			left = bottom;
@@ -146,16 +150,16 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			right = bottom;
 		}
 		
-		add(stage, "span 3, split 3, al center, gapbottom 10");
-		add(swap, "");
+		add(stage, "span 2, split 2, al center");
 		add(reset, "wrap");
+		add(swap, "span 2, center, wrap");
 
 		add(left.display, "center");
 		add(right.display, "center, wrap");
 		
 		JLabel border = new JLabel(" ");
 		border.setBorder(new UnderlineBorder());
-		add(border, "growx, span 2, gaptop 3, gapbottom 5, wrap");
+		add(border, "growx, span 2, h 2!, wrap");
 		add(left.leftRun, "");
 		add(right.rightRun, "wrap");
 
@@ -206,7 +210,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		int p1, p2;
 		ResultTuple ret = new ResultTuple();
 
-		if (swapped)
+		if (swap.isSelected())
 		{
 			e1 = bottom;
 			e2 = top;
@@ -250,15 +254,20 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 				ret.doubleDefault = true;
 				ret.msg = "Both entrants had light troubles";
 			}
-			else if (r1.run.statusLevel() > 1)
+			else if (r1.run.statusLevel() > r2.run.statusLevel())
 			{
 				ret.defaultWin = true;
 				ret.msg = e1.getName() + " has status " + r1.run.getStatus();
 			}
-			else if (r2.run.statusLevel() > 1)
+			else if (r1.run.statusLevel() < r2.run.statusLevel())
 			{
 				ret.defaultWin = true;
 				ret.msg = e2.getName() + " has status " + r2.run.getStatus();
+			}
+			else
+			{
+				ret.doubleDefault = true;
+				ret.msg = "Both entrants DNF'd";
 			}
 		}
 		else if (d1 < d2)
@@ -282,9 +291,12 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 	
 	public void updateResults()
 	{	
+		setTitle(String.format("%s  VS  %s", top.getName(), bottom.getName()));
 		firstresult.setText("");
 		secondresult.setText("");
 		finalresult.setText("");
+		lndial.setText(" ");
+		rndial.setText(" ");
 
 		ChallengeRound round = model.getRound(roundId);
 		RoundState state = round.getState();
@@ -334,9 +346,6 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 				result = name + " wins by " + NF.format(val);
 			else
 				result = "It's a tie!";
-
-			lndial.setText(" ");
-			rndial.setText(" ");
 			
 			if (state == RoundState.DONE) // can enter this area after first half default
 			{
@@ -365,7 +374,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		}
 		else if (state == RoundState.INVALID)
 		{
-			finalresult.setText("Invalid round state");
+			//finalresult.setText("Invalid round state");  don't show this at this point incase of odd run order
 		}
 	}
 	

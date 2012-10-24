@@ -107,7 +107,7 @@ class RunDisplay extends JComponent
 		nextButton.setFont(titleFont);
 		
 		add(title, "split 3, w 33%");
-		add(nextButton, "h 24!, w 70!, wrap");
+		add(nextButton, "w 70!, wrap");
 		add(runPanel, "wrap");
 		
 		runPanel.add(title("start"), "center");

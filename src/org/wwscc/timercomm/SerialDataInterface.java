@@ -299,6 +299,12 @@ public class SerialDataInterface implements SerialPortEventListener
 			}
 		}
 
+		if (a.isEmpty())
+		{
+			log.severe("There are no available serial ports to open");
+			return null;
+		}
+		
 		PortDialog d = new PortDialog("", a, u);
 		d.doDialog("Select COM Port", null);
 		String s = d.getResult();

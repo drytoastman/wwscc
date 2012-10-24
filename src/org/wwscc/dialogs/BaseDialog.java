@@ -35,6 +35,7 @@ import org.wwscc.util.NumberField;
 
 /**
  * Core functions for all dialogs.
+ * @param <E> the type of value returned as the dialog result
  */
 public class BaseDialog<E> extends JPanel implements ActionListener
 {
