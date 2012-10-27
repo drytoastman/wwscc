@@ -14,25 +14,25 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.awt.print.PageFormat;
+import java.awt.print.Pageable;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
 import javax.swing.Scrollable;
 import javax.swing.TransferHandler;
 import javax.swing.border.EmptyBorder;
@@ -49,10 +49,10 @@ import org.wwscc.util.Messenger;
  * The BracketPane displays a tournament bracket, the driver labels and some action buttons.
  * @author bwilson
  */
-public final class BracketPane extends JLayeredPane implements MessageListener, Scrollable
+public final class BracketPane extends JLayeredPane implements MessageListener, Scrollable, Printable, Pageable
 {
 	private static final Logger log = Logger.getLogger(BracketPane.class.getCanonicalName());
-	private static final int roundWidth = 100;
+	private static final int roundWidth = 140;
 	private static final int initialSpacing = 36;
 
 	// these are the placements into the bracket as per SCCA rulebook
@@ -80,7 +80,6 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 	}
 
 	private TransferHandler handler = new DriverDrop();
-	//private TransferHandler roundMove = new RoundDrag();
 	private Challenge challenge;
 	private int baseRounds;
 	private Vector<RoundGroup> rounds;
@@ -102,10 +101,9 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		public RoundGroup(int rnd)
 		{
 			round = rnd;
-			upper = new EntrantLabel(round, Id.Entry.Level.UPPER);
-			lower = new EntrantLabel(round, Id.Entry.Level.LOWER);
+			upper = new EntrantLabel(new Id.Entry(challenge.getId(), round, Id.Entry.Level.UPPER));
+			lower = new EntrantLabel(new Id.Entry(challenge.getId(), round, Id.Entry.Level.LOWER));
 			open = new JButton("Open " + round);
-			//open.setTransferHandler(roundMove);
 			
 			open.addMouseMotionListener(new MouseAdapter() {
 				@Override
@@ -151,6 +149,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		setOpaque(true);
 		setBorder(new EmptyBorder(20,20,20,20));
 		setModel(m);
+		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.MODEL_CHANGED, this);
 		Messenger.register(MT.CHALLENGE_CHANGED, this);
 		Messenger.register(MT.ENTRANT_CHANGED, this);
@@ -163,6 +162,13 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 	{
 		switch (type)
 		{
+			case EVENT_CHANGED:
+				rounds.clear();
+				baseRounds = 0;
+				removeAll();
+				repaint();
+				break;
+				
 			case MODEL_CHANGED:
 				setModel((ChallengeModel)data);
 				break;
@@ -226,14 +232,25 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 					}
 					else
 					{
-						RoundGroup rg = rounds.get(eid.round);
-						rg.updateEntrants();
+						rounds.get(eid.round).updateEntrants();
 					}
 				}
 				break;
 				
 			case PRINT_BRACKET:
-				saveToImage((File)data);
+				try
+				{
+					PrinterJob job = PrinterJob.getPrinterJob();
+					job.setPageable(this);					
+					job.setJobName(challenge.getName() + " Bracket");
+					job.setCopies(1);
+					if (!job.printDialog()) return; // user cancelled
+					job.print();
+				}
+				catch (PrinterException pe)
+				{
+					log.log(Level.SEVERE, "Failed to print: {0}", pe.getMessage());
+				}
 				break;
 		}
 	}
@@ -290,20 +307,16 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		 *   4   [0 index is 1st and 3rd place winners]
 		 */
 		
-		/* Create components on demand, incase we reuse this pane. */
+		rounds.clear();  // just restart from scratch for ease
+		
 		int cnt = (int)Math.pow(2, newDepth);
-		if (rounds.size() < cnt)
-		{
-			for (int ii = rounds.size(); ii < cnt; ii++)
-				rounds.add(new RoundGroup(ii));			
-		}
+		for (int ii = rounds.size(); ii < cnt; ii++)
+			rounds.add(new RoundGroup(ii));			
 
-		if (winner1 == null)
-		{
-			winner1 = new EntrantLabel(0, Id.Entry.Level.UPPER); 
-			winner3 = new EntrantLabel(0, Id.Entry.Level.LOWER);
-			thirdPRound = new RoundGroup(99);
-		}
+		winner1 = new EntrantLabel(new Id.Entry(challenge.getId(), 0, Id.Entry.Level.UPPER));
+		winner3 = new EntrantLabel(new Id.Entry(challenge.getId(), 0, Id.Entry.Level.LOWER));
+		thirdPRound = new RoundGroup(99);
+		rounds.add(thirdPRound);
 		
 		if (cnt > 1)
 		{
@@ -438,24 +451,85 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		}
 
 
-		/* Draw the third place bracket and 3rd place winner line */
-		x += 30;
-		y = y - (spacing/2) + initialSpacing;
-		/* Draw first horizontal, second horizontal and then right hand vertical */
-		g.drawLine(x,            y,         x+roundWidth, y);
-		y += initialSpacing;
-		g.drawLine(x,            y,         x+roundWidth, y);
-		g.drawLine(x+roundWidth, y-initialSpacing, x+roundWidth, y);
-		/* Draw the 3rd place winner line */
-		x += roundWidth;
-		y -= (initialSpacing/2);
-		g.drawLine(x, y, x+roundWidth, y);
+		if (baseRounds > 0)
+		{
+			/* Draw the third place bracket and 3rd place winner line */
+			x += 30;
+			y = y - (spacing/2) + initialSpacing;
+			/* Draw first horizontal, second horizontal and then right hand vertical */
+			g.drawLine(x,            y,         x+roundWidth, y);
+			y += initialSpacing;
+			g.drawLine(x,            y,         x+roundWidth, y);
+			g.drawLine(x+roundWidth, y-initialSpacing, x+roundWidth, y);
+			/* Draw the 3rd place winner line */
+			x += roundWidth;
+			y -= (initialSpacing/2);
+			g.drawLine(x, y, x+roundWidth, y);
 
-		
-		/* Draw the 1st place winner line (0 rounds) */
-		g.drawLine(startX, startY, startX+roundWidth, startY);
+
+			/* Draw the 1st place winner line (0 rounds) */
+			g.drawLine(startX, startY, startX+roundWidth, startY);
+		}
 	}
 	
+
+	@Override
+	public int getNumberOfPages() 
+	{
+		return 1;
+	}
+
+	@Override
+	public PageFormat getPageFormat(int pageIndex) throws IndexOutOfBoundsException 
+	{
+		PageFormat p = new PageFormat();
+		Dimension current = getMinimumSize();
+		if (current.width > current.height)
+			p.setOrientation(PageFormat.LANDSCAPE);
+		else
+			p.setOrientation(PageFormat.PORTRAIT);
+		return p;
+	}
+
+	@Override
+	public Printable getPrintable(int pageIndex) throws IndexOutOfBoundsException 
+	{
+		if (pageIndex != 0) throw new IndexOutOfBoundsException("Only one page for bracket");
+		return this;
+	}
+
+	@Override
+	public int print(Graphics graphics, PageFormat pageFormat, int pageIndex)
+	{
+		if (pageIndex != 0) return NO_SUCH_PAGE;
+
+		Graphics2D g2 = (Graphics2D)graphics;
+		Dimension current = this.getMinimumSize();
+		double scale = 1.0;
+		double w  = pageFormat.getImageableWidth(), h = pageFormat.getImageableHeight();
+		if ((w < current.width) || (h < current.height))
+			scale = Math.min(w/current.width, h/current.height);
+		 
+		log.info("Starting print job");
+		log.log(Level.INFO, "Bracket is {0} x {1}", new Object[] { current.width, current.height });
+		log.log(Level.INFO, "Printing with scale {0}", scale);
+		log.log(Level.INFO, "Imageable at {0}, {1}, ({2} x {3})", new Object[] { pageFormat.getImageableX(), pageFormat.getImageableY(),
+			pageFormat.getImageableWidth(), pageFormat.getImageableHeight()});
+		log.log(Level.INFO, "Paper is {0} x {1}", new Object[] { pageFormat.getWidth(), pageFormat.getHeight() });
+		
+		g2.translate(pageFormat.getImageableX(),  pageFormat.getImageableY());
+		g2.scale(scale, scale);
+		
+		for (RoundGroup rg : rounds)
+			rg.open.setVisible(false);
+		setOpaque(false);
+		paint(g2);
+		setOpaque(true);
+		for (RoundGroup rg : rounds)
+			rg.open.setVisible(true);
+		
+		return PAGE_EXISTS;
+	}
 	
 	private void setLabelByBottomLeft(EntrantLabel label, int x, int y)
 	{
@@ -469,46 +543,6 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		Dimension butsize = button.getPreferredSize();
 		butsize.height = 14;
 		button.setBounds(x+10, y-butsize.height, butsize.width, butsize.height);
-	}
-
-	public void saveToImage(File f)
-	{
-		try 
-		{
-			// 8.5 x 11 inch  (72dpi)
-			// 612 x 792
-			double scale = 1.0;
-			int curwidth = getWidth();
-			int curheight = getHeight();
-			int newwidth = Math.min(curwidth, 750);
-			int newheight = Math.min(curheight, 950);
-			if ((newwidth < curwidth) || (newheight < curheight))
-				scale = Math.min((double)newwidth/(double)curwidth, (double)newheight/(double)curheight);
-
-			for (RoundGroup rg : rounds)
-			{
-				rg.open.setVisible(false);
-			}
-
-			BufferedImage image = new BufferedImage(newwidth, newheight, BufferedImage.TYPE_INT_RGB);
-			Graphics2D g2 = image.createGraphics();
-			g2.setColor(Color.WHITE);
-			g2.fillRect(0, 0, newwidth, newheight);
-			AffineTransform at = AffineTransform.getScaleInstance(scale,scale);
-			g2.setTransform(at);
-			paint(g2);
-			g2.dispose();
-			ImageIO.write(image, "png", f);
-
-			for (RoundGroup rg : rounds)
-			{
-				rg.open.setVisible(true);
-			}
-		}
-		catch(IOException ioe) 
-		{
-			log.severe(ioe.getMessage());
-		}
 	}
 
 	@Override
@@ -547,18 +581,17 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 	class EntrantLabel extends JLabel
 	{
 		private Entrant entrant;
-		private int round;
-		private Id.Entry.Level level;
+		private double dialin;
+		private Id.Entry entryId;
 
-		public EntrantLabel(int inRound, Id.Entry.Level inLevel)
+		public EntrantLabel(Id.Entry eid)
 		{
 			super();
 			setTransferHandler(handler);
 			MouseActions m = new MouseActions();
 			addMouseListener(m);
 			addMouseMotionListener(m);
-			round = inRound;
-			level = inLevel;
+			entryId = eid;
 		}
 
 		class MouseActions extends MouseAdapter
@@ -577,75 +610,40 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 			}		
 		}
 
+		private void updateText()
+		{
+			setText((entrant == null) ? " " : String.format("%.3f %s", dialin, entrant.getName()));
+		}
+		
 		private void setEntry(BracketEntry e)
 		{
 			entrant = e.entrant;
-			setText((e.entrant == null) ? " " : e.entrant.getName());
-			model.setEntrant(new Id.Entry(challenge.getId(), round, level), entrant, e.dialin);
+			dialin = e.dialin;
+			updateText();
+			model.setEntrant(entryId, entrant, e.dialin);
 		}
 
 		public void updateEntrant()
 		{
-			entrant = model.getEntrant(new Id.Entry(challenge.getId(), round, level));
-			setText((entrant == null) ? " " : entrant.getName());			
+			entrant = model.getEntrant(entryId);
+			if (entrant == null)
+				dialin = 0;
+			else
+				dialin = model.getDial(entryId);
+			updateText();
 		}
 		
 		public BracketEntry getEntry()
 		{
-			return new BracketEntry(entrant, model.getDial(new Id.Entry(challenge.getId(), round, level)));
+			return new BracketEntry(entryId, entrant, model.getDial(entryId));
+		}
+		
+		public boolean isEmpty()
+		{
+			return (entrant == null);
 		}
 	}
 
-
-	/** Let the user drag round to round for errors during initial setup */
-	class RoundDrag extends TransferHandler
-	{
-		@Override
-		public int getSourceActions(JComponent c)
-		{
-			return MOVE;
-		}
-
-		@Override
-		protected Transferable createTransferable(JComponent c)
-		{
-			return new StringSelection(((JButton)c).getText());
-		}
-
-		@Override
-		public boolean canImport(TransferHandler.TransferSupport support)
-		{
-			try
-			{
-				String s = (String) support.getTransferable().getTransferData(DataFlavor.stringFlavor);
-				return (s != null);
-			}
-			catch (Exception ex) { return false; }
-		}
-
-		/* Called for drop and paste operations */
-		@Override
-		public boolean importData(TransferHandler.TransferSupport support)
-		{
-			try
-			{
-				if (support.isDrop())
-				{
-					String s = (String)support.getTransferable().getTransferData(DataFlavor.stringFlavor);
-					JButton b = (JButton)support.getComponent();
-					int src = Integer.parseInt(s.substring(5));
-					int dst = Integer.parseInt(b.getText().substring(5));
-					Messenger.sendEvent(MT.MOVE_ROUND, new Id.Round[] {
-										new Id.Round(challenge.getId(), src),
-										new Id.Round(challenge.getId(), dst) } );
-					return true;
-				}
-			}
-			catch (Exception ioe) { log.warning("Error during drop:" + ioe); }
-			return false;
-		}
-
-	}
 
 	/**
 	 * 
@@ -655,13 +653,13 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		@Override
 		public int getSourceActions(JComponent c)
 		{
-			return COPY_OR_MOVE;
+			return COPY|MOVE|LINK;
 		}
 
 		@Override
 		protected Transferable createTransferable(JComponent c)
 		{
-			return new BracketEntryTransfer(((EntrantLabel)c).getEntry());
+			return new BracketEntry.Transfer(((EntrantLabel)c).getEntry());
 		}
 
 		@Override
@@ -669,7 +667,15 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		{
 			if (action == MOVE)
 			{
-				((EntrantLabel)c).setEntry(new BracketEntry(null, 0.0));
+				BracketEntry.Transfer e = (BracketEntry.Transfer)data;
+				if (JOptionPane.showConfirmDialog(null,
+						String.format("This will remove %s from this round. Is that what you would like to do?", e.entry.entrant.getName()),
+						"Entrant Swap", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION)
+					return;
+
+				model.setEntrant(e.entry.source, null, 0);
+				rounds.get(e.entry.source.round).updateEntrants();
+				Messenger.sendEvent(MT.ENTRANTS_CHANGED, e.entry);
 			}
 		}
 
@@ -684,15 +690,28 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 			try 
 			{
 				EntrantLabel l = (EntrantLabel)support.getComponent();
-				BracketEntry e = (BracketEntry) support.getTransferable().getTransferData(BracketEntryTransfer.myFlavor);
-				if (e.entrant == l.getEntry().entrant)
+				BracketEntry e = (BracketEntry) support.getTransferable().getTransferData(BracketEntry.Transfer.myFlavor);
+				if (e.source == null)
+					return true;
+				if (l.entryId.round == e.source.round) // can't drag to same round
 					return false;
+				if (e.source.getDepth() < l.entryId.getDepth())  // can't drag backwards
+					return false;
+				if ((e.source.getDepth() - l.entryId.getDepth()) > 1) // can't go more than one forward
+					return false;
+				if (e.source.getDepth() == l.entryId.getDepth())
+					support.setDropAction(LINK);
+				else
+					support.setDropAction(COPY);
+				return true;
 			} 
-			catch (Exception ex) { return false; }
-			return true;
+			catch (Exception ex) 
+			{ 
+				return false; 
+			}
 		}
 
-
+		
 		/* Called for drop and paste operations */
 		@Override
 		public boolean importData(TransferHandler.TransferSupport support)
@@ -701,9 +720,33 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 			{
 				if (support.isDrop())
 				{
-					BracketEntry e = (BracketEntry)support.getTransferable().getTransferData(BracketEntryTransfer.myFlavor);
-					EntrantLabel l = (EntrantLabel)support.getComponent();
-					l.setEntry(e);
+					BracketEntry transfer = (BracketEntry)support.getTransferable().getTransferData(BracketEntry.Transfer.myFlavor);
+					EntrantLabel target = (EntrantLabel)support.getComponent();
+					BracketEntry old = target.getEntry();					
+					boolean swap = ((transfer.source != null) && (transfer.source.getDepth() == target.entryId.getDepth()));
+
+					// swap operation in the same level of the challenge
+					if (swap)
+					{
+						if (!target.isEmpty() && (JOptionPane.showConfirmDialog(null,
+												String.format("This will swap %s and %s.  Is that what you would like to do?", old.entrant.getName(), transfer.entrant.getName()),
+													"Entrant Swap", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION))
+							return false;
+						model.setEntrant(transfer.source, old.entrant, old.dialin);
+						rounds.get(transfer.source.round).updateEntrants();
+					}
+
+					// copy from tree or previous round
+					if (!swap)
+					{
+						if (!target.isEmpty() && (JOptionPane.showConfirmDialog(null, 
+												String.format("This will overwrite %s with %s.  Is that what you would like to do?", old.entrant.getName(), transfer.entrant.getName()), 
+													"Overwrite Warning", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION))
+							return false;
+					}
+						
+					target.setEntry(transfer);
+					Messenger.sendEvent(MT.ENTRANTS_CHANGED, old);
 					return true;
 				}
 			}

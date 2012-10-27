@@ -11,6 +11,7 @@ package org.wwscc.challenge;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.Database;
 import org.wwscc.util.MT;
@@ -44,29 +44,29 @@ public class Menus extends JMenuBar implements ActionListener
 		/* File Menu */
 		JMenu file = new JMenu("File");
 		add(file);
-		file.add(createItem("Open Database", null));
-		file.add(createItem("Save Bracket as Image", null));
+		file.add(createItem("Open Database", KeyEvent.VK_O));
+		file.add(createItem("Print Bracket", KeyEvent.VK_P));
 		file.addSeparator();
-		file.add(createItem("Quit", null));
+		file.add(createItem("Quit", KeyEvent.VK_Q));
 		
 		JMenu chl = new JMenu("Challenge");
 		add(chl);
-		chl.add(createItem("New Challenge", null));
-		chl.add(createItem("Edit Challenge", null));
-		chl.add(createItem("Delete Challenge", null));
-		chl.add(createItem("Auto Load Current", null));
+		chl.add(createItem("New Challenge", KeyEvent.VK_N));
+		chl.add(createItem("Edit Challenge", KeyEvent.VK_E));
+		chl.add(createItem("Delete Challenge", KeyEvent.VK_D));
+		chl.add(createItem("Auto Load Current", KeyEvent.VK_L));
 
 		JMenu timer = new JMenu("Timer");
 		add(timer);
-		timer.add(createItem("Connect", null));
+		timer.add(createItem("Connect", KeyEvent.VK_C));
 	}
 
-	protected final JMenuItem createItem(String title, Character key)
+	protected final JMenuItem createItem(String title, Integer key)
 	{ 
 		JMenuItem item = new JMenuItem(title); 
-
+		if (key != null) 
+			item.setAccelerator(KeyStroke.getKeyStroke(key, ActionEvent.CTRL_MASK)); 
 		item.addActionListener(this); 
-		if (key != null) item.setAccelerator(KeyStroke.getKeyStroke(key, ActionEvent.CTRL_MASK)); 
 
 		items.put(title, item);	
 		return item; 
@@ -120,7 +120,7 @@ public class Menus extends JMenuBar implements ActionListener
 	public void actionPerformed(ActionEvent e) 
 	{ 
 		String cmd = e.getActionCommand(); 
-	
+		
 		if (cmd.equals("Quit")) 
 		{ 
 			System.exit(0); 
@@ -129,17 +129,9 @@ public class Menus extends JMenuBar implements ActionListener
 		{
 			Database.open();
 		}
-		else if (cmd.equals("Save Bracket as Image"))
+		else if (cmd.equals("Print Bracket"))
 		{
-			chooser.setFileFilter(new FileNameExtensionFilter("PNG Image", "png"));
-			chooser.setCurrentDirectory(null); //new java.io.File(""));
-				
-			int returnVal = chooser.showSaveDialog(null);
-			if (returnVal == JFileChooser.APPROVE_OPTION) 
-			{
-				log.log(Level.FINE, "Saving image to : {0}", chooser.getSelectedFile().getName());
-				Messenger.sendEvent(MT.PRINT_BRACKET, chooser.getSelectedFile());
-			}
+			Messenger.sendEvent(MT.PRINT_BRACKET, chooser.getSelectedFile());
 		}
 		else if (cmd.equals("Auto Load Current"))
 		{

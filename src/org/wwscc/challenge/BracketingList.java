@@ -204,7 +204,7 @@ class BracketingListModel extends AbstractTableModel
 	public BracketEntry getBracketEntry(int rowIndex)
 	{
 		Store s = data.get(rowIndex);
-		return new BracketEntry(s.entrant, s.dialin);
+		return new BracketEntry(null, s.entrant, s.dialin);
 	}
 
 	@Override

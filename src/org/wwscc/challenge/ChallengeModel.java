@@ -62,7 +62,6 @@ public class ChallengeModel implements MessageListener
 		Messenger.register(MT.TIMER_SERVICE_RUN, this);
 		Messenger.register(MT.TIMER_SERVICE_DELETE, this);
 		Messenger.register(MT.AUTO_WIN, this);
-		Messenger.register(MT.MOVE_ROUND, this);
 	}
 	
 	
@@ -278,6 +277,12 @@ public class ChallengeModel implements MessageListener
 	public Entrant getEntrant(Id.Entry eid)
 	{
 		ChallengeRound r = getRound(eid);
+		if (r == null)
+		{
+			log.warning("missing " + eid);
+			return null;
+		}
+		
 		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 		Entrant e = entrantcache.get(re.getCar());
 		if ((e == null) && (re.getCar() > 0))
@@ -560,13 +565,6 @@ public class ChallengeModel implements MessageListener
 
 			case ACTIVE_CHANGE_REQUEST:
 				makeActive((ActivationRequest)data);
-				break;
-				
-			case MOVE_ROUND:
-				Id.Round[] rnds = (Id.Round[])data;
-				ChallengeRound src = getRound(rnds[0]);
-				ChallengeRound dst = getRound(rnds[1]);
-				log.log(Level.FINE, "Transfer {0} to {1}", new Object[]{src, dst});
 				break;
 				
 			case AUTO_WIN:

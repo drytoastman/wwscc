@@ -54,6 +54,19 @@ public class Id
 			
 			return new Entry(challengeid, 99, level);
 		}
+
+		/**
+		 * Get the depth within the tree, 1 is the final round, 2 is semis, 3 is quarters, etc.
+		 */
+		public int getDepth()
+		{
+			if (round < 2) return 1;
+			if (round < 4) return 2;
+			if (round < 8) return 3;
+			if (round < 16) return 4;
+			if (round < 32) return 5;
+			return 6;
+		}
 		
 		public Entry makeLower() { return new Entry(this, Entry.Level.LOWER); }
 		public Entry makeUpper() { return new Entry(this, Entry.Level.UPPER); }
