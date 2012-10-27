@@ -9,8 +9,10 @@
 package org.wwscc.challenge;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -267,7 +269,38 @@ public class ChallengeModel implements MessageListener
 			re.setCar(-1);
 			re.setDial(0.0);
 		}
+		
 		Database.d.updateChallengeRound(r);
+	}
+	
+	
+	/**
+	 * Optimization method so that a large amount of entrants sets go into one database operation
+	 * @param entrants the list of entrants, positions and dialins
+	 */
+	public void setEntrants(List<BracketEntry> entrants)
+	{
+		List<ChallengeRound> updates = new ArrayList<ChallengeRound>();
+		
+		for (BracketEntry b : entrants)
+		{
+			ChallengeRound r = getRound(b.source);
+			RoundEntrant re = (b.source.isUpper()) ? r.getTopCar() : r.getBottomCar();
+			if (b.entrant != null)
+			{
+				re.setCar(b.entrant.getCarId());
+				re.setDial(b.dialin);
+			}
+			else
+			{
+				re.setCar(-1);
+				re.setDial(0.0);
+			}
+			
+			updates.add(r);
+		}
+		
+		Database.d.updateChallengeRounds(updates);
 	}
 	
 	/**

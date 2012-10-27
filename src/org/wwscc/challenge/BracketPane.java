@@ -24,6 +24,7 @@ import java.awt.print.Pageable;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -196,6 +197,8 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 					case 2: pos = POS4; break;
 				}
 
+				// build a list of things to update
+				List<BracketEntry> updates = new ArrayList<BracketEntry>();		
 				int topround = baseRounds*2 - 1;
 				int bys = baseRounds*2 - toload.size();
 				for (int ii = 0; ii < toload.size(); ii++)
@@ -209,8 +212,13 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 						entry = entry.advancesTo();
 						bys--;
 					}
-					model.setEntrant(entry, toload.get(ii).entrant, toload.get(ii).dialin);
+					
+					updates.add(new BracketEntry(entry, toload.get(ii).entrant, toload.get(ii).dialin));
+					
 				}
+				
+				// make the actual call to update the model
+				model.setEntrants(updates);
 
 				// call set challenge to update all of our labels
 				setChallenge(challenge);

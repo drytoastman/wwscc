@@ -107,6 +107,7 @@ public abstract class DataInterface
 	public abstract Dialins loadDialins(); //int eventid);
 	public abstract void updateChallenge(Challenge c);
 	public abstract void updateChallengeRound(ChallengeRound r);
+	public abstract void updateChallengeRounds(List<ChallengeRound> rounds);
 
 	//** Cachable ??? ***/
 	public abstract List<Driver> getDriversLike(String firstname, String lastname);

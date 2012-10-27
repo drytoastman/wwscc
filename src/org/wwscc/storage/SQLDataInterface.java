@@ -1206,29 +1206,52 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 
+	protected void _updateChallengeRound(ChallengeRound r) throws IOException
+	{
+		List<Object> list = newList();
+		list.add(r.challengeid);
+		list.add(r.round);
+		list.add(r.swappedstart);
+		list.add(r.car1.carid);
+		list.add(r.car1.dial);
+		list.add(r.car1.result);
+		list.add(r.car1.newdial);
+		list.add(r.car2.carid);
+		list.add(r.car2.dial);
+		list.add(r.car2.result);
+		list.add(r.car2.newdial);
+		list.add(r.id);
+		executeUpdate("UPDATECHALLENGEROUND", list);
+	}
+	
+	
 	@Override
 	public void updateChallengeRound(ChallengeRound r) 
 	{
 		try
 		{
-			List<Object> list = newList();
-			list.add(r.challengeid);
-			list.add(r.round);
-			list.add(r.swappedstart);
-			list.add(r.car1.carid);
-			list.add(r.car1.dial);
-			list.add(r.car1.result);
-			list.add(r.car1.newdial);
-			list.add(r.car2.carid);
-			list.add(r.car2.dial);
-			list.add(r.car2.result);
-			list.add(r.car2.newdial);
-			list.add(r.id);
-			executeUpdate("UPDATECHALLENGEROUND", list);
+			_updateChallengeRound(r);
 		}
 		catch (Exception ioe)
 		{
 			logError("updateChallengeRound", ioe);
+		}
+	}
+	
+	@Override
+	public void updateChallengeRounds(List<ChallengeRound> rounds) 
+	{
+		try
+		{
+			start();
+			for (ChallengeRound r : rounds)
+				_updateChallengeRound(r);
+			commit();
+		}
+		catch (Exception ioe)
+		{
+			rollback();
+			logError("updateChallengeRounds", ioe);
 		}
 	}
 	
