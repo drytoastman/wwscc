@@ -1,5 +1,6 @@
 import logging
 import operator
+import re
 
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -19,7 +20,14 @@ from nwrsc.lib.schema import *
 from nwrsc.model import *
 
 log = logging.getLogger(__name__)
+nummatch = re.compile('(\d{6}_\d)|(\d{6})')
 
+def _validateNumber(num):
+	obj = nummatch.search(num)
+	if obj is not None:
+		return obj.group(1) or obj.group(2)
+	raise IndexError("nothing found")
+			
 
 class AdminSession(object):
 
@@ -163,12 +171,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 	class WeekendReport(object):
 		pass
 
-	def _validNumber(self, num):
-		if num.isdigit() and int(num) > 100000:
-			return True
-		elif num[1:].isdigit() and int(num[1:]) > 100000:
-			return True
-		return False
+
 
 	def weekend(self):
 		""" Create a weekend report reporting unique entrants and their information """
@@ -189,11 +192,12 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			report.membership = list()
 			report.invalid = list()
 			for d in report.drivers:
-				num = d.getExtra('membership')
-				if self._validNumber(num):
-					report.membership.append(num)
-				else:	
-					report.invalid.append(num)
+				member = d.getExtra('membership')
+				try:
+					report.membership.append(_validateNumber(member) or "")
+				except IndexError:
+					report.invalid.append(member or " ")
+
 			report.membership.sort()  # TODO: should we take into account first letters and go totally numeric?
 			report.invalid.sort()
 
