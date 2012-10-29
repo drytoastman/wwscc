@@ -7,7 +7,7 @@ Provides the BaseController class for subclassing.
 
 from pylons.controllers import WSGIController
 from pylons.templating import render_mako
-from pylons import config, request, tmpl_context as c
+from pylons import config, request, response, tmpl_context as c
 from webob.exc import HTTPNotFound
 
 from nwrsc.model import Driver, Session, Settings, SCHEMA_VERSION
@@ -69,6 +69,32 @@ class BaseController(WSGIController):
 			return os.path.join(config['seriesdir'], '%s.db' % name)
 
 		return None
+
+
+	def csv(self, filename, titles, objects):
+		# CSV data, just use a template and return
+		response.headers['Content-type'] = "application/octet-stream"
+		response.headers['Content-Disposition'] = 'attachment;filename=%s.csv' % filename
+		response.charset = 'utf8'
+
+		# output title line
+		yield ','.join(titles)
+		yield '\n'
+
+		for obj in objects:
+			line = []
+			for t in titles:
+				s = getattr(obj, t) 
+				if s is None:
+					line.append("\"\"")
+				elif hasattr(s, 'replace'):
+					line.append("\"%s\""%s.replace('\n', ' ').replace('"', '""'))
+				else:
+					line.append("%s"%s)
+
+			yield(','.join(line))
+			yield('\n')
+
 
 
 	def databaseSelector(self, archived=False, timelimit=0.0):

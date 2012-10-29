@@ -7,6 +7,10 @@ from pylons.templating import render_mako
 from nwrsc.model import *
 
 
+
+class Registered(object):
+	pass
+
 class CardPrinting(object):
 
 	def loadPythonFunc(self, func, text):
@@ -44,11 +48,18 @@ class CardPrinting(object):
 		
 		if page == 'csv':
 			# CSV data, just use a template and return
-			c.registered = registered
-			response.headers['Content-type'] = "application/octet-stream"
-			response.headers['Content-Disposition'] = 'attachment;filename=cards.csv'
-			response.charset = 'utf8'
-			return render_mako('/admin/csv.mako')
+			objects = list()
+			for (dr, car, reg) in registered:
+				o = Registered()
+				o.__dict__.update(dr.__dict__)
+				o.__dict__.update(reg.__dict__)
+				o.__dict__.update(car.__dict__)  # car is last so id = car.id
+				objects.append(o)
+
+			titles = ['lastname', 'firstname', 'email', 'address', 'city', 'state', 'zip', 'phone', 'sponsor', 'brag',
+						'id', 'year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode']
+			return self.csv("cards", titles, objects)
+
 
 		# Otherwise we are are PDF
 		try:

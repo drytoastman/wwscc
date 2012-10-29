@@ -155,22 +155,31 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			return self.databaseSelector(archived=True)
 
 
-	def email(self):
-		""" Create text email reports """
-		if self.eventid == 's':
-			query = self.session.query(Driver.email).filter(Driver.email.contains('@')).distinct()
-			title = "Email Report for Series\n\n"
-		else:
-			query = self.session.query(Driver.email).join('cars', 'registration').filter(Registration.eventid==self.eventid).filter(Driver.email.contains('@')).distinct()
-			title = "Email Report for %s\n\n" % c.event.name
-			
-		response.content_type = 'text/plain'
-		return title + '\n'.join([x.email for x in query.all()])
+
+	def contactlist(self):
+		c.classlist = self.session.query(Class).order_by(Class.code).all()
+		c.indexlist = [""] + [x[0] for x in self.session.query(Index.code).order_by(Index.code)]
+		return render_mako('/admin/contactlist.mako')
+
+
+	def sendcontactlist(self):
+		""" Process settings form submission """
+		classes = list()
+		events = list()
+		for k in request.POST:
+			if k.startswith('class-'):  classes.append(k[6:])
+			elif k.startswith('event-'):  events.append(k[6:])
+
+		title = "Contact List"
+		query = self.session.query(Driver).join('cars', 'registration')
+		if len(events) > 0: query = query.filter(Registration.eventid.in_(events))
+		if len(classes) > 0: query = query.filter(Car.classcode.in_(classes))
+		return self.csv("ContactList", ['firstname', 'lastname', 'email'], query)
+
 
 
 	class WeekendReport(object):
 		pass
-
 
 
 	def weekend(self):
