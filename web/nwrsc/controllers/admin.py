@@ -63,7 +63,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 	def __before__(self):
 		c.stylesheets = ['/css/admin.css', '/css/forms.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css', '/css/anytimec.css']
-		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js', '/js/anytimec.js']
+		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js', '/js/anytimec.js', '/js/jquery.dataTables.min.js']
 		try:
 			c.javascript.append(url_for(action='scripts'))  # If we are far enough along to link to it
 		except:
@@ -159,21 +159,25 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 	def contactlist(self):
 		c.classlist = self.session.query(Class).order_by(Class.code).all()
 		c.indexlist = [""] + [x[0] for x in self.session.query(Index.code).order_by(Index.code)]
+		c.preselect = request.GET.get('preselect', "").split(',')
+
+		c.drivers = dict()
+		for (dr, car, reg) in self.session.query(Driver, Car, Registration).join('cars', 'registration'):
+			if dr.id not in c.drivers:
+				dr.events = set([reg.eventid])
+				dr.classes = set([car.classcode])
+				c.drivers[dr.id] = dr
+			else:
+				dr = c.drivers[dr.id]
+				dr.events.add(reg.eventid)
+				dr.classes.add(car.classcode)
 		return render_mako('/admin/contactlist.mako')
 
 
-	def sendcontactlist(self):
+	def downloadcontacts(self):
 		""" Process settings form submission """
-		classes = list()
-		events = list()
-		for k in request.POST:
-			if k.startswith('class-'):  classes.append(k[6:])
-			elif k.startswith('event-'):  events.append(k[6:])
-
-		title = "Contact List"
-		query = self.session.query(Driver).join('cars', 'registration')
-		if len(events) > 0: query = query.filter(Registration.eventid.in_(events))
-		if len(classes) > 0: query = query.filter(Car.classcode.in_(classes))
+		idlist = request.POST['ids'].split(',')
+		query = self.session.query(Driver).filter(Driver.id.in_(idlist))
 		return self.csv("ContactList", ['firstname', 'lastname', 'email'], query)
 
 

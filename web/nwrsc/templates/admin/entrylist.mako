@@ -13,8 +13,8 @@ Click on column header to change sort.
 <th>#</th>
 <th class='sorttable_ncalpha'>First</th>
 <th class='sorttable_ncalpha'>Last</th>
-<th class='sortable_ncalpha'>Member #</th>
-<th class='sortable_ncalpha'>Email</th>
+<th class='sorttable_ncalpha'>Member #</th>
+<th class='sorttable_ncalpha'>Email</th>
 <th>Car</th>
 <th class='sorttable_nosort'></th>
 </thead>
