@@ -54,7 +54,6 @@ li li { font-size: 90%; }
 }
 
 .even td, .odd td {
-	padding-top: 8px;
 	border-bottom: 1px solid #DDD;
 }
 
@@ -64,6 +63,10 @@ li li { font-size: 90%; }
 
 .dataTables_wrapper {
 	display: inline-block;
+}
+
+.dataTable input {
+	font-size: 0.6em !important;
 }
 
 #lastrow {

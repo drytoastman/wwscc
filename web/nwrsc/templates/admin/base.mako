@@ -25,7 +25,7 @@
 <li><a href='javascript:void(0);'>Reports</a>
 	<ul>
 	<li><a href='${h.url_for(eventid='s', action='newentrants')}' target='_blank'>Event Fees/New Entrants</a></li>
-	<li><a href='${h.url_for(eventid='s', action='contactlist')}'>Contact List</a></li>
+	<li><a href='${h.url_for(eventid='s', action='contactlist')}'>Series Contact List</a></li>
 	<li><a href='${h.url_for(eventid='s', action='weekend')}'>Weekend Entries</a></li>
 	</ul>
 </li>

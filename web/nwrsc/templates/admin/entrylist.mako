@@ -1,7 +1,6 @@
 <%inherit file="base.mako" />
 
 <h2>${c.event.name} Entrants</h2>
-Click on column header to change sort.
 
 <form method='post' action='${h.url_for(action='delreg')}'>
 <input type='hidden' name='regid' value='-1'/>
