@@ -52,7 +52,7 @@
 <li><a href='${h.url_for(action='numbers')}' target='_blank'>Used Car Number List</a></li>
 <li><a href='${h.url_for(action='paid')}' target='_blank'>List of Fess Already Paid</a></li>
 <li><a href='${h.url_for(action='paypal')}' target='_blank'>Paypal Transaction List</a></li>
-<li><a href='${h.url_for(action='contactlist', select=c.event.id)}' target='_blank'>Contact List</a></li>
+<li><a href='${h.url_for(action='contactlist')}'>Contact List</a></li>
 </ul>
 
 <h3>After The Event</h3>

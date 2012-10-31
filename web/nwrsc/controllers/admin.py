@@ -63,7 +63,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 	def __before__(self):
 		c.stylesheets = ['/css/admin.css', '/css/forms.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css', '/css/anytimec.css']
-		c.javascript = ['/js/admin.js', '/js/sortabletable.js', '/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js', '/js/anytimec.js', '/js/jquery.dataTables.min.js']
+		c.javascript = ['/js/admin.js', '/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js', '/js/anytimec.js', '/js/jquery.dataTables.min.js']
 		try:
 			c.javascript.append(url_for(action='scripts'))  # If we are far enough along to link to it
 		except:
@@ -163,6 +163,9 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 		c.drivers = dict()
 		for (dr, car, reg) in self.session.query(Driver, Car, Registration).join('cars', 'registration'):
+			if self.eventid.isdigit() and reg.eventid != int(self.eventid): 
+				continue
+
 			if dr.id not in c.drivers:
 				dr.events = set([reg.eventid])
 				dr.classes = set([car.classcode])
@@ -171,14 +174,25 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 				dr = c.drivers[dr.id]
 				dr.events.add(reg.eventid)
 				dr.classes.add(car.classcode)
+
+		if self.eventid.isdigit():
+			c.title = c.event.name
+			c.showevents = False
+		else:
+			c.title = "Series"
+			c.showevents = True
+
 		return render_mako('/admin/contactlist.mako')
 
 
 	def downloadcontacts(self):
 		""" Process settings form submission """
 		idlist = request.POST['ids'].split(',')
-		query = self.session.query(Driver).filter(Driver.id.in_(idlist))
-		return self.csv("ContactList", ['firstname', 'lastname', 'email'], query)
+		drivers = self.session.query(Driver).filter(Driver.id.in_(idlist)).all()
+		for d in drivers:
+			d.membership = d.getExtra('membership') # load for access in csv call
+		cols = ['id', 'firstname', 'lastname', 'email', 'address', 'city', 'state', 'zip', 'phone', 'membership', 'brag', 'sponsor']
+		return self.csv("ContactList", cols, drivers)
 
 
 

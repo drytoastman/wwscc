@@ -62,6 +62,10 @@ li li { font-size: 90%; }
 	background: #ddd;
 }
 
+.dataTables_wrapper {
+	display: inline-block;
+}
+
 #lastrow {
 	border-bottom: none;
 }

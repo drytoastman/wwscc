@@ -2,24 +2,25 @@
 
 <h2>${c.event.name} Entrants</h2>
 Click on column header to change sort.
-<P/>
+
 <form method='post' action='${h.url_for(action='delreg')}'>
-<input type='hidden' name='regid' value='-1'>
-<table class='reglist sortable'>
-<thead class='ui-widget-header'>
+<input type='hidden' name='regid' value='-1'/>
+<table id='xregtable'>
+<thead>
 <tr>
 <th>Id</th>
 <th>Class</th>
 <th>#</th>
-<th class='sorttable_ncalpha'>First</th>
-<th class='sorttable_ncalpha'>Last</th>
-<th class='sorttable_ncalpha'>Member #</th>
-<th class='sorttable_ncalpha'>Email</th>
+<th>First</th>
+<th>Last</th>
+<th>Email</th>
 <th>Car</th>
-<th class='sorttable_nosort'></th>
+<th></th>
+</tr>
 </thead>
-<tbody>
 
+
+<tbody>
 %for cls in sorted(c.registered):
 %for e in sorted(c.registered[cls], key=lambda obj: obj.car.number):
 
@@ -31,10 +32,7 @@ Click on column header to change sort.
 <td>${e.driver.lastname}</td>
 <td>${e.driver.email}</td>
 <td>${e.car.make} ${e.car.model} ${e.car.color}</td>
-<td><input type='submit' value='unreg' onClick='this.form.regid.value=${e.reg.id};'></td>
-<%doc>
-<td><input type='button' value='edit'></td>
-</%doc>
+<td><input type='submit' value='unreg' onClick='this.form.regid.value=${e.reg.id};' /></td>
 </tr>
 
 %endfor
@@ -44,12 +42,13 @@ Click on column header to change sort.
 </table>
 </form>
 
-<style>
-.reglist { font-size: 0.8em; border-collapse: collapse; }
-.reglist th, .reglist td { border: 1px solid #ddd; padding: 2px; }
-</style>
-
-<script>
-$('input').button();
+<script type='text/javascript'>
+$(document).ready(function(){ 
+	$('input').button();
+	$('#xregtable').dataTable({
+		"bJQueryUI" : true,
+		"bPaginate": false
+	});
+});
 </script>
 

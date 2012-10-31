@@ -25,8 +25,8 @@
 <li><a href='javascript:void(0);'>Reports</a>
 	<ul>
 	<li><a href='${h.url_for(eventid='s', action='newentrants')}' target='_blank'>Event Fees/New Entrants</a></li>
-	<li><a href='${h.url_for(eventid='s', action='contactlist')}' target='_blank'>Contact List</a></li>
-	<li><a href='${h.url_for(eventid='s', action='weekend')}' target='_blank'>Weekend Entries</a></li>
+	<li><a href='${h.url_for(eventid='s', action='contactlist')}'>Contact List</a></li>
+	<li><a href='${h.url_for(eventid='s', action='weekend')}'>Weekend Entries</a></li>
 	</ul>
 </li>
 <li><a href='javascript:void(0);'>Other</a>
@@ -35,7 +35,7 @@
 	</ul>
 </li>
 </ul>
-<br clear='both'/>
+<br clear='all'/>
 
 %if c.isLocked:
 <div class='ui-state-error'>
