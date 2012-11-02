@@ -20,7 +20,7 @@ mapper(Setting, t_settings)
 
 class Settings(object):
 
-	INTS = ["largestcarnumber", "useevents", "minevents", "useppoints"]
+	INTS = ["largestcarnumber", "useevents", "minevents", "usepospoints"]
 	BOOLS = ["locked", "superuniquenumbers", "indexafterpenalties"]
 	STRS = ["ppointlist", "champsorting", "seriesname", "sponsorlink", "password", "schema"]
 
@@ -28,7 +28,7 @@ class Settings(object):
 		self.locked = False
 		self.superuniquenumbers = False
 		self.indexafterpenalties = False
-		self.useppoints = False
+		self.usepospoints = False
 
 		self.ppointlist = "20,16,13,11,9,7,6,5,4,3,2,1"
 		self.champsorting = ""

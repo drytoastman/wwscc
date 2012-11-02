@@ -44,7 +44,7 @@
 
 <tr title="Use position to determine points rather than difference from first">
 <th>Use Position for Points</th>
-<td><input type="checkbox" name="useppoints" ${c.settings.useppoints and "checked"} onclick='$("#ppointrow").toggle(this.checked);' /></td>
+<td><input type="checkbox" name="usepospoints" ${c.settings.usepospoints and "checked"} onclick='$("#ppointrow").toggle(this.checked);' /></td>
 </tr>
 		
 <tr id='ppointrow' title="Ordering of points if using static points">            
@@ -53,7 +53,7 @@
 </tr>
 
 <script type='text/javascript'>
-$(document).ready(function(){ $("#ppointrow").toggle(${int(c.settings.useppoints)}==1); });
+$(document).ready(function(){ $("#ppointrow").toggle(${int(c.settings.usepospoints)}==1); });
 </script>
 
 

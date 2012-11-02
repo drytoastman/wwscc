@@ -33,6 +33,8 @@ def t3(val, sub = None):
 		return ''
 	if sub is not None:
 		val -= sub
+	if type(val) is int:
+		return str(val)
 	return "%0.3f" % (val)
 
 def encodesqlobj(obj):
