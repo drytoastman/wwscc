@@ -7,16 +7,6 @@
 
 <table class='champ'>
 %for code, entrants in c.results.iteritems():
-<%
-import operator
-cls = c.classdata.classlist[code]
-if not cls.champtrophy: # No champ trophies for this class
-	continue
-if len(entrants) <= 0:
-	continue
-entrants.sort(key=operator.attrgetter('ppoints'))
-%>
-
 <tr><th class='classhead' colspan='${len(c.events)+4}'>${cls.code} - ${cls.descrip}</th></tr>
 <tr>
 <th>#</th>
@@ -35,8 +25,8 @@ entrants.sort(key=operator.attrgetter('ppoints'))
 	<td class='attend'>${e.events}</td>
 	%for event in c.events:
 		<% 
-			value = e.ppoints.get(event.id)
-			if value in e.ppoints.drop:
+			value = e.points.get(event.id)
+			if value in e.points.drop:
 				tdclass = 'drop'
 			else:
 				tdclass = ''
@@ -47,7 +37,7 @@ entrants.sort(key=operator.attrgetter('ppoints'))
 			<td class='points ${tdclass}'>${value}</td>
 		%endif
 	%endfor
-	<td class='points'>${e.ppoints.total}</td>
+	<td class='points'>${e.points.total}</td>
 	</tr>
 %endfor
 %endfor

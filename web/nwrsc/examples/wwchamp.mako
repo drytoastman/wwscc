@@ -7,16 +7,6 @@
 
 <table class='champ'>
 %for code, entrants in sorted(c.results.iteritems()):
-<%
-import operator
-cls = c.classdata.classlist[code]
-if not cls.champtrophy: # No champ trophies for this class
-	continue
-if len(entrants) <= 0:
-	continue
-entrants.sort(key=operator.attrgetter('points'))
-%>
-
 <tr><th class='classhead' colspan='${len(c.events)+4}'>${cls.code} - ${cls.descrip}</th></tr>
 <tr>
 <th>#</th>

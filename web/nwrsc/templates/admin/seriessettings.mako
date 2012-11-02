@@ -34,11 +34,28 @@
 <th>Sponsor Link</th>
 <td><input type="text" name="sponsorlink" value="${c.settings.sponsorlink}" size="40" /></td>
 </tr>
-		
-<tr title="Ordering of points if using static points">            
-<th>Points</th>
-<td><input type="text" name="ppoints" value="${c.settings.ppoints}" size="40" /></td>
+
+
+<tr title="Additional sorting options for determing championship in case of tie, comma separated list of (firsts, seconds, thirds, fourths)">
+<th>Championship TieBreakers</th>
+<td><input type="text" name="champsorting" value="${c.settings.champsorting}" size="40"} /></td>
 </tr>
+
+
+<tr title="Use position to determine points rather than difference from first">
+<th>Use Position for Points</th>
+<td><input type="checkbox" name="useppoints" ${c.settings.useppoints and "checked"} onclick='$("#ppointrow").toggle(this.checked);' /></td>
+</tr>
+		
+<tr id='ppointrow' title="Ordering of points if using static points">            
+<th></th>
+<td><input type="text" name="ppointlist" value="${c.settings.ppointlist}" size="40" /></td>
+</tr>
+
+<script type='text/javascript'>
+$(document).ready(function(){ $("#ppointrow").toggle(${int(c.settings.useppoints)}==1); });
+</script>
+
 
 <tr title="Apply indexes after penalties, default is false (index is applied, then penalties)">
 <th>Apply Index After Penalties</th>

@@ -133,7 +133,7 @@ class PurgeCopy(object):
 			if self.form_result['settings']:
 				cur.execute("insert into new.settings select * from old.settings")
 			else:
-				for k,v in {'useevents':5, 'ppoints':'20,16,13,11,9,7,6,5,4,3,2,1'}.iteritems():
+				for k,v in {'useevents':5, 'ppointlist':'20,16,13,11,9,7,6,5,4,3,2,1'}.iteritems():
 					cur.execute("insert into new.settings values (?,?)", (k,v))
 			cur.execute("insert or replace into new.settings values (?,?)", ("password", self.form_result['password']))
 
