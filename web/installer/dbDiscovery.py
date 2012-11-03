@@ -38,7 +38,6 @@ def databaseAnnouncer():
 			if pieces[0] == 'RemoteDatabase' and pieces[2] == '0':  # looking for RemoteDatabase
 				dblist = ["RemoteDatabase,%s,80" % os.path.basename(db)[:-3] for db in glob.glob(seriesdir+"/*.db")]
 				if len(dblist) == 0: continue
-				print len('\n'.join(dblist))
 				sock.sendto('\n'.join(dblist), 0, (MDNSAddr, MDNSPortPlus))
 
 
