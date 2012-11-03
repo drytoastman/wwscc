@@ -36,9 +36,9 @@
 </tr>
 
 
-<tr title="Additional sorting options for determing championship in case of tie, comma separated list of (firsts, seconds, thirds, fourths)">
+<tr title="Additional sorting options for determing championship in case of tie, comma separated list of (firsts, seconds, thirds, fourths, attended)">
 <th>Championship TieBreakers</th>
-<td><input type="text" name="champsorting" value="${c.settings.champsorting}" size="40"} /></td>
+<td><input type="text" name="champsorting" value="${c.settings.champsorting}" size="40" /></td>
 </tr>
 
 
@@ -49,7 +49,7 @@
 		
 <tr id='ppointrow' title="Ordering of points if using static points">            
 <th></th>
-<td><input type="text" name="ppointlist" value="${c.settings.ppointlist}" size="40" /></td>
+<td><input type="text" name="pospointlist" value="${c.settings.pospointlist}" size="40" /></td>
 </tr>
 
 <script type='text/javascript'>

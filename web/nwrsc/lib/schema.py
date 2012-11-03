@@ -80,7 +80,7 @@ class SettingsSchema(Schema):
 	minevents = Int(if_empty=0)
 	useevents = Int(not_empty=True)
 	sponsorlink = String()
-	ppointlist = String()
+	pospointlist = String()
 	champsorting = String()
 	superuniquenumbers = Bool()
 	indexafterpenalties = Bool()
