@@ -16,18 +16,20 @@ t_challenges = Table('challenges', metadata,
 	Column('id', Integer, primary_key=True, autoincrement=True),
 	Column('eventid', Integer, ForeignKey('events.id')),
 	Column('name', String(32)),
-	Column('depth', Integer),
-	Column('bonus', Boolean)
+	Column('depth', Integer)
 	)
 
 class Challenge(object):
+	def __init__(self, **kwargs):
+		for k, v in kwargs.iteritems():
+			if hasattr(self, k):
+				setattr(self, k, v)
 
 	def getFeed(self):
 		ret = dict()
 		ret['id'] = self.id
 		ret['name'] = self.name
 		ret['depth'] = self.depth
-		ret['bonus'] = self.bonus
 		return ret
 
 

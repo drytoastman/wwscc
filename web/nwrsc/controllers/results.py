@@ -58,7 +58,7 @@ class ResultsController(BaseController):
 	def byclass(self):
 		c.title = 'Results for Class %s' % (request.str_GET['list'])
 		c.header = '<h2>%s</h2>' % (c.title)
-		c.results = getClassResults(self.session, c.event, c.classdata, request.str_GET['list'].split(','))
+		c.results = getClassResults(self.session, self.settings, c.event, c.classdata, request.str_GET['list'].split(','))
 		return render_mako('db:classresult.mako')
 
 	@checklist
@@ -72,18 +72,18 @@ class ResultsController(BaseController):
 					.filter(RunOrder.course == course) \
 					.filter(RunOrder.rungroup.in_(list)) \
 					.all()
-		c.results = getClassResults(self.session, c.event, c.classdata, [x.classcode for x in codes])
+		c.results = getClassResults(self.session, self.settings, c.event, c.classdata, [x.classcode for x in codes])
 		return render_mako('db:classresult.mako')
 
 	def all(self):
 		c.title = 'Results for All Classes'
 		c.header = '<h2>Results for All Classes</h2>'
-		c.results = getClassResults(self.session, c.event, c.classdata, [cls.code for cls in c.active])
+		c.results = getClassResults(self.session, self.settings, c.event, c.classdata, [cls.code for cls in c.active])
 		return render_mako('db:classresult.mako')
 
 
 	def post(self):
-		c.results = getClassResults(self.session, c.event, c.classdata, [cls.code for cls in c.active])
+		c.results = getClassResults(self.session, self.settings, c.event, c.classdata, [cls.code for cls in c.active])
 		c.entrantcount = sum([len(data) for code,data in c.results.iteritems()])
 		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
 		return render_mako('db:event.mako')
@@ -96,7 +96,7 @@ class ResultsController(BaseController):
 		course = int(request.GET.get('course', 1))
 		group = int(request.GET.get('group', 1))
 		c.order = request.GET.get('order', 'firstname')
-		c.entrants = getAuditResults(self.session, c.event, course, group)
+		c.entrants = getAuditResults(self.session, self.settings, c.event, course, group)
 
 		if c.order in ['firstname', 'lastname']:
 			c.entrants.sort(key=lambda obj: str.lower(str(getattr(obj, c.order))))

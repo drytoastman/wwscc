@@ -20,9 +20,9 @@ mapper(Setting, t_settings)
 
 class Settings(object):
 
-	INTS = ["largestcarnumber", "useevents", "minevents", "usepospoints"]
-	BOOLS = ["locked", "superuniquenumbers", "indexafterpenalties"]
-	STRS = ["ppointlist", "champsorting", "seriesname", "sponsorlink", "password", "schema"]
+	INTS = ["largestcarnumber", "useevents", "minevents"]
+	BOOLS = ["locked", "superuniquenumbers", "indexafterpenalties", "usepospoints"]
+	STRS = ["pospointlist", "champsorting", "seriesname", "sponsorlink", "password", "schema"]
 
 	def __init__(self):
 		self.locked = False
@@ -30,7 +30,7 @@ class Settings(object):
 		self.indexafterpenalties = False
 		self.usepospoints = False
 
-		self.ppointlist = "20,16,13,11,9,7,6,5,4,3,2,1"
+		self.pospointlist = "20,16,13,11,9,7,6,5,4,3,2,1"
 		self.champsorting = ""
 		self.seriesname = ""
 		self.sponsorlink = ""
@@ -48,7 +48,7 @@ class Settings(object):
 				setattr(self, k, int(v))
 			elif k in Settings.BOOLS:
 				setattr(self, k, v in ("True", "1", True, "checked"))
-			elif k in Settings.STRS:
+			else:
 				setattr(self, k, v)
 			
 		
@@ -58,7 +58,7 @@ class Settings(object):
 				setattr(self, s.name, int(s.val))
 			elif s.name in Settings.BOOLS:
 				setattr(self, s.name, s.val in ("True", "1"))
-			elif s.name in Settings.STRS:
+			else:
 				setattr(self, s.name, s.val)
 
 	def save(self, session):

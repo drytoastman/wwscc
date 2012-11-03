@@ -274,23 +274,22 @@ public class AUTO
 		o.eventid = rs.getInt("eventid");
 		o.name = rs.getString("name");
 		o.depth = rs.getInt("depth");
-		o.bonus = rs.getBoolean("bonus");
 		return o;
 	}
 	
 	public static String getChallengeVarStr()
 	{
-		return "eventid,name,depth,bonus";
+		return "eventid,name,depth";
 	}
 	
 	public static String getChallengeArgStr()
 	{
-		return "?,?,?,?";
+		return "?,?,?";
 	}
 	
 	public static String getChallengeSetStr()
 	{
-		return "eventid=?,name=?,depth=?,bonus=?";
+		return "eventid=?,name=?,depth=?";
 	}
 	
 	public static void addChallengeValues(org.wwscc.storage.Challenge o, List<Object> l)
@@ -298,7 +297,6 @@ public class AUTO
 		l.add(o.eventid);
 		l.add(o.name);
 		l.add(o.depth);
-		l.add(o.bonus);
 	}
 	
 	public static org.wwscc.storage.ChallengeRun loadChallengeRun(ResultRow rs) throws IOException
@@ -453,15 +451,15 @@ public class AUTO
 		o.courses = rs.getInt("courses");
 		o.sum = rs.getDouble("sum");
 		o.diff = rs.getDouble("diff");
-		o.points = rs.getDouble("points");
-		o.ppoints = rs.getInt("ppoints");
+		o.diffpoints = rs.getDouble("diffpoints");
+		o.pospoints = rs.getInt("pospoints");
 		o.updated = rs.getSADateTime("updated");
 		return o;
 	}
 	
 	public static String getEventResultVarStr()
 	{
-		return "carid,firstname,lastname,indexcode,position,courses,sum,diff,points,ppoints,updated";
+		return "carid,firstname,lastname,indexcode,position,courses,sum,diff,diffpoints,pospoints,updated";
 	}
 	
 	public static String getEventResultArgStr()
@@ -471,7 +469,7 @@ public class AUTO
 	
 	public static String getEventResultSetStr()
 	{
-		return "carid=?,firstname=?,lastname=?,indexcode=?,position=?,courses=?,sum=?,diff=?,points=?,ppoints=?,updated=?";
+		return "carid=?,firstname=?,lastname=?,indexcode=?,position=?,courses=?,sum=?,diff=?,diffpoints=?,pospoints=?,updated=?";
 	}
 	
 	public static void addEventResultValues(org.wwscc.storage.EventResult o, List<Object> l)
@@ -484,8 +482,8 @@ public class AUTO
 		l.add(o.courses);
 		l.add(o.sum);
 		l.add(o.diff);
-		l.add(o.points);
-		l.add(o.ppoints);
+		l.add(o.diffpoints);
+		l.add(o.pospoints);
 		l.add(o.updated);
 	}
 	

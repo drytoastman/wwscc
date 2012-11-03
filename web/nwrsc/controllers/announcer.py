@@ -103,7 +103,7 @@ class AnnouncerController(BaseController):
 		c.runs = {}
 		for r in self.session.query(Run).filter(Run.carid==carid).filter(Run.eventid==self.eventid): 
 			c.runs[r.run] = r
-		c.results = getClassResultsShort(self.session, c.event, c.cls)
+		c.results = getClassResultsShort(self.session, self.settings, c.event, c.cls)
 
 		self._createInfo(carid)
 

@@ -5,7 +5,7 @@ from pylons import config
 class Result(object):
 	""" Contains driver name, car description, overall result and 2D array of runs by course and run # """
 
-	def __init__(self, row, classdata):
+	def __init__(self, row, classdata, usepospoints=False):
 		for k in row.keys():
 			setattr(self, k, getattr(row,k))
 
@@ -22,6 +22,11 @@ class Result(object):
 		if self.alias and not config['nwrsc.private']:
 			self.firstname = self.alias
 			self.lastname = ""
+
+		if usepospoints:
+			self.points = self.pospoints
+		else:
+			self.points = self.diffpoints
 
 
 	def getFeed(self):
@@ -41,11 +46,11 @@ auditList = """select r.*,d.firstname,d.lastname,d.alias,c.year,c.number,c.make,
 				where r.carid=c.id and c.driverid=d.id and 
 				r.eventid=:eventid and r.course=:course and r.rungroup=:group """
 
-def getAuditResults(session, event, course, rungroup):
+def getAuditResults(session, settings, event, course, rungroup):
 	ret = list()
 	reshold = dict()
 	for row in session.execute(auditList, params={'eventid':event.id, 'course':course, 'group':rungroup}):
-		r = Result(row, None)
+		r = Result(row, None, settings.usepospoints)
 		r.runs = [None] * event.runs
 		ret.append(r)
 		reshold[r.carid] = r
@@ -63,20 +68,20 @@ classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.index
 				where r.carid=c.id and c.driverid=d.id and r.eventid=%d and r.classcode in (%s)
 				order by r.position"""
 
-def getClassResultsShort(session, event, cls):
+def getClassResultsShort(session, settings, event, cls):
 	ret = []
 	for row in session.execute(classResult % (event.id, "'%s'" % cls.code)):
-		ret.append(Result(row, None))
+		ret.append(Result(row, None, settings.usepospoints))
 
 	trophydepth = ceil(len(ret) / 3.0)
 	for ii, result in enumerate(ret):
 		result.trophy = (cls.eventtrophy) and (ii < trophydepth)
 
-	return ret #, lasttime)
+	return ret
 
 
 
-def getClassResults(session, event, classdata, codes):
+def getClassResults(session, settings, event, classdata, codes):
 	ret = dict()
 	reshold = dict()
 
@@ -85,7 +90,7 @@ def getClassResults(session, event, classdata, codes):
 
 	## Outside normal alchemy use, mass one time selects using IN clause, much faster 
 	for row in session.execute(classResult % (event.id, ','.join(["'%s'" % x for x in codes]))):
-		r = Result(row, classdata)
+		r = Result(row, classdata, settings.usepospoints)
 		r.runs = [[None for i in range(event.runs)] for j in range(event.courses)]
 		ret[r.classcode].append(r)
 		reshold[r.carid] = r

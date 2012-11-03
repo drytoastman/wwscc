@@ -31,7 +31,7 @@ def UpdateClassResults(session, eventid, classcode, carid):
 	prev = 1.0
 	basecnt = 1
 
-	PPOINTS = [int(x) for x in session.query(Setting).get('ppointlist').val.split(',')]
+	PPOINTS = [int(x) for x in session.query(Setting).get('pospointlist').val.split(',')]
 	lists = []
 	for r in session.sqlmap("GETCLASSRESULTS", cevals):
 		sum = float(r['sum'])

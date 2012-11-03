@@ -61,7 +61,7 @@ public class SQLMap
 		sql.put("GETDRIVERSBYLAST", "select * from drivers where lastname like ? order by firstname,lastname");
 		sql.put("GETEVENTENTRANTS", "select distinct d.firstname as firstname,d.lastname as lastname,c.* from runs as r, cars as c, drivers as d " +
 						"where r.carid=c.id AND c.driverid=d.id and r.eventid=?");
-		sql.put("GETEVENTRESULTSBYCLASS", "select d.firstname,d.lastname,c.id as carid,c.indexcode,r.position,r.courses,r.sum,r.diff,r.points,r.ppoints,r.updated " +
+		sql.put("GETEVENTRESULTSBYCLASS", "select d.firstname,d.lastname,c.id as carid,c.indexcode,r.position,r.courses,r.sum,r.diff,r.diffpoints,r.pospoints,r.updated " +
 					"from eventresults as r, cars as c, drivers as d " +
 					"where r.carid=c.id and c.driverid=d.id and r.classcode=? and r.eventid=? " +
 					"order by position");
@@ -87,7 +87,7 @@ public class SQLMap
 
 		sql.put("INSERTBLANKCHALLENGEROUND", "insert into challengerounds (challengeid,round,swappedstart,car1id,car2id) values (?,?,?,?,?)");
 		sql.put("INSERTCAR", "insert or ignore into cars ("+AUTO.getCarVarStr()+") values ("+AUTO.getCarArgStr()+")");
-		sql.put("INSERTCHALLENGE", "insert into challenges (eventid, name, depth, bonus) values (?,?,?,?)");
+		sql.put("INSERTCHALLENGE", "insert into challenges (eventid, name, depth) values (?,?,?)");
 		sql.put("INSERTCLASSRESULTS", "insert into eventresults VALUES (NULL, ?,?,?,?,?,?,?,?,?,?)");
 		sql.put("INSERTDRIVER", "insert or ignore into drivers ("+AUTO.getDriverVarStr()+") values (" +AUTO.getDriverArgStr()+")");
 		sql.put("INSERTEXTRA", "insert into driverextra (driverid, name, value) values (?,?,?)");

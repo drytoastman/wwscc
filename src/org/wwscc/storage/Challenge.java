@@ -21,7 +21,6 @@ public class Challenge
 	protected int eventid;
 	protected String name;
 	protected int depth;
-	protected boolean bonus;
 
 	public Challenge()
 	{
@@ -35,14 +34,12 @@ public class Challenge
 		eventid = inEvent;
 		name = inName;
 		depth = inDepth;
-		bonus = false;
 	}
 
 	public int getId() { return id; }
 	public int getEventId() { return eventid; }
 	public String getName() { return name; }
 	public int getDepth() { return depth; }
-	//public boolean isBonus() { return bonus; }
 
 	public void setName(String s) { name = s; }
 	

@@ -2,8 +2,10 @@
 import sys
 import re
 import logging
+import datetime
 
 from nwrsc.model import *
+from sqlalchemy.databases.sqlite import SLDateTime
 
 log = logging.getLogger(__name__)
 
@@ -17,13 +19,17 @@ def row2dict(row):
 		args[str(k)] = v
 	return args
 
+def makeTableOld(session, metadata, name):
+	session.execute("ALTER TABLE %s RENAME TO old%s" % (name, name))
+	for index in metadata.tables[name].indexes:
+		session.execute("DROP INDEX %s" % index.name)
+	metadata.tables[name].create()
+
 def convert2011(session):
 	metadata.bind = session.bind
 
-	session.execute("ALTER TABLE classlist RENAME to oldclasslist")
-	metadata.tables['classlist'].create()
-
 	log.info("update classes")
+	makeTableOld(session, metadata, 'classlist');
 	# change classindexed/BOOLEAN to classindex/STRING
 	for row in session.execute("select * from oldclasslist"):
 		newclass = Class(**row2dict(row))
@@ -31,10 +37,7 @@ def convert2011(session):
 		session.add(newclass)
 	
 	log.info("update drivers")
-	session.execute("ALTER TABLE drivers RENAME TO olddrivers")
-	for index in metadata.tables['drivers'].indexes:
-		session.execute("DROP INDEX %s" % index.name)
-	metadata.tables['drivers'].create()
+	makeTableOld(session, metadata, 'drivers');
 	metadata.tables['driverextra'].create()
 	metadata.tables['driverfields'].create()
 
@@ -72,8 +75,51 @@ def convert2011(session):
 	session.commit()
 
 
+def convert20121(session):
+
+	metadata.bind = session.bind
+
+	#rename eventresults.ppoint and ppoints
+	"""
+	"""
+	log.info("update eventresults")
+	makeTableOld(session, metadata, 'eventresults');
+	processor = SLDateTime().result_processor(None)
+	for row in session.execute("select * from oldeventresults"):
+		newresult = EventResult(**row2dict(row))
+		newresult.diffpoints = row.points
+		newresult.pospoints = row.ppoints
+		newresult.updated = processor(newresult.updated)  # doesn't get converted in regular select
+		session.add(newresult)
+
+	# load challenges and then resave to delete "bonus" attribute
+	log.info("update challenges")
+	makeTableOld(session, metadata, 'challenges');
+	for row in session.execute("select * from oldchallenges"):
+		session.add(Challenge(**row2dict(row)))
+
+	log.info("Drop old tables")
+	#session.execute("DROP TABLE oldeventresults")
+	session.execute("DROP TABLE oldchallenges")
+	
+	# add usepospoints, champsorting, change ppoints to pospointlist
+	log.info("update settings")
+	settings = Settings()
+	settings.load(session)  # also loads new default values
+	settings.schema = '20122'
+	settings.usepospoints = False
+	settings.champsorting = ""
+	settings.pospointlist = settings.ppoints
+	settings.save(session)
+
+	session.execute("delete from settings where name='ppoints'");
+	session.commit()
+
+	
+
 converters = {
 	'20112': convert2011,
+	'20121': convert20121,
 }
 
 def convert(session):

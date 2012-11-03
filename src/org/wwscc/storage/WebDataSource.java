@@ -262,7 +262,7 @@ public class WebDataSource extends SQLDataInterface
 			addRequest(FUNCTION, "UpdateClass", newList(currentEvent.id, classcode, carid));
 			performRequests();
 		} catch (IOException ioe) { 
-			log.log(Level.INFO, "updateClassResults failed", ioe);
+			log.log(Level.SEVERE, "updateClassResults failed: " + ioe.getMessage(), ioe);
 		}
 	}
 

@@ -7,23 +7,23 @@ import operator
 
 log = logging.getLogger(__name__)
 
-class Points(object):
+class PointStorage(object):
 
 	def __init__(self):
-		self.points = {}
+		self.storage = {}
 		self.total = 0
 		self.drop = []
 
 	def get(self, eventid):
-		return self.points.get(eventid, None)
+		return self.storage.get(eventid, None)
 
 	def set(self, eventid, points):
-		self.points[eventid] = points
+		self.storage[eventid] = points
 
 	def calc(self, bestof):
 		self.total = 0
 		self.drop = []
-		for ii, points in enumerate(sorted(self.points.values(), reverse=True)):
+		for ii, points in enumerate(sorted(self.storage.values(), reverse=True)):
 			if ii < bestof:
 				self.total += points  # Add to total points
 			else:
@@ -47,8 +47,8 @@ class Entrant(object):
 			self.lastname = row.lastname
 		self.id = row.id
 		self.carid = row.carid
-		self.diffpoints = Points()
-		self.pospoints = Points()
+		self.diffpoints = PointStorage()
+		self.pospoints = PointStorage()
 		self.finishes = defaultdict(int)
 		self.events = 0
 
@@ -67,7 +67,7 @@ class Entrant(object):
 		self.pospoints.set(eventid, pospoints)
 
 	def calc(self, best, usepospoints):
-		self.events = len(self.diffpoints.points)
+		self.events = len(self.diffpoints.storage)
 		self.diffpoints.calc(best)
 		self.pospoints.calc(best)
 		if usepospoints:
@@ -77,7 +77,7 @@ class Entrant(object):
 
 
 
-champResult = """select r.position,r.points,r.ppoints,r.eventid,r.classcode,r.carid,d.id,d.firstname,d.lastname,d.alias
+champResult = """select r.position,r.diffpoints,r.pospoints,r.eventid,r.classcode,r.carid,d.id,d.firstname,d.lastname,d.alias
 				from eventresults as r, cars as c, drivers as d, events as e
 				where r.eventid=e.id and e.practice=0 and r.carid=c.id and c.driverid=d.id and r.classcode like :codeglob
 				order by r.classcode,d.firstname COLLATE NOCASE,d.lastname COLLATE NOCASE,r.eventid"""
@@ -108,7 +108,7 @@ def getChampResults(session, settings, codeglob = '%'):
 		if r.id not in store[r.classcode]:
 			store[r.classcode][r.id] = Entrant(r)
 
-		store[r.classcode][r.id].addResults(r.eventid, r.position, r.points, r.ppoints)
+		store[r.classcode][r.id].addResults(r.eventid, r.position, r.diffpoints, r.pospoints)
 
 	ret = {}
 	for code, cls in store.iteritems():

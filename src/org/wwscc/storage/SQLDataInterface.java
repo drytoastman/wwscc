@@ -913,14 +913,14 @@ public abstract class SQLDataInterface extends DataInterface
 		double prev = 1;
 		int basecnt = 1;
 
-		ResultData setting = executeSelect("GETSETTING", newList("ppoints"));
+		ResultData setting = executeSelect("GETSETTING", newList("pospointlist"));
 		ArrayList<Double> PPOINTS = new ArrayList<Double>();
 		for (String s : setting.get(0).getString("val").split(","))
 		{
 			try {
 				PPOINTS.add(Double.valueOf(s));
 			} catch (NumberFormatException nfe) {
-				log.warning("Failed to read ppoints from settings properly: " + nfe);
+				log.warning("Failed to read pospointlist from settings properly: " + nfe);
 			}
 		}
 
@@ -1018,7 +1018,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void newChallenge(String name, int size, boolean bonus)
+	public void newChallenge(String name, int size)
 	{
 		try
 		{
@@ -1026,7 +1026,7 @@ public abstract class SQLDataInterface extends DataInterface
 			int depth = (int)(Math.log(size)/Math.log(2));
 			start();
 
-			executeUpdate("INSERTCHALLENGE", newList(currentEvent.id, name, depth, bonus));
+			executeUpdate("INSERTCHALLENGE", newList(currentEvent.id, name, depth));
 			currentChallengeId = lastInsertId();
 
 			List<Object> rargs = newList(currentChallengeId, 0, false, -1, -1);

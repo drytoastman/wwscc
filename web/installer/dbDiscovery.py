@@ -32,12 +32,13 @@ def databaseAnnouncer():
 
 	done = False
 	while not done:
-		data, (addr, port) = sock.recvfrom(256)
+		data, (addr, port) = sock.recvfrom(1500)
 		for request in data.split():
 			pieces = request.split(',')
 			if pieces[0] == 'RemoteDatabase' and pieces[2] == '0':  # looking for RemoteDatabase
 				dblist = ["RemoteDatabase,%s,80" % os.path.basename(db)[:-3] for db in glob.glob(seriesdir+"/*.db")]
 				if len(dblist) == 0: continue
+				print len('\n'.join(dblist))
 				sock.sendto('\n'.join(dblist), 0, (MDNSAddr, MDNSPortPlus))
 
 

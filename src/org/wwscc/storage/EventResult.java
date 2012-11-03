@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 public class EventResult
 {
-	private static Logger log = Logger.getLogger("org.wwscc.storage.EventResults");
+	private static final Logger log = Logger.getLogger("org.wwscc.storage.EventResults");
 
 	protected int id;
 	protected int carid;
@@ -23,8 +23,8 @@ public class EventResult
 	protected int courses; /* How many courses in the calculation */
 	protected double sum;
 	protected double diff;
-	protected double points;
-	protected int ppoints;
+	protected double diffpoints;
+	protected int pospoints;
 	protected SADateTime updated;
 	
 	private double indexvalue;

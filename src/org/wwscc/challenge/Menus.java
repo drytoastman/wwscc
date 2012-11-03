@@ -79,7 +79,7 @@ public class Menus extends JMenuBar implements ActionListener
 		if (!d.isValid())
 			return;
 		
-		Database.d.newChallenge(d.getChallengeName(), d.getChallengeSize(), false);
+		Database.d.newChallenge(d.getChallengeName(), d.getChallengeSize());
 		Messenger.sendEvent(MT.NEW_CHALLENGE, null);
 	}
 	

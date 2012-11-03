@@ -41,15 +41,18 @@ t_eventresults = Table('eventresults', metadata,
 	Column('courses', SmallInteger),
 	Column('sum', Float),
 	Column('diff', Float),
-	Column('points', Float),
-	Column('ppoints', SmallInteger),
+	Column('diffpoints', Float),
+	Column('pospoints', SmallInteger),
 	Column('updated', DateTime),
 	UniqueConstraint('eventid', 'carid', name='eridx_2')
 	)
 Index('eridx_1', t_eventresults.c.eventid)
 
 class EventResult(object):
-	pass
+	def __init__(self, **kwargs):
+		for k, v in kwargs.iteritems():
+			if hasattr(self, k):
+				setattr(self, k, v)
 
 mapper(EventResult, t_eventresults, properties = {'car':relation(Car, backref='results'), 'class':relation(Class)})
 
