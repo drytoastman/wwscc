@@ -5,6 +5,16 @@
 <form method=post enctype="multipart/form-data" action="${c.action}">
 <table class='form'>
 		
+<tr title="the uuid of this series, used by children to find their parents">            
+<th>Series UUID</th>
+<td>${c.settings.uuid}</td>
+</tr>
+		
+<tr title="the parent databases of this series">
+<th>Lineage</th>
+<td>${','.join(c.parentlist)}</td>
+</tr>
+		
 <tr title="the name of the series">            
 <th>Series Name</th>
 <td><input type="text" name="seriesname" value="${c.settings.seriesname}" size="40" /></td>

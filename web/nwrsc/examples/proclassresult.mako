@@ -46,7 +46,7 @@ for code in sorted(c.results.keys()):
 
 
 <%def name="entrantrow(entrant)">
-<tr>
+<tr class='entrantrow'>
 	<td class='pos' ${c.rowspan}>${entrant.position}</td>
 	<td class='trophy' ${c.rowspan}>${entrant.trophy and 'T' or ''}</td>
 	<td class='name' align='center' ${c.rowspan}>#${entrant.number} - ${entrant.firstname} ${entrant.lastname}<br/>

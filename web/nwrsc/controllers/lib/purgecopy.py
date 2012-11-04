@@ -1,5 +1,6 @@
 import logging
 import os
+import uuid
 
 from sqlalchemy import create_engine
 
@@ -17,7 +18,7 @@ log = logging.getLogger(__name__)
 class PurgeCopy(object):
 
 	def purge(self):
-		c.files = [x for x in self._databaseList() if x.name != self.database]
+		c.lineage = self.lineage(self.settings.parentuuid) 
 		c.classlist = self.session.query(Class).order_by(Class.code).all()
 		return render_mako('/admin/purge.mako')
 
@@ -35,50 +36,62 @@ class PurgeCopy(object):
 				purgeclasses.append(k[2:])
 			elif k[0:2] == "s-":
 				searchseries.append(k[2:])
+		deleteOnsiteDrivers = 'onsitedrivers' in request.POST
 
-		# All cars that have runs in this series
 		currentcar = set()
 		currentdr = set()
+		onsitedrivers = set()
+		onsitecars = set()
+
+		# All cars that have runs in this series
 		for x in self.session.query(Run.carid):
 			currentcar.add(x.carid)
 		for x in self.session.query(Registration.carid):
 			currentcar.add(x.carid)
-
 		currentcar.discard(None)
 
-		for y in self.session.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, currentcar)))):
-			currentdr.add(y[0])
+		# Load the drivers for the current cars
+		for x in self.session.query(Car.driverid).filter(Car.id.in_(currentcar)):
+			currentdr.add(x.driverid)
 
-		# All cars that have runs in any previous database
+
+		if deleteOnsiteDrivers:
+			# Load the blank drivers ...
+			for x in self.session.query(Driver.id, Driver.email):
+				if x.email.strip() == "":  # don't use sql as it can't do the space striping
+					onsitedrivers.add(x.id)
+
+			# Don't use drivers that are running in the current series
+			onsitedrivers -= currentdr
+	
+			# Add their cars
+			for x in self.session.query(Car.id).filter(Car.driverid.in_(onsitedrivers)):
+				onsitecars.add(x.id)
+
+
+		# All driver, cars that have runs in any previous database
 		oldcarids = set()
+		olddriverids = set()
 		for s in searchseries:
 			conn = sqlite3.connect(self.databasePath(s))
 			conn.row_factory = sqlite3.Row
 			cur = conn.cursor()
 			cur.execute("select distinct carid from runs")
 			oldcarids.update([x[0] for x in cur.fetchall()])
-			conn.close()
-
-		# All drivers associated with those runs
-		olddriverids = set()
-		for s in searchseries:
-			conn = sqlite3.connect(self.databasePath(s))
-			conn.row_factory = sqlite3.Row
-			cur = conn.cursor()
 			cur.execute("select distinct driverid from cars where id in (%s)" % (','.join(map(str, oldcarids))))
 			olddriverids.update([x[0] for x in cur.fetchall()])
 			conn.close()
 
-		# Drivers in this database that have no unique/email
-		#blankdr = [x[0] for x in self.session.execute("select id from drivers where email=''")]
-		delcar = deldr = 0
 
-		savecars = ','.join(map(str, oldcarids.union(currentcar)))
-		savedrivers = ','.join(map(str, olddriverids.union(currentdr)))
+		# Get counters ready and final sets
+		delcar = 0
+		deldr = 0
 
 		if len(searchseries) > 0:  # don't delete if they didn't select any series, that will delete all
-			delcar = self.session.execute("delete from cars where id not in (%s)" % savecars).rowcount
-			deldr = self.session.execute("delete from drivers where id not in (%s)" % savedrivers).rowcount
+			savecars = oldcarids.union(currentcar).difference(onsitecars)
+			savedrivers = olddriverids.union(currentdr).difference(onsitedrivers)
+			delcar = self.session.execute("delete from cars where id not in (%s)" % ','.join(map(str,savecars))).rowcount
+			deldr = self.session.execute("delete from drivers where id not in (%s)" % ','.join(map(str,savedrivers))).rowcount
 
 		if len(purgeclasses) > 0:
 			sqllist = "', '".join(purgeclasses)
@@ -136,6 +149,8 @@ class PurgeCopy(object):
 				for k,v in {'useevents':5, 'ppointlist':'20,16,13,11,9,7,6,5,4,3,2,1'}.iteritems():
 					cur.execute("insert into new.settings values (?,?)", (k,v))
 			cur.execute("insert or replace into new.settings values (?,?)", ("password", self.form_result['password']))
+			cur.execute("insert or replace into new.settings values (?,?)", ("uuid", str(uuid.uuid1())))
+			cur.execute("insert or replace into new.settings select 'parentuuid',val from old.settings where name='uuid'");
 
 			# Template data
 			if self.form_result['data']:

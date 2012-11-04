@@ -11,29 +11,34 @@ p { max-width: 700px; }
 <h2>Purge Tool</h2>
 
 <p>
-This tool will remove cars and or drivers that haven't been active.  You can select series or classes.
+This tool will remove cars and or drivers that haven't been active.  You can select series and/or classes.
+Regardless of selection, drivers and cars active in this series will not be touched.
 </p>
 
 <p>
 For each series you select, the list of active cars and drivers will be
-extended to include any activity in those series.  The previous series selected
-should be parent series to this series or car and driver ids will not match
-properly.  
+extended to include any activity in those series.  If no series are selected, no overall purging will take place.
 </p>
 
 <p>
 For any class that you select, <span class='ui-state-error-text'>all of the car
-entries are removed</span> except for those active in the current series.  This
-is intended for major cleaning such as time only classes.
+entries are removed</span> EXCEPT for those active in the current series.  This
+is intended for major cleaning such as time only classes, generally at the
+beginning of the year.
+</p>
+
+<p>
+The last option is to delete all the drivers (and associated cars) that have blank email/unique ids
+as they are unable to preregister online anyhow.
 </p>
 
 <form action='${h.url_for(action='processPurge')}' method='post'>
 <table class='purge'>
-<tr><th>Search Series</th><th colspan='${int(len(c.classlist)/20)+1}'>Purge Classes</th></tr><tr>
+<tr><th>Keep Activity From Series</th><th colspan='${int(len(c.classlist)/20)+1}'>Purge Classes</th><th>Onsite Drivers</tr><tr>
 
 <td>
-%for f in sorted(c.files, key=lambda x:x.name.lower()):
-<input type='checkbox' name='s-${f.name}'/> ${f.name}<br/>
+%for dbname in c.lineage: 
+<input type='checkbox' name='s-${dbname}'/> ${dbname}<br/>
 %endfor
 </td>
 
@@ -46,6 +51,11 @@ is intended for major cleaning such as time only classes.
 %endif
 %endfor
 </ul>
+</td>
+
+<td>
+<input id='onsitedrivers' type='checkbox' name='onsitedrivers'/>
+<label for='onsitedrivers' style='display:inline-block; width:120px;'>Delete onsite drivers and cars</label>
 </td>
 
 <td>
