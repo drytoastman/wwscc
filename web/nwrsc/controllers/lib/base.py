@@ -112,7 +112,6 @@ class BaseController(WSGIController):
 		return ret
 
 		
-		c.action = 'updatesettings'
 	def databaseSelector(self, archived=False, timelimit=0.0):
 		"""" Common routine for other controllers, return a list of active series to select """
 		c.dblist = list()
