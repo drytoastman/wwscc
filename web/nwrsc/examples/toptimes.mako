@@ -1,4 +1,3 @@
-<%inherit file="/base.mako" />
 <%def name="toptimestable(toptimes)">
 
 <style>
@@ -35,5 +34,6 @@
 </table>
 </%def>
 
+<%inherit file="/base.mako" />
 ${toptimestable(c.toptimes)}
 

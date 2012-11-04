@@ -32,7 +32,6 @@ class ResultsController(BaseController):
 		c.seriesname = self.settings.seriesname
 		c.stylesheets = []
 		c.javascript = []
-		c.ismobile = False  # what to do about this one
 
 		if self.database is not None:
 			c.stylesheets.append(url_for(controller='db', name='results.css', eventid=None))
@@ -48,7 +47,7 @@ class ResultsController(BaseController):
 			c.challenges = self.session.query(Challenge).filter(Challenge.eventid==c.event.id).all()
 			return render_mako('/results/resultsindex.mako')
 		elif self.database is not None:
-			c.events = self.session.query(Event).all()
+			c.events = self.session.query(Event).order_by(Event.date).all()
 			return render_mako('/results/eventselect.mako')
 		else:
 			return self.databaseSelector(archived=True)
@@ -192,7 +191,7 @@ class ResultsController(BaseController):
 
 
 	def champ(self):
-		c.events = self.session.query(Event).filter(Event.practice==False).all()
+		c.events = self.session.query(Event).filter(Event.practice==False).order_by(Event.date).all()
 		c.results = getChampResults(self.session, self.settings)
 		return render_mako('db:champ.mako')
 

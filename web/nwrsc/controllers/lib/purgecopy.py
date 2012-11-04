@@ -141,12 +141,12 @@ class PurgeCopy(object):
 			if self.form_result['data']:
 				cur.execute("insert into new.data select * from old.data")
 			else:
-				self.insertfile(cur, 'results.css', 'text/css', os.path.join(root, 'examples/wwresults.css'))
-				self.insertfile(cur, 'event.mako', 'text/plain', os.path.join(root, 'examples/wwevent.mako'))
-				self.insertfile(cur, 'champ.mako', 'text/plain', os.path.join(root, 'examples/wwchamp.mako'))
+				self.insertfile(cur, 'results.css', 'text/css', os.path.join(root, 'examples/results.css'))
+				self.insertfile(cur, 'event.mako', 'text/plain', os.path.join(root, 'examples/event.mako'))
+				self.insertfile(cur, 'champ.mako', 'text/plain', os.path.join(root, 'examples/champ.mako'))
 				self.insertfile(cur, 'toptimes.mako', 'text/plain', os.path.join(root, 'examples/toptimes.mako'))
-				self.insertfile(cur, 'classresult.mako', 'text/plain', os.path.join(root, 'examples/classresults.mako'))
-				self.insertfile(cur, 'card.py', 'text/plain', os.path.join(root, 'examples/basiccard.py'))
+				self.insertfile(cur, 'classresult.mako', 'text/plain', os.path.join(root, 'examples/classresult.mako'))
+				self.insertfile(cur, 'card.py', 'text/plain', os.path.join(root, 'examples/card.py'))
 
 			if self.form_result['classes']:
 				cur.execute("insert into new.classlist select * from old.classlist")
