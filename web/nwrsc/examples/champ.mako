@@ -25,7 +25,7 @@
 	<td>${ii+1}</td>
 	<td class='name'>${e.firstname} ${e.lastname}</td>
 	<td class='attend'>${e.events}</td>
-	%for value in [e.points.get(e.id) for e in c.events]:
+	%for value in [e.points.get(event.id) for event in c.events]:
 		<td class='points ${value in e.points.drop and "drop" or ""}'>${h.t3(value)}</td>
 	%endfor
 	<td class='points'>${h.t3(e.points.total)}</td>
