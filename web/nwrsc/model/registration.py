@@ -18,12 +18,16 @@ class Registration(object):
 		self.eventid = eventid
 		self.carid = carid
 
+	@classmethod
+	def updateFromRuns(cls, session):
+		# Remove all registerations for events that already have runs associated
+		session.execute("delete from registered where eventid in (select distinct eventid from runs)")
+		# Reinsert registrations for those cars that actually ran
+		session.execute("insert into registered (carid, eventid) select distinct carid, eventid from runs")
+		session.commit()
+
+
 from cars import Car
 mapper(Registration, t_registered, properties = {'car':relation(Car, backref='registration')})
 
-
-def updateFromRuns(session):
-	session.execute("delete from registered where eventid in (select distinct eventid from runs)")
-	session.execute("insert into registered (carid, eventid) select distinct carid, eventid from runs")
-	session.commit()
 

@@ -12,7 +12,7 @@ from classlist import Class, Index, ClassData
 from runorder import RunOrder, RunGroup, loadNextRunOrder, getNextCarIdInOrder
 from feelist import FeeList
 from payments import Payment
-from registration import Registration, updateFromRuns
+from registration import Registration
 from event import Event
 from dialin import Dialins
 
@@ -35,7 +35,6 @@ __all__ = (
 'Run',
 'EventResult',
 'Registration',
-'updateFromRuns',
 'RunOrder',
 'RunGroup',
 'loadNextRunOrder',

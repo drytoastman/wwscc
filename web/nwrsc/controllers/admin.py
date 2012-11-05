@@ -276,7 +276,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 
 	def cleanup(self):
-		updateFromRuns(self.session)
+		Registration.updateFromRuns(self.session)
 		c.text = "<h3>Cleaned</h3>"
 		return render_mako('/admin/simple.mako')
 

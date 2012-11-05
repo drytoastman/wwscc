@@ -60,6 +60,7 @@ class DbserveController(BaseController):
 		
 		engine = create_engine('sqlite:///%s' % self.databasePath(self.database))
 		self.session.bind = engine
+		Registration.updateFromRuns(self.session)
 		self.settings = Settings()
 		self.settings.load(self.session)
 		self.settings.locked = False
