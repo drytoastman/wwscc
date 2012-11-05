@@ -246,10 +246,13 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		self.settings.set(self.form_result)
 		self.settings.save(self.session)
 
-		for key, file in self.form_result.iteritems():
-			if hasattr(file, 'filename'):
-				# TODO: Check file size before doing this
-				Data.set(self.session, key, file.value, file.type)
+		for key, fileobj in self.form_result.iteritems():
+			if hasattr(fileobj, 'filename'):
+				# TODO: Check file size/type before doing this
+				Data.set(self.session, key, fileobj.value, fileobj.type)
+
+			#if key.startswith('blank'):
+				#print "got key ", key, fileobj
 
 		self.session.commit()
 		redirect(url_for(action='seriessettings'))

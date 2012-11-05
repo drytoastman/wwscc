@@ -73,7 +73,7 @@ class IndexListSchema(Schema):
 
 class SettingsSchema(Schema):
 	allow_extra_fields = True
-	filter_extra_fields = True
+	filter_extra_fields = False
 	seriesname = String(not_empty=True)
 	password = String(not_empty=True)
 	largestcarnumber = Int(min=99)

@@ -81,6 +81,7 @@
 <span class='title'>Card Image</span>
 <span class='imageinfo'>No card image</span>
 <input type="file" class="file" name="cardimage">
+<input type="hidden" name="blankcardimage"/>
 <img src='${h.url_for(controller='db', name='cardimage', eventid=None, action='nocache')}'/>
 </div>
 
@@ -102,30 +103,40 @@
 
 
 <script type='text/javascript'>
-$(document).ready(function(){
-	$("#ppointrow").toggle(${int(c.settings.usepospoints)}==1);
-	$("input[type=checkbox]").click(function() { $("#ppointrow").toggle(this.checked); });
-
-	$('form img').hide().css({"position":"absolute"});
-	$('.imageinfo, input[type=file]').mousemove(function(event) {
-		$(this).siblings('img').show().css({"top":event.pageY-100, "left":event.pageX});
-	}).mouseleave(function() {
-		$(this).siblings('img').hide();
-	});
-
+$(window).load(function(){
+	// wait until image loads before updating text info
 	$(".imageinfo").each(function() {
 		var img = $(this).siblings('img');
 		if (img.width() > 0) {
 			$(this).text(img.width() + "w x " + img.height() + "h");
 		}
 	});
+});
+
+$(document).ready(function(){
+	// ppoint row hiding
+	$("#ppointrow").toggle(${int(c.settings.usepospoints)}==1);
+	$("input[type=checkbox]").click(function() { $("#ppointrow").toggle(this.checked); });
+
+	// image display when hovering
+	$('form img').hide().css({"position":"absolute"});
+	$('.imageinfo, input[type=file]').mousemove(function(event) {
+		var y = $(this).siblings('img').height() + 10;
+		$(this).siblings('img').show().css({"top":event.pageY-y, "left":event.pageX});
+	}).mouseleave(function() {
+		$(this).siblings('img').hide();
+	});
+
+	// make anchors into buttons
 	$('form a[target=_blank]').button().css("font-size", "0.7em");
+
+	$('input[name=blankcardimage]').val("123");
 });
 </script>
 
 <style type='text/css'>
 	span.title { display: inline-block;  width: 200px; height: 20px; text-align:right; margin-right: 4px; font-weight: bold; }
-	span.imageinfo { display: inline-block; width: 100px; }
+	span.imageinfo { display: inline-block; width: 120px; }
 	form a, form img { vertical-align: middle; }
 	input.file { font-size: 0.7em; }
 </style>
