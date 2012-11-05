@@ -1,6 +1,5 @@
 import logging
 import os
-import uuid
 
 from sqlalchemy import create_engine
 
@@ -18,7 +17,7 @@ log = logging.getLogger(__name__)
 class PurgeCopy(object):
 
 	def purge(self):
-		c.lineage = self.lineage(self.settings.parentuuid) 
+		c.lineage = self.lineage(self.settings.parentseries) 
 		c.classlist = self.session.query(Class).order_by(Class.code).all()
 		return render_mako('/admin/purge.mako')
 
@@ -149,8 +148,7 @@ class PurgeCopy(object):
 				for k,v in {'useevents':5, 'ppointlist':'20,16,13,11,9,7,6,5,4,3,2,1'}.iteritems():
 					cur.execute("insert into new.settings values (?,?)", (k,v))
 			cur.execute("insert or replace into new.settings values (?,?)", ("password", self.form_result['password']))
-			cur.execute("insert or replace into new.settings values (?,?)", ("uuid", str(uuid.uuid1())))
-			cur.execute("insert or replace into new.settings select 'parentuuid',val from old.settings where name='uuid'");
+			cur.execute("insert or replace into new.settings values (?,?)", ("parentseries", name))
 
 			# Template data
 			if self.form_result['data']:

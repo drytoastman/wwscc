@@ -30,11 +30,11 @@ class BeforePage(Exception):
 class DatabaseListing(object):
 
 	def __init__(self, **kwargs):
-		for n in ('name', 'locked', 'archived', 'uuid', 'parentuuid', 'mtime', 'driver'):
+		for n in ('name', 'locked', 'archived', 'parentseries', 'mtime', 'driver'):
 			setattr(self, n, kwargs[n])
 
 	def getFeed(self):
-		return {'name':self.name, 'locked':self.locked, 'archived':self.archived, 'uuid':self.uuid, 'parentuuid':self.parentuuid, 'mtime':self.mtime}
+		return {'name':self.name, 'locked':self.locked, 'archived':self.archived, 'parentseries':self.parentseries, 'mtime':self.mtime}
 
 
 class BaseController(WSGIController):
@@ -97,16 +97,16 @@ class BaseController(WSGIController):
 
 
 
-	def lineage(self, curuuid, maxcount=5):
+	def lineage(self, startseries, maxcount=5):
 		""" Get the lineage of a paricular series based on the starting UUID up to a maximum history """
 		ret = list()
 		dblist = self._databaseList()
-		while len(curuuid) > 0 and maxcount > 0: # Max also catches missing parents and stops runaway loop
+		while len(startseries) > 0 and maxcount > 0: # Max also catches missing parents and stops runaway loop
 			maxcount -= 1
 			for db in dblist:
-				if db.uuid == curuuid:
+				if db.name == startseries:
 					ret.append(db.name)
-					curuuid = db.parentuuid
+					startseries = db.parentseries
 					break
 
 		return ret
@@ -164,7 +164,7 @@ class BaseController(WSGIController):
 					check = self._verifyID(driver.firstname, driver.lastname, driver.email)
 					
 				ret.append(DatabaseListing(name=name, mtime=mtime, driver=check, archived=archived,
-										locked=settings.locked, uuid=settings.uuid, parentuuid=settings.parentuuid))
+										locked=settings.locked, parentseries=settings.parentseries))
 				self.session.close()
 			except Exception, e:
 				log.error("available error with %s (%s) " % (name,e))

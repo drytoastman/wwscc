@@ -6,7 +6,7 @@
 build/
 dist/
 nbproject/private/
-web/backup
+web/archive
 web/series
 web/data
 web/nwrsc.egg-info

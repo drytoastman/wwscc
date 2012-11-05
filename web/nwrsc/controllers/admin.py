@@ -234,7 +234,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 	### Settings table editor ###
 	def seriessettings(self):
 		c.settings = self.settings
-		c.parentlist = self.lineage(self.settings.parentuuid)
+		c.parentlist = self.lineage(self.settings.parentseries)
 		c.action = 'updatesettings'
 		c.button = 'Update'
 		return render_mako('/admin/seriessettings.mako')

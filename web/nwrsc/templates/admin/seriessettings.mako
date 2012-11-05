@@ -3,120 +3,131 @@
 <h2>Series Settings</h2>
 
 <form method=post enctype="multipart/form-data" action="${c.action}">
-<table class='form'>
 		
-<tr title="the uuid of this series, used by children to find their parents">            
-<th>Series UUID</th>
-<td>${c.settings.uuid}</td>
-</tr>
+<div title="the name of the series">            
+<span class='title'>Series Name</span>
+<span class='input'><input type="text" name="seriesname" value="${c.settings.seriesname}" size="40" /></span>
+</div>
 		
-<tr title="the parent databases of this series">
-<th>Lineage</th>
-<td>${','.join(c.parentlist)}</td>
-</tr>
+<div title="the series password">            
+<span class='title'>Password</span>
+<span class='input'><input type="text" name="password" value="${c.settings.password}" size="40" /></span>
+</div>
 		
-<tr title="the name of the series">            
-<th>Series Name</th>
-<td><input type="text" name="seriesname" value="${c.settings.seriesname}" size="40" /></td>
-</tr>
+<div title="Largest car number to be available during preregistration">  
+<span class='title'>Largest Car Number</span>
+<span class='input'><input type="text" name="largestcarnumber" value="${c.settings.largestcarnumber}" size="4"/></span>
+</div>
+
+<div title="Number of events required to be included in champ report">            
+<span class='title'>Min Events</span>
+<span class='input'><input type="text" name="minevents" value="${c.settings.minevents}" size="4"/></span>
+</div>
+<div>
+<span class='title'>Best X Events</span>
+<span class='input'><input type="text" name="useevents" value="${c.settings.useevents}" size="4" /></span>
+</div>
 		
-<tr title="the series password">            
-<th>Password</th>
-<td><input type="text" name="password" value="${c.settings.password}" size="40" /></td>
-</tr>
+<div title="URL link for sponsor banner">            
+<span class='title'>Sponsor Link</span>
+<span class='input'><input type="text" name="sponsorlink" value="${c.settings.sponsorlink}" size="40" /></span>
+</div>
+
+<div title="Additional sorting options for determing championship in case of tie, comma separated list of (firsts, seconds, thirds, fourths, attended)">
+<span class='title'>Championship TieBreakers</span>
+<span class='input'><input type="text" name="champsorting" value="${c.settings.champsorting}" size="40" /></span>
+</div>
+
+<div title="Use position to determine points rather than difference from first">
+<span class='title'>Use Position for Points</span>
+<span class='input'><input type="checkbox" name="usepospoints" ${c.settings.usepospoints and "checked"} /></span>
+</div>
 		
-<tr title="Largest car number to be available during preregistration">  
-<th>Largest Car Number</th>
-<td><input type="text" name="largestcarnumber" value="${c.settings.largestcarnumber}" size="4"/></td>
-</tr>
+<div id='ppointrow' title="Ordering of points if using static points">            
+<span class='title'></span>
+<span class='input'><input type="text" name="pospointlist" value="${c.settings.pospointlist}" size="40" /></span>
+</div>
 
-<tr title="Number of events required to be included in champ report">            
-<th>Min Events</th>
-<td><input type="text" name="minevents" value="${c.settings.minevents}" size="4"/></td>
-</tr>
+<div title="Apply indexes after penalties, default is false (index is applied, then penalties)">
+<span class='title'>Apply Index After Penalties</span>
+<span class='input'><input type="checkbox" name="indexafterpenalties" ${c.settings.indexafterpenalties and "checked"} /></span>
+</div>
+
+<div title="Unique numbers across all classes, not each class individually">            
+<span class='title'>Series Wide Numbers</span>
+<span class='input'><input type="checkbox" name="superuniquenumbers" ${c.settings.superuniquenumbers and "checked"} /></span>
+</div>
 		
-<tr title="Number of events to use in championship calculation">            
-<th>Best X Events</th>
-<td><input type="text" name="useevents" value="${c.settings.useevents}" size="4" /></td>
-</tr>
+<div title="Lock the database manually, not recommended">            
+<span class='title'>Locked</span>
+<span class='input'><input type="checkbox" name="locked" ${c.settings.locked and "checked"} /></span>
+</div>
 		
-<tr title="URL link for sponsor banner">            
-<th>Sponsor Link</th>
-<td><input type="text" name="sponsorlink" value="${c.settings.sponsorlink}" size="40" /></td>
-</tr>
+<div title="Image used at the top of the registration site">
+<span class='title'>Sponsor Image</span>
+<span class='imageinfo'>No sponsor image</span>
+<input type="file" class="file" name="sponsorimage">
+<img src='${h.url_for(controller='db', name='sponsorimage', eventid=None, action='nocache')}'/>
+</div>
 
+<div title="Image used at the top of the registration site">
+<span class='title'>Series Image</span>
+<span class='imageinfo'>No series image</span>
+<input type="file" class="file" name="seriesimage">
+<img src='${h.url_for(controller='db', name='seriesimage', eventid=None, action='nocache')}'/>
+</div>
 
-<tr title="Additional sorting options for determing championship in case of tie, comma separated list of (firsts, seconds, thirds, fourths, attended)">
-<th>Championship TieBreakers</th>
-<td><input type="text" name="champsorting" value="${c.settings.champsorting}" size="40" /></td>
-</tr>
+<div title="Image passed to the card template for printing cards">
+<span class='title'>Card Image</span>
+<span class='imageinfo'>No card image</span>
+<input type="file" class="file" name="cardimage">
+<img src='${h.url_for(controller='db', name='cardimage', eventid=None, action='nocache')}'/>
+</div>
 
+<div>
+<span class='title'>Templates</span>
+<a title="The template used to display the results for the classes" target='_blank' href='${h.url_for(action='editor', name='classresult.mako')}'>ClassTables</a>
+<a title="The template used to display the toptimes" target='_blank' href='${h.url_for(action='editor', name='toptimes.mako')}'>TopTimes</a>
+<a title="The template used to for event posting, can use class tables and toptimes" target='_blank' href='${h.url_for(action='editor', name='event.mako')}'>Event</a>
+<a title="The template used for the championship standing report" target='_blank' href='${h.url_for(action='editor', name='champ.mako')}'>Championship</a>
+<a title="The stylesheet that is supplied with any page loaded from the results pages" target='_blank' href='${h.url_for(action='editor', name='results.css')}'>Stylesheet</a>
+<a title="The python code used to create a single timing card" target='_blank' href='${h.url_for(action='editor', name='card.py')}'>Timing Cards</a>
+</div>
 
-<tr title="Use position to determine points rather than difference from first">
-<th>Use Position for Points</th>
-<td><input type="checkbox" name="usepospoints" ${c.settings.usepospoints and "checked"} onclick='$("#ppointrow").toggle(this.checked);' /></td>
-</tr>
-		
-<tr id='ppointrow' title="Ordering of points if using static points">            
-<th></th>
-<td><input type="text" name="pospointlist" value="${c.settings.pospointlist}" size="40" /></td>
-</tr>
+<div style='margin-top:10px; padding-left:80px;'>
+<span class='input'><input type="submit" value="Submit"></span>
+</div>
 
-<script type='text/javascript'>
-$(document).ready(function(){ $("#ppointrow").toggle(${int(c.settings.usepospoints)}==1); });
-</script>
-
-
-<tr title="Apply indexes after penalties, default is false (index is applied, then penalties)">
-<th>Apply Index After Penalties</th>
-<td><input type="checkbox" name="indexafterpenalties" ${c.settings.indexafterpenalties and "checked"} /></td>
-</tr>
-
-<tr title="Unique numbers across all classes, not each class individually">            
-<th>Series Wide Numbers</th>
-<td><input type="checkbox" name="superuniquenumbers" ${c.settings.superuniquenumbers and "checked"} /></td>
-</tr>
-		
-<tr title="Lock the database manually, not recommended">            
-<th>Locked</th>
-<td><input type="checkbox" name="locked" ${c.settings.locked and "checked"} /></td>
-</tr>
-		
-<tr title="Image used at the top of the registration site">
-<th>Sponsor Image</th>
-<td><input type=file name="sponsorimage"></td>
-<td><img src='${h.url_for(controller='db', name='sponsorimage', eventid=None, action='nocache')}' height="40" /></td>
-</tr>
-
-<tr title="Image used at the top of the registration site">
-<th>Series Image</th>
-<td><input type=file name="seriesimage"></td>
-<td><img src='${h.url_for(controller='db', name='seriesimage', eventid=None, action='nocache')}' height="40" /></td>
-</tr>
-
-<tr title="Image passed to the card template for printing cards">
-<th>Card Image</th>
-<td><input type=file name="cardimage"></td>
-<td><img src='${h.url_for(controller='db', name='cardimage', eventid=None, action='nocache')}' height="40" /></td>
-</tr>
-
-<tr>
-<td><input type="submit" value="Submit"></td>
-</tr>
-
-</table>
 </form>
 
 
-<h2>Template Code</h2>
-<ul id='templatelist'>
-<li><a target='_blank' href='${h.url_for(action='editor', name='classresult.mako')}'>Class Tables</a>
-<li><a target='_blank' href='${h.url_for(action='editor', name='toptimes.mako')}'>Top Times List</a>
-<li><a target='_blank' href='${h.url_for(action='editor', name='event.mako')}'>Event Template</a>
-<li><a target='_blank' href='${h.url_for(action='editor', name='champ.mako')}'>Championship Template</a>
-<br/>
-<li><a target='_blank' href='${h.url_for(action='editor', name='results.css')}'>Results Stylesheet</a>
-<li><a target='_blank' href='${h.url_for(action='editor', name='card.py')}'>Timing Cards</a>
-</ul>
+<script type='text/javascript'>
+$(document).ready(function(){
+	$("#ppointrow").toggle(${int(c.settings.usepospoints)}==1);
+	$("input[type=checkbox]").click(function() { $("#ppointrow").toggle(this.checked); });
+
+	$('form img').hide().css({"position":"absolute"});
+	$('.imageinfo, input[type=file]').mousemove(function(event) {
+		$(this).siblings('img').show().css({"top":event.pageY-100, "left":event.pageX});
+	}).mouseleave(function() {
+		$(this).siblings('img').hide();
+	});
+
+	$(".imageinfo").each(function() {
+		var img = $(this).siblings('img');
+		if (img.width() > 0) {
+			$(this).text(img.width() + "w x " + img.height() + "h");
+		}
+	});
+	$('form a[target=_blank]').button().css("font-size", "0.7em");
+});
+</script>
+
+<style type='text/css'>
+	span.title { display: inline-block;  width: 200px; height: 20px; text-align:right; margin-right: 4px; font-weight: bold; }
+	span.imageinfo { display: inline-block; width: 100px; }
+	form a, form img { vertical-align: middle; }
+	input.file { font-size: 0.7em; }
+</style>
 
 
