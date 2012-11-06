@@ -77,23 +77,26 @@ class BaseController(WSGIController):
 		response.headers['Content-Disposition'] = 'attachment;filename=%s.csv' % filename
 		response.charset = 'utf8'
 
-		# output title line
-		yield ','.join(titles)
-		yield '\n'
+		def wrapper():
+			# output title line
+			yield ','.join(titles)
+			yield '\n'
+	
+			for obj in objects:
+				line = []
+				for t in titles:
+					s = getattr(obj, t) 
+					if s is None:
+						line.append("\"\"")
+					elif hasattr(s, 'replace'):
+						line.append("\"%s\""%s.replace('\n', ' ').replace('"', '""'))
+					else:
+						line.append("%s"%s)
+	
+				yield(','.join(line))
+				yield('\n')
 
-		for obj in objects:
-			line = []
-			for t in titles:
-				s = getattr(obj, t) 
-				if s is None:
-					line.append("\"\"")
-				elif hasattr(s, 'replace'):
-					line.append("\"%s\""%s.replace('\n', ' ').replace('"', '""'))
-				else:
-					line.append("%s"%s)
-
-			yield(','.join(line))
-			yield('\n')
+		return wrapper()
 
 
 
