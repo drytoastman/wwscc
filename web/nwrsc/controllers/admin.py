@@ -1,6 +1,12 @@
 import logging
 import operator
 import re
+try:
+	from PIL import Image
+except:
+	import Image
+
+import cStringIO
 
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -247,12 +253,14 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		self.settings.save(self.session)
 
 		for key, fileobj in self.form_result.iteritems():
-			if hasattr(fileobj, 'filename'):
-				# TODO: Check file size/type before doing this
+			if hasattr(fileobj, 'filename') and fileobj.type.startswith("image/"):
 				Data.set(self.session, key, fileobj.value, fileobj.type)
 
-			#if key.startswith('blank'):
-				#print "got key ", key, fileobj
+			if key.startswith('blank'):
+				output = cStringIO.StringIO()
+				Image.new('RGB', (4,4), (255,255,255)).save(output, "PNG")
+				Data.set(self.session, key[5:], output.getvalue(), 'image/png')
+				output.close()
 
 		self.session.commit()
 		redirect(url_for(action='seriessettings'))

@@ -65,23 +65,25 @@
 		
 <div title="Image used at the top of the registration site">
 <span class='title'>Sponsor Image</span>
-<span class='imageinfo'>No sponsor image</span>
+<span class='imageinfo'>No image</span>
+<input type="checkbox" name="blanksponsorimage"/>Blank
 <input type="file" class="file" name="sponsorimage">
 <img src='${h.url_for(controller='db', name='sponsorimage', eventid=None, action='nocache')}'/>
 </div>
 
 <div title="Image used at the top of the registration site">
 <span class='title'>Series Image</span>
-<span class='imageinfo'>No series image</span>
+<span class='imageinfo'>No image</span>
+<input type="checkbox" name="blankseriesimage"/>Blank
 <input type="file" class="file" name="seriesimage">
 <img src='${h.url_for(controller='db', name='seriesimage', eventid=None, action='nocache')}'/>
 </div>
 
 <div title="Image passed to the card template for printing cards">
 <span class='title'>Card Image</span>
-<span class='imageinfo'>No card image</span>
-<input type="file" class="file" name="cardimage">
-<input type="hidden" name="blankcardimage"/>
+<span class='imageinfo'>No image</span>
+<input type="checkbox" name="blankcardimage"/>Blank
+<input type="file" class="file" name="cardimage"/>
 <img src='${h.url_for(controller='db', name='cardimage', eventid=None, action='nocache')}'/>
 </div>
 
@@ -116,11 +118,11 @@ $(window).load(function(){
 $(document).ready(function(){
 	// ppoint row hiding
 	$("#ppointrow").toggle(${int(c.settings.usepospoints)}==1);
-	$("input[type=checkbox]").click(function() { $("#ppointrow").toggle(this.checked); });
+	$("input[type=checkbox][name=usepospoints]").click(function() { $("#ppointrow").toggle(this.checked); });
 
 	// image display when hovering
-	$('form img').hide().css({"position":"absolute"});
-	$('.imageinfo, input[type=file]').mousemove(function(event) {
+	$('form img').hide().css({"position":"absolute", "border":"1px solid black"});
+	$('.imageinfo').mousemove(function(event) {
 		var y = $(this).siblings('img').height() + 10;
 		$(this).siblings('img').show().css({"top":event.pageY-y, "left":event.pageX});
 	}).mouseleave(function() {
@@ -129,14 +131,12 @@ $(document).ready(function(){
 
 	// make anchors into buttons
 	$('form a[target=_blank]').button().css("font-size", "0.7em");
-
-	$('input[name=blankcardimage]').val("123");
 });
 </script>
 
 <style type='text/css'>
 	span.title { display: inline-block;  width: 200px; height: 20px; text-align:right; margin-right: 4px; font-weight: bold; }
-	span.imageinfo { display: inline-block; width: 120px; }
+	span.imageinfo { display: inline-block; width: 80px; }
 	form a, form img { vertical-align: middle; }
 	input.file { font-size: 0.7em; }
 </style>
