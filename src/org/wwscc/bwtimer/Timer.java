@@ -377,9 +377,7 @@ public class Timer extends JPanel implements ActionListener
 		{
 			Logging.logSetup("bwtimer");
 			final Timer t = new Timer();
-			t.getRootPane().setDefaultButton(t.df);
-			
-			JFrame f = new JFrame("Timer");
+			final JFrame f = new JFrame("Timer");
 			f.setJMenuBar(t.getMenuBar());
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			f.getContentPane().add(t);
@@ -394,10 +392,11 @@ public class Timer extends JPanel implements ActionListener
 				}
 			});
 			f.addWindowListener(new WindowAdapter() {
-				 public void windowOpened(WindowEvent e) {
+				 public void windowOpened(WindowEvent e) {					 
 					 t.openPort();
 				 }
 			});
+			f.getRootPane().setDefaultButton(t.df);
 		}
 		catch (Throwable e)
 		{
