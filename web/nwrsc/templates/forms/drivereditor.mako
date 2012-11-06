@@ -69,8 +69,8 @@ function setupDriverDialog(title)
 		messages: {}
 	});
 
-    $('#drivereditor [name=firstname]').rules("add", {required:true, minlength:3});
-    $('#drivereditor [name=lastname]').rules("add", {required:true, minlength:3});
+    $('#drivereditor [name=firstname]').rules("add", {required:true, minlength:2});
+    $('#drivereditor [name=lastname]').rules("add", {required:true, minlength:2});
     $('#drivereditor [name=email]').rules("add", {required:true, minlength:3});
 
 

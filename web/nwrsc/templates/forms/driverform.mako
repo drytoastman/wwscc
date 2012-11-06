@@ -7,7 +7,7 @@
 %>
 
 <form id='drivereditor' action='${action}' method='${method}'>
-<div id='driverhelp'>First Name, Last Name and Unique/Email require at least 3 characters each</div>
+<div id='driverhelp'>First Name, Last Name and Unique/Email require at least 2 characters each</div>
 <input name='driverid' type='hidden' value='-1'/>
 <table> <tbody>
 

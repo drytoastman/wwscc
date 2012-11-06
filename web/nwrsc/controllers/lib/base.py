@@ -109,6 +109,8 @@ class BaseController(WSGIController):
 			for db in dblist:
 				if db.name == startseries:
 					ret.append(db.name)
+					if startseries == db.parentseries:
+						return ret # just a loop now
 					startseries = db.parentseries
 					break
 
