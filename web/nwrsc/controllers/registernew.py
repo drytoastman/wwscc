@@ -171,6 +171,9 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 			return render_mako('/register/login.mako')
 
 		c.fields = self.session.query(DriverField).all()
+		for field in c.fields:
+			setattr(c.driver, field.name, c.driver.getExtra(field.name))
+
 		for e in c.events:
 			e.regentries = self.session.query(Registration).join('car') \
 						.filter(Registration.eventid==e.id).filter(Car.driverid==c.driverid).all()
@@ -264,8 +267,11 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 	def getprofile(self):
 		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
 		c.fields = self.session.query(DriverField).all()
+		for field in c.fields:
+			setattr(c.driver, field.name, c.driver.getExtra(field.name))
+
 		return {'data': str(render_mako_def('/register/profile.mako', 'profile'))}
-		 
+
 	@jsonify
 	def getcars(self):
 		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
