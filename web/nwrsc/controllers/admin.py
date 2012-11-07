@@ -148,6 +148,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 	def scripts(self):
 		response.headers['Cache-Control'] = 'max-age=360' 
 		response.headers.pop('Pragma', None)
+		c.fields = self.session.query(DriverField).all()
 		return render_mako('/forms/careditor.mako') + render_mako('/forms/drivereditor.mako')
 
 
