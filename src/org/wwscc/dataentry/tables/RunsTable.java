@@ -6,7 +6,7 @@
  * All rights reserved.
  */
 
-package org.wwscc.dataentry;
+package org.wwscc.dataentry.tables;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -31,7 +31,7 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
-import org.wwscc.dataentry.TableBase.SimpleDataTransfer;
+import org.wwscc.dataentry.tables.TableBase.SimpleDataTransfer;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
@@ -335,8 +335,8 @@ class RunsTransferHandler extends TransferHandler
 			return true;
 		}
 		catch (UnsupportedFlavorException ufe) { log.warning("Sorry, you pasted data I don't work with"); }
-		catch (IOException ioe) { log.log(Level.WARNING, "I/O Error during paste:{0}", ioe); }
-		catch (Exception e) { log.log(Level.WARNING, "General error during paste:{0}", e); }
+		catch (IOException ioe) { log.log(Level.WARNING, "I/O Error during paste:{0}", ioe.getMessage()); }
+		catch (Exception e) { log.log(Level.WARNING, "General error during paste:{0}", e.getMessage()); }
 
 		return false;
 	}

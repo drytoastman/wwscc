@@ -11,6 +11,7 @@ package org.wwscc.dataentry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.wwscc.dataentry.tables.RunsTable;
 import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;

@@ -6,7 +6,7 @@
  * All rights reserved.
  */
 
-package org.wwscc.dataentry;
+package org.wwscc.dataentry.tables;
 
 import java.io.IOException;
 import java.util.ArrayList;

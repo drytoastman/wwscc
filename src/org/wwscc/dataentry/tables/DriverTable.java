@@ -6,7 +6,7 @@
  * All rights reserved.
  */
 
-package org.wwscc.dataentry;
+package org.wwscc.dataentry.tables;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -43,7 +43,8 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import org.wwscc.dataentry.TableBase.SimpleDataTransfer;
+import org.wwscc.dataentry.Sounds;
+import org.wwscc.dataentry.tables.TableBase.SimpleDataTransfer;
 import org.wwscc.dialogs.TextRunsDialog;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;

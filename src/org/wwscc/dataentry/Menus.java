@@ -100,11 +100,13 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		results.add(createItem("Results Page", null));
 		results.add(createItem("Admin Page", null));
 
+		/*
 		JMenu debug = new JMenu("Debug");
 		add(debug);
 		debug.add(createItem("Start Fake User", null));
 		debug.add(createItem("Stop Fake User", null));
 		debug.add(createItem("Configure Fake User", null));
+		*/
 	}
 
 	protected final JMenuItem createItem(String title, KeyStroke ks)
