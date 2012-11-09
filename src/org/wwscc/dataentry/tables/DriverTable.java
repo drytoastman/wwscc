@@ -101,6 +101,7 @@ public class DriverTable extends TableBase implements MessageListener
 				Sounds.playBlocked();
 				((EntryModel)getModel()).addCar((Integer)o);
 				scrollTable(getRowCount(), 0);
+				getParent().repaint();
 				break;
 
 			case CAR_CHANGE:

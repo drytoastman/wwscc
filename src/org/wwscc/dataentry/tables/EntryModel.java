@@ -59,12 +59,23 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 			log.warning("Failed to fetch entrant data, perhaps try again");
 			return;
 		}
+		
+		if (tableData.contains(e))
+		{
+			if (!Prefs.useReorderingTable())
+			{
+				log.log(Level.WARNING, "Card #{0} already in table", e.getCarId());
+				return;
+			}
+			tableData.remove(e); // remove it from position and following will readd at the end
+		}
+		
 		tableData.add(e);
 
 		try {
 			Database.d.registerCar(carid);
 		} catch (IOException ioe) {
-			log.log(Level.INFO, "Registration during car add failed: " + ioe, ioe);
+			log.log(Level.INFO, "Registration during car add failed: {0}" + ioe.getMessage(), ioe);
 		}
 
 		if (Prefs.useDoubleCourseMode())

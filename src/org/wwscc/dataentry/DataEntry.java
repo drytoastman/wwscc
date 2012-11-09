@@ -130,7 +130,8 @@ public class DataEntry extends JFrame implements MessageListener
 		content.add(tableScroll, "grow, wrap");
 		content.add(infoBoxes, "spanx 3, growx, wrap");
 
-		//fakeUser = new FakeUser(runsTable, timeEntry);
+		FakeUser fakeUser = new FakeUser(tableScroll.getRunsTable(), timeEntry);
+		
 		setContentPane(content);
 		setSize(1024,768);
 		setVisible(true);

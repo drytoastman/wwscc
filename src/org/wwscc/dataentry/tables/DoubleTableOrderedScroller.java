@@ -45,4 +45,7 @@ public class DoubleTableOrderedScroller extends JScrollPane
 			}
 		});
 	}
+	
+	public RunsTable getRunsTable() { return runsTable; }
+	public DriverTable getDriverTable() { return driverTable; }
 }

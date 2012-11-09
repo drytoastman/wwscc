@@ -25,8 +25,8 @@ import org.wwscc.util.Messenger;
  */
 public class BarcodeScannerWatcher implements KeyEventDispatcher
 {
-	LinkedList<KeyEvent> queue;
-	Timer queuePush;
+	private final LinkedList<KeyEvent> queue;
+	private final Timer queuePush;
 	Character stx, etx;
 	
 	public BarcodeScannerWatcher()
@@ -120,10 +120,13 @@ public class BarcodeScannerWatcher implements KeyEventDispatcher
 	/**
 	 * Dump all of the queued key events back into the regular system.
 	 */
-	protected void dumpQueue()
+	synchronized protected void dumpQueue()
 	{
-		for (KeyEvent ke : queue)
-			KeyboardFocusManager.getCurrentKeyboardFocusManager().redispatchEvent(ke.getComponent(), ke);
-		queue.clear();
+		KeyboardFocusManager mgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+		while (queue.size() > 0)
+		{
+			KeyEvent ke = queue.pop();
+			mgr.redispatchEvent(ke.getComponent(), ke);
+		}
 	}
 }

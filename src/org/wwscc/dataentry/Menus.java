@@ -42,6 +42,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 
 	Map <String,JMenuItem> items;
 	JCheckBoxMenuItem dcMode;
+	JCheckBoxMenuItem reorderMode;
 	JFileChooser chooser;
 	ButtonGroup runGrouping;
 
@@ -86,6 +87,10 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		dcMode.addActionListener(this);
 		event.add(dcMode);
 
+		reorderMode = new JCheckBoxMenuItem("Constant Staging Mode", Prefs.useReorderingTable());
+		reorderMode.addActionListener(this);
+		event.add(reorderMode);
+
 		/* Results Menu */
 		JMenu results = new JMenu("Reports");
 		add(results);
@@ -100,13 +105,11 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		results.add(createItem("Results Page", null));
 		results.add(createItem("Admin Page", null));
 
-		/*
 		JMenu debug = new JMenu("Debug");
 		add(debug);
 		debug.add(createItem("Start Fake User", null));
 		debug.add(createItem("Stop Fake User", null));
 		debug.add(createItem("Configure Fake User", null));
-		*/
 	}
 
 	protected final JMenuItem createItem(String title, KeyStroke ks)
@@ -183,6 +186,10 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		else if (cmd.equals("Use Double Course Mode"))
 		{
 			Prefs.setDoubleCourseMode(dcMode.getState());
+		}
+		else if (cmd.equals("Constant Staging Mode"))
+		{
+			Prefs.setReorderingTable(reorderMode.getState());
 		}
 		else if (cmd.equals("Find"))
 		{

@@ -63,10 +63,10 @@ public class FakeUser implements MessageListener
 				break;
 			case CONFIGURE_FAKE_USER:
 				waitTime = Integer.parseInt(JOptionPane.showInputDialog(null, "Enter interval time in ms", "Fake User Wait Time", JOptionPane.INFORMATION_MESSAGE));
-                                min = 1000;
-                                max = 0;
-                                all = 0;
-                                cnt = 0;
+				min = 1000;
+				max = 0;
+				all = 0;
+				cnt = 0;
 				break;
 		}
 	}

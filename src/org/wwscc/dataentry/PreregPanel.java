@@ -2,7 +2,7 @@
  * This software is licensed under the GPLv3 license, included as
  * ./GPLv3-LICENSE.txt in the source distribution.
  *
- * Portions created by Brett Wilson are Copyright 2008 Brett Wilson.
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
  * All rights reserved.
  */
 package org.wwscc.dataentry;
@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -30,6 +31,7 @@ import org.wwscc.util.Messenger;
  */
 class PreregPanel extends JPanel implements MessageListener, ActionListener, KeyListener
 {
+	private static final Logger log = Logger.getLogger(PreregPanel.class.getCanonicalName());
 	JScrollPane treePane;
 	JPanel quickAddPanel;
 	JTextField quickTextField;
@@ -71,16 +73,7 @@ class PreregPanel extends JPanel implements MessageListener, ActionListener, Key
 			try
 			{
 				int carID = Integer.parseInt(carText);
-				if(Database.d.isInOrder(carID))
-				{
-					JOptionPane.showMessageDialog(
-						getRootPane(),
-						"The inputed registration card # is already in the run order.",
-						"User Input Error",
-						JOptionPane.ERROR_MESSAGE
-					);
-				}
-				else if(!Database.d.isRegistered(carID))
+				if(!Database.d.isRegistered(carID))
 				{
 					JOptionPane.showMessageDialog(
 						getRootPane(),
@@ -134,25 +127,22 @@ class PreregPanel extends JPanel implements MessageListener, ActionListener, Key
 	@Override
 	public void event(MT type, Object data)
 	{
-		if(type == MT.QUICK_ADD)
+		switch (type)
 		{
-			if(getParent() instanceof JTabbedPane)
-			{
+			case QUICK_ADD:
+				if (!(getParent() instanceof JTabbedPane))
+				{
+					log.severe("Quick Add no longer in a tabbed pane");
+					return;
+				}
 				((JTabbedPane)getParent()).setSelectedComponent(this);
 				quickTextField.requestFocus();
-			}
-			else
-			{
-				JOptionPane.showMessageDialog(
-					getRootPane(),
-					"Quick Add no longer in a tabbed pane.",
-					"Error",
-					JOptionPane.ERROR_MESSAGE);
-			}
-		}
-		else if (type == MT.SCANNER_INPUT)
-		{
-			System.out.println("scanner " + data);
+				break;
+				
+			case SCANNER_INPUT:
+				quickTextField.setText(((Integer)data).toString());
+				processQuickTextField();
+				break;
 		}
 	}
 }
