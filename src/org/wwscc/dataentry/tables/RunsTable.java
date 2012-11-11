@@ -29,10 +29,8 @@ import javax.swing.TransferHandler;
 import javax.swing.border.LineBorder;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import org.wwscc.dataentry.tables.TableBase.SimpleDataTransfer;
-import org.wwscc.storage.Database;
 import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
@@ -61,7 +59,6 @@ public class RunsTable extends TableBase implements MessageListener, ActionListe
 		);
 		
 		Messenger.register(MT.TIME_ENTERED, this);
-		Messenger.register(MT.COURSE_CHANGED, this);
 	}
 
 
@@ -123,20 +120,6 @@ public class RunsTable extends TableBase implements MessageListener, ActionListe
 		{
 			case TIME_ENTERED:
 				setSelectedRun((Run)o);
-				break;
-				
-			case COURSE_CHANGED:
-				JTableHeader h = getTableHeader();
-				if (Database.d.getCurrentCourse() > 1)
-				{
-					h.setForeground(Color.BLUE);
-					h.setBorder(new LineBorder(Color.BLUE));
-				}
-				else
-				{
-					h.setForeground(Color.BLACK);
-					h.setBorder(new LineBorder(Color.GRAY, 1));
-				}
 				break;
 		}
 	}

@@ -421,7 +421,9 @@ public abstract class SQLDataInterface extends DataInterface
 			if (loadruns)
 				runs = executeSelect("GETRUNSBYCARID", newList(carid, currentEvent.id, course));
 			List<Entrant> e = loadEntrants(d, runs);
-			return e.get(0);
+			if (e.size() > 0)
+				return e.get(0);
+			return null;
 		}
 		catch (Exception ioe)
 		{

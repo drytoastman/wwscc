@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
+import org.wwscc.barcodes.BarcodeScannerWatcher;
 import org.wwscc.components.CurrentDatabaseLabel;
 import org.wwscc.components.MyIpLabel;
 import org.wwscc.dataentry.tables.DoubleTableOrderedScroller;

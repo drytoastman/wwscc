@@ -58,7 +58,6 @@ class PreregPanel extends JPanel implements MessageListener, ActionListener, Key
 		this.add(quickAddPanel, BorderLayout.NORTH);
 		this.add(treePane, BorderLayout.CENTER);
 		Messenger.register(MT.QUICK_ADD, this);
-		Messenger.register(MT.SCANNER_INPUT, this);
 	}
 	
 	/**
@@ -137,11 +136,6 @@ class PreregPanel extends JPanel implements MessageListener, ActionListener, Key
 				}
 				((JTabbedPane)getParent()).setSelectedComponent(this);
 				quickTextField.requestFocus();
-				break;
-				
-			case SCANNER_INPUT:
-				quickTextField.setText(((Integer)data).toString());
-				processQuickTextField();
 				break;
 		}
 	}

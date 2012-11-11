@@ -5,7 +5,7 @@
  * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
  * All rights reserved.
  */
-package org.wwscc.dataentry;
+package org.wwscc.barcodes;
 
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
@@ -16,45 +16,35 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import javax.swing.Timer;
 import org.wwscc.util.MT;
+import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
+import org.wwscc.util.Prefs;
 
 /**
  * EventDispatcher that watches incoming key characters to look for the type
  * of characters and timing that indicates input from a barcode scanner.  Turn
  * it into an internal event and keep the keystrokes from rest of the application.
  */
-public class BarcodeScannerWatcher implements KeyEventDispatcher
+public class BarcodeScannerWatcher implements KeyEventDispatcher, MessageListener
 {
 	private final LinkedList<KeyEvent> queue;
 	private final Timer queuePush;
-	Character stx, etx;
-	
+	ScannerConfig config;
+
 	public BarcodeScannerWatcher()
 	{
-		stx = '\002';
-		etx = '\003';
+		config = new ScannerConfig();
+		config.decode(Prefs.getScannerConfig());
+		Messenger.register(MT.SCANNER_OPTIONS, this);
+
 		queue = new LinkedList<KeyEvent>();
-		queuePush = new Timer(100, null);
+		queuePush = new Timer(config.delay, null);
 		queuePush.setCoalesce(true);
 		queuePush.setRepeats(false);
 		queuePush.addActionListener(new ActionListener() {
 			// timeout, dump it all
 			public void actionPerformed(ActionEvent ae) { dumpQueue(); }
 		});
-	}
-	
-	/**
-	 * Configure the attributes for the scanner
-	 * @param stx
-	 * @param etx
-	 * @param spacing 
-	 */
-	public void configure(char stx, char etx, int spacing)
-	{
-		this.stx = stx;
-		this.etx = etx;
-		queuePush.setInitialDelay(spacing);
-		queuePush.setDelay(spacing);
 	}
 	
 	/**
@@ -94,16 +84,16 @@ public class BarcodeScannerWatcher implements KeyEventDispatcher
 				Character c = ke.getKeyChar();
 				if (firstChar)
 				{
-					if (c != stx)
+					if (c != config.stx)
 						return false;
 					firstChar = false;
 					continue;
 				}
 
-				if (c == etx) {
+				if (c == config.etx) {
 					try {
 						queue.clear();
-						Messenger.sendEvent(MT.SCANNER_INPUT, Integer.parseInt(toconvert.toString()));
+						Messenger.sendEvent(MT.CAR_ADD, Integer.parseInt(toconvert.toString()));
 					} catch (NumberFormatException nfe) {}
 					return false;
 				}
@@ -127,6 +117,22 @@ public class BarcodeScannerWatcher implements KeyEventDispatcher
 		{
 			KeyEvent ke = queue.pop();
 			mgr.redispatchEvent(ke.getComponent(), ke);
+		}
+	}
+
+	@Override
+	public void event(MT type, Object data) 
+	{
+		switch (type)
+		{
+			case SCANNER_OPTIONS:
+				ScannerOptionsDialog dialog = new ScannerOptionsDialog(config);
+				dialog.doDialog("Scanner Config", null);
+				config = dialog.getResult();
+				queuePush.setInitialDelay(config.delay);
+				queuePush.setDelay(config.delay);
+				Prefs.setScannerConfig(config.encode());
+				break;
 		}
 	}
 }
