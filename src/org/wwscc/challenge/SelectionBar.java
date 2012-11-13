@@ -20,6 +20,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
+import org.wwscc.components.CurrentDatabaseLabel;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
@@ -33,7 +34,8 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 {
 	private static final Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
 
-	JLabel seriesLabel, connectLabel;
+	JLabel connectLabel;
+	CurrentDatabaseLabel seriesLabel;
 	JComboBox<Event> eventSelect;
 	JComboBox<Challenge> challengeSelect;
 
@@ -50,7 +52,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 
 		Font f = new Font(Font.DIALOG, Font.BOLD, 14);
 
-		seriesLabel = new JLabel("");
+		seriesLabel = new CurrentDatabaseLabel();
 		seriesLabel.setFont(f.deriveFont(Font.PLAIN));
 		challengeSelect  = createCombo("challengeChange");
 		eventSelect = createCombo("eventChange");
