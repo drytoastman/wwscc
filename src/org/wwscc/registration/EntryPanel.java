@@ -2,10 +2,9 @@
  * This software is licensed under the GPLv3 license, included as
  * ./GPLv3-LICENSE.txt in the source distribution.
  *
- * Portions created by Brett Wilson are Copyright 2008 Brett Wilson.
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
  * All rights reserved.
  */
-
 
 package org.wwscc.registration;
 
@@ -13,19 +12,29 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.print.DocFlavor;
+import javax.print.PrintException;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.SimpleDoc;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.standard.Copies;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
-
 import net.miginfocom.swing.MigLayout;
+import org.wwscc.barcodes.Code39;
 import org.wwscc.components.DriverCarPanel;
 import org.wwscc.components.UnderlineBorder;
 import org.wwscc.storage.Car;
@@ -33,18 +42,21 @@ import org.wwscc.storage.Database;
 import org.wwscc.storage.Driver;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
+import org.wwscc.util.Prefs;
 
 
 public class EntryPanel extends DriverCarPanel
 {
-	private static Logger log = Logger.getLogger("org.wwscc.dataentry.DriverEntry");
+	private static final Logger log = Logger.getLogger(EntryPanel.class.getCanonicalName());
 
 	JButton addit, removeit;
+	JComboBox<PrintService> printers;
+	Code39 activeLabel;
 
 	public EntryPanel()
 	{
 		super();
-		setLayout(new MigLayout("", "fill"));
+		setLayout(new MigLayout("fill", "[250, grow 25][150, grow 25][150, grow 25]"));
 		Messenger.register(MT.EVENT_CHANGED, this);
 
 		RegListRenderer listRenderer = new RegListRenderer();
@@ -59,54 +71,93 @@ public class EntryPanel extends DriverCarPanel
 		removeit = new JButton("Unregister Entrant");
 		removeit.addActionListener(this);
 		removeit.setEnabled(false);
+		
+		activeLabel = new Code39();
 
 		/* Delete button, row 0 */
-		add(createTitle("1. Search"), "spanx 4, wrap");
+		add(createTitle("1. Search"), "spanx 3, growx, wrap");
 
-		add(new JLabel("First Name"), "");
-		add(firstSearch, "wrap");
-		add(new JLabel("Last Name"), "");
-		add(lastSearch, "wrap");
-		add(smallButton("Clear"), "skip, wrap");
+		add(new JLabel("First Name"), "split 2");
+		add(firstSearch, "grow, wrap");
+		add(new JLabel("Last Name"), "split 2");
+		add(lastSearch, "grow, wrap");
+		add(smallButton("Clear"), "right, wrap");
 
-		add(createTitle("2. Driver"), "spanx 4, wrap");
-		add(dscroll, "spanx 2, spany 2, hmin 125");
-		add(smallButton("New Driver"), "");
-		add(smallButton("Edit Driver"), "wrap");
-		add(driverInfo, "spanx2, wrap");
+		add(createTitle("2. Driver"), "spanx 3, growx, gaptop 4, wrap");
+		add(dscroll, "spany 5, grow");
+		add(smallButton("New Driver"), "growx");
+		add(smallButton("Edit Driver"), "growx, wrap");
+		driverInfo.setLineWrap(false);
+		add(driverInfo, "spanx 2, growx, wrap");
+		add(activeLabel, "center, spanx 2, wrap");
+		add(printerList(), "center, spanx 2, wrap");
+		add(smallButton("Print Label"), "center, growx, spanx 2, wrap");
 
-		add(createTitle("3. Car"), "spanx 4, wrap");
-		add(cscroll, "spanx 2, spany 2, hmin 125");
-		add(smallButton("New Car"), "");
-		add(smallButton("New From"), "wrap");
-		add(carInfo, "spanx2, wrap");
-
-		add(createTitle("4. Do it"), "spanx 4, wrap");
-		add(addit, "");
+		
+		add(createTitle("3. Car"), "spanx 3, growx, gaptop 4, wrap");
+		add(cscroll, "spany 2, hmin 150, grow");
+		add(smallButton("New Car"), "growx");
+		add(smallButton("New From"), "growx, wrap"); 
+		carInfo.setLineWrap(false);
+		add(carInfo, "spanx 2, growx, top, wrap");
+		
+		add(createTitle("4. Do it"), "spanx 3, growx, gaptop 4, wrap");
+		add(addit, "split 2, spanx 3");
 		add(removeit, "wrap");
+		
 	}
 
-	protected JComponent createTitle(String text)
+	private JComponent createTitle(String text)
 	{
 		JLabel lbl = new JLabel(text);
-		lbl.setFont(new Font("serif", Font.BOLD, 16));
+		lbl.setFont(new Font("serif", Font.BOLD, 18));
 		lbl.setBorder(new UnderlineBorder(0, 0, 0, 0));
 
 		return lbl;
 	}
 
-	protected JButton smallButton(String text)
+	private JButton smallButton(String text)
 	{
 		JButton b = new JButton(text);
 		b.setFont(new Font(null, Font.PLAIN, 11));
 		b.addActionListener(this);
 		return b;
 	}
-
+	
+	private JComboBox<PrintService> printerList()
+	{
+		HashPrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+		aset.add(new Copies(2)); // silly request but cuts out fax, xps, etc.
+        PrintService[] printServices = PrintServiceLookup.lookupPrintServices(
+				DocFlavor.SERVICE_FORMATTED.PRINTABLE, 
+				aset);		
+		printers = new JComboBox<PrintService>(printServices);
+		printers.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList jlist, Object e, int i, boolean bln, boolean bln1) {
+				super.getListCellRendererComponent(jlist, e, i, bln, bln1);
+				setText(((PrintService)e).getName());
+				return this;
+			}
+		});		
+		printers.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent ie) {
+				Prefs.setDefaultPrinter(((PrintService)printers.getSelectedItem()).getName());
+			}
+		});
+		
+		for (PrintService ps : printServices)
+		{
+			if (ps.getName().equals(Prefs.getDefaultPrinter()))
+				printers.setSelectedItem(ps);
+		}
+		
+		return printers;
+	}
 
 	/**
 	 * Process events from the various buttons
-	 *
 	 * @param e 
 	 */
 	@Override
@@ -124,6 +175,15 @@ public class EntryPanel extends DriverCarPanel
 			{
 					Database.d.unregisterCar(selectedCar.getId());
 					reloadCars(selectedCar);
+			}
+			else if (cmd.equals("Print Label") && (selectedDriver != null))
+			{
+				try {
+					PrintService ps = (PrintService)printers.getSelectedItem();
+					ps.createPrintJob().print(new SimpleDoc(activeLabel, DocFlavor.SERVICE_FORMATTED.PRINTABLE, null), null);
+				} catch (PrintException ex) {
+					log.log(Level.SEVERE, "Barcode print failed: " + ex.getMessage(), ex);
+				}
 			}
 			else
 				super.actionPerformed(e);
@@ -143,6 +203,17 @@ public class EntryPanel extends DriverCarPanel
 	public void valueChanged(ListSelectionEvent e) 
 	{
 		super.valueChanged(e);
+		if (selectedDriver != null)
+		{
+			activeLabel.setValue(""+selectedDriver.getId(), String.format("%d - %s", selectedDriver.getId(), selectedDriver.getFullName()));
+			activeLabel.repaint();
+		}
+		else
+		{
+			activeLabel.setValue("", "");
+			activeLabel.repaint();
+		}
+		
 		if (selectedCar != null)
 		{
 			addit.setEnabled(!selectedCar.isRegistered);

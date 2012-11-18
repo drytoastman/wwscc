@@ -41,6 +41,7 @@ public class Prefs
 	public static String getLastApplication() { return prefs.get("application", ""); }
 	public static int getLightCount() { return prefs.getInt("lights", 2); }
 	public static String getScannerConfig() { return prefs.get("scannerconfig", ""); }
+	public static String getDefaultPrinter() { return prefs.get("defaultprinter", ""); }
 	public static Rectangle getTimerWindow()
 	{
 		Rectangle r = new Rectangle();
@@ -65,6 +66,7 @@ public class Prefs
 	public static void setLastApplication (String s) { prefs.put("application", s); }
 	public static void setLightCount(int i) { prefs.putInt("lights", i); }
 	public static void setScannerConfig(String s) { prefs.put("scannerconfig", s); }
+	public static void setDefaultPrinter(String s) { prefs.put("defaultprinter", s); }
 	public static void setTimerWindow(Rectangle r)
 	{
 		prefs.putInt("timer.x", r.x);

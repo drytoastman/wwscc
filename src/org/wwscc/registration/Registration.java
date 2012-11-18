@@ -30,7 +30,7 @@ import org.wwscc.util.Prefs;
 
 public class Registration extends JFrame implements ActionListener
 {
-	private static Logger log = Logger.getLogger(Registration.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(Registration.class.getCanonicalName());
 
 	SelectionBar setupBar;
 	EntryPanel driverEntry;
@@ -48,11 +48,8 @@ public class Registration extends JFrame implements ActionListener
 		content.add(setupBar, BorderLayout.NORTH);
 		content.add(driverEntry, BorderLayout.CENTER);
 
-		setContentPane(content);
-		setSize(450, 570);
-		setVisible(true);
-		
-		log.info("Starting Application: " + new java.util.Date());
+		setContentPane(content);		
+		log.log(Level.INFO, "Starting Registration: {0}", new java.util.Date());
 
 		JMenu file = new JMenu("File");
 		file.add(createItem("Open Local Database"));
@@ -63,13 +60,16 @@ public class Registration extends JFrame implements ActionListener
 		
 		JMenuBar bar = new JMenuBar();
 		bar.add(file);
-		this.setJMenuBar(bar);
+		setJMenuBar(bar);
 
 		Database.openDefault();
 		Database.d.trackRegChanges(true);
+		
+		pack();
+		setVisible(true);
 	}
 
-	protected JMenuItem createItem(String title)
+	private JMenuItem createItem(String title)
 	{
 		JMenuItem item = new JMenuItem(title);
 		item.addActionListener(this);
@@ -109,7 +109,7 @@ public class Registration extends JFrame implements ActionListener
 				final String sp[] = spec.split("/");
 				if (sp.length != 2)
 				{
-					log.severe("Invalid network spec: " + spec);
+					log.log(Level.SEVERE, "Invalid network spec: {0}", spec);
 					return;
 				}
 
@@ -119,7 +119,7 @@ public class Registration extends JFrame implements ActionListener
 		}
 		else
 		{
-			log.info("Unknown command from menubar: " + cmd);
+			log.log(Level.INFO, "Unknown command from menubar: {0}", cmd);
 		}
 	}
 			

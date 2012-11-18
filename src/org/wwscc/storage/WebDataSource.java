@@ -24,7 +24,7 @@ import org.wwscc.util.ByteWriter;
  */
 public class WebDataSource extends SQLDataInterface
 {
-	private static Logger log = Logger.getLogger(WebDataSource.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(WebDataSource.class.getCanonicalName());
 
 	public static final int INTTYPE = 1;
 	public static final int LONGTYPE = 2;
@@ -316,7 +316,7 @@ public class WebDataSource extends SQLDataInterface
 
 	/**
 	 * Implement a 'transaction' start by beginning a queue of requests rather then
-	 * sending them immediatly.
+	 * sending them immediately.
 	 * @throws java.io.IOException
 	 */
 	@Override
