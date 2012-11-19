@@ -86,7 +86,7 @@ public class Registration extends JFrame implements ActionListener
 		}
 		else if (cmd.equals("Open Local Database"))
 		{
-			Database.open();
+			Database.open(true, false);
 			Database.d.trackRegChanges(true);
 		}
 		else if (cmd.equals("Download Database Copy"))

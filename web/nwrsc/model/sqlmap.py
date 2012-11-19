@@ -59,6 +59,7 @@ sqlmap = {
 'SWAPRUNS':'update runs set carid=:h1 where eventid=:h2 and course=:h3 and carid=:h4',
 'TRACK':'insert into changes (type, args) values (:h1,:h2)',
 'TRACKCLEAR':'delete from changes',
+'TRACKCOUNT':'select count(*) from changes',
 'UNREGISTERCAR':'delete from registered where eventid=:h1 and carid=:h2',
 'UPDATECAR':'update cars set driverid=:h1,year=:h2,make=:h3,model=:h4,color=:h5,number=:h6,classcode=:h7,indexcode=:h8 where id=:h9',
 'UPDATECHALLENGE':'update challenges set eventid=:h1,name=:h2,depth=:h3 where id=:h4',

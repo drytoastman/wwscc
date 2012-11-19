@@ -169,7 +169,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		}
 		else if (cmd.equals("Open Database"))
 		{
-			Database.open();
+			Database.open(true, true);
 		}
 
 		else if (cmd.equals("Download and Lock Database"))

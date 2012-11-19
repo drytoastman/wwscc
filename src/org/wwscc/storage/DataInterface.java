@@ -48,6 +48,8 @@ public abstract class DataInterface
 
 	public abstract void clearChanges();
 	public abstract List<Change> getChanges();
+	public abstract int countChanges();
+	
 	public abstract String getSetting(String key);
 	public abstract boolean getBooleanSetting(String key);
 	

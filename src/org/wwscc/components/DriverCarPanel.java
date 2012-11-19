@@ -31,7 +31,6 @@ import javax.swing.ListModel;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.dialogs.CarDialog;
@@ -48,7 +47,7 @@ import org.wwscc.util.SearchTrigger;
 
 public abstract class DriverCarPanel extends JPanel implements ActionListener, ListSelectionListener, FocusListener, MessageListener
 {
-	private static Logger log = Logger.getLogger(DriverCarPanel.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(DriverCarPanel.class.getCanonicalName());
 
 	protected JTextField firstSearch;
 	protected JTextField lastSearch;
@@ -131,7 +130,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		}
 	}
 				
-	protected JTextArea displayArea(String text)
+	private JTextArea displayArea(String text)
 	{
 		JTextArea ta = new JTextArea(text);
 		ta.setEditable(false);
@@ -185,7 +184,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	 */
 	public void reloadCars(Car select)
 	{
-		log.fine("Reload cars ("+select+")");
+		log.log(Level.FINE, "Reload cars ({0})", select);
 		Driver d = (Driver)drivers.getSelectedValue();
 
 		if (d == null) // nothing to do
@@ -292,7 +291,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 
 		else
 		{
-			log.info("Unknown command in DriverEntry: " + cmd);
+			log.log(Level.INFO, "Unknown command in DriverEntry: {0}", cmd);
 		}
 	}
 
@@ -346,10 +345,10 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	public String driverDisplay(Driver d)
 	{
 		StringBuilder ret = new StringBuilder();
-		ret.append(d.getFullName() + "\n");
-		ret.append(d.getAddress() + "\n");
-		ret.append(d.getCity() + ", " + d.getState() + " " + d.getZip() + "\n");
-		ret.append(d.getEmail() + "\n");
+		ret.append(d.getFullName()).append("\n");
+		ret.append(d.getAddress()).append("\n");
+		ret.append(String.format("%s, %s %s\n", d.getCity(), d.getState(), d.getZip()));
+		ret.append(d.getEmail()).append("\n");
 		ret.append(d.getPhone());
 		return ret.toString();
 	}

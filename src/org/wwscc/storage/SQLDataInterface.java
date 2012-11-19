@@ -228,6 +228,18 @@ public abstract class SQLDataInterface extends DataInterface
 			logError("getChanges", ioe);
 		}
 	}
+	
+	public int countChanges()
+	{
+		try {
+			ResultData data = executeSelect("TRACKCOUNT", null);
+			if (data.size() > 0)
+				return data.get(0).getInt("count(*)");
+		} catch (Exception ioe) {
+			logError("countChanges", ioe);
+		}
+		return -1;
+	}
 
 	public void trackChange(String type, Serializable o)
 	{

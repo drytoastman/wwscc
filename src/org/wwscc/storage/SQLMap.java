@@ -108,6 +108,7 @@ public class SQLMap
 
 		sql.put("TRACK", "insert into changes (type, args) values (?,?)");
 		sql.put("TRACKCLEAR", "delete from changes");
+		sql.put("TRACKCOUNT", "select count(*) from changes");
 		
 		sql.put("UNREGISTERCAR", "delete from registered where eventid=? and carid=?");
 		sql.put("UPDATECAR", "update cars set "+ AUTO.getCarSetStr() + " where id=?");

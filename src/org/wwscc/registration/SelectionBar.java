@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 import net.miginfocom.swing.MigLayout;
+import org.wwscc.components.CurrentDatabaseLabel;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
 import org.wwscc.util.MT;
@@ -34,13 +35,14 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 	private static Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
 
 	JComboBox<Event> eventSelect;
-
+	JLabel count;
+	
 	public SelectionBar()
 	{
 		super();
 
 		Messenger.register(MT.DATABASE_CHANGED, this);
-		setLayout(new MigLayout("ins 2, fill"));
+		setLayout(new MigLayout("ins 2, center, gap 4"));
 		setBorder(new BevelBorder(0));
 
 		Font f = new Font(Font.DIALOG, Font.BOLD, 14);
@@ -48,12 +50,20 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		eventSelect.setActionCommand("eventChange");
 		eventSelect.addActionListener(this);
 
-		JLabel l = new JLabel("Event:");
-		l.setFont(f);
+		JLabel dl = new JLabel("Database:");
+		dl.setFont(f);
+		JLabel el = new JLabel("Event:");
+		el.setFont(f);
+		JLabel cl = new JLabel("Changes:");
+		cl.setFont(f);
+		count = new JLabel(""+Database.d.countChanges());
 
-		add(l, "al center, split");
-		add(eventSelect);
-		add(Box.createHorizontalStrut(40));
+		add(dl, "");
+		add(new CurrentDatabaseLabel(), "");
+		add(el, "gap left 25");
+		add(eventSelect, "");
+		add(cl, "gap left 25");
+		add(count, "");
 	}
 
 	
@@ -69,6 +79,8 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 					eventSelect.setSelectedIndex(select);
 				else if (eventSelect.getItemCount() > 0)
 					eventSelect.setSelectedIndex(0);
+				
+				count.setText("" + Database.d.countChanges());
 				break;
 		}
 	}

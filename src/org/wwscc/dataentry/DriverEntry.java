@@ -15,10 +15,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -26,7 +23,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
-
 import org.wwscc.components.DriverCarPanel;
 import org.wwscc.components.UnderlineBorder;
 import org.wwscc.storage.Car;
@@ -38,7 +34,7 @@ import org.wwscc.util.Messenger;
 
 public class DriverEntry extends DriverCarPanel
 {
-	private static Logger log = Logger.getLogger(DriverEntry.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(DriverEntry.class.getCanonicalName());
 
 	JButton addit, changeit;
 	boolean carAlreadyInOrder = true;
@@ -107,7 +103,7 @@ public class DriverEntry extends DriverCarPanel
 	}
 
 
-	protected JComponent createTitle(String text)
+	private JComponent createTitle(String text)
 	{
 		JLabel lbl = new JLabel(text);
 		lbl.setFont(new Font("serif", Font.BOLD, 16));
@@ -116,7 +112,7 @@ public class DriverEntry extends DriverCarPanel
 		return lbl;
 	}
 
-	protected JButton smallButton(String text)
+	private JButton smallButton(String text)
 	{
 		JButton b = new JButton(text);
 		b.setFont(new Font(null, Font.PLAIN, 11));

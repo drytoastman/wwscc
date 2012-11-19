@@ -25,14 +25,14 @@ import org.wwscc.util.ThreadedClass;
  */
 public class ServiceFinder implements ThreadedClass
 {
-	private static Logger log = Logger.getLogger(ServiceFinder.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(ServiceFinder.class.getCanonicalName());
 	
 	private boolean done;
 	private MulticastSocket sock;
 	private InetAddress group;
 	private List<String> serviceNames;
 	private HashSet<FoundService> found;
-	private Vector<ServiceFinderListener> listeners;
+	private List<ServiceFinderListener> listeners;
 
 	public interface ServiceFinderListener
 	{
@@ -52,8 +52,7 @@ public class ServiceFinder implements ThreadedClass
 		group = InetAddress.getByName(ServiceAnnouncer.MDNSAddr);
 		sock = new MulticastSocket(ServiceAnnouncer.MDNSPortPlus);
 		listeners = new Vector<ServiceFinderListener>();
-		sock.joinGroup(group);		
-		
+		sock.joinGroup(group);
 	}
 	
 	public void addListener(ServiceFinderListener lis)
@@ -114,6 +113,8 @@ public class ServiceFinder implements ThreadedClass
 							ServiceMessage announcement = ServiceMessage.decodeMessage(incoming);
 							if (announcement.isAnnouncement() && serviceNames.contains(announcement.getService()))
 							{
+								if (recv.getAddress().equals(InetAddress.getLocalHost()))
+									continue; // ignore myself, they should use direct connection
 								FoundService decoded = new FoundService(recv.getAddress(), announcement);
 								if (found.add(decoded))
 								{
