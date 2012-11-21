@@ -8,6 +8,7 @@
 
 package org.wwscc.dataentry;
 
+import org.wwscc.dataentry.tables.RunsTable;
 import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;

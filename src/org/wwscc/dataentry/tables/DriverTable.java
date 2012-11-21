@@ -6,7 +6,7 @@
  * All rights reserved.
  */
 
-package org.wwscc.dataentry;
+package org.wwscc.dataentry.tables;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -43,7 +43,8 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import org.wwscc.dataentry.TableBase.SimpleDataTransfer;
+import org.wwscc.dataentry.Sounds;
+import org.wwscc.dataentry.tables.TableBase.SimpleDataTransfer;
 import org.wwscc.dialogs.TextRunsDialog;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
@@ -56,7 +57,7 @@ import org.wwscc.util.Messenger;
 /**
  * Table showing the driver entries.  Takes two columns and is placed into the scroll panel row header
  */
-public class DriverTable extends TableBase implements MessageListener
+public class DriverTable extends TableBase
 {
 	String activeSearch;
 	
@@ -73,10 +74,6 @@ public class DriverTable extends TableBase implements MessageListener
 
 		addMouseListener(new ContextMenu());
 		getTableHeader().addMouseListener( new RowHeaderTableResizer() );
-		
-		Messenger.register(MT.CAR_ADD, this);
-		Messenger.register(MT.CAR_CHANGE, this);
-		Messenger.register(MT.FIND_ENTRANT, this);
 	}
 
 	@Override
@@ -90,31 +87,6 @@ public class DriverTable extends TableBase implements MessageListener
 		setColumnWidths(tcm.getColumn(1), 80, 250, 400);
 		doLayout();
 	}
-
-	@Override
-	public void event(MT type, Object o)
-	{
-		switch (type)
-		{
-			case CAR_ADD:
-				Sounds.playBlocked();
-				((EntryModel)getModel()).addCar((Integer)o);
-				scrollTable(getRowCount(), 0);
-				break;
-
-			case CAR_CHANGE:
-				int row = getSelectedRow();
-				if ((row >= 0) && (row < getRowCount()))
-					((EntryModel)getModel()).replaceCar((Integer)o, row);
-				break;
-
-			case FIND_ENTRANT:
-				activeSearch = (String)o;
-				repaint();
-				break;
-		}
-	}
-	
 	
 	/**
 	 * Create a simple context menu for the driver columns to allow pasting

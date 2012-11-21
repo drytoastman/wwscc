@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -25,7 +26,7 @@ import org.wwscc.util.Prefs;
 
 public class Menus extends JMenuBar implements ActionListener
 {
-	private static Logger log = Logger.getLogger("org.wwscc.admin.Menus");
+	private static final Logger log = Logger.getLogger(Menus.class.getCanonicalName());
 
 	Map <String,JMenuItem> items;
 
@@ -50,7 +51,7 @@ public class Menus extends JMenuBar implements ActionListener
 		edit.add(createItem("Find", 'F')); */
 	}
 
-	protected JMenuItem createItem(String title, Character key)
+	private JMenuItem createItem(String title, Character key)
 	{ 
 		JMenuItem item = new JMenuItem(title); 
 
@@ -61,6 +62,7 @@ public class Menus extends JMenuBar implements ActionListener
 		return item; 
 	} 
 
+	@Override
 	public void actionPerformed(ActionEvent e) 
 	{ 
 		String cmd = e.getActionCommand(); 
@@ -72,7 +74,7 @@ public class Menus extends JMenuBar implements ActionListener
 
 		else if (cmd.equals("Open Database"))
 		{
-			Database.open();
+			Database.open(true, true);
 		}
 
 		else if (cmd.equals("Online Setup"))
@@ -96,7 +98,7 @@ public class Menus extends JMenuBar implements ActionListener
 
 		else
 		{ 
-			log.info("Unknown command from menubar: " + cmd); 
+			log.log(Level.INFO, "Unknown command from menubar: {0}", cmd); 
 		} 
 	} 
 }

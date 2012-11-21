@@ -22,6 +22,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -41,6 +42,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import net.miginfocom.swing.MigLayout;
+import org.wwscc.components.MyServerLabel;
 import org.wwscc.timercomm.SerialDataInterface;
 import org.wwscc.timercomm.TimerService;
 import org.wwscc.util.Logging;
@@ -67,9 +70,16 @@ public class Timer extends JPanel implements ActionListener
 
 		model = new TimerModel();
 		table = new TimerTable(model);
-		JPanel bottom = new JPanel();
-		openPort = new JLabel("Not Connected");
-		bottom.add(openPort);
+
+		openPort = new JLabel("Serial Port Not Connected");
+		openPort.setHorizontalAlignment(JLabel.CENTER);
+		MyServerLabel slbl = new MyServerLabel();
+		openPort.setBorder(BorderFactory.createLoweredBevelBorder());
+		slbl.setBorder(BorderFactory.createLoweredBevelBorder());
+		
+		JPanel bottom = new JPanel(new MigLayout("fill, ins 0", "[50%]0[50%]"));
+		bottom.add(openPort, "grow");
+		bottom.add(slbl, "grow");
 
 		JScrollPane scroll = new JScrollPane(table);
 		scroll.getViewport().setBackground(Color.WHITE);
@@ -166,7 +176,7 @@ public class Timer extends JPanel implements ActionListener
 			return;
 		try {
 			serial.close();
-			openPort.setText("Not connected");
+			openPort.setText("Serial Port Not Connected");
 		} catch (IOException ioe) {
 			log.log(Level.SEVERE, "Failed to close: " + ioe, ioe);
 		}

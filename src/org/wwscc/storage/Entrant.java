@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 public class Entrant
 {
-	private static Logger log = Logger.getLogger("org.wwscc.storage.Entrant");
+	private static final Logger log = Logger.getLogger(Entrant.class.getCanonicalName());
 
 	String firstname;
 	String lastname;
@@ -179,6 +179,30 @@ public class Entrant
 		for (int ii = 0; ii < list.size(); ii++)
 			list.get(ii).norder = ii+1;
 	}
+	
+
+	@Override
+	public int hashCode() {
+		int hash = 7;
+		hash = 29 * hash + (car != null ? car.id : 0);
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Entrant other = (Entrant) obj;
+		if (car == null || car.id != other.car.id) {
+			return false;
+		}
+		return true;
+	}
+
 }
 
 

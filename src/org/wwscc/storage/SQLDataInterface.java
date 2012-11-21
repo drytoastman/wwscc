@@ -228,6 +228,18 @@ public abstract class SQLDataInterface extends DataInterface
 			logError("getChanges", ioe);
 		}
 	}
+	
+	public int countChanges()
+	{
+		try {
+			ResultData data = executeSelect("TRACKCOUNT", null);
+			if (data.size() > 0)
+				return data.get(0).getInt("count(*)");
+		} catch (Exception ioe) {
+			logError("countChanges", ioe);
+		}
+		return -1;
+	}
 
 	public void trackChange(String type, Serializable o)
 	{
@@ -421,7 +433,9 @@ public abstract class SQLDataInterface extends DataInterface
 			if (loadruns)
 				runs = executeSelect("GETRUNSBYCARID", newList(carid, currentEvent.id, course));
 			List<Entrant> e = loadEntrants(d, runs);
-			return e.get(0);
+			if (e.size() > 0)
+				return e.get(0);
+			return null;
 		}
 		catch (Exception ioe)
 		{

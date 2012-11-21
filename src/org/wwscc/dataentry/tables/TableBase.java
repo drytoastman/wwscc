@@ -5,7 +5,7 @@
  * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
  * All rights reserved.
  */
-package org.wwscc.dataentry;
+package org.wwscc.dataentry.tables;
 
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -169,7 +169,7 @@ public class TableBase extends JTable
 	/**
 	 * Simple class for DnD data transfer, only usable inside the application.
 	 */
-	static class SimpleDataTransfer implements Transferable, ClipboardOwner
+	public static class SimpleDataTransfer implements Transferable, ClipboardOwner
 	{
 		DataFlavor myFlavor;
 		Object data;

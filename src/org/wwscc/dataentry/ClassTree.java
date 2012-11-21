@@ -61,9 +61,6 @@ public class ClassTree extends CarTree implements MessageListener, ActionListene
 		if (o instanceof Entrant)
 		{
 			Entrant entrant = (Entrant)lf.getUserObject();
-			if (entrant.isInRunOrder())
-				return;
-
 			Messenger.sendEvent(MT.CAR_ADD, entrant.getCarId());
 		}
 	}

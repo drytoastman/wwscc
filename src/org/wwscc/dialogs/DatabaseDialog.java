@@ -101,7 +101,8 @@ public class DatabaseDialog extends BaseDialog<Object> implements ListSelectionL
 	@Override
 	public void close()
 	{
-		finder.stop();
+		if (finder != null)
+			finder.stop();
 		super.close();
 	}
 	

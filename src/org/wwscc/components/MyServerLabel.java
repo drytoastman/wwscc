@@ -18,7 +18,7 @@ public class MyServerLabel extends JLabel implements MessageListener
 {
 	public MyServerLabel()
 	{
-		super("Service Off");
+		super("Server Uninitialized");
 		setHorizontalAlignment(CENTER);
 		Messenger.register(MT.TIMER_SERVICE_LISTENING, this);
 		Messenger.register(MT.TIMER_SERVICE_NOTLISTENING, this);
@@ -31,10 +31,10 @@ public class MyServerLabel extends JLabel implements MessageListener
 		{
 			case TIMER_SERVICE_LISTENING:
 				Object a[] = (Object[])o;
-				setText("Service On: " + a[1] + ":" + a[2]);
+				setText("Server On: " + a[1] + ":" + a[2]);
 				break;
 			case TIMER_SERVICE_NOTLISTENING:
-				setText("Service Off");
+				setText("Server Off");
 				break;
 		}
 	}

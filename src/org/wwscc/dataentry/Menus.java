@@ -25,6 +25,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
+import org.wwscc.barcodes.ScannerConfig;
+import org.wwscc.barcodes.ScannerOptionsDialog;
+import org.wwscc.barcodes.ScannerTest;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.dialogs.GroupDialog;
 import org.wwscc.storage.Database;
@@ -42,6 +45,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 
 	Map <String,JMenuItem> items;
 	JCheckBoxMenuItem dcMode;
+	JCheckBoxMenuItem reorderMode;
 	JFileChooser chooser;
 	ButtonGroup runGrouping;
 
@@ -67,7 +71,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		edit.add(createItem("Quick Add Driver", KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK)));
 
 		/* Event Menu */
-		JMenu event = new JMenu("Event");
+		JMenu event = new JMenu("Event Options");
 		add(event);	
 
 		/* Runs Submenu */
@@ -85,6 +89,13 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		dcMode = new JCheckBoxMenuItem("Use Double Course Mode", Prefs.useDoubleCourseMode());
 		dcMode.addActionListener(this);
 		event.add(dcMode);
+
+		reorderMode = new JCheckBoxMenuItem("Constant Staging Mode", Prefs.useReorderingTable());
+		reorderMode.addActionListener(this);
+		event.add(reorderMode);
+		
+		event.add(createItem("Barcode Scanner Options", null));
+
 
 		/* Results Menu */
 		JMenu results = new JMenu("Reports");
@@ -105,6 +116,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		debug.add(createItem("Start Fake User", null));
 		debug.add(createItem("Stop Fake User", null));
 		debug.add(createItem("Configure Fake User", null));
+		debug.add(createItem("Scanner Test", null));
 	}
 
 	protected final JMenuItem createItem(String title, KeyStroke ks)
@@ -157,7 +169,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		}
 		else if (cmd.equals("Open Database"))
 		{
-			Database.open();
+			Database.open(true, true);
 		}
 
 		else if (cmd.equals("Download and Lock Database"))
@@ -180,7 +192,25 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		}
 		else if (cmd.equals("Use Double Course Mode"))
 		{
+			if (dcMode.getState())
+			{
+				reorderMode.setSelected(false); // can't have both at the same time
+				Prefs.setReorderingTable(false);
+			}
 			Prefs.setDoubleCourseMode(dcMode.getState());
+		}
+		else if (cmd.equals("Constant Staging Mode"))
+		{
+			if (reorderMode.getState())
+			{
+				dcMode.setSelected(false); // can't have both at the same time
+				Prefs.setDoubleCourseMode(false);
+			}
+			Prefs.setReorderingTable(reorderMode.getState());
+		}
+		else if (cmd.equals("Barcode Scanner Options"))
+		{
+			Messenger.sendEvent(MT.SCANNER_OPTIONS, null);			
 		}
 		else if (cmd.equals("Find"))
 		{
@@ -201,6 +231,10 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		else if (cmd.equals("Configure Fake User"))
 		{
 			Messenger.sendEvent(MT.CONFIGURE_FAKE_USER, null);
+		}
+		else if (cmd.equals("Scanner Test"))
+		{
+			new ScannerTest();
 		}
 		else
 		{ 

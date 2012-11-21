@@ -2,7 +2,7 @@
  * This software is licensed under the GPLv3 license, included as
  * ./GPLv3-LICENSE.txt in the source distribution.
  *
- * Portions created by Brett Wilson are Copyright 2008 Brett Wilson.
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
  * All rights reserved.
  */
 
@@ -22,6 +22,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -31,6 +32,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
+import net.miginfocom.swing.MigLayout;
+import org.wwscc.components.MyServerLabel;
 import org.wwscc.timercomm.SerialDataInterface;
 import org.wwscc.timercomm.TimerService;
 import org.wwscc.util.Logging;
@@ -57,19 +60,11 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 	{
 		super("NWR ProSolo Interface");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setLayout(new BorderLayout());
+		setLayout(new MigLayout("fill, ins 0", "fill", "[grow 0][fill][grow 0][grow 0]"));
 		Class.forName("org.wwscc.dataentry.Sounds");
 		
 		debug = new DebugPane();
 		model = new ResultsModel();
-		
-		try {
-			server = new TimerService("ProTimer");
-			model.addRunServerListener(server);
-			server.start();
-		} catch (IOException ioe) {
-			log.log(Level.SEVERE, "Timer Server Failed to start: {0}", ioe.getMessage());
-		}
 		
 		results = new ResultsPane(model);
 		audit = new AuditLog();
@@ -84,21 +79,41 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 		Messenger.register(MT.ALIGN_MODE, this);
 
 		createMenus();
-		add(dialins, BorderLayout.NORTH);
+		add(dialins, "wrap");
 
 
 		JTabbedPane tp = new JTabbedPane();
 		tp.addTab("Results", null, results, "results interface");
 		tp.addTab("Debug", null, debug, "shows serial conversation");
-		add(tp, BorderLayout.CENTER);
+		add(tp, "wrap");
 
-		add(createButtonPanel(), BorderLayout.SOUTH);
+		add(createButtonPanel(), "wrap");
 
+		JLabel openPort = new JLabel("Serial Port Not Connected");
+		openPort.setHorizontalAlignment(JLabel.CENTER);
+		MyServerLabel slbl = new MyServerLabel();
+		openPort.setBorder(BorderFactory.createLoweredBevelBorder());
+		slbl.setBorder(BorderFactory.createLoweredBevelBorder());
+		
+		JPanel bottom = new JPanel(new MigLayout("fill, ins 0", "[50%]0[50%]"));
+		bottom.add(openPort, "grow");
+		bottom.add(slbl, "grow");
+		
+		add(bottom, "wrap");
+		
 		setSize(1024, 768);
 		setVisible(true);
 
 		dialins.doFocus(this);
         timing = new TimingInterface();
+	
+		try {
+			server = new TimerService("ProTimer");
+			model.addRunServerListener(server);
+			server.start();
+		} catch (IOException ioe) {
+			log.log(Level.SEVERE, "Timer Server Failed to start: {0}", ioe.getMessage());
+		}
     }
 
 

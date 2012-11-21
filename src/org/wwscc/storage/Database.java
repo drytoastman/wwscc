@@ -38,12 +38,12 @@ public class Database
 		d = new FakeDatabase();
 	}
 
-	public static void open()
+	public static void open(boolean showFile, boolean showNetwork)
 	{
 		DatabaseDialog dd = new DatabaseDialog(
-				Prefs.getSeriesFile(Prefs.getInstallRoot()+"/series/default.db"),
-				Prefs.getSeriesURL(""),
-				Prefs.useSeriesURL());
+				showFile ? Prefs.getSeriesFile(Prefs.getInstallRoot()+"/series/default.db") : null,
+				showNetwork ? Prefs.getSeriesURL("") : null,
+				showNetwork ? Prefs.useSeriesURL() : false);
 
 		dd.doDialog("Open Series", new DialogFinisher<Object>() {
 			@Override
@@ -76,7 +76,7 @@ public class Database
 		}
 		catch (IOException ioe)
 		{
-			open();
+			open(true, true);
 		}
 	}
 

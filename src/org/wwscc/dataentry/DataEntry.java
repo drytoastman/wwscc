@@ -2,28 +2,37 @@
  * This software is licensed under the GPLv3 license, included as
  * ./GPLv3-LICENSE.txt in the source distribution.
  *
- * Portions created by Brett Wilson are Copyright 2008 Brett Wilson.
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
  * All rights reserved.
  */
-
 
 package org.wwscc.dataentry;
 
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
+import org.wwscc.barcodes.BarcodeScannerWatcher;
 import org.wwscc.components.CurrentDatabaseLabel;
 import org.wwscc.components.MyIpLabel;
+import org.wwscc.dataentry.tables.DoubleTableOrderedScroller;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.Run;
-import org.wwscc.util.*;
+import org.wwscc.util.LastManEventQueue;
+import org.wwscc.util.Logging;
+import org.wwscc.util.MT;
+import org.wwscc.util.MessageListener;
+import org.wwscc.util.Messenger;
 
 
 public class DataEntry extends JFrame implements MessageListener
@@ -31,22 +40,14 @@ public class DataEntry extends JFrame implements MessageListener
 	private static final Logger log = Logger.getLogger(DataEntry.class.getName());
 
 	Menus menus;
-	EntryModel dataModel;
 	SelectionBar setupBar;
 	DriverEntry driverEntry;
 	ClassTree  numberTree;
 	AnnouncerPanel announcer;
 	FindEntry finder;
-	DriverTable driverTable;
-	RunsTable runsTable;
-	JScrollPane tableScroll;
 	PreregPanel prereg;
-
 	TimeEntry timeEntry;
-
 	JTabbedPane tabs;
-
-	FakeUser fakeUser;  // for debugging
 
 	class HelpPanel extends JLabel implements MessageListener
 	{
@@ -85,13 +86,11 @@ public class DataEntry extends JFrame implements MessageListener
 	{
 		super("Data Entry");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new BarcodeScannerWatcher());
+		
 		menus = new Menus();
 		setJMenuBar(menus);
 
-		dataModel = new EntryModel();
-		driverTable = new DriverTable(dataModel);
-		runsTable = new RunsTable(dataModel);
 		setupBar = new SelectionBar();
 		numberTree = new ClassTree();
 		driverEntry = new DriverEntry();
@@ -106,22 +105,7 @@ public class DataEntry extends JFrame implements MessageListener
 		tabs.addTab("Preregistered", prereg);
 		tabs.addTab(" Announcer Data ", announcer);
 
-
-		tableScroll = new JScrollPane(runsTable);
-		tableScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		tableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		
-		driverTable.setPreferredScrollableViewportSize(new Dimension(240, Integer.MAX_VALUE));
-		tableScroll.setRowHeaderView( driverTable );
-		tableScroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, driverTable.getTableHeader());
-		tableScroll.getRowHeader().addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				JViewport viewport = (JViewport) e.getSource();
-				tableScroll.getVerticalScrollBar().setValue(viewport.getViewPosition().y);
-			}
-		});
-
+		DoubleTableOrderedScroller tableScroll = new DoubleTableOrderedScroller();
 		timeEntry = new TimeEntry();
 		menus.add(timeEntry.getTimerMenu());
 
@@ -147,8 +131,8 @@ public class DataEntry extends JFrame implements MessageListener
 		content.add(tableScroll, "grow, wrap");
 		content.add(infoBoxes, "spanx 3, growx, wrap");
 
-		fakeUser = new FakeUser(runsTable, timeEntry);
-
+		FakeUser fakeUser = new FakeUser(tableScroll.getRunsTable(), timeEntry);
+		
 		setContentPane(content);
 		setSize(1024,768);
 		setVisible(true);
@@ -166,9 +150,9 @@ public class DataEntry extends JFrame implements MessageListener
 		switch (type)
 		{
 			case OBJECT_DCLICKED:
-                            if (o instanceof Entrant)
-                                tabs.setSelectedComponent(driverEntry);
-                            break;
+				if (o instanceof Entrant)
+					tabs.setSelectedComponent(driverEntry);
+				break;
 		}
 	}
 
