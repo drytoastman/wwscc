@@ -11,6 +11,13 @@ CC = gcc
 all:  ${BDIR}/libsqliteintf.so
 endif
 
+ifeq "${TARGET}" "OSX"
+JAVAHOME=$(shell /usr/libexec/java_home)
+JVMINC=-I${JAVAHOME}/include/ 
+CC = gcc
+all:  ${BDIR}/libsqliteintf.jnilib
+endif
+
 ifeq "${TARGET}" "Windows32"
 JAVAHOME=/cygdrive/c/Program\ Files/Java/jdk1.6.0_16
 JVMINC=-I${JAVAHOME}/include -I${JAVAHOME}/include/win32
@@ -39,6 +46,10 @@ ${BDIR}/libsqliteintf.so: ${BDIR}/sqlite3.o ${BDIR}/sqliteintf.o
 ${BDIR}/sqliteintf.dll: ${BDIR}/sqlite3.o ${BDIR}/sqliteintf.o
 	${CC} -Wl,--add-stdcall-alias -Wl,-s -shared -o $@ $^
 
+${BDIR}/libsqliteintf.jnilib: ${BDIR}/sqlite3.o ${BDIR}/sqliteintf.o
+	${CC} -dynamiclib -o $@ $^
+
 clean:
 	rm -f ${BDIR}/*
+
 
