@@ -11,7 +11,7 @@ CC = gcc
 all:  ${BDIR}/libsqliteintf.so
 endif
 
-ifeq "${TARGET}" "OSX"
+ifeq "${TARGET}" "Mac32"
 JAVAHOME=$(shell /usr/libexec/java_home)
 JVMINC=-I${JAVAHOME}/include/ 
 CC = gcc
