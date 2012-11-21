@@ -32,7 +32,7 @@ class FeedController(BaseController):
 			active = Class.activeClasses(self.session, self.eventid)
 		
 		if event:
-			return self._encode("classlist", getClassResults(self.session, event, classdata, [cls.code for cls in active]))
+			return self._encode("classlist", getClassResults(self.session, self.settings, event, classdata, [cls.code for cls in active]))
 		else:
 			return self._encode("eventlist", self.session.query(Event).all())
 
