@@ -93,7 +93,7 @@ public class BarcodeScannerWatcher implements KeyEventDispatcher, MessageListene
 				if (c == config.etx) {
 					try {
 						queue.clear();
-						Messenger.sendEvent(MT.CAR_ADD, Integer.parseInt(toconvert.toString()));
+						Messenger.sendEvent(MT.BARCODE_SCANNED, Integer.parseInt(toconvert.toString()));
 					} catch (NumberFormatException nfe) {}
 					return false;
 				}

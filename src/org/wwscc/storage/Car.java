@@ -72,4 +72,19 @@ public class Car implements Serializable
 	public void setColor(String s) { color = s; }
 	public void setClassCode(String s) { classcode = s; }
 	public void setIndexCode(String s) { indexcode = s; }
+	
+	@Override
+	public boolean equals(Object o)
+	{
+		if (!(o instanceof Car))
+			return false;
+		return ((Car)o).id == id;
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 3;
+		hash = 59 * hash + this.id;
+		return hash;
+	}
 }

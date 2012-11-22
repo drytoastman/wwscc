@@ -53,12 +53,21 @@ public abstract class DataInterface
 	public abstract String getSetting(String key);
 	public abstract boolean getBooleanSetting(String key);
 	
-	public abstract List<Event> getEvents(); // get a list of all events in the database
-	public abstract boolean updateEvent(); // update the current event data in the database
+	/** get a list of all events in the database */
+	public abstract List<Event> getEvents(); 
+	/** update the current event data in the database */
+	public abstract boolean updateEvent();
 
-	/* Entrants w/o runs */
-	public abstract List<Entrant> getEntrantsByEvent(); // get all entrants participating in an event
-	public abstract List<Entrant> getRegisteredEntrants(); // get all entrants registered for an event
+	/** get all entrants participating in an event */
+	public abstract List<Entrant> getEntrantsByEvent();
+	/** get all entrants registered for an event */
+	public abstract List<Entrant> getRegisteredEntrants();
+	/** 
+	 * get all registered car ids for a driver
+	 * @param driverid the driver id of the cars to search for
+	 */
+	public abstract List<Car> getRegisteredCars(int driverid);
+	
 	/* Entrants w/ runs */
 	public abstract List<Entrant> getEntrantsByRunOrder(); // get all entrants in a particular event/course/rungroup and loads their runs
 	public abstract Entrant loadEntrant(int carid, boolean loadruns); // load an entrant by carid and all of the associated runs if desired

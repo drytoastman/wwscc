@@ -64,7 +64,7 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		{
 			if (!Prefs.useReorderingTable())
 			{
-				log.log(Level.WARNING, "Card #{0} already in table", e.getCarId());
+				log.log(Level.WARNING, "Card #{0} already in table", Integer.toString(e.getCarId()));
 				return;
 			}
 			tableData.remove(e); // remove it from position and following will readd at the end
@@ -118,6 +118,16 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		fireTableRowsUpdated(row, row);
 	}
 
+	public int getRowForEntrant(Entrant find)
+	{
+		for (int ii = 0; ii < tableData.size(); ii++)
+		{
+			if (tableData.get(ii).equals(find))
+				return ii;
+		}
+		return -1;
+	}
+	
 	@Override
 	public int getRowCount()
 	{

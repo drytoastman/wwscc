@@ -350,6 +350,7 @@ public abstract class SQLDataInterface extends DataInterface
 		{
 			Entrant e = new Entrant();
 			e.car = AUTO.loadCar(erow);
+			e.driverid = erow.getInt("driverid");
 			e.firstname = erow.getString("firstname");
 			e.lastname = erow.getString("lastname");
 			e.index = getEffectiveIndex(e.car.classcode, e.car.indexcode);
@@ -398,7 +399,28 @@ public abstract class SQLDataInterface extends DataInterface
 			return null;
 		}
 	}
+	
+	
+	@Override
+	public List<Car> getRegisteredCars(int driverid)
+	{
+		List<Car> ret = null;
+		try
+		{
+			ResultData data = executeSelect("GETREGISTEREDCARS", newList(currentEvent.id, driverid));
+			ret = new ArrayList<Car>();
+			for (ResultRow r : data)
+				ret.add(AUTO.loadCar(r));
+		}
+		catch (Exception ioe)
+		{
+			logError("getRegisteredCars", ioe);
+		}
+		
+		return ret;
+	}
 
+	
 	/**
 	 * Gets all the entrants and their runs based on the current run order.  Ends up
 	 * being a lot faster (particular over a network) to load all of the runs for the run

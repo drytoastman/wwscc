@@ -10,6 +10,9 @@ package org.wwscc.dataentry.tables;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.border.LineBorder;
@@ -17,7 +20,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.JTableHeader;
 import org.wwscc.dataentry.Sounds;
+import org.wwscc.storage.Car;
 import org.wwscc.storage.Database;
+import org.wwscc.storage.Entrant;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -26,13 +31,14 @@ import org.wwscc.util.Messenger;
  * Wrapper that holds a separate driver and runs table to provide separate horizontal
  * scrolling as well as processing of events that can apply to both.
  */
-public class DoubleTableOrderedScroller extends JScrollPane implements MessageListener
+public class DoubleTableContainer extends JScrollPane implements MessageListener
 {
+	private static final Logger log = Logger.getLogger(DoubleTableContainer.class.getCanonicalName());
 	EntryModel dataModel;
 	DriverTable driverTable;
 	RunsTable runsTable;
 	
-	public DoubleTableOrderedScroller()
+	public DoubleTableContainer()
 	{
 		dataModel = new EntryModel();
 		driverTable = new DriverTable(dataModel);
@@ -57,6 +63,7 @@ public class DoubleTableOrderedScroller extends JScrollPane implements MessageLi
 		Messenger.register(MT.CAR_CHANGE, this);
 		Messenger.register(MT.FIND_ENTRANT, this);
 		Messenger.register(MT.COURSE_CHANGED, this);
+		Messenger.register(MT.BARCODE_SCANNED, this);
 	}
 	
 	public RunsTable getRunsTable() { return runsTable; }
@@ -69,15 +76,48 @@ public class DoubleTableOrderedScroller extends JScrollPane implements MessageLi
 		{
 			case CAR_ADD:
 				Sounds.playBlocked();
+				int savecol = runsTable.getSelectedColumn();
+				Entrant selected = (Entrant)dataModel.getValueAt(runsTable.getSelectedRow(), 0);
 				dataModel.addCar((Integer)o);
 				driverTable.scrollTable(dataModel.getRowCount(), 0);
+				if ((savecol >= 0) && (selected != null))
+				{ // update selection
+					int newrow = dataModel.getRowForEntrant(selected);
+					runsTable.setRowSelectionInterval(newrow, newrow);
+				}
 				driverTable.repaint();
 				runsTable.repaint();
 				break;
+				
+			case BARCODE_SCANNED:
+				int driverid = (Integer)o;
+				List<Car> available = Database.d.getRegisteredCars(driverid);
+				for (Car c : available) {  // first look for something in current runorder
+					if (Database.d.isInOrder(c.getId())) {
+						event(MT.CAR_ADD, c.getId());
+						return;
+					}
+					if (Database.d.hasRuns(c.getId()))
+						available.remove(c); // remove not in order and has runs at same time
+				}
+				
+				if (available.size() == 1) { // pick only one available
+					event(MT.CAR_ADD, available.get(0).getId());
+					return;
+				}
 
+				for (Car c : available) {  // skip TOPM, pick whatever else
+					if (c.getClassCode().equals("TOPM")) continue;
+					event(MT.CAR_ADD, c.getId());
+					return;
+				}
+
+				log.log(Level.WARNING, "Unable to locate a registed car without runs for driver {0}", Integer.toString(driverid));
+				break;
+				
 			case CAR_CHANGE:
-				int row = runsTable.getSelectedRow();
-				if ((row >= 0) && (row < runsTable.getRowCount()))
+				int row = driverTable.getSelectedRow();
+				if ((row >= 0) && (row < driverTable.getRowCount()))
 					dataModel.replaceCar((Integer)o, row);
 				break;
 

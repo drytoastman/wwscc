@@ -21,6 +21,7 @@ public class Entrant
 {
 	private static final Logger log = Logger.getLogger(Entrant.class.getCanonicalName());
 
+	int driverid;
 	String firstname;
 	String lastname;
 	Car car;
@@ -37,6 +38,7 @@ public class Entrant
 	    public int compare(Entrant e1, Entrant e2) { return e1.car.number - e2.car.number; }
 	}
 
+	public int getDriverId() { return driverid; }
 	public String getName() { return firstname + " " + lastname; }
 	public String getFirstName() { return firstname; }
 	public String getLastName() { return lastname; }

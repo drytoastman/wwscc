@@ -30,6 +30,7 @@ sqlmap = {
 'GETEVENTS':'select * from events order by date',
 'GETEXTRA':'select name,value from driverextra where driverid=:h1',
 'GETINDEXES':'select * from indexlist',
+'GETREGISTEREDCARS':'select c.* from registered as x, cars as c, drivers as d where x.carid=c.id AND c.driverid=d.id and x.eventid=:h1 and d.id=:h2',
 'GETREGISTEREDENTRANTS':'select distinct d.firstname as firstname,d.lastname as lastname,c.* from registered as x, cars as c, drivers as d where x.carid=c.id AND c.driverid=d.id and x.eventid=:h1',
 'GETROUNDSFORCHALLENGE':'select * from challengerounds where challengeid=:h1',
 'GETRUNCOUNT':'select count(run) as count from runs where carid=:h1 and eventid=:h2 and course=:h3',

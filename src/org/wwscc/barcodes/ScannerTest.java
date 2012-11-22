@@ -28,7 +28,7 @@ public class ScannerTest extends JFrame
 		send.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				Messenger.sendEvent(MT.CAR_ADD, Integer.parseInt(input.getText()));
+				Messenger.sendEvent(MT.BARCODE_SCANNED, Integer.parseInt(input.getText()));
 			}
 		});
 		add(send, "wrap");

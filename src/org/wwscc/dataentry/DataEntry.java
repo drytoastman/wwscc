@@ -24,7 +24,7 @@ import net.miginfocom.swing.MigLayout;
 import org.wwscc.barcodes.BarcodeScannerWatcher;
 import org.wwscc.components.CurrentDatabaseLabel;
 import org.wwscc.components.MyIpLabel;
-import org.wwscc.dataentry.tables.DoubleTableOrderedScroller;
+import org.wwscc.dataentry.tables.DoubleTableContainer;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.Run;
@@ -105,7 +105,7 @@ public class DataEntry extends JFrame implements MessageListener
 		tabs.addTab("Preregistered", prereg);
 		tabs.addTab(" Announcer Data ", announcer);
 
-		DoubleTableOrderedScroller tableScroll = new DoubleTableOrderedScroller();
+		DoubleTableContainer tableScroll = new DoubleTableContainer();
 		timeEntry = new TimeEntry();
 		menus.add(timeEntry.getTimerMenu());
 

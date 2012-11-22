@@ -70,6 +70,8 @@ public class SQLMap
 		sql.put("GETINDEXES", "select * from indexlist");
 		sql.put("GETREGISTEREDENTRANTS", "select distinct d.firstname as firstname,d.lastname as lastname,c.* from registered as x, cars as c, drivers as d " +
 						"where x.carid=c.id AND c.driverid=d.id and x.eventid=?");
+		sql.put("GETREGISTEREDCARS", "select c.* from registered as x, cars as c, drivers as d " +
+						"where x.carid=c.id AND c.driverid=d.id and x.eventid=? and d.id=?");
 		sql.put("GETROUNDSFORCHALLENGE", "select * from challengerounds where challengeid=?");
 		sql.put("GETRUNORDERENTRANTS", "select d.firstname,d.lastname,c.* from runorder as r, cars as c, drivers as d " +
 						"where r.carid=c.id AND c.driverid=d.id and r.eventid=? AND r.course=? AND r.rungroup=? " +

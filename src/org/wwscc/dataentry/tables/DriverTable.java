@@ -19,21 +19,14 @@ import java.awt.Graphics2D;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.DropMode;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -43,15 +36,8 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import org.wwscc.dataentry.Sounds;
 import org.wwscc.dataentry.tables.TableBase.SimpleDataTransfer;
-import org.wwscc.dialogs.TextRunsDialog;
-import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
-import org.wwscc.storage.Run;
-import org.wwscc.util.MT;
-import org.wwscc.util.MessageListener;
-import org.wwscc.util.Messenger;
 
 
 /**
@@ -72,7 +58,7 @@ public class DriverTable extends TableBase
 		InputMap im = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "cut"); // delete is same as Ctl+X
 
-		addMouseListener(new ContextMenu());
+		addMouseListener(new DriverContextMenu(this));
 		getTableHeader().addMouseListener( new RowHeaderTableResizer() );
 	}
 
@@ -87,85 +73,7 @@ public class DriverTable extends TableBase
 		setColumnWidths(tcm.getColumn(1), 80, 250, 400);
 		doLayout();
 	}
-	
-	/**
-	 * Create a simple context menu for the driver columns to allow pasting
-	 * of textual run data from other sources (like national pro solo)
-	 */
-	class ContextMenu extends MouseAdapter implements ActionListener
-	{
-		JPopupMenu driverPopup;
-		JPopupMenu runPopup;
-		Entrant selectedE;
-
-		public ContextMenu()
-		{
-			driverPopup = new JPopupMenu("");
-			JMenuItem item = new JMenuItem("Add Text Runs");
-			item.addActionListener(this);
-			driverPopup.add(item);
-			selectedE = null;
-		}
-
-		public void doPopup(MouseEvent e)
-		{
-			int row = rowAtPoint(e.getPoint());
-			int col = columnAtPoint(e.getPoint());
-			if ((row == -1) || (col == -1)) return;
-			if (DriverTable.this.getSelectedRow() != row) return;
-			if (DriverTable.this.getSelectedColumn() != col) return;
-			
-			selectedE = (Entrant)getValueAt(row, col);
-			driverPopup.show(DriverTable.this, e.getX(), e.getY());
-		}
-		
-		@Override
-		public void mousePressed(MouseEvent e)
-		{
-			if (e.isPopupTrigger())
-				doPopup(e);
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e)
-		{
-			if (e.isPopupTrigger())
-				doPopup(e);
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			TextRunsDialog trd = new TextRunsDialog();
-			trd.doDialog("Textual Run Input", null);
-			List<Run> runs = trd.getResult();
-			if (runs == null) return;
-			Map<Integer, Run> course1, course2;
-			course1 = new HashMap<Integer,Run>();
-			course2 = new HashMap<Integer,Run>();
-
-			Database.d.setCurrentCourse(1);
-			Entrant ent = Database.d.loadEntrant(selectedE.getCarId(), false);
-			for (Run r : trd.getResult())
-			{
-				r.updateTo(Database.d.getCurrentEvent().getId(), r.course(), r.run(), selectedE.getCarId(), ent.getIndex());
-				if (r.course() == 2) course2.put(r.run(), r); else course1.put(r.run(), r);
-			}
-
-			ent.setRuns(course1);
-			if (course2.size() > 0)
-			{
-				Database.d.setCurrentCourse(2);
-				ent = Database.d.loadEntrant(selectedE.getCarId(), false);
-				ent.setRuns(course2);
-			}
-
-			Database.d.setCurrentCourse(1);
-			Messenger.sendEvent(MT.RUNGROUP_CHANGED, 1);
-		}
-	}
 }
-
 
 /**
  * Special mouse listener that lets the user adjust the width of the row table header in a scroll
