@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<project name="scorekeeper" default="default" basedir=".">
+    <description>Top level script that calls sub projects and installers</description>
+
+	<target name="jarfile">
+		<delete file="wwsccapps.jar"/>
+		<jar destfile="wwsccapps.jar">
+			<zipgroupfileset dir="swingapps/lib" includes="*.jar" /> 
+			<fileset dir="swingapps/native">
+				<include name="**/*.so"/>
+				<include name="**/*.dll"/>
+				<include name="**/*.jnilib"/>
+			</fileset>
+			<fileset dir="swingapps/bin"/>
+			<manifest>
+				<attribute name="Main-Class" value="org.wwscc.util.Launcher" />
+			</manifest>
+		</jar>
+	</target>
+
+
+    <target name="wininstaller" depends="jarfile">
+    	<tstamp/>
+
+		<!-- rm -r windows/python/Lib/site-packages/nwrsc* -->
+		<delete verbose="true">
+			<fileset dir="installers/windows/python/Lib/site-packages" includes="nwrsc*"/>
+		</delete>
+
+		<!-- ./windows/python/python ../pythonwebservice/setup.py easy_install -_-no-deps . -->
+		<exec executable="installers/windows/python/python" osfamily="Windows" failonerror="true" dir="pythonwebservice">
+			<arg line="setup.py"/>
+			<arg line="easy_install"/>
+			<arg line="--no-deps"/>
+			<arg line="."/>
+		</exec>
+
+		<!-- rm `find windows/python -name '*.pyc'` -->
+		<delete verbose="true">
+			<fileset dir="installers/windows/python" includes="*.pyc"/>
+		</delete>
+
+		<property name="exename" value="WWSCCSetup-${DSTAMP}" />
+		<property name="issname" value="install.iss" />
+
+        <copy file="installers/windows/template.iss" tofile="${issname}" overwrite="true">
+            <filterchain>
+                <replacestring from="@VERSION@" to="${DSTAMP}"/>
+                <replacestring from="@EXENAME@" to="${exename}"/>
+            </filterchain>
+        </copy>
+
+		<exec executable="c:/Program Files (x86)/Inno Setup 5/iscc.exe" osfamily="Windows" failonerror="true">
+			<arg line="${issname}"/>
+		</exec>
+
+		<delete file="${issname}"/>
+    </target>
+
+
+	<target name="clean">
+		<delete>
+			<fileset dir="." includes="wwsccapps.jar"/>
+			<fileset dir="." includes="WWSCCSetup*exe"/>
+		</delete>
+	</target>
+
+
+</project>

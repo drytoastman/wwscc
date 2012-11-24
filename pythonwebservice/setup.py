@@ -7,8 +7,8 @@ except ImportError:
 
 x = setup(
     name='nwrsc',
-    version='0.3',
-    description='NWR Scorekeeper Web Portion',
+    version='1.0',
+    description='Scorekeeper Web Service',
     author='Brett Wilson',
     author_email='N/A',
     url='https://github.com/drytoastman/wwscc',

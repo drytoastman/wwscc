@@ -29,11 +29,11 @@ Name: "{userdocs}\nwrsc\backup"; Permissions: users-modify; Flags: uninsneveruni
 
 [Files]
 Source: "wwsccapps.jar"; DestDir: "{app}\java"; Flags: ignoreversion; Components: java
-Source: "web\installer\dbDiscovery.py"; DestDir: "{app}"; Flags: ignoreversion; Components: python
-Source: "web\installer\python\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Components: python
-Source: "web\installer\XYNTService.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: python
-Source: "web\installer\XYNTService.ini"; DestDir: "{app}"; Flags: ignoreversion; Components: python
-Source: "web\installer\nwrsc.ini"; DestDir: "{userdocs}\nwrsc"; Flags: ignoreversion; Components: python
+Source: "installers\windows\dbDiscovery.py"; DestDir: "{app}"; Flags: ignoreversion; Components: python
+Source: "installers\windows\python\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Components: python
+Source: "installers\windows\XYNTService.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: python
+Source: "installers\windows\XYNTService.ini"; DestDir: "{app}"; Flags: ignoreversion; Components: python
+Source: "installers\windows\nwrsc.ini"; DestDir: "{userdocs}\nwrsc"; Flags: ignoreversion; Components: python
 
 [Icons]
 Name: "{group}\DataEntry"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar DataEntry";  WorkingDir: "{app}\java"; Components: java

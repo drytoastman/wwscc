@@ -1,8 +1,9 @@
 *.pyc
 *.o
 *.log
-*.jar
 *.version
+wwsccapps.jar
+WWSCC*.exe
 swingapps/*.dll
 swingapps/bin
 installers/windows/python/Lib/site-packages/nwrsc-*
@@ -10,3 +11,4 @@ pythonwebservice/rundir/archive
 pythonwebservice/rundir/series
 pythonwebservice/rundir/data
 pythonwebservice/nwrsc.egg-info
+pythonwebservice/build

@@ -1,1 +1,0 @@
-./installer/python/python ./installer/python/Scripts/paster-script.py serve --reload development.ini
