@@ -165,6 +165,7 @@ public class Run implements Serial, Cloneable
 		this.run = run;
 	}
 
+	@SuppressWarnings("hiding")
 	public void updateTo(int eventid, int course, int run, int carid, double index)
 	{
 		this.eventid = eventid;
@@ -210,6 +211,12 @@ public class Run implements Serial, Cloneable
 		return ((r.course == course) && (r.run == run) && (r.status.equals(status)) &&
 			(r.raw == raw) && (r.reaction == reaction) && (r.sixty == sixty) && (r.seg1 == seg1) &&
 			(r.seg2 == seg2) && (r.seg3 == seg3) && (r.seg4 == seg4) && (r.seg5 == seg5));
+	}
+
+	@Override
+	public int hashCode() 
+	{
+		return course ^ run ^ new Double(raw).hashCode();
 	}
 
 	@Override
