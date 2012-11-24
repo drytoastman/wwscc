@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- You may freely edit this file. See commented blocks below for -->
-<!-- some examples of how to customize the build. -->
-<!-- (If you delete it and reopen the project it will be recreated.) -->
 <project name="scorekeeper" default="default" basedir=".">
     <description>Top level script that calls sub projects and installers</description>
 
-	<target name="jarfile">
+	<!-- Call into the swingapps directory, build it and then jar it up -->
+	<target name="wwsccapps.jar">
 		<delete file="wwsccapps.jar"/>
+		<subant verbose="true" target="build" buildpath="swingapps" />
 		<jar destfile="wwsccapps.jar">
 			<zipgroupfileset dir="swingapps/lib" includes="*.jar" /> 
 			<fileset dir="swingapps/native">
@@ -22,16 +21,30 @@
 	</target>
 
 
-    <target name="wininstaller" depends="jarfile">
+	<!-- clean out any built items -->
+	<target name="clean">
+		<delete verbose="true">
+			<fileset dir="." includes="wwsccapps.jar"/>
+			<fileset dir="." includes="WWSCCSetup*exe"/>
+		</delete>
+		<subant verbose="true" target="clean" buildpath="swingapps" />
+	</target>
+
+
+	<!-- Create the windows installer -->
+    <target name="wininstaller" depends="clean, wwsccapps.jar">
     	<tstamp/>
+		<property name="exename" value="WWSCCSetup-${DSTAMP}" />
+		<property name="issname" value="install.iss" />
+		<property name="installdir" value="installers/windows" />
 
 		<!-- rm -r windows/python/Lib/site-packages/nwrsc* -->
-		<delete verbose="true">
-			<fileset dir="installers/windows/python/Lib/site-packages" includes="nwrsc*"/>
+		<delete includeemptydirs="true">
+		    <fileset dir="${installdir}/python/Lib/site-packages" includes="nwrsc*/**" />
 		</delete>
 
 		<!-- ./windows/python/python ../pythonwebservice/setup.py easy_install -_-no-deps . -->
-		<exec executable="installers/windows/python/python" osfamily="Windows" failonerror="true" dir="pythonwebservice">
+		<exec executable="${installdir}/python/python" osfamily="Windows" failonerror="true" dir="pythonwebservice">
 			<arg line="setup.py"/>
 			<arg line="easy_install"/>
 			<arg line="--no-deps"/>
@@ -39,34 +52,25 @@
 		</exec>
 
 		<!-- rm `find windows/python -name '*.pyc'` -->
-		<delete verbose="true">
-			<fileset dir="installers/windows/python" includes="*.pyc"/>
+		<delete includeemptydirs="true">
+			<fileset dir="${installdir}/python" includes="**/*.pyc"/>
 		</delete>
 
-		<property name="exename" value="WWSCCSetup-${DSTAMP}" />
-		<property name="issname" value="install.iss" />
-
-        <copy file="installers/windows/template.iss" tofile="${issname}" overwrite="true">
+        <copy file="${installdir}/template.iss" tofile="${issname}" overwrite="true">
             <filterchain>
                 <replacestring from="@VERSION@" to="${DSTAMP}"/>
                 <replacestring from="@EXENAME@" to="${exename}"/>
             </filterchain>
         </copy>
 
+		<echo>Running InnoSetup ...</echo>
 		<exec executable="c:/Program Files (x86)/Inno Setup 5/iscc.exe" osfamily="Windows" failonerror="true">
+			<arg line="/Q"/>
 			<arg line="${issname}"/>
 		</exec>
+		<echo>done</echo>
 
-		<delete file="${issname}"/>
+		<delete verbose="true" file="${issname}"/>
     </target>
-
-
-	<target name="clean">
-		<delete>
-			<fileset dir="." includes="wwsccapps.jar"/>
-			<fileset dir="." includes="WWSCCSetup*exe"/>
-		</delete>
-	</target>
-
 
 </project>
