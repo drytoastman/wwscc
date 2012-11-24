@@ -43,6 +43,9 @@ class ResultsController(BaseController):
 
 
 	def index(self):
+		import sys
+		for x in sys.path:
+			print x
 		if c.event:
 			c.challenges = self.session.query(Challenge).filter(Challenge.eventid==c.event.id).all()
 			return render_mako('/results/resultsindex.mako')
