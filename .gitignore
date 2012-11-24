@@ -12,3 +12,4 @@ pythonwebservice/rundir/series
 pythonwebservice/rundir/data
 pythonwebservice/nwrsc.egg-info
 pythonwebservice/build
+pythonwebservice/dist

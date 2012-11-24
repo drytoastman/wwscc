@@ -1,4 +1,4 @@
 include nwrsc/config/deployment.ini_tmpl
 recursive-include nwrsc/public *
 recursive-include nwrsc/templates *
-include nwrsc/lib/*.ttf
+include nwrsc/controllers/lib/*.ttf
