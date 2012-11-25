@@ -2,7 +2,7 @@
 *.o
 *.log
 *.version
-wwsccapps.jar
+wwsccapps*.jar
 WWSCC*.exe
 swingapps/*.dll
 swingapps/bin

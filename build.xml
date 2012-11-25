@@ -2,11 +2,16 @@
 <project name="scorekeeper" default="default" basedir=".">
     <description>Top level script that calls sub projects and installers</description>
 
+	<target name="versioninit">
+    	<tstamp/>
+		<property name="version" value="${DSTAMP}" />
+	</target>
+
 	<!-- Call into the swingapps directory, build it and then jar it up -->
-	<target name="wwsccapps.jar">
-		<delete file="wwsccapps.jar"/>
+	<target name="wwsccapps" depends="versioninit">
+		<delete file="wwsccapps-${version}.jar"/>
 		<subant verbose="true" target="build" buildpath="swingapps" />
-		<jar destfile="wwsccapps.jar">
+		<jar destfile="wwsccapps-${version}.jar">
 			<zipgroupfileset dir="swingapps/lib" includes="*.jar" /> 
 			<fileset dir="swingapps/native">
 				<include name="**/*.so"/>
@@ -24,17 +29,17 @@
 	<!-- clean out any built items -->
 	<target name="clean">
 		<delete verbose="true">
-			<fileset dir="." includes="wwsccapps.jar"/>
+			<fileset dir="." includes="wwsccapps*jar"/>
 			<fileset dir="." includes="WWSCCSetup*exe"/>
+			<fileset dir="." includes="*.iss"/>
 		</delete>
 		<subant verbose="true" target="clean" buildpath="swingapps" />
 	</target>
 
 
 	<!-- Create the windows installer -->
-    <target name="wininstaller" depends="clean, wwsccapps.jar">
-    	<tstamp/>
-		<property name="exename" value="WWSCCSetup-${DSTAMP}" />
+    <target name="wininstaller" depends="versioninit, clean, wwsccapps">
+		<property name="exename" value="WWSCCSetup-${version}" />
 		<property name="issname" value="install.iss" />
 		<property name="installdir" value="installers/windows" />
 
@@ -58,7 +63,7 @@
 
         <copy file="${installdir}/template.iss" tofile="${issname}" overwrite="true">
             <filterchain>
-                <replacestring from="@VERSION@" to="${DSTAMP}"/>
+                <replacestring from="@VERSION@" to="${version}"/>
                 <replacestring from="@EXENAME@" to="${exename}"/>
             </filterchain>
         </copy>

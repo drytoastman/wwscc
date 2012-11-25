@@ -1,6 +1,6 @@
 [Setup]
 AppName=WWSCC Applications
-AppVerName=WWSCC Applications @VERSION@
+AppVersion=@VERSION@
 OutputDir=.
 OutputBaseFilename=@EXENAME@
 AppPublisher=Brett Wilson
@@ -28,7 +28,7 @@ Name: "{userdocs}\nwrsc\archive"; Permissions: users-modify; Flags: uninsneverun
 Name: "{userdocs}\nwrsc\backup"; Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
-Source: "wwsccapps.jar"; DestDir: "{app}\java"; Flags: ignoreversion; Components: java
+Source: "wwsccapps-@VERSION@.jar"; DestDir: "{app}\java"; Flags: ignoreversion; Components: java
 Source: "installers\windows\dbDiscovery.py"; DestDir: "{app}"; Flags: ignoreversion; Components: python
 Source: "installers\windows\python\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Components: python
 Source: "installers\windows\XYNTService.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: python
@@ -36,11 +36,11 @@ Source: "installers\windows\XYNTService.ini"; DestDir: "{app}"; Flags: ignorever
 Source: "installers\windows\nwrsc.ini"; DestDir: "{userdocs}\nwrsc"; Flags: ignoreversion; Components: python
 
 [Icons]
-Name: "{group}\DataEntry"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar DataEntry";  WorkingDir: "{app}\java"; Components: java
-Name: "{group}\Registration"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar Registration";  WorkingDir: "{app}\java"; Components: java
-Name: "{group}\BW Timer"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar BWTimer";  WorkingDir: "{app}\java"; Components: java
-Name: "{group}\Pro Timer"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar ProTimer";  WorkingDir: "{app}\java"; Components: java
-Name: "{group}\Challenge"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar ChallengeGUI";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\DataEntry"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps-@VERSION@.jar DataEntry";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\Registration"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps-@VERSION@.jar Registration";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\BW Timer"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps-@VERSION@.jar BWTimer";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\Pro Timer"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps-@VERSION@.jar ProTimer";  WorkingDir: "{app}\java"; Components: java
+Name: "{group}\Challenge"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps-@VERSION@.jar ChallengeGUI";  WorkingDir: "{app}\java"; Components: java
 Name: "{group}\Uninstall"; Filename: "{app}\unins000.exe"; WorkingDir: "{app}\java"; Components: java
 
 [Registry]
