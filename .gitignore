@@ -6,6 +6,7 @@ wwsccapps*.jar
 WWSCC*.exe
 swingapps/*.dll
 swingapps/bin
+androidresults/bin
 installers/windows/python/Lib/site-packages/nwrsc-*
 pythonwebservice/rundir/archive
 pythonwebservice/rundir/series
