@@ -29,7 +29,6 @@ Name: "{userdocs}\nwrsc\backup"; Permissions: users-modify; Flags: uninsneveruni
 
 [Files]
 Source: "wwsccapps-@VERSION@.jar"; DestDir: "{app}\java"; Flags: ignoreversion; Components: java
-Source: "installers\windows\dbDiscovery.py"; DestDir: "{app}"; Flags: ignoreversion; Components: python
 Source: "installers\windows\python\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Components: python
 Source: "installers\windows\XYNTService.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: python
 Source: "installers\windows\XYNTService.ini"; DestDir: "{app}"; Flags: ignoreversion; Components: python

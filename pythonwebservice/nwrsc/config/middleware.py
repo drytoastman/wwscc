@@ -9,6 +9,7 @@ from pylons.middleware import ErrorHandler, StatusCodeRedirect
 from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
 
+from nwrsc.config.discovery import DatabaseAnnouncer
 from nwrsc.config.environment import load_environment
 from nwrsc.lib.gzipmiddleware import GzipMiddleware
 
@@ -79,5 +80,9 @@ def make_app(global_conf, full_stack=True, **app_conf):
 	static_app = StaticURLParser(config['pylons.paths']['static_files'])
 	app = Cascade([static_app, app])
 	app = GzipMiddleware(app, compresslevel=5)
+
+	if asbool(config.get("nwrsc.onsite", False)):
+		announcer = DatabaseAnnouncer(config.get('seriesdir', 'missing'))
+		announcer.start()
 
 	return app
