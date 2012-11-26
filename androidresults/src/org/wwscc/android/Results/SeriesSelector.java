@@ -26,18 +26,17 @@ import org.wwscc.services.ServiceFinder.ServiceFinderListener;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -46,8 +45,11 @@ import android.widget.Toast;
 /**
  * This is the main Activity that displays the current chat session.
  */
-public class Viewer extends Activity 
+public class SeriesSelector extends Activity 
 {
+	public final static String HOST = "org.wwscc.android.Results.HOST";
+	public final static String SERIES = "org.wwscc.android.Results.SERIES";
+	
 	private static final String LABEL = "Viewer";
     private ListView serviceList;
     private EditText editHost, editSeries;
@@ -106,15 +108,10 @@ public class Viewer extends Activity
             	FoundService s = serviceListAdapter.getItem(position);
                 editSeries.setText(s.getId());
                 editHost.setText(s.getHost().getHostName());
+                openSeries(null); // simulate the button press
             }
         }); 
-
-        ((Button)findViewById(R.id.OpenButton)).setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Log.e(LABEL, "open viewer with " + editHost.getText() + "/" + editSeries.getText());
-			}});
-        
+       
         
         try {
 			serviceFinder = new ServiceFinder("RemoteDatabase");
@@ -132,18 +129,34 @@ public class Viewer extends Activity
     }
 
 
+    public void openSeries(View v)
+    {
+		Log.e(LABEL, "open viewer with " + editHost.getText() + "/" + editSeries.getText());
+	    Intent intent = new Intent(this, Browser.class);
+	    intent.putExtra(HOST, editHost.getText().toString());
+	    intent.putExtra(SERIES, editSeries.getText().toString());
+	    startActivity(intent);
+	}
+
+    
     @Override
     public void onStart() {
         super.onStart();
     	Log.e(LABEL, "++START");
-        serviceFinder.start();
+    	if (serviceFinder != null)
+    		serviceFinder.start();
+    	else
+    		Log.e(LABEL, "Huh, no service finder");
     }
 
     @Override
     public void onStop() {
         super.onStop();
     	Log.e(LABEL, "++STOP");
-        serviceFinder.stop();
+    	if (serviceFinder != null)
+    		serviceFinder.stop();
+    	else
+    		Log.e(LABEL, "still no service finder");
         serviceListAdapter.clear();
     }
         

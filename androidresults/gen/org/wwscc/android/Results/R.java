@@ -11,24 +11,35 @@ public final class R {
     public static final class attr {
     }
     public static final class id {
-        public static final int EditHost=0x7f040004;
-        public static final int EditSeries=0x7f040002;
-        public static final int OpenButton=0x7f040001;
+        public static final int AvailableSeries=0x7f04000b;
+        public static final int EditHost=0x7f040006;
+        public static final int EditSeries=0x7f040008;
+        public static final int OpenButton=0x7f04000a;
         public static final int RelativeLayout1=0x7f040000;
-        public static final int SeriesList=0x7f040003;
-        public static final int remoteAddress=0x7f040008;
-        public static final int remoteName=0x7f040007;
-        public static final int textView1=0x7f040006;
-        public static final int textView2=0x7f040005;
+        public static final int SeriesList=0x7f04000c;
+        public static final int button1=0x7f040001;
+        public static final int button2=0x7f040002;
+        public static final int button3=0x7f040003;
+        public static final int hostLabel=0x7f040005;
+        public static final int remoteAddress=0x7f04000e;
+        public static final int remoteName=0x7f04000d;
+        public static final int seriesLabel=0x7f040007;
+        public static final int textView1=0x7f040009;
+        public static final int webView1=0x7f040004;
     }
     public static final class layout {
-        public static final int main=0x7f020000;
-        public static final int remoteentry=0x7f020001;
+        public static final int browser=0x7f020000;
+        public static final int main=0x7f020001;
+        public static final int remoteentry=0x7f020002;
     }
     public static final class string {
         public static final int app_name=0x7f030000;
+        public static final int discovered=0x7f030004;
+        public static final int hello_world=0x7f030005;
         public static final int host=0x7f030002;
+        public static final int menu_settings=0x7f030006;
         public static final int open=0x7f030001;
         public static final int series=0x7f030003;
+        public static final int title_activity_browser=0x7f030007;
     }
 }

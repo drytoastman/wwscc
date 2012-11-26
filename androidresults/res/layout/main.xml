@@ -1,67 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/RelativeLayout1"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:padding="10dp" >
 
-    <Button
-        android:id="@+id/OpenButton"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/hostLabel"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".25"
+            android:gravity="right"
+            android:text="@string/host"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/EditHost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight=".75"
+            android:ems="10"
+            android:inputType="text" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/seriesLabel"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".25"
+            android:gravity="right"
+            android:text="@string/series"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/EditSeries"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight=".75"
+            android:ems="10"
+            android:inputType="text" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25" 
+            android:gravity="right" />
+
+        <Button
+            android:id="@+id/OpenButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight=".75"
+            android:onClick="openSeries"
+            android:text="@string/open"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/EditSeries"
-        android:layout_below="@+id/EditSeries"
-        android:text="@string/open" />
+        android:layout_marginTop="10dp"
+        android:background="#888" >
+
+        <TextView
+            android:id="@+id/AvailableSeries"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/discovered"
+            android:textColor="#EEE"
+            android:textSize="20sp" />
+
+    </LinearLayout>
 
     <ListView
         android:id="@+id/SeriesList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/OpenButton"
-        android:stackFromBottom="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:drawSelectorOnTop="false"
+        android:headerDividersEnabled="true"
+        android:stackFromBottom="false"
         android:transcriptMode="alwaysScroll" />
 
-    <EditText
-        android:id="@+id/EditHost"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/textView2"
-        android:ems="10"
-        android:inputType="text" >
-
-        <requestFocus />
-    </EditText>
-
-    <EditText
-        android:id="@+id/EditSeries"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/EditHost"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/EditHost"
-        android:ems="10"
-        android:inputType="text" />
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/EditHost"
-        android:layout_alignBottom="@+id/EditHost"
-        android:layout_alignParentLeft="true"
-        android:text="@string/host" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/EditSeries"
-        android:layout_alignBottom="@+id/EditSeries"
-        android:layout_alignParentLeft="true"
-        android:text="@string/series" />
-
-</RelativeLayout>
+</LinearLayout>

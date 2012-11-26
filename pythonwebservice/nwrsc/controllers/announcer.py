@@ -20,7 +20,7 @@ class AnnouncerController(BaseController):
 			return render_mako('/announcer/main.mako')
 		elif self.database is not None:
 			c.events = self.session.query(Event).all()
-			return render_mako('/eventselect.mako')
+			return render_mako('/results/eventselect.mako')
 		else:
 			return self.databaseSelector()
 

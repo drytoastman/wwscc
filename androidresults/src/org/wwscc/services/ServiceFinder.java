@@ -28,7 +28,6 @@ public class ServiceFinder implements ThreadedClass
 	private static final Logger log = Logger.getLogger(ServiceFinder.class.getCanonicalName());
 	
 	private boolean done;
-	private MulticastSocket sock;
 	private InetAddress group;
 	private List<String> serviceNames;
 	private HashSet<FoundService> found;
@@ -50,9 +49,7 @@ public class ServiceFinder implements ThreadedClass
 		found = new HashSet<FoundService>();
 		serviceNames = names;
 		group = InetAddress.getByName(ServiceAnnouncer.MDNSAddr);
-		sock = new MulticastSocket(ServiceAnnouncer.MDNSPortPlus);
 		listeners = new Vector<ServiceFinderListener>();
-		sock.joinGroup(group);
 	}
 	
 	public void addListener(ServiceFinderListener lis)
@@ -74,13 +71,28 @@ public class ServiceFinder implements ThreadedClass
 	public void stop()
 	{
 		done = true;
+		found.clear();
 	}
 
 	class FinderThread implements Runnable
 	{
 		@Override
 		public void run()
-		{	
+		{
+			MulticastSocket sock = null;
+			
+			// (re)create the socket
+			try
+			{
+				sock = new MulticastSocket(ServiceAnnouncer.MDNSPortPlus);
+				sock.joinGroup(group);
+			}
+			catch (IOException ioe)
+			{
+				log.log(Level.WARNING, "servicefinder start failure: " + ioe);
+				try { Thread.sleep(1000); } catch (InterruptedException ex) {} // don't go into super loop on errors
+			}
+			
 			// for requests
 			String msg = ServiceMessage.encodeRequstList(serviceNames);
 			DatagramPacket request = new DatagramPacket(msg.getBytes(), msg.length(), group, ServiceAnnouncer.MDNSPortPlus);
@@ -127,8 +139,8 @@ public class ServiceFinder implements ThreadedClass
 				}
 				catch (IOException ioe) 
 				{
-					log.log(Level.INFO, "servicefinder: {0}", ioe);
-					try { Thread.sleep(1000); } catch (InterruptedException ex) {} // don't go into super loop on errors
+					log.log(Level.WARNING, "servicefinder: " + ioe);
+					try { Thread.sleep(8000); } catch (InterruptedException ex) {} // don't go into super loop on errors
 				}
 			}
 
