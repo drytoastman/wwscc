@@ -46,7 +46,7 @@ sqlmap = {
 'INSERTCAR':'insert or ignore into cars (driverid,year,make,model,color,number,classcode,indexcode) values (:h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8)',
 'INSERTCHALLENGE':'insert into challenges (eventid, name, depth) values (:h1,:h2,:h3)',
 'INSERTCLASSGROUPMAPPING':'insert into rungroups (eventid, classcode, rungroup) values (:h1,:h2,:h3)',
-'INSERTCLASSRESULTS':'insert into eventresults VALUES (NULL, :h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10)',
+'INSERTCLASSRESULTS':'insert into eventresults VALUES (NULL, :h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10,:h11)',
 'INSERTDRIVER':'insert or ignore into drivers (firstname,lastname,alias,email,address,city,state,zip,phone,brag,sponsor) values (:h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10,:h11)',
 'INSERTEXTRA':'insert into driverextra (driverid, name, value) values (:h1,:h2,:h3)',
 'INSERTRUN':'insert into runs (carid,eventid,course,run,cones,gates,status,rorder,norder,brorder,bnorder,reaction,sixty,seg1,seg2,seg3,seg4,seg5,raw,net) values (:h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10,:h11,:h12,:h13,:h14,:h15,:h16,:h17,:h18,:h19,:h20)',

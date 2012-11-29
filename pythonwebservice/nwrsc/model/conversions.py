@@ -99,7 +99,7 @@ def convert20121(session):
 		session.add(Challenge(**row2dict(row)))
 
 	log.info("Drop old tables")
-	#session.execute("DROP TABLE oldeventresults")
+	session.execute("DROP TABLE oldeventresults")
 	session.execute("DROP TABLE oldchallenges")
 	
 	# add usepospoints, champsorting, change ppoints to pospointlist
@@ -115,11 +115,27 @@ def convert20121(session):
 	session.execute("delete from settings where name='ppoints'");
 	session.commit()
 
+
+def convert20122(session):
+	metadata.bind = session.bind
 	
+	session.execute("ALTER TABLE eventresults ADD COLUMN lastcourse SMALLINT DEFAULT 1");
+
+	# add usepospoints, champsorting, change ppoints to pospointlist
+	log.info("update settings")
+	settings = Settings()
+	settings.load(session)  # also loads new default values
+	settings.schema = '20123'
+	settings.save(session)
+
+	session.commit()
+
+
 
 converters = {
 	'20112': convert2011,
 	'20121': convert20121,
+	'20122': convert20122,
 }
 
 def convert(session):

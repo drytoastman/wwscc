@@ -24,6 +24,7 @@ public class EventResult
 	protected double diffpoints;
 	protected int pospoints;
 	protected SADateTime updated;
+	protected int lastcourse; // the active course when last updated, more important for pros where you go back/forth
 	
 	private double indexvalue;
 
@@ -34,6 +35,7 @@ public class EventResult
 	public String getIndexCode() { return indexcode; }
 	public double getIndex() { return indexvalue; }
 	public int getPosition() { return position; }
+	public int getLastCourse() { return lastcourse; }
 	
 	protected void setIndex(double value) { indexvalue = value; }
 }

@@ -454,22 +454,23 @@ public class AUTO
 		o.diffpoints = rs.getDouble("diffpoints");
 		o.pospoints = rs.getInt("pospoints");
 		o.updated = rs.getSADateTime("updated");
+		o.lastcourse = rs.getInt("lastcourse");
 		return o;
 	}
 	
 	public static String getEventResultVarStr()
 	{
-		return "carid,firstname,lastname,indexcode,position,courses,sum,diff,diffpoints,pospoints,updated";
+		return "carid,firstname,lastname,indexcode,position,courses,sum,diff,diffpoints,pospoints,updated,lastcourse";
 	}
 	
 	public static String getEventResultArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getEventResultSetStr()
 	{
-		return "carid=?,firstname=?,lastname=?,indexcode=?,position=?,courses=?,sum=?,diff=?,diffpoints=?,pospoints=?,updated=?";
+		return "carid=?,firstname=?,lastname=?,indexcode=?,position=?,courses=?,sum=?,diff=?,diffpoints=?,pospoints=?,updated=?,lastcourse=?";
 	}
 	
 	public static void addEventResultValues(org.wwscc.storage.EventResult o, List<Object> l)
@@ -485,6 +486,7 @@ public class AUTO
 		l.add(o.diffpoints);
 		l.add(o.pospoints);
 		l.add(o.updated);
+		l.add(o.lastcourse);
 	}
 	
 }

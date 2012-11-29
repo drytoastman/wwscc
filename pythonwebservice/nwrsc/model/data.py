@@ -44,6 +44,7 @@ t_eventresults = Table('eventresults', metadata,
 	Column('diffpoints', Float),
 	Column('pospoints', SmallInteger),
 	Column('updated', DateTime),
+	Column('lastcourse', SmallInteger),
 	UniqueConstraint('eventid', 'carid', name='eridx_2')
 	)
 Index('eridx_1', t_eventresults.c.eventid)

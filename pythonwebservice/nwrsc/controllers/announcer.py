@@ -1,4 +1,5 @@
 import time
+import operator
 from datetime import datetime
 
 from pylons import request, response, session, config, tmpl_context as c
@@ -6,6 +7,16 @@ from pylons.templating import render_mako
 from pylons.decorators import jsonify
 from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.model import *
+
+class ExtraResult(object):
+	def __init__(self, copy, **kwargs):
+		self.__dict__ = copy.__dict__.copy()
+		for k, v in kwargs.iteritems():
+			setattr(self, k, v)
+
+	def __getattr__(self, k):
+		return 42
+
 
 class AnnouncerController(BaseController):
 
@@ -31,11 +42,18 @@ class AnnouncerController(BaseController):
 			Get the timestamps of the last 2 updated run entries, announcer panel periodically calls this
 			to see if there is any real data to get
 		"""
-		timestamp = datetime.fromtimestamp(int(request.GET.get('time', 0)))
-		data = [{'updated':time.mktime(row[0].timetuple()), 'carid':row[1]} \
-				for row in self.session.query(EventResult.updated, EventResult.carid)\
-				.filter(EventResult.eventid==self.eventid).filter(EventResult.updated > timestamp)\
-				.order_by(EventResult.updated.desc()).limit(2).all()]
+		query = self.session.query(EventResult.updated, EventResult.carid)
+		query = query.filter(EventResult.eventid==self.eventid)
+		if 'class' in request.GET:
+			query = query.join(Class).filter(Class.code == request.GET['class'])
+		if 'time' in request.GET:
+			query = query.filter(EventResult.updated > datetime.fromtimestamp(int(request.GET['time'])))
+		query = query.order_by(EventResult.updated.desc())
+
+		data = []
+		for row in query.limit(2).all():
+			data.append({'updated':time.mktime(row[0].timetuple()), 'carid':row[1]})
+
 		return {'data': data}
 
 
@@ -86,6 +104,7 @@ class AnnouncerController(BaseController):
 		return self._results(int(request.GET.get('carid', 0)))
 
 
+
 	@jsonify
 	def _results(self, carid):
 		"""
@@ -100,13 +119,42 @@ class AnnouncerController(BaseController):
 		c.highlight = carid
 		c.marker = time.strftime('%I:%M:%S')
 
-		c.runs = {}
-		for r in self.session.query(Run).filter(Run.carid==carid).filter(Run.eventid==self.eventid): 
-			c.runs[r.run] = r
+
 		c.results = getClassResultsShort(self.session, self.settings, c.event, c.cls)
+		lastcourse = c.results[0].lastcourse or 1
+		activeentrant = [x for x in c.results if x.carid==carid][0]
 
-		self._createInfo(carid)
+		# Just get runs from last course that was recorded
+		c.runs = {}
+		for r in self.session.query(Run).filter(Run.carid==carid).filter(Run.eventid==self.eventid).filter(Run.course==lastcourse): 
+			c.runs[r.run] = r
 
+		c.rdiff = 0
+		c.ndiff = 0
+
+		if len(c.runs) > 1:
+			runlist = sorted(c.runs.keys())
+			lastrun = c.runs[runlist[-1]]
+			if lastrun.norder == 1:  # we improved our position
+				# find run with norder = 2, create the old entry with sum - lastrun + prevrun
+				prevbest = [x for x in c.runs.values() if x.norder == 2][0]
+				c.rdiff = lastrun.raw - prevbest.raw
+				c.ndiff = lastrun.net - prevbest.net
+				theory = activeentrant.sum - lastrun.net + prevbest.net
+				c.improvedon = ExtraResult(activeentrant, position='old', sum=theory, diff=0)
+				c.results.append(c.improvedon)
+
+			if lastrun.cones != 0 or lastrun.gates != 0:
+				# add table entry with what could have been without penalties
+				index = self.session.query(Index.value).filter(Index.code==activeentrant.indexcode).first()[0] 
+				curbest = [x for x in c.runs.values() if x.norder == 1][0]
+				theory = activeentrant.sum - curbest.net + ( lastrun.raw * index )
+				print type(theory), theory, activeentrant.sum, lastrun.net, lastrun.raw
+				if theory < activeentrant.sum:
+					c.couldhave = ExtraResult(activeentrant, position='raw', sum=theory, diff=0)
+					c.results.append(c.couldhave)
+
+		c.results.sort(key=operator.attrgetter('sum'))
 		c.champresults = getChampResults(self.session, self.settings, c.cls.code).get(c.cls.code, [])
 
 		ret = {}
@@ -114,55 +162,4 @@ class AnnouncerController(BaseController):
 		ret['entrantresult'] = render_mako('/announcer/entrant.mako').replace('\n', '')
 		return ret
 
-
-	def _createInfo(self, carid):
-		c.rdiff = 0
-		c.ndiff = 0
-		c.change = ''
-		c.theory = ''
-
-		one = two = last = c.runs[len(c.runs)]
-		for r in c.runs.itervalues():
-			if r.norder == 1:
-				one = r
-			elif r.norder == 2:
-				two = r
-
-		# Find newpos
-		for r in c.results:
-			if r.carid == carid:
-				newpos = r.position
-				break
-
-		# Find diffs and position change
-		if last.run != one.run:
-			c.ndiff = last.net - one.net
-			c.rdiff = last.raw - one.raw
-			judge = one.net
-		else:
-			c.ndiff = last.net - two.net
-			c.rdiff = last.raw - two.raw
-			judge = two.net
-
-		origpos = 1
-		for r in c.results:
-			if round(judge,3) < round(r.sum,3):
-				origpos = r.position - 1
-				if newpos != origpos:
-					c.change = "%s to %s" % (origpos, newpos)
-				break
-
-		# Find any theoretical changes
-		if c.rdiff > 0 or last.cones == 0:
-			return
-
-		newnet = last.net - (c.event.conepen * last.cones)
-		tpos = origpos;
-		for r in c.results:
-			if newnet < r.sum:
-				tpos = r.position
-				break
-
-		if tpos < newpos:
-			c.theory = "%s to %s" % (origpos, tpos)
 

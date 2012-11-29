@@ -1001,6 +1001,7 @@ public abstract class SQLDataInterface extends DataInterface
 
 			SADateTime update = updateMap.get(insertcarid);
 			rvals.add((update != null)? update: new SADateTime());
+			rvals.add(currentCourse);
 			lists.add(rvals);
 			position++;
 			prev = sum;

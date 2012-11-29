@@ -44,6 +44,18 @@ tr.highlight td {
 	background: #DDD; 
 }
 
+tr.improvedon td {
+	font-weight: bold;
+	background: #EEF; 
+	color: #77E;
+}
+
+tr.couldhave td {
+	font-weight: bold;
+	background: #EDD; 
+	color: #E77;
+}
+
 table.runorder td, table.res td, table.toptimes td {
 	font-size: 0.7em;
 }

@@ -5,13 +5,13 @@ from pylons import config
 class Result(object):
 	""" Contains driver name, car description, overall result and 2D array of runs by course and run # """
 
-	def __init__(self, row, classdata, usepospoints=False):
+	def __init__(self, row, **kwargs): # kwargs = classdata, usepospoints
 		for k in row.keys():
 			setattr(self, k, getattr(row,k))
 
-		if classdata is not None:
-			self.indexstr = classdata.getIndexStr(self.classcode, self.indexcode)
-			self.indexval = classdata.getEffectiveIndex(self.classcode, self.indexcode)
+		if 'classdata' in kwargs:
+			self.indexstr = kwargs['classdata'].getIndexStr(self.classcode, self.indexcode)
+			self.indexval = kwargs['classdata'].getEffectiveIndex(self.classcode, self.indexcode)
 		else:
 			self.indexstr = self.indexcode
 			self.indexval = 1.0
@@ -23,10 +23,11 @@ class Result(object):
 			self.firstname = self.alias
 			self.lastname = ""
 
-		if usepospoints:
-			self.points = self.pospoints
-		else:
-			self.points = self.diffpoints
+		if 'usepospoints' in kwargs:
+			if kwargs['usepospoints']:
+				self.points = self.pospoints
+			else:
+				self.points = self.diffpoints
 
 
 	def getFeed(self):
@@ -50,7 +51,7 @@ def getAuditResults(session, settings, event, course, rungroup):
 	ret = list()
 	reshold = dict()
 	for row in session.execute(auditList, params={'eventid':event.id, 'course':course, 'group':rungroup}):
-		r = Result(row, None, settings.usepospoints)
+		r = Result(row)
 		r.runs = [None] * event.runs
 		ret.append(r)
 		reshold[r.carid] = r
@@ -69,9 +70,13 @@ classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.index
 				order by r.position"""
 
 def getClassResultsShort(session, settings, event, cls):
+	"""
+		Similar to getClassResults but but doesn't include any run information.
+		For display of final points, nettime, only, this will be quicker and use less memory
+	"""
 	ret = []
 	for row in session.execute(classResult % (event.id, "'%s'" % cls.code)):
-		ret.append(Result(row, None, settings.usepospoints))
+		ret.append(Result(row, usepospoints=settings.usepospoints))
 
 	trophydepth = ceil(len(ret) / 3.0)
 	for ii, result in enumerate(ret):
@@ -82,6 +87,11 @@ def getClassResultsShort(session, settings, event, cls):
 
 
 def getClassResults(session, settings, event, classdata, codes):
+	"""
+		Get a dictionary of results that looks like:
+		{classcode}[orderedlistof Results]
+		The Result class will include all their runs as well as trophy indicators
+	"""
 	ret = dict()
 	reshold = dict()
 
@@ -90,7 +100,7 @@ def getClassResults(session, settings, event, classdata, codes):
 
 	## Outside normal alchemy use, mass one time selects using IN clause, much faster 
 	for row in session.execute(classResult % (event.id, ','.join(["'%s'" % x for x in codes]))):
-		r = Result(row, classdata, settings.usepospoints)
+		r = Result(row, classdata=classdata, usepospoints=settings.usepospoints)
 		r.runs = [[None for i in range(event.runs)] for j in range(event.courses)]
 		ret[r.classcode].append(r)
 		reshold[r.carid] = r
