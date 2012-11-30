@@ -9,6 +9,10 @@ available to Controllers. This module is available to both as 'h'.
 from webhelpers.html.tags import stylesheet_link, javascript_link
 from routes import url_for, redirect_to
 from simplejson import dumps
+import operator
+
+
+attrgetter = operator.attrgetter
 
 def esc(str):
 	str.replace
@@ -28,14 +32,18 @@ def hide(val, hidenum):
 
 	return ret
 
-def t3(val, sub = None):
+def t3(val, sub = None, sign = False):
 	if val is None or val == 0:
 		return ''
 	if sub is not None:
 		val -= sub
 	if type(val) is int:
 		return str(val)
-	return "%0.3f" % (val)
+
+	if sign:	
+		return "%+0.3f" % (val)
+	else:
+		return "%0.3f" % (val)
 
 def encodesqlobj(obj):
 	d = dict()

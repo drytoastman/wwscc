@@ -40,6 +40,7 @@ tr.titles th {
 }
 
 tr.highlight td {
+	font-size: 0.90em !important;
 	font-weight: bold;
 	background: #DDD; 
 }
@@ -47,17 +48,18 @@ tr.highlight td {
 tr.improvedon td {
 	font-weight: bold;
 	background: #EEF; 
-	color: #77E;
+	color: #99E;
 }
 
 tr.couldhave td {
+	font-size: 0.90em !important;
 	font-weight: bold;
 	background: #EDD; 
 	color: #E77;
 }
 
 table.runorder td, table.res td, table.toptimes td {
-	font-size: 0.7em;
+	font-size: 0.8em;
 }
 
 table.stats td {

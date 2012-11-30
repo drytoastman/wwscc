@@ -127,10 +127,9 @@ class AnnouncerController(BaseController):
 		# Just get runs from last course that was recorded
 		c.runs = {}
 		for r in self.session.query(Run).filter(Run.carid==carid).filter(Run.eventid==self.eventid).filter(Run.course==lastcourse): 
+			r.rdiff = None
+			r.ndiff = None
 			c.runs[r.run] = r
-
-		c.rdiff = 0
-		c.ndiff = 0
 
 		if len(c.runs) > 1:
 			runlist = sorted(c.runs.keys())
@@ -138,20 +137,22 @@ class AnnouncerController(BaseController):
 			if lastrun.norder == 1:  # we improved our position
 				# find run with norder = 2, create the old entry with sum - lastrun + prevrun
 				prevbest = [x for x in c.runs.values() if x.norder == 2][0]
-				c.rdiff = lastrun.raw - prevbest.raw
-				c.ndiff = lastrun.net - prevbest.net
+				lastrun.rdiff = lastrun.raw - prevbest.raw
+				lastrun.ndiff = lastrun.net - prevbest.net
 				theory = activeentrant.sum - lastrun.net + prevbest.net
 				c.improvedon = ExtraResult(activeentrant, position='old', sum=theory, diff=0)
 				c.results.append(c.improvedon)
 
 			if lastrun.cones != 0 or lastrun.gates != 0:
 				# add table entry with what could have been without penalties
-				index = self.session.query(Index.value).filter(Index.code==activeentrant.indexcode).first()[0] 
+				index = ClassData(self.session).getEffectiveIndex(activeentrant.classcode, activeentrant.indexcode)
 				curbest = [x for x in c.runs.values() if x.norder == 1][0]
 				theory = activeentrant.sum - curbest.net + ( lastrun.raw * index )
-				print type(theory), theory, activeentrant.sum, lastrun.net, lastrun.raw
 				if theory < activeentrant.sum:
+					lastrun.rdiff = lastrun.raw - curbest.raw
+					lastrun.ndiff = lastrun.net - curbest.net
 					c.couldhave = ExtraResult(activeentrant, position='raw', sum=theory, diff=0)
+					c.couldhaverun = lastrun
 					c.results.append(c.couldhave)
 
 		c.results.sort(key=operator.attrgetter('sum'))
