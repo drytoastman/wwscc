@@ -24,6 +24,7 @@ import net.miginfocom.swing.MigLayout;
 import org.wwscc.barcodes.BarcodeScannerWatcher;
 import org.wwscc.components.CurrentDatabaseLabel;
 import org.wwscc.components.MyIpLabel;
+import org.wwscc.dataentry.announcer.AnnouncerPanel;
 import org.wwscc.dataentry.tables.DoubleTableContainer;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;

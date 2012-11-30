@@ -8,7 +8,7 @@
 
 package org.wwscc.storage;
 
-public class EventResult
+public class EventResult implements Comparable<EventResult>
 {
 	//private static final Logger log = Logger.getLogger("org.wwscc.storage.EventResults");
 
@@ -38,5 +38,10 @@ public class EventResult
 	public int getLastCourse() { return lastcourse; }
 	
 	protected void setIndex(double value) { indexvalue = value; }
+	
+	@Override
+	public int compareTo(EventResult o) {
+		return (int)(1000*(getSum() - o.getSum()));
+	}
 }
 

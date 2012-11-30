@@ -1,6 +1,6 @@
 *.pyc
 *.o
-*.log
+*.log*
 *.version
 wwsccapps*.jar
 WWSCC*.exe
