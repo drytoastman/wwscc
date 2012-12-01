@@ -70,6 +70,16 @@ class AnnouncerController(BaseController):
 		"""
 			Returns the top times tables that are shown in the announer panel
 		"""
+		return self._loadTopTimes()
+
+
+	def topraw(self):
+		return self._loadTopTimes()['topraw']
+
+	def topnet(self):
+		return self._loadTopTimes()['topnet']
+
+	def _loadTopTimes(self):
 		c.classdata = ClassData(self.session)
 		c.highlight = int(request.GET.get('carid', 0))
 
@@ -96,17 +106,34 @@ class AnnouncerController(BaseController):
 
 
 	def nexttofinish(self):
-		carid = getNextCarIdInOrder(self.session, c.event, int(request.GET.get('carid', 0)))
-		return self._results(carid)
-
+		return self._allentrant(getNextCarIdInOrder(self.session, c.event, int(request.GET.get('carid', 0))))
 
 	def results(self):
-		return self._results(int(request.GET.get('carid', 0)))
-
-
+		return self._allentrant(int(request.GET.get('carid', 0)))
 
 	@jsonify
-	def _results(self, carid):
+	def _allentrant(self, carid):
+		self._loadResults(carid)
+		ret = {}
+		ret['updated'] = int(request.GET.get('updated', 0)) # Return it
+		ret['entrantresult'] = render_mako('/announcer/entrant.mako').replace('\n', '')
+		return ret
+
+
+	def runlist(self):
+		self._loadResults(int(request.GET.get('carid', 0)))
+		return render_mako("/announcer/runs.mako")
+
+	def classlist(self):
+		self._loadResults(int(request.GET.get('carid', 0)))
+		return render_mako("/announcer/class.mako")
+
+	def champlist(self):
+		self._loadResults(int(request.GET.get('carid', 0)))
+		return render_mako("/announcer/champ.mako")
+
+
+	def _loadResults(self, carid):
 		"""
 			Returns the collection of tables shown for a single entrant
 		"""
@@ -118,7 +145,6 @@ class AnnouncerController(BaseController):
 		c.cls = self.session.query(Class).filter(Class.code==c.car.classcode).first()
 		c.highlight = carid
 		c.marker = time.strftime('%I:%M:%S')
-
 
 		c.results = getClassResultsShort(self.session, self.settings, c.event, c.cls)
 		lastcourse = c.results[0].lastcourse or 1

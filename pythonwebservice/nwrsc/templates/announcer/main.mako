@@ -4,85 +4,9 @@
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 <title>Scorekeeper Announcer Tool</title>
 <link href="/css/custom-theme/jquery-ui-1.8.18.custom.css" rel="stylesheet" type="text/css" />
+<link href="/css/announcer.css" rel="stylesheet" type="text/css" />
 <script type='text/javascript' src='/js/jquery-1.7.1.min.js'></script>
 <script type='text/javascript' src='/js/jquery-ui-1.8.18.custom.min.js'></script>
-
-<style type='text/css'>
-.layout td { vertical-align: top; }
-.layout table { width: 100%; padding: 5px; }
-
-table { border-collapse: collapse; }
-table.runorder th, table.res th, table.stats th, table.toptimes th, table.runorder td, table.res td, table.stats td, table.toptimes td
-{ 
-	border: 1px black solid; padding: 3px; 
-}
-
-.ui-tabs-nav { 
-	font-size: 0.7em;
-}
-
-.ui-tabs .ui-tabs-panel {
-	padding-top: 5px;
-	padding-left: 2px;
-	padding-right: 2px;
-}
-
-tr.header th { 
-	font-size: 0.8em;
-	font-weight: bold;
-	background: #79b7e7; 
-}
-
-tr.titles th { 
-	font-size: 0.7em;
-	font-weight: bold;
-	background: #c5dbec; 
-}
-
-tr.highlight td {
-	font-size: 0.90em !important;
-	font-weight: bold;
-	background: #DDD; 
-}
-
-tr.improvedon td {
-	font-weight: bold;
-	background: #EEF; 
-	color: #99E;
-}
-
-tr.couldhave td {
-	font-size: 0.90em !important;
-	font-weight: bold;
-	background: #EDD; 
-	color: #E77;
-}
-
-table.runorder td, table.res td, table.toptimes td {
-	font-size: 0.8em;
-}
-
-table.stats td {
-	background: #EEE;
-	font-size: 0.6em;
-}
-
-table.stats td+td {
-	font-size: 12px;
-	font-family: monospace;
-	background: #FFF;
-}
-
-#runorder {
-	margin-bottom: 10px;
-	padding: 4px;
-}
-
-#classtable td, #champtable td {
-	white-space:nowrap;
-}
-
-</style>
 
 <script type="text/javascript">
 
@@ -173,7 +97,7 @@ $(document).ready(function(){
 
 <table class='layout' id='mainlayout'><tr><td>
 
-<div id='runorder' class='ui-corner-all ui-widget-content'></div>
+<div id='runorder' class='ui-corner-all ui-widget ui-widget-content'></div>
 
 <div id="entranttabs">
     <ul>
@@ -189,6 +113,7 @@ $(document).ready(function(){
 </td><td>
 
 <div id="toptimetabs">
+	<span class='header'>Top Times</span>
     <ul>
         <li><a href="#toprawcell"><span>Raw</span></a></li>
         <li><a href="#topnetcell"><span>Net</span></a></li>
