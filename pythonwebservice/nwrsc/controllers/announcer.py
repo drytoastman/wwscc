@@ -73,12 +73,6 @@ class AnnouncerController(BaseController):
 		return self._loadTopTimes()
 
 
-	def topraw(self):
-		return self._loadTopTimes()['topraw']
-
-	def topnet(self):
-		return self._loadTopTimes()['topnet']
-
 	def _loadTopTimes(self):
 		c.classdata = ClassData(self.session)
 		c.highlight = int(request.GET.get('carid', 0))
@@ -118,19 +112,6 @@ class AnnouncerController(BaseController):
 		ret['updated'] = int(request.GET.get('updated', 0)) # Return it
 		ret['entrantresult'] = render_mako('/announcer/entrant.mako').replace('\n', '')
 		return ret
-
-
-	def runlist(self):
-		self._loadResults(int(request.GET.get('carid', 0)))
-		return render_mako("/announcer/runs.mako")
-
-	def classlist(self):
-		self._loadResults(int(request.GET.get('carid', 0)))
-		return render_mako("/announcer/class.mako")
-
-	def champlist(self):
-		self._loadResults(int(request.GET.get('carid', 0)))
-		return render_mako("/announcer/champ.mako")
 
 
 	def _loadResults(self, carid):
@@ -183,10 +164,4 @@ class AnnouncerController(BaseController):
 
 		c.results.sort(key=operator.attrgetter('sum'))
 		c.champresults = getChampResults(self.session, self.settings, c.cls.code).get(c.cls.code, [])
-
-		ret = {}
-		ret['updated'] = int(request.GET.get('updated', 0)) # Return it
-		ret['entrantresult'] = render_mako('/announcer/entrant.mako').replace('\n', '')
-		return ret
-
 
