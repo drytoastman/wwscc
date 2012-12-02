@@ -28,6 +28,13 @@
             android:name="org.wwscc.android.Results.Browser"
             android:label="@string/title_activity_browser" >
         </activity>
+        <activity
+            android:name="org.wwscc.android.Results.EventClassSelect"
+            android:label="@string/title_activity_event_select" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.wwscc.android.Results.SeriesSelector" />
+        </activity>
     </application>
 
 </manifest>

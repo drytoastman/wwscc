@@ -17,46 +17,36 @@
 package org.wwscc.android.Results;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.wwscc.services.FoundService;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 /**
  * This is the main Activity that displays the current chat session.
  */
 public class SeriesSelector extends Activity 
-{
-	public final static String HOST = "org.wwscc.android.Results.HOST";
-	public final static String SERIES = "org.wwscc.android.Results.SERIES";
-	
-	private static final String LABEL = "Viewer";
+{	
+	private static final String LABEL = "DatabaseSelector";
     private ListView serviceList;
     private EditText editHost, editSeries;
     private ArrayAdapter<FoundService> serviceListAdapter;
     private ServiceFinder serviceFinder = null;
 
-    // The Handler that gets information back from the BluetoothChatService
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -70,38 +60,16 @@ public class SeriesSelector extends Activity
     {
         super.onCreate(savedInstanceState);
     	Log.e(LABEL, "++CREATE");
-    	Logger.getLogger(ServiceFinder.class.getCanonicalName()).setLevel(Level.WARNING);
-        setContentView(R.layout.main);
+        setContentView(R.layout.seriesselection);
 
         // Initialize the array adapter for the conversation thread
-        serviceListAdapter = new ArrayAdapter<FoundService>(this, R.layout.remoteentry)
-        {
-            @Override
-            public View getView(int position, View v, ViewGroup parent)
-            {
-            	if (v == null)
-            	{
-            		LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    v = li.inflate(R.layout.remoteentry, parent, false);
-                    v.setTag(new TextView[] { (TextView)v.findViewById(R.id.remoteName),
-                    						(TextView)v.findViewById(R.id.remoteAddress)});
-            	}
-            	
-                final FoundService service = getItem(position);
-                TextView[] fields = (TextView[])v.getTag();
-                fields[0].setText(service.getId());
-                fields[1].setText(service.getHost().getHostName());
-                return v;
-            }
-        };
-
+        serviceListAdapter = new ServiceListAdapter(this);
         editSeries = (EditText)findViewById(R.id.EditSeries);
         editHost = (EditText)findViewById(R.id.EditHost);
 
         serviceList = (ListView)findViewById(R.id.SeriesList);
         serviceList.setAdapter(serviceListAdapter);
         serviceList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        
         serviceList.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -132,9 +100,11 @@ public class SeriesSelector extends Activity
     public void openSeries(View v)
     {
 		Log.e(LABEL, "open viewer with " + editHost.getText() + "/" + editSeries.getText());
-	    Intent intent = new Intent(this, Browser.class);
-	    intent.putExtra(HOST, editHost.getText().toString());
-	    intent.putExtra(SERIES, editSeries.getText().toString());
+	    SharedPreferences.Editor editor = getSharedPreferences(null, 0).edit();
+	    editor.putString("HOST", editHost.getText().toString());
+	    editor.putString("SERIES", editSeries.getText().toString());
+	    editor.apply();
+	    Intent intent = new Intent(this, EventClassSelect.class);
 	    startActivity(intent);
 	}
 
