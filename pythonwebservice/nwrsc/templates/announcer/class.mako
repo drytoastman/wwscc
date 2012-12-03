@@ -1,3 +1,8 @@
+<%inherit file="mobilebase.mako" />
+
+${classlist()}
+
+<%def name="classlist()">
 
 <table id='classtable' class='res'>
 <tbody>
@@ -19,4 +24,6 @@
 %endfor
 </tbody>
 </table>
+
+</%def>
 

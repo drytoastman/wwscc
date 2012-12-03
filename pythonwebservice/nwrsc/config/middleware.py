@@ -92,7 +92,7 @@ def make_app(global_conf, full_stack=True, **app_conf):
 	# server is handling this static content, remove the following 2 lines)
 	static_app = StaticURLParser(config['pylons.paths']['static_files'])
 	app = Cascade([static_app, app])
-	app = ReWriter(app, {'/mobile/css':'/css/announcer.css'})
+	# app = ReWriter(app, {'/mobile/css':'/css/announcer.css'})
 	app = GzipMiddleware(app, compresslevel=5)
 
 	if asbool(config.get("nwrsc.onsite", False)):

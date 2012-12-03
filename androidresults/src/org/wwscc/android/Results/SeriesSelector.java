@@ -22,6 +22,7 @@ import org.wwscc.services.ServiceFinder;
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -62,6 +63,11 @@ public class SeriesSelector extends Activity
     	Log.e(LABEL, "++CREATE");
         setContentView(R.layout.seriesselection);
 
+        if (!Util.networkAvailable(this))
+        {
+        	new AlertDialog.Builder(this).setMessage("No network, try again").setTitle("Network Error");        
+        }
+        
         // Initialize the array adapter for the conversation thread
         serviceListAdapter = new ServiceListAdapter(this);
         editSeries = (EditText)findViewById(R.id.EditSeries);

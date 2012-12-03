@@ -11,28 +11,28 @@ public final class R {
     public static final class attr {
     }
     public static final class id {
-        public static final int AvailableSeries=0x7f050013;
-        public static final int ClassLabel=0x7f050009;
-        public static final int EditHost=0x7f05000e;
-        public static final int EditSeries=0x7f050010;
-        public static final int EventLabel=0x7f050006;
-        public static final int OpenButton=0x7f050012;
-        public static final int RelativeLayout1=0x7f050000;
-        public static final int SeriesList=0x7f050014;
-        public static final int button1=0x7f050002;
-        public static final int button2=0x7f050003;
-        public static final int button3=0x7f050004;
-        public static final int classselect=0x7f050008;
-        public static final int eventselect=0x7f050007;
-        public static final int hostLabel=0x7f05000d;
-        public static final int linearLayout1=0x7f050001;
-        public static final int menu_settings=0x7f050015;
-        public static final int progressBar1=0x7f05000a;
-        public static final int remoteAddress=0x7f05000c;
-        public static final int remoteName=0x7f05000b;
-        public static final int seriesLabel=0x7f05000f;
-        public static final int textView1=0x7f050011;
-        public static final int webView1=0x7f050005;
+        public static final int AvailableSeries=0x7f040014;
+        public static final int ClassLabel=0x7f04000a;
+        public static final int EditHost=0x7f04000f;
+        public static final int EditSeries=0x7f040011;
+        public static final int EventLabel=0x7f040007;
+        public static final int OpenButton=0x7f040013;
+        public static final int RelativeLayout1=0x7f040000;
+        public static final int SeriesList=0x7f040015;
+        public static final int button1=0x7f040002;
+        public static final int button2=0x7f040003;
+        public static final int button3=0x7f040004;
+        public static final int classselect=0x7f040009;
+        public static final int eventselect=0x7f040008;
+        public static final int hostLabel=0x7f04000e;
+        public static final int lastlabel=0x7f040005;
+        public static final int linearLayout1=0x7f040001;
+        public static final int progressBar=0x7f04000b;
+        public static final int remoteAddress=0x7f04000d;
+        public static final int remoteName=0x7f04000c;
+        public static final int seriesLabel=0x7f040010;
+        public static final int textView1=0x7f040012;
+        public static final int webView1=0x7f040006;
     }
     public static final class layout {
         public static final int basicentry=0x7f020000;
@@ -41,9 +41,6 @@ public final class R {
         public static final int eventclassselect=0x7f020003;
         public static final int foundserviceentry=0x7f020004;
         public static final int seriesselection=0x7f020005;
-    }
-    public static final class menu {
-        public static final int activity_event_select=0x7f040000;
     }
     public static final class string {
         public static final int ClassLabel=0x7f03000a;

@@ -1,3 +1,8 @@
+<%inherit file="mobilebase.mako" />
+
+${runslist()}
+
+<%def name="runslist()">
 
 <table id='resultstable' class='res'>
 <%
@@ -60,4 +65,4 @@ if run == c.couldhaverun: trclass = 'couldhave'
 
 </tbody>
 </table>
-
+</%def>

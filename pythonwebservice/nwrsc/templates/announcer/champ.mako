@@ -1,3 +1,8 @@
+<%inherit file="mobilebase.mako" />
+
+${champlist()}
+
+<%def name="champlist()">
 
 %if c.cls.champtrophy:
 <table id='champtable' class='res'>
@@ -15,4 +20,6 @@
 </tbody>
 </table>
 %endif
+
+</%def>
 

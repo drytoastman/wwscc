@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.app.Activity;
 import android.content.Intent;
@@ -32,6 +33,8 @@ public class EventClassSelect extends Activity implements OnItemSelectedListener
 	
 	private Spinner events;
 	private Spinner classes;
+	private ProgressBar progress;
+	private int openRequests;
 	private ArrayAdapter<EventWrapper> eventArray;
 	private ArrayAdapter<String> classArray;
 	
@@ -42,7 +45,8 @@ public class EventClassSelect extends Activity implements OnItemSelectedListener
 
         events = (Spinner)findViewById(R.id.eventselect);
         classes = (Spinner)findViewById(R.id.classselect);
-        
+        progress = (ProgressBar)findViewById(R.id.progressBar);
+        openRequests = 0;
         eventArray = new ArrayAdapter<EventWrapper>(this, R.layout.basicentry);
         eventArray.setDropDownViewResource(R.layout.bigentry);
         classArray = new ArrayAdapter<String>(this, R.layout.basicentry);
@@ -86,72 +90,68 @@ public class EventClassSelect extends Activity implements OnItemSelectedListener
 		SharedPreferences prefs = this.getSharedPreferences(null, 0);
 		String host = prefs.getString("HOST", "unknown");
 		String series = prefs.getString("SERIES", "unknown");	
-		new JSONTask("events").execute(String.format("http://%s/mobile/%s/events", host, series));
-		new JSONTask("classes").execute(String.format("http://%s/mobile/%s/classes", host, series));
+		progress.setVisibility(View.VISIBLE);
+		openRequests = 2;
+		new EventsTask().execute(String.format("http://%s/mobile/%s/events", host, series));
+		new ClassesTask().execute(String.format("http://%s/mobile/%s/classes", host, series));
 	}
 
 	
 	class JSONTask extends AsyncTask<String, Integer, JSONArray>
-	{	
-		String type;
-		public JSONTask(String type)
-		{
-			this.type = type;
-		}
-		
+	{			
 		@Override
 		protected JSONArray doInBackground(String... args) 
 		{
 			AndroidHttpClient httpclient = null;
-			
-			 //http post
-			try{
+			try {
 				httpclient = AndroidHttpClient.newInstance("AndroidResults");
 				HttpResponse response = httpclient.execute(new HttpGet(args[0]));
 				ByteArrayOutputStream bytes = new ByteArrayOutputStream((int)response.getEntity().getContentLength());
 				response.getEntity().writeTo(bytes);
-				Log.e("ClassSelect", "got the reply to " + response.getParams());
+				Log.e("JSONTask", "got the reply to " + response.getParams());
 			    return new JSONArray(bytes.toString());
-			}
-			catch(Exception e)
-			{
-				Log.e("ClassSelect", "download failure " + e.getMessage());
+			} catch(Exception e) {
+				Log.e("JSONTask", "download failure " + e.getMessage());
 				return new JSONArray();
-			}
-			finally
-			{
+			} finally {
 				if (httpclient != null)
 					httpclient.close();
 			}
 		}
-		
-		protected void onPostExecute(JSONArray result) 
-		{
-			try
-			{
-				if (type.equals("events"))
-				{
-					eventArray.clear();
-					for (int ii = 0; ii < result.length(); ii++)
-					{
-						JSONObject event = result.getJSONObject(ii);
-						eventArray.add(new EventWrapper(event.getString("name"), event.getInt("id")));
-					}
-				}
-				
-				else if (type.equals("classes"))
-				{
-					classArray.clear();
-					for (int ii = 0; ii < result.length(); ii++)
-					{
-						JSONObject myclass = result.getJSONObject(ii);
-						classArray.add(myclass.getString("code"));
-					}
-				}
-			}
-			catch (JSONException je)
-			{
-			}
-		}
 	}
+	
+	
+	/** Task to download and process events */
+	class EventsTask extends JSONTask {
+		protected void onPostExecute(JSONArray result) {
+			if (--openRequests == 0)
+				progress.setVisibility(View.INVISIBLE);
+			try {
+				eventArray.clear();
+				for (int ii = 0; ii < result.length(); ii++)
+				{
+					JSONObject event = result.getJSONObject(ii);
+					eventArray.add(new EventWrapper(event.getString("name"), event.getInt("id")));
+				}
+			} catch (JSONException je) {
+				Log.e("GetEvents", "failed to process: " + je.getMessage());
+		}}}
+
+	
+	/** Task to download and process classes */
+	class ClassesTask extends JSONTask {
+		protected void onPostExecute(JSONArray result) {
+			if (--openRequests == 0)
+				progress.setVisibility(View.INVISIBLE);
+			try {
+				classArray.clear();
+				for (int ii = 0; ii < result.length(); ii++)
+				{
+					JSONObject myclass = result.getJSONObject(ii);
+					classArray.add(myclass.getString("code"));
+				}
+			} catch (JSONException je) {
+				Log.e("GetClasses", "failed to process: " + je.getMessage());
+		}}}
+
 }
