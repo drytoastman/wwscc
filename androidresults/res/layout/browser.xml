@@ -5,45 +5,62 @@
     android:layout_height="match_parent" >
 
     <LinearLayout
-        android:id="@+id/linearLayout1"
+        android:id="@+id/tabpanel"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="45dp"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentTop="true"
+        android:layout_margin="0dp"
+        android:orientation="horizontal"
+        android:padding="0dp" >
 
         <Button
+            style="@style/TabButton"
             android:id="@+id/button1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:text="@string/button_setup"
+            android:onClick="buttonSetup"
+             />
 
         <Button
             android:id="@+id/button2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            style="@style/TabButton"
+            android:text="@string/button_event" 
+            android:onClick="buttonClass"
+            />
 
         <Button
             android:id="@+id/button3"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            style="@style/TabButton"
+            android:text="@string/button_champ"
+            android:onClick="buttonChamp" 
+            />
+
+        <Button
+            android:id="@+id/button4"
+			style="@style/TabButton"
+            android:text="@string/button_pax"
+            android:onClick="buttonPAX" 
+            />
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/lastlabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_below="@id/linearLayout1"
-        android:gravity="center"
-        android:text="" />
-
-    <WebView
-        android:id="@+id/webView1"
+    <FrameLayout
+        android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/lastlabel"
-        android:layout_gravity="center" />
+        android:layout_below="@id/tabpanel"
+        android:layout_centerHorizontal="true" >
+
+        <include layout="@layout/settings"/>
+
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" >
+
+        </ListView>
+
+    </FrameLayout>
 
 </RelativeLayout>

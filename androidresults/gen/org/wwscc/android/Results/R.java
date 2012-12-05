@@ -11,48 +11,47 @@ public final class R {
     public static final class attr {
     }
     public static final class id {
-        public static final int AvailableSeries=0x7f040014;
-        public static final int ClassLabel=0x7f04000a;
-        public static final int EditHost=0x7f04000f;
-        public static final int EditSeries=0x7f040011;
-        public static final int EventLabel=0x7f040007;
-        public static final int OpenButton=0x7f040013;
-        public static final int RelativeLayout1=0x7f040000;
-        public static final int SeriesList=0x7f040015;
-        public static final int button1=0x7f040002;
-        public static final int button2=0x7f040003;
-        public static final int button3=0x7f040004;
-        public static final int classselect=0x7f040009;
-        public static final int eventselect=0x7f040008;
-        public static final int hostLabel=0x7f04000e;
-        public static final int lastlabel=0x7f040005;
-        public static final int linearLayout1=0x7f040001;
-        public static final int progressBar=0x7f04000b;
-        public static final int remoteAddress=0x7f04000d;
-        public static final int remoteName=0x7f04000c;
-        public static final int seriesLabel=0x7f040010;
-        public static final int textView1=0x7f040012;
-        public static final int webView1=0x7f040006;
+        public static final int ClassLabel=0x7f050011;
+        public static final int EventLabel=0x7f05000f;
+        public static final int LinearLayout1=0x7f05000c;
+        public static final int RelativeLayout1=0x7f050000;
+        public static final int SeriesLabel=0x7f05000d;
+        public static final int button1=0x7f050002;
+        public static final int button2=0x7f050003;
+        public static final int button3=0x7f050004;
+        public static final int button4=0x7f050005;
+        public static final int classselect=0x7f050012;
+        public static final int eventselect=0x7f050010;
+        public static final int firstname=0x7f05000b;
+        public static final int listView=0x7f050007;
+        public static final int pager=0x7f050006;
+        public static final int progressBar=0x7f050013;
+        public static final int remoteAddress=0x7f050009;
+        public static final int remoteName=0x7f050008;
+        public static final int rundata=0x7f05000a;
+        public static final int seriesselect=0x7f05000e;
+        public static final int tabpanel=0x7f050001;
     }
     public static final class layout {
         public static final int basicentry=0x7f020000;
         public static final int bigentry=0x7f020001;
         public static final int browser=0x7f020002;
-        public static final int eventclassselect=0x7f020003;
-        public static final int foundserviceentry=0x7f020004;
-        public static final int seriesselection=0x7f020005;
+        public static final int foundserviceentry=0x7f020003;
+        public static final int line_entrantdata=0x7f020004;
+        public static final int line_eventresults=0x7f020005;
+        public static final int settings=0x7f020006;
     }
     public static final class string {
-        public static final int ClassLabel=0x7f03000a;
-        public static final int EventLabel=0x7f030009;
         public static final int app_name=0x7f030000;
-        public static final int discovered=0x7f030004;
-        public static final int hello_world=0x7f030005;
-        public static final int host=0x7f030002;
-        public static final int menu_settings=0x7f030006;
-        public static final int open=0x7f030001;
-        public static final int series=0x7f030003;
-        public static final int title_activity_browser=0x7f030007;
-        public static final int title_activity_event_select=0x7f030008;
+        public static final int button_champ=0x7f030003;
+        public static final int button_event=0x7f030002;
+        public static final int button_pax=0x7f030004;
+        public static final int button_setup=0x7f030001;
+        public static final int settings_class=0x7f030006;
+        public static final int settings_event=0x7f030007;
+        public static final int settings_series=0x7f030005;
+    }
+    public static final class style {
+        public static final int TabButton=0x7f040000;
     }
 }

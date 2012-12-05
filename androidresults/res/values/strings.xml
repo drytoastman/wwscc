@@ -2,15 +2,13 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">Android Scorekeeper Results</string>
-    <string name="open">Open Series</string>
-    <string name="host">Host</string>
-    <string name="series">Series</string>
-    <string name="discovered">Discovered Series</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
-    <string name="title_activity_browser">Browser</string>
-    <string name="title_activity_event_select">EventSelect</string>
-    <string name="EventLabel">Event</string>
-    <string name="ClassLabel">Class</string>
+    <string name="button_setup">Pick Class</string>
+    <string name="button_event">Class</string>
+    <string name="button_champ">Champ</string>
+    <string name="button_pax">PAX</string>
+    
+    <string name="settings_series">Series</string>
+    <string name="settings_class">Class</string>
+    <string name="settings_event">Event</string>
 
 </resources>
