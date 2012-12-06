@@ -130,7 +130,7 @@ public class SqliteDatabase extends SQLDataInterface
 
 		String ver = getSetting("schema");
 		if (!ver.equals("20123"))
-			throw new IOException("Database schema version is " + ver + " but software is 20122");
+			throw new IOException("Database schema version is " + ver + " but software is 20123");
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
@@ -41,7 +40,6 @@ public class ChallengeGUI extends JFrame
 	
 	/**
 	 * Create the main GUI window.
-	 * @throws SQLException 
 	 */
 	public ChallengeGUI()
 	{

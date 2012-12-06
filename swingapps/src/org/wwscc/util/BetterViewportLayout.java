@@ -21,7 +21,6 @@ public class BetterViewportLayout extends ViewportLayout
 	/**
 	* Called by the AWT when the specified container needs to be laid out.
 	* @param parent  the container to lay out
-	* @exception AWTError
 	*/
 	@Override
 	public void layoutContainer(Container parent)
