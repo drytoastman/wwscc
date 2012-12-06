@@ -2,17 +2,21 @@ package org.wwscc.android.Results;
 
 
 import org.wwscc.android.Results.NetworkStatus.NetworkWatcher;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.ListView;
-import android.app.Activity;
 
-public class Browser extends Activity implements NetworkWatcher 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.Tab;
+import com.actionbarsherlock.app.ActionBar.TabListener;
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
+
+public class Browser extends SherlockFragmentActivity implements NetworkWatcher, TabListener
 {	
 	DataRetriever dataRetrieval;
-	ListView table;
-	SettingsDelegate settings;
+	SettingsFragment settings;
 	NetworkStatus networkStatus;
 	boolean settingsActive;
     
@@ -20,10 +24,20 @@ public class Browser extends Activity implements NetworkWatcher
 	protected void onCreate(Bundle savedInstanceState) 
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.browser);
+		setContentView(R.layout.activity_main);
+
+		FragmentManager mgr = getSupportFragmentManager();
+		settings = new SettingsFragment();
+		mgr.beginTransaction().add(R.id.container, settings, "settings").commit();
 		
-		table = (ListView)findViewById(R.id.listView);
-		settings = new SettingsDelegate(this);
+		ActionBar b = getSupportActionBar();
+		b.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+	    b.setDisplayShowTitleEnabled(false);
+		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_setup).setTag(settings));
+		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_event));
+		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_champ));
+		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_pax));
+		
 		dataRetrieval = new DataRetriever(this);
 		networkStatus = new NetworkStatus();
 		settingsActive = true;
@@ -33,19 +47,11 @@ public class Browser extends Activity implements NetworkWatcher
     @Override
     public void connected()
     {
-    	if (settingsActive)
-    		settings.connected();
-    	else
-    		dataRetrieval.start();
     }
     
     @Override
     public void disconnected()
     {
-    	if (settingsActive)
-    		settings.disconnected();
-    	else
-    		dataRetrieval.stop();
     }
     
 	
@@ -70,29 +76,27 @@ public class Browser extends Activity implements NetworkWatcher
     	networkStatus.unregister();
 	}
 
-	public void buttonSetup(View v)
+
+	@Override
+	public void onTabSelected(Tab tab, FragmentTransaction ft)
 	{
-		Log.w("TEST", "Setup");
-		settingsActive = true;
-	}
-	
-	public void buttonClass(View v)
-	{
-		Log.w("TEST", "Class");
-		settingsActive = false;
-	}
-	
-	public void buttonChamp(View v)
-	{
-		Log.w("TEST", "Champ");
-		settingsActive = false;
-	}
-	
-	public void buttonPAX(View v)
-	{
-		Log.w("TEST", "PAX");
-		settingsActive = false;
+		Object o = tab.getTag();
+		if (o instanceof SherlockFragment)
+			ft.attach((SherlockFragment)o);		
 	}
 
 
+	@Override
+	public void onTabUnselected(Tab tab, FragmentTransaction ft)
+	{
+		Object o = tab.getTag();
+		if (o instanceof SherlockFragment)
+			ft.detach((SherlockFragment)o);
+	}
+
+
+	@Override
+	public void onTabReselected(Tab tab, FragmentTransaction ft)
+	{
+	}
 }

@@ -70,7 +70,7 @@ public class ServiceMessage
 	/**
 	 * Utility for encoding list of messages
 	 * @param msgs
-	 * @return 
+	 * @return the encoded list ready for transmit on a serial line
 	 */
 	public static String encodeList(List<ServiceMessage> msgs)
 	{
@@ -87,7 +87,7 @@ public class ServiceMessage
 	/**
 	 * Utility for encoding a list of requests
 	 * @param names
-	 * @return 
+	 * @return the encoded list ready for transmit on a serial line
 	 */
 	public static String encodeRequstList(List<String> names)			
 	{
@@ -107,6 +107,7 @@ public class ServiceMessage
 		return String.format("%s,%s,%s", service, id, port);
 	}
 	
+	@Override
 	public String toString()
 	{
 		return String.format("%s => %s,%s,%s", (port==0)?"REQUEST":"REPLY", service, id, port);

@@ -9,24 +9,30 @@ import org.wwscc.services.FoundService;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
 
+import com.actionbarsherlock.app.SherlockFragment;
+
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.app.Activity;
+import android.widget.TextView;
+import android.content.Context;
 import android.content.SharedPreferences;
 
 
 /**
  * Handles everything in the settings panel as we don't use a separate activity
  */
-public class SettingsDelegate implements OnItemSelectedListener, NetworkWatcher
+public class SettingsFragment extends SherlockFragment implements OnItemSelectedListener, NetworkWatcher
 {
 	class EventWrapper
 	{
@@ -37,7 +43,7 @@ public class SettingsDelegate implements OnItemSelectedListener, NetworkWatcher
 		public EventWrapper(String n, int i) { name = n; eventid = i; }
 	}
 	
-	private Activity parent;
+	//private Activity parent;
     private SharedPreferences prefs;
 	private ProgressBar progress;
 	private ServiceFinder serviceFinder;
@@ -50,33 +56,16 @@ public class SettingsDelegate implements OnItemSelectedListener, NetworkWatcher
 	private ArrayAdapter<EventWrapper> eventArray;
 	private ArrayAdapter<String> classArray;
 	
-	
-	public SettingsDelegate(Activity p) 
+	public SettingsFragment()
 	{
-		parent = p;
-		
-		series = (Spinner)parent.findViewById(R.id.seriesselect);
-        events = (Spinner)parent.findViewById(R.id.eventselect);
-        classes = (Spinner)parent.findViewById(R.id.classselect);
-        progress = (ProgressBar)parent.findViewById(R.id.progressBar);
-        
-        seriesArray = new ArrayAdapter<FoundService>(parent, R.layout.basicentry);
-        seriesArray.setDropDownViewResource(R.layout.bigentry);
-        series.setAdapter(seriesArray);
-        series.setOnItemSelectedListener(this);
-        
-        eventArray = new ArrayAdapter<EventWrapper>(parent, R.layout.basicentry);
-        eventArray.setDropDownViewResource(R.layout.bigentry);
-        events.setAdapter(eventArray);
-        events.setOnItemSelectedListener(this);
-        
-        classArray = new ArrayAdapter<String>(parent, R.layout.basicentry);
-        classArray.setDropDownViewResource(R.layout.bigentry);
-        classes.setAdapter(classArray);
-        classes.setOnItemSelectedListener(this);
-        
-        prefs = parent.getSharedPreferences(null, 0);
-        
+	}
+	
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState)
+	{
+		super.onCreate(savedInstanceState);
+		Log.e("ASD", "CREATE");
         try
         {
 	        serviceFinder = new ServiceFinder("RemoteDatabase");
@@ -88,8 +77,39 @@ public class SettingsDelegate implements OnItemSelectedListener, NetworkWatcher
         } 
         catch (IOException ioe)
         {
-        	Util.alert(parent, "Failed to start service finder: " + ioe.getMessage());
+        	Util.alert(getActivity(), "Failed to create service finder: " + ioe.getMessage());
         }
+	}
+	
+	
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+	{
+		View ret = inflater.inflate(R.layout.fragment_settings, container, false);
+		
+		series = (Spinner)ret.findViewById(R.id.seriesselect);
+        events = (Spinner)ret.findViewById(R.id.eventselect);
+        classes = (Spinner)ret.findViewById(R.id.classselect);
+        progress = (ProgressBar)ret.findViewById(R.id.progressBar);
+        
+        seriesArray = new ServiceListAdapter(getActivity());
+        seriesArray.setDropDownViewResource(R.layout.spinner_display);
+        series.setAdapter(seriesArray);
+        series.setOnItemSelectedListener(this);
+        
+        eventArray = new ArrayAdapter<EventWrapper>(getActivity(), R.layout.spinner_basic);
+        eventArray.setDropDownViewResource(R.layout.spinner_display);
+        events.setAdapter(eventArray);
+        events.setOnItemSelectedListener(this);
+        
+        classArray = new ArrayAdapter<String>(getActivity(), R.layout.spinner_basic);
+        classArray.setDropDownViewResource(R.layout.spinner_display);
+        classes.setAdapter(classArray);
+        classes.setOnItemSelectedListener(this);
+        
+        prefs = getActivity().getSharedPreferences(null, 0);
+        return ret;
+
 	}
 
 	
@@ -101,6 +121,20 @@ public class SettingsDelegate implements OnItemSelectedListener, NetworkWatcher
         }
     };
     
+    
+    @Override
+    public void onResume()
+    {
+    	super.onResume();
+    	connected();
+    }
+    
+    @Override
+    public void onPause()
+    {
+    	super.onPause();
+    	disconnected();
+    }
     
     @Override
     public void connected()
@@ -142,6 +176,7 @@ public class SettingsDelegate implements OnItemSelectedListener, NetworkWatcher
 
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {}
+	
 	
 
 	class UpdateSpinners extends AsyncTask<Void, Void, Void>
@@ -193,10 +228,44 @@ public class SettingsDelegate implements OnItemSelectedListener, NetworkWatcher
 			}
 			catch (Exception je)
 			{
-				Util.alert(parent, "Can't get event or class list: " + je.getMessage());  
+				Util.alert(getActivity(), "Can't get event or class list: " + je.getMessage());  
 			}
 					
 			progress.setVisibility(View.INVISIBLE);
+	    }
+	}
+	
+	
+	static class ServiceListAdapter extends ArrayAdapter<FoundService> 
+	{
+		
+		public ServiceListAdapter(Context c)
+		{
+			super(c, R.layout.line_foundservice);
+		}
+		
+	    @Override
+	    public View getView(int position, View v, ViewGroup parent)
+	    {
+	    	if (v == null)
+	    	{
+	    		LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	            v = li.inflate(R.layout.line_foundservice, parent, false);
+	            v.setTag(new TextView[] { (TextView)v.findViewById(R.id.remoteName),
+	            						(TextView)v.findViewById(R.id.remoteAddress)});
+	    	}
+	    	
+	        final FoundService service = getItem(position);
+	        TextView[] fields = (TextView[])v.getTag();
+	        fields[0].setText(service.getId());
+	        fields[1].setText(service.getHost().getHostName());
+	        return v;
+	    }
+	    
+	    @Override
+	    public View getDropDownView(int position, View convertView, ViewGroup parent)
+	    {
+	    	return getView(position, convertView, parent);
 	    }
 	}
 }

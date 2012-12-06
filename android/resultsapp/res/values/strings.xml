@@ -3,7 +3,7 @@
 
     <string name="app_name">Android Scorekeeper Results</string>
     <string name="button_setup">Pick Class</string>
-    <string name="button_event">Class</string>
+    <string name="button_event">Results</string>
     <string name="button_champ">Champ</string>
     <string name="button_pax">PAX</string>
     
