@@ -75,15 +75,13 @@ def UpdateAnnouncerDetails(session, eventid, course, carid, mysum, sumlist, PPOI
 		Calculate from other sums based on old runs or clean runs, based on runs on currentCourse
 	"""
 
-	data = session.query(AnnouncerData).filter(AnnouncerData.carid==carid).filter(AnnouncerData.eventid==eventid).first()
-	if data is None:
-		data = AnnouncerData()
-		session.add(data)
-		
+	session.query(AnnouncerData).filter(AnnouncerData.carid==carid).filter(AnnouncerData.eventid==eventid).delete()
+
+	data = AnnouncerData()
+	session.add(data)
 	data.eventid = eventid
 	data.carid = carid
-	data.oldsum = mysum
-	data.potentialsum = mysum
+	data.lastcourse = course
 	data.updated = datetime.datetime.now()
 	
 	# Just get runs from last course that was recorded
@@ -107,23 +105,26 @@ def UpdateAnnouncerDetails(session, eventid, course, carid, mysum, sumlist, PPOI
 		curbest = [x for x in runs.values() if x.norder == 1][0]
 		theory = mysum - curbest.net + ( lastrun.raw * index )
 		if theory < mysum:
-			data.rdiff = lastrun.raw - curbest.raw
-			data.ndiff = lastrun.net - curbest.net
+			data.rawdiff = lastrun.raw - curbest.raw
+			data.netdiff = lastrun.net - curbest.net
 			data.potentialsum = theory
 
-	data.olddiffpoints = sumlist[0]/data.oldsum*100;
-	data.potentialdiffpoints = sumlist[0]/data.potentialsum*100;
 
 	sumlist.remove(mysum);
-	sumlist.append(data.oldsum);
-	sumlist.sort();
-	position = sumlist.index(data.oldsum)+1
-	data.oldpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
-	sumlist.remove(data.oldsum);
-	sumlist.append(data.potentialsum)
-	sumlist.sort()
-	position = sumlist.index(data.potentialsum)+1
-	data.potentialpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
+	if data.oldsum > 0:
+		sumlist.append(data.oldsum);
+		sumlist.sort();
+		position = sumlist.index(data.oldsum)+1
+		data.oldpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
+		data.olddiffpoints = sumlist[0]/data.oldsum*100;
+		sumlist.remove(data.oldsum);
+
+	if data.potentialsum > 0:
+		sumlist.append(data.potentialsum)
+		sumlist.sort()
+		position = sumlist.index(data.potentialsum)+1
+		data.potentialpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
+		data.potentialdiffpoints = sumlist[0]/data.potentialsum*100;
 
 	session.commit()
 

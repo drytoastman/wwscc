@@ -13,6 +13,7 @@ public class AnnouncerData
 	protected int id;
 	protected int eventid;
 	protected int carid;
+	protected int lastcourse;
 	protected double rawdiff;
 	protected double netdiff;
 	protected double oldsum;
@@ -22,6 +23,13 @@ public class AnnouncerData
 	protected int oldpospoints;
 	protected int potentialpospoints;
 	protected SADateTime updated;
+	
+	public AnnouncerData()
+	{
+		rawdiff = netdiff = 0;
+		oldsum = potentialsum = olddiffpoints = potentialdiffpoints = -1;
+		oldpospoints = potentialpospoints = -1;
+	}
 	
 	public double getRawDiff() { return rawdiff; }
 	public double getNetDiff() { return netdiff; }

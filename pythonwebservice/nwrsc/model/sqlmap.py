@@ -56,7 +56,7 @@ sqlmap = {
 'LOADENTRANT':'select d.firstname,d.lastname,c.* from cars as c, drivers as d where c.driverid=d.id and c.id=:h1',
 'LOADRUNORDER':'select carid from runorder where eventid=:h1 and course=:h2 and rungroup=:h3 order by row',
 'REGISTERCAR':'insert or ignore into registered (eventid, carid) values (:h1,:h2)',
-'REPLACEANNOUNCERDATA':'insert or replace into announcer (eventid,carid,rawdiff,netdiff,oldsum,potentialsum,olddiffpoints,potentialdiffpoints,oldpospoints,potentialpospoints,updated) values (:h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10,:h11)',
+'REPLACEANNOUNCERDATA':'insert or replace into announcer (eventid,carid,lastcourse,rawdiff,netdiff,oldsum,potentialsum,olddiffpoints,potentialdiffpoints,oldpospoints,potentialpospoints,updated) values (:h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10,:h11,:h12)',
 'SWAPRUNORDER':'update runorder set carid=:h1 where eventid=:h2 and course=:h3 and rungroup=:h4 and carid=:h5',
 'SWAPRUNS':'update runs set carid=:h1 where eventid=:h2 and course=:h3 and carid=:h4',
 'TRACK':'insert into changes (type, args) values (:h1,:h2)',

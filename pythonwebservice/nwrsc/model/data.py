@@ -61,6 +61,7 @@ t_announcer = Table('announcer', metadata,
 	Column('id', Integer, primary_key=True),
 	Column('eventid', Integer, ForeignKey('events.id')),
 	Column('carid', Integer, ForeignKey('cars.id')),
+	Column('lastcourse', Integer),
 	Column('rawdiff', Float),
 	Column('netdiff', Float),
 	Column('oldsum', Float),  # if latest run on lastcourse is fastest, records values with old run 
@@ -74,8 +75,13 @@ t_announcer = Table('announcer', metadata,
 )
 Index('annidx_1', t_announcer.c.carid)
 
+
 class AnnouncerData(object):
-	pass
+
+	def __init__(self):
+		self.rawdiff = self.netdiff = 0;
+		self.oldsum = self.potentialsum = self.olddiffpoints = self.potentialdiffpoints = -1;
+		self.oldpospoints = self.potentialpospoints = -1;
 
 mapper(AnnouncerData, t_announcer)
 

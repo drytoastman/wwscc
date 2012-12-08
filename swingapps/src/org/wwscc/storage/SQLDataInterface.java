@@ -1007,8 +1007,7 @@ public abstract class SQLDataInterface extends DataInterface
     	AnnouncerData data = new AnnouncerData();
     	data.eventid = currentEvent.id;
     	data.carid = carid;
-    	data.oldsum = mysum;
-    	data.potentialsum = mysum;
+    	data.lastcourse = currentCourse;
     	data.updated = new SADateTime();
     	
     	Entrant entrant = loadEntrant(currentCourse, carid, true);
@@ -1048,14 +1047,22 @@ public abstract class SQLDataInterface extends DataInterface
     	data.olddiffpoints = firstplace/data.oldsum*100;
     	data.potentialdiffpoints = firstplace/data.potentialsum*100;
 
-    	sums.remove(mysum);
-    	sums.add(data.oldsum);
-    	Collections.sort(sums);
-    	data.oldpospoints = ppoints.get(sums.indexOf(data.oldsum)+1);
-    	sums.remove(data.oldsum);
-    	sums.add(data.potentialsum);
-    	Collections.sort(sums);
-    	data.potentialpospoints = ppoints.get(sums.indexOf(data.potentialsum)+1);
+		sums.remove(mysum);
+    	if (!Double.isNaN(data.oldsum))
+    	{
+    		sums.add(data.oldsum);
+    		Collections.sort(sums);
+    		data.oldpospoints = ppoints.get(sums.indexOf(data.oldsum)+1);
+    		sums.remove(data.oldsum);
+    	}    	
+    	
+    	if (!Double.isNaN(data.potentialsum))
+    	{
+	    	sums.add(data.potentialsum);
+	    	Collections.sort(sums);
+	    	data.potentialpospoints = ppoints.get(sums.indexOf(data.potentialsum)+1);
+    		sums.remove(data.potentialsum);
+    	}
     	
         List<Object> vals = newList();
 		AUTO.addAnnouncerDataValues(data, vals);

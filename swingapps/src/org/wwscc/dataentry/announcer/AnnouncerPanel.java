@@ -255,9 +255,9 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 			return;
 		}
 
-		if (announcer.getOldSum() != myresult.getSum())
+		if (announcer.getOldSum() > 0) 
             erlist.add(new FakeResult(entrant, "old", announcer.getOldSum()));
-		if (announcer.getPotentialSum() != myresult.getSum())
+		if (announcer.getPotentialSum() > 0)
             erlist.add(new FakeResult(entrant, "raw", announcer.getPotentialSum()));		            
 		Collections.sort(erlist);
 		
@@ -269,7 +269,10 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 		else
 			detailsLabel.setText("Difference");
 
-		detailsModel.setData(erlist.get(0), myresult, announcer.getRawDiff(), announcer.getNetDiff(), showLast);
+		detailsModel.setData(erlist.get(0), myresult, 
+				announcer.getRawDiff() != 0 ? announcer.getRawDiff() : null, 
+				announcer.getNetDiff() != 0 ? announcer.getNetDiff() : null, 
+				showLast);
 		classLabel.setText(classcode);
 		classModel.setData(erlist);
 		classRenderer.setHighlightValue(entrant);

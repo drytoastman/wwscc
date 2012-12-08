@@ -8,6 +8,7 @@ from pylons.decorators import jsonify
 from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.model import *
 
+
 class ExtraResult(object):
 	def __init__(self, copy, **kwargs):
 		self.__dict__ = copy.__dict__.copy()
@@ -42,13 +43,11 @@ class AnnouncerController(BaseController):
 			Get the timestamps of the last 2 updated run entries, announcer panel periodically calls this
 			to see if there is any real data to get
 		"""
-		query = self.session.query(EventResult.updated, EventResult.carid)
-		query = query.filter(EventResult.eventid==self.eventid)
-		if 'class' in request.GET:
-			query = query.join(Class).filter(Class.code == request.GET['class'])
+		query = self.session.query(AnnouncerData.updated, AnnouncerData.carid)
+		query = query.filter(AnnouncerData.eventid==self.eventid)
 		if 'time' in request.GET:
-			query = query.filter(EventResult.updated > datetime.fromtimestamp(int(request.GET['time'])))
-		query = query.order_by(EventResult.updated.desc())
+			query = query.filter(AnnouncerData.updated > datetime.fromtimestamp(int(request.GET['time'])))
+		query = query.order_by(AnnouncerData.updated.desc())
 
 		data = []
 		for row in query.limit(2).all():
@@ -126,41 +125,36 @@ class AnnouncerController(BaseController):
 		c.cls = self.session.query(Class).filter(Class.code==c.car.classcode).first()
 		c.highlight = carid
 		c.marker = time.strftime('%I:%M:%S')
+		c.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
+		if c.announcer is None:
+			raise BeforePage('')
 
 		c.results = getClassResultsShort(self.session, self.settings, c.event, c.cls)
-		lastcourse = c.results[0].lastcourse or 1
-		activeentrant = [x for x in c.results if x.carid==carid][0]
+		for r in c.results:
+			if r.carid == carid:
+				activeentrant = r
 
 		# Just get runs from last course that was recorded
 		c.runs = {}
-		for r in self.session.query(Run).filter(Run.carid==carid).filter(Run.eventid==self.eventid).filter(Run.course==lastcourse): 
+		for r in self.session.query(Run).filter(Run.carid==carid).filter(Run.eventid==self.eventid).filter(Run.course==c.announcer.lastcourse): 
 			r.rdiff = None
 			r.ndiff = None
 			c.runs[r.run] = r
 
-		if len(c.runs) > 1:
-			runlist = sorted(c.runs.keys())
-			lastrun = c.runs[runlist[-1]]
-			if lastrun.norder == 1:  # we improved our position
-				# find run with norder = 2, create the old entry with sum - lastrun + prevrun
-				prevbest = [x for x in c.runs.values() if x.norder == 2][0]
-				lastrun.rdiff = lastrun.raw - prevbest.raw
-				lastrun.ndiff = lastrun.net - prevbest.net
-				theory = activeentrant.sum - lastrun.net + prevbest.net
-				c.improvedon = ExtraResult(activeentrant, position='old', sum=theory, diff=0)
-				c.results.append(c.improvedon)
+		runlist = sorted(c.runs.keys())
+		lastrun = c.runs[runlist[-1]]
+		if c.announcer.rawdiff or c.announcer.netdiff:
+			lastrun.rdiff = c.announcer.rawdiff
+			lastrun.ndiff = c.announcer.netdiff
 
-			if lastrun.cones != 0 or lastrun.gates != 0:
-				# add table entry with what could have been without penalties
-				index = ClassData(self.session).getEffectiveIndex(activeentrant.classcode, activeentrant.indexcode)
-				curbest = [x for x in c.runs.values() if x.norder == 1][0]
-				theory = activeentrant.sum - curbest.net + ( lastrun.raw * index )
-				if theory < activeentrant.sum:
-					lastrun.rdiff = lastrun.raw - curbest.raw
-					lastrun.ndiff = lastrun.net - curbest.net
-					c.couldhave = ExtraResult(activeentrant, position='raw', sum=theory, diff=0)
-					c.couldhaverun = lastrun
-					c.results.append(c.couldhave)
+		if c.announcer.oldsum > 0:
+			c.improvedon = ExtraResult(activeentrant, position='old', sum=c.announcer.oldsum, diff=0)
+			c.results.append(c.improvedon)
+
+		if c.announcer.potentialsum > 0:
+			c.couldhave = ExtraResult(activeentrant, position='raw', sum=c.announcer.potentialsum, diff=0)
+			c.couldhaverun = lastrun
+			c.results.append(c.couldhave)
 
 		c.results.sort(key=operator.attrgetter('sum'))
 		c.champresults = getChampResults(self.session, self.settings, c.cls.code).get(c.cls.code, [])

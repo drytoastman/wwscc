@@ -489,6 +489,7 @@ public class AUTO
 		o.id = rs.getInt("id");
 		o.eventid = rs.getInt("eventid");
 		o.carid = rs.getInt("carid");
+		o.lastcourse = rs.getInt("lastcourse");
 		o.rawdiff = rs.getDouble("rawdiff");
 		o.netdiff = rs.getDouble("netdiff");
 		o.oldsum = rs.getDouble("oldsum");
@@ -503,23 +504,24 @@ public class AUTO
 	
 	public static String getAnnouncerDataVarStr()
 	{
-		return "eventid,carid,rawdiff,netdiff,oldsum,potentialsum,olddiffpoints,potentialdiffpoints,oldpospoints,potentialpospoints,updated";
+		return "eventid,carid,lastcourse,rawdiff,netdiff,oldsum,potentialsum,olddiffpoints,potentialdiffpoints,oldpospoints,potentialpospoints,updated";
 	}
 	
 	public static String getAnnouncerDataArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getAnnouncerDataSetStr()
 	{
-		return "eventid=?,carid=?,rawdiff=?,netdiff=?,oldsum=?,potentialsum=?,olddiffpoints=?,potentialdiffpoints=?,oldpospoints=?,potentialpospoints=?,updated=?";
+		return "eventid=?,carid=?,lastcourse=?,rawdiff=?,netdiff=?,oldsum=?,potentialsum=?,olddiffpoints=?,potentialdiffpoints=?,oldpospoints=?,potentialpospoints=?,updated=?";
 	}
 	
 	public static void addAnnouncerDataValues(org.wwscc.storage.AnnouncerData o, List<Object> l)
 	{
 		l.add(o.eventid);
 		l.add(o.carid);
+		l.add(o.lastcourse);
 		l.add(o.rawdiff);
 		l.add(o.netdiff);
 		l.add(o.oldsum);
