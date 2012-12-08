@@ -12,14 +12,8 @@ from nwrsc.model import *
 
 log = logging.getLogger(__name__)
 
-def UpdateClassResults(session, eventid, classcode, carid):
+def UpdateClassResults(session, eventid, course, classcode, carid):
 	cevals = [classcode, eventid]
-	updateMap = dict()
-
-	for r in session.sqlmap("GETUPDATED", cevals):
-		updateMap[int(r['carid'])] = r['updated']
-	if carid > 0:
-		updateMap[carid] = datetime.datetime.now()
 
 	# Delete current event results for the same event/class, then query runs table for new results 
 	session.sqlmap("DELETECLASSRESULTS", cevals)
@@ -30,44 +24,109 @@ def UpdateClassResults(session, eventid, classcode, carid):
 	basis = 1.0
 	prev = 1.0
 	basecnt = 1
+	mysum = 0
+	sumlist = []
 
 	PPOINTS = [int(x) for x in session.query(Setting).get('pospointlist').val.split(',')]
 	lists = []
 	for r in session.sqlmap("GETCLASSRESULTS", cevals):
-		sum = float(r['sum'])
+		thesum = float(r['sum'])
+		insertcarid = int(r['carid'])
+
+		sumlist.append(thesum)
+		if insertcarid == carid:
+			mysum = thesum
+
 		cnt = int(r['coursecnt'])
 		if (first):
-			basis = sum
-			prev = sum
+			basis = thesum
+			prev = thesum
 			basecnt = cnt
 			first = False
 	
 		rvals = [0]*10
-		insertcarid = int(r['carid'])
 		rvals[0] = eventid
 		rvals[1] = insertcarid
 		rvals[2] = classcode # classcode doesn't change
 		rvals[3] = position
 		rvals[4] = cnt
-		rvals[5] = sum
+		rvals[5] = thesum
 
 		if cnt == basecnt:
-			rvals[6] = sum-prev
-			rvals[7] = basis/sum*100
-			if position <= len(PPOINTS):
-				rvals[8] = PPOINTS[position-1]
-			else:
-				rvals[8] = PPOINTS[-1]
+			rvals[6] = thesum-prev
+			rvals[7] = basis/thesum*100
+			rvals[8] = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
 		else:
 			#This person ran less courses than the other people
 			rvals[6] = 999.999
 			rvals[7] = 0.0
 			rvals[8] = 0
 		
-		rvals[9] = updateMap.get(insertcarid, datetime.datetime.now())
 		session.sqlmap("INSERTCLASSRESULTS", rvals)
 		position += 1
-		prev = sum
+		prev = thesum
+
+	if course != 0 and carid != 0:
+		UpdateAnnouncerDetails(session, eventid, course, carid, mysum, sumlist, PPOINTS)
+
+
+def UpdateAnnouncerDetails(session, eventid, course, carid, mysum, sumlist, PPOINTS):
+	"""
+		Calculate from other sums based on old runs or clean runs, based on runs on currentCourse
+	"""
+
+	data = session.query(AnnouncerData).filter(AnnouncerData.carid==carid).filter(AnnouncerData.eventid==eventid).first()
+	if data is None:
+		data = AnnouncerData()
+		session.add(data)
+		
+	data.eventid = eventid
+	data.carid = carid
+	data.oldsum = mysum
+	data.potentialsum = mysum
+	data.updated = datetime.datetime.now()
+	
+	# Just get runs from last course that was recorded
+	runs = {}
+	for r in session.query(Run).filter(Run.carid==carid).filter(Run.eventid==eventid).filter(Run.course==course): 
+		runs[r.run] = r
+
+	runlist = sorted(runs.keys())
+	lastrun = runs[runlist[-1]]
+	if lastrun.norder == 1:  # we improved our position
+		# find run with norder = 2, create the old entry with sum - lastrun + prevrun
+		prevbest = [x for x in runs.values() if x.norder == 2][0]
+		data.rawdiff = lastrun.raw - prevbest.raw
+		data.netdiff = lastrun.net - prevbest.net
+		data.oldsum = mysum - lastrun.net + prevbest.net
+
+	if lastrun.cones != 0 or lastrun.gates != 0:
+		# add table entry with what could have been without penalties
+		car = session.query(Car).get(carid)
+		index = ClassData(session).getEffectiveIndex(car.classcode, car.indexcode)
+		curbest = [x for x in runs.values() if x.norder == 1][0]
+		theory = mysum - curbest.net + ( lastrun.raw * index )
+		if theory < mysum:
+			data.rdiff = lastrun.raw - curbest.raw
+			data.ndiff = lastrun.net - curbest.net
+			data.potentialsum = theory
+
+	data.olddiffpoints = sumlist[0]/data.oldsum*100;
+	data.potentialdiffpoints = sumlist[0]/data.potentialsum*100;
+
+	sumlist.remove(mysum);
+	sumlist.append(data.oldsum);
+	sumlist.sort();
+	position = sumlist.index(data.oldsum)+1
+	data.oldpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
+	sumlist.remove(data.oldsum);
+	sumlist.append(data.potentialsum)
+	sumlist.sort()
+	position = sumlist.index(data.potentialsum)+1
+	data.potentialpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
+
+	session.commit()
+
 
 
 def RecalculateResults(session, settings):
@@ -95,7 +154,7 @@ def RecalculateResults(session, settings):
 
 			for cls in session.query(Car.classcode).distinct().join(Run).filter(Run.eventid==event.id):
 				yield "\tCls: %s\n" % (cls)
-				UpdateClassResults(session, event.id, cls.classcode, 0)
+				UpdateClassResults(session, event.id, 0, cls.classcode, 0)
 
 		session.commit()
 	except Exception, e:

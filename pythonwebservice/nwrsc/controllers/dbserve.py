@@ -114,7 +114,7 @@ class DbserveController(BaseController):
 				% tuple([attr]*6))
 		return Codec.encodeResults(rs)
 
-	def UpdateClass(self, eventid, classcode, carid):
-		UpdateClassResults(self.session, eventid, classcode, carid)
+	def UpdateClass(self, eventid, course, classcode, carid):
+		UpdateClassResults(self.session, eventid, course, classcode, carid)
 		return Codec.encodeLastId(-1)
 

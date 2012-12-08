@@ -117,9 +117,22 @@ def convert20121(session):
 
 
 def convert20122(session):
+
 	metadata.bind = session.bind
+	# Needed as previous conversion forgot to in some cases
+	session.execute("DROP TABLE IF EXISTS oldeventresults")
+
+	# Add new announcer table
+	metadata.tables['announcer'].create()
 	
-	session.execute("ALTER TABLE eventresults ADD COLUMN lastcourse SMALLINT DEFAULT 1");
+	# Remove updated from old eventresults
+	log.info("update eventresults")
+	makeTableOld(session, metadata, 'eventresults');
+	for row in session.execute("select * from oldeventresults"):
+		session.add(EventResult(**row2dict(row)))
+
+	log.info("Drop old tables")
+	session.execute("DROP TABLE oldeventresults")
 
 	# add usepospoints, champsorting, change ppoints to pospointlist
 	log.info("update settings")

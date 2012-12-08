@@ -42,6 +42,7 @@ public class SQLMap
 		sql.put("GETALLFIELDS", "select * from driverfields");
 		sql.put("GETALLCARS", "select * from cars");
 		sql.put("GETALLRUNS", "select * from runs");
+		sql.put("GETANNOUNCERDATABYENTRANT", "select * from announcer where eventid=? and carid=?");
 		sql.put("GETCARIDSBYCHALLENGE", "select car1id,car2id from challengerounds where challengeid=?");
 		sql.put("GETCARIDSFORCOURSE", "select carid from runorder where eventid=? AND course=?");
 		sql.put("GETCARIDSFORGROUP", "select carid from runorder where eventid=? AND course=? AND rungroup=? order by row");
@@ -61,7 +62,7 @@ public class SQLMap
 		sql.put("GETDRIVERSBYLAST", "select * from drivers where lastname like ? order by firstname,lastname");
 		sql.put("GETEVENTENTRANTS", "select distinct d.firstname as firstname,d.lastname as lastname,c.* from runs as r, cars as c, drivers as d " +
 						"where r.carid=c.id AND c.driverid=d.id and r.eventid=?");
-		sql.put("GETEVENTRESULTSBYCLASS", "select d.firstname,d.lastname,c.id as carid,c.indexcode,r.position,r.courses,r.sum,r.diff,r.diffpoints,r.pospoints,r.updated " +
+		sql.put("GETEVENTRESULTSBYCLASS", "select d.firstname,d.lastname,c.indexcode,r.* " +
 					"from eventresults as r, cars as c, drivers as d " +
 					"where r.carid=c.id and c.driverid=d.id and r.classcode=? and r.eventid=? " +
 					"order by position");
@@ -85,12 +86,11 @@ public class SQLMap
 						"(select carid from runorder where eventid=? AND course=? AND rungroup=?)");
 		sql.put("GETRUNSFORCHALLENGE", "select * from runs where (eventid>>16)=?");
 		sql.put("GETSETTING", "select val from settings where name=?");
-		sql.put("GETUPDATED", "select carid, updated from eventresults where classcode=? and eventid=?");
 
 		sql.put("INSERTBLANKCHALLENGEROUND", "insert into challengerounds (challengeid,round,swappedstart,car1id,car2id) values (?,?,?,?,?)");
 		sql.put("INSERTCAR", "insert or ignore into cars ("+AUTO.getCarVarStr()+") values ("+AUTO.getCarArgStr()+")");
 		sql.put("INSERTCHALLENGE", "insert into challenges (eventid, name, depth) values (?,?,?)");
-		sql.put("INSERTCLASSRESULTS", "insert into eventresults VALUES (NULL, ?,?,?,?,?,?,?,?,?,?,?)");
+		sql.put("INSERTCLASSRESULTS", "insert into eventresults ("+AUTO.getEventResultVarStr()+") values ("+AUTO.getEventResultArgStr()+")");
 		sql.put("INSERTDRIVER", "insert or ignore into drivers ("+AUTO.getDriverVarStr()+") values (" +AUTO.getDriverArgStr()+")");
 		sql.put("INSERTEXTRA", "insert into driverextra (driverid, name, value) values (?,?,?)");
 		sql.put("INSERTRUN", "insert into runs ("+AUTO.getRunVarStr()+") values ("+AUTO.getRunArgStr()+")");
@@ -104,6 +104,7 @@ public class SQLMap
 		sql.put("LOADRUNORDER", "select carid from runorder where eventid=? and course=? and rungroup=? order by row");
 
 		sql.put("REGISTERCAR", "insert or ignore into registered (eventid, carid) values (?,?)");
+		sql.put("REPLACEANNOUNCERDATA", "insert or replace into announcer ("+AUTO.getAnnouncerDataVarStr()+") values ("+AUTO.getAnnouncerDataArgStr()+")");
 
 		sql.put("SWAPRUNORDER", "update runorder set carid=? where eventid=? and course=? and rungroup=? and carid=?");
 		sql.put("SWAPRUNS", "update runs set carid=? where eventid=? and course=? and carid=?");

@@ -16,6 +16,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -928,17 +929,8 @@ public abstract class SQLDataInterface extends DataInterface
 	{
 		log.fine("Update event for class " + classcode);
 
-		/* Get a map of the current result update times */
-		List<Object> cevals = newList(classcode, currentEvent.id);
-		ResultData cr = executeSelect("GETUPDATED", cevals);
-
-		HashMap<Integer,SADateTime> updateMap = new HashMap<Integer,SADateTime>();
-		for (ResultRow r : cr)
-			updateMap.put(r.getInt("carid"), r.getSADateTime("updated"));
-		if (carid > 0)
-			updateMap.put(carid, new SADateTime());
-
 		/* Delete current event results for the same event/class, then query runs table for new results */
+		List<Object> cevals = newList(classcode, currentEvent.id);
 		executeUpdate("DELETECLASSRESULTS", cevals);
 		ResultData results = executeSelect("GETCLASSRESULTS", cevals);
 
@@ -947,24 +939,18 @@ public abstract class SQLDataInterface extends DataInterface
 		boolean first = true;
 		double basis = 1;
 		double prev = 1;
+		double mysum = Double.NaN;
 		int basecnt = 1;
 
 		ResultData setting = executeSelect("GETSETTING", newList("pospointlist"));
-		ArrayList<Double> PPOINTS = new ArrayList<Double>();
-		for (String s : setting.get(0).getString("val").split(","))
-		{
-			try {
-				PPOINTS.add(Double.valueOf(s));
-			} catch (NumberFormatException nfe) {
-				log.warning("Failed to read pospointlist from settings properly: " + nfe);
-			}
-		}
-
-
+		PositionPoints ppoints = new PositionPoints(setting.get(0).getString("val"));
+		List<Double> sums = new ArrayList<Double>();
+		
 		List<List<Object>> lists = new ArrayList<List<Object>>();
 		for (ResultRow r : results)
 		{
 			double sum = r.getDouble("sum");
+			sums.add(sum);
 			int cnt = r.getInt("coursecnt");
 			if (first)
 			{
@@ -987,10 +973,7 @@ public abstract class SQLDataInterface extends DataInterface
 			{
 				rvals.add(sum-prev);
 				rvals.add(basis/sum*100);
-				if (position <= PPOINTS.size())
-					rvals.add(PPOINTS.get(position-1));
-				else
-					rvals.add(PPOINTS.get(PPOINTS.size()-1));
+				rvals.add(ppoints.get(position));
 			}
 			else
 			{ // This person ran less courses than the other people
@@ -999,17 +982,104 @@ public abstract class SQLDataInterface extends DataInterface
 				rvals.add(0);
 			}
 
-			SADateTime update = updateMap.get(insertcarid);
-			rvals.add((update != null)? update: new SADateTime());
-			rvals.add(currentCourse);
 			lists.add(rvals);
 			position++;
 			prev = sum;
+			
+			if (insertcarid == carid)
+				mysum = sum;
 		}
 
+		UpdateAnnouncerDetails(carid, mysum, sums, ppoints);
 		executeGroupUpdate("INSERTCLASSRESULTS", lists);
+	}	
+
+	/**
+	 * Calculate from other sums based on old runs or clean runs, based on runs on currentCourse
+	 * @param carid the carid in question
+	 * @param index the index for the car
+	 * @param sum the current sum (may include several courses)
+	 * @return array of two sums [0] is previous run sum if improved, [1] is better run if entrant was clean
+	 * @throws IOException 
+	 */
+	protected void UpdateAnnouncerDetails(int carid, double mysum, List<Double> sums, PositionPoints ppoints) throws IOException
+	{
+    	AnnouncerData data = new AnnouncerData();
+    	data.eventid = currentEvent.id;
+    	data.carid = carid;
+    	data.oldsum = mysum;
+    	data.potentialsum = mysum;
+    	data.updated = new SADateTime();
+    	
+    	Entrant entrant = loadEntrant(currentCourse, carid, true);
+		Run runs[] = entrant.getRuns();
+		    	
+		Run curbest, prevbest, lastrun;
+		curbest = prevbest = lastrun = runs[runs.length-1];
+		for (int ii = 0; ii < runs.length; ii++)
+		{
+			if (runs[ii] == null)
+				continue;
+			if (runs[ii].getNetOrder() == 1)
+				curbest = runs[ii];
+			else if (runs[ii].getNetOrder() == 2)
+				prevbest = runs[ii];
+		}
+		
+        if (lastrun.getNetOrder() == 1)  // we improved our position
+        {
+            data.oldsum = mysum - lastrun.getNet() + prevbest.getNet();
+            data.rawdiff = lastrun.getRaw() - prevbest.getRaw();
+            data.netdiff = lastrun.getNet() - prevbest.getNet();
+        }
+        
+        if (lastrun.getCones() != 0 || lastrun.getGates() != 0)
+        {
+            double theory = mysum - curbest.getNet() + ( lastrun.getRaw() * entrant.index );
+            if (theory < mysum) // raw was an improvement
+            {
+            	data.potentialsum = theory;
+            	data.rawdiff = lastrun.getRaw() - curbest.getRaw();
+            	data.netdiff = lastrun.getNet() - curbest.getNet();
+            }
+        }
+        
+        double firstplace = sums.get(0);
+    	data.olddiffpoints = firstplace/data.oldsum*100;
+    	data.potentialdiffpoints = firstplace/data.potentialsum*100;
+
+    	sums.remove(mysum);
+    	sums.add(data.oldsum);
+    	Collections.sort(sums);
+    	data.oldpospoints = ppoints.get(sums.indexOf(data.oldsum)+1);
+    	sums.remove(data.oldsum);
+    	sums.add(data.potentialsum);
+    	Collections.sort(sums);
+    	data.potentialpospoints = ppoints.get(sums.indexOf(data.potentialsum)+1);
+    	
+        List<Object> vals = newList();
+		AUTO.addAnnouncerDataValues(data, vals);
+		executeUpdate("REPLACEANNOUNCERDATA", vals);
 	}
 
+	
+	@Override
+	public AnnouncerData getAnnouncerDataForCar(int carid)
+	{
+		try
+		{
+			ResultData d = executeSelect("GETANNOUNCERDATABYENTRANT", newList(currentEvent.id, carid));
+			if (d.size() == 0) return null;
+			return AUTO.loadAnnouncerData(d.get(0));
+		}
+		catch (Exception ioe)
+		{
+			logError("getAnnouncerDataForCar", ioe);
+			return null;
+		}
+		
+	}
+	
 	@Override
 	public List<EventResult> getResultsForClass(String classcode) 
 	{
@@ -1020,7 +1090,8 @@ public abstract class SQLDataInterface extends DataInterface
 			for (ResultRow r : d)
 			{
 				EventResult er = AUTO.loadEventResult(r);
-				er.setIndex(getEffectiveIndex(classcode, er.indexcode));
+				er.setIndex(r.getString("indexcode"), getEffectiveIndex(classcode, r.getString("indexcode")));
+				er.setName(r.getString("firstname"), r.getString("lastname"));
 				ret.add(er);
 			}
 			return ret;

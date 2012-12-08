@@ -206,7 +206,7 @@ public class GenerateAUTO
 		cg.printFile(new Class[] { Event.class, Driver.class, DriverField.class, Car.class, Run.class,
 					Challenge.class, ChallengeRun.class,
 					ClassData.Class.class, ClassData.Index.class,
-					EventResult.class
+					EventResult.class, AnnouncerData.class
 		} );
 		fout.close();
 	}

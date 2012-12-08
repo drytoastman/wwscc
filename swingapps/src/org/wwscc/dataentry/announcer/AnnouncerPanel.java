@@ -31,10 +31,10 @@ import javax.swing.table.TableColumnModel;
 
 import net.miginfocom.swing.MigLayout;
 
+import org.wwscc.storage.AnnouncerData;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.EventResult;
-import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -240,22 +240,8 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 	{
 		String classcode = entrant.getClassCode();
 		List<EventResult> erlist = Database.d.getResultsForClass(classcode);
-		Run[] runs = entrant.getRuns();
+		AnnouncerData announcer = Database.d.getAnnouncerDataForCar(entrant.getCarId());
 		EventResult myresult = null;
-		Double rawdiff = null;
-		Double netdiff = null;
-		Run curbest, prevbest, lastrun;
-		
-		curbest = prevbest = lastrun = runs[runs.length-1];
-		for (int ii = 0; ii < runs.length; ii++)
-		{
-			if (runs[ii] == null)
-				continue;
-			if (runs[ii].getNetOrder() == 1)
-				curbest = runs[ii];
-			else if (runs[ii].getNetOrder() == 2)
-				prevbest = runs[ii];
-		}
 		
 		for (EventResult er : erlist) {
 			if (er.getCarId() == entrant.getCarId()) {
@@ -263,38 +249,18 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 				break;
 		}}
 		
-		if (myresult == null)
+		if ((myresult == null) || (announcer == null))
 		{
 			log.warning("Announcer panel missing result for entrant, skipping processing");
 			return;
 		}
 
-        if (runs.length > 1)
-        {
-            if (lastrun.getNetOrder() == 1)  // we improved our position
-            {
-                // find run with norder = 2, create the old entry with sum - lastrun + prevrun
-                rawdiff = lastrun.getRaw() - prevbest.getRaw();
-                netdiff = lastrun.getNet() - prevbest.getNet();
-                double theory = myresult.getSum() - lastrun.getNet() + prevbest.getNet();
-                erlist.add(new FakeResult(entrant, "old", theory));
-            }
-            
-            if (lastrun.getCones() != 0 || lastrun.getGates() != 0)
-            {
-                // add table entry with what could have been without penalties
-                double theory = myresult.getSum() - curbest.getNet() + ( lastrun.getRaw() * entrant.getIndex() );
-                if (theory < myresult.getSum())
-                {
-                    rawdiff = lastrun.getRaw() - curbest.getRaw();
-                    netdiff = lastrun.getNet() - curbest.getNet();
-                    erlist.add(new FakeResult(entrant, "raw", theory));
-                }
-            }
-            
-            Collections.sort(erlist);
-        }
-                    
+		if (announcer.getOldSum() != myresult.getSum())
+            erlist.add(new FakeResult(entrant, "old", announcer.getOldSum()));
+		if (announcer.getPotentialSum() != myresult.getSum())
+            erlist.add(new FakeResult(entrant, "raw", announcer.getPotentialSum()));		            
+		Collections.sort(erlist);
+		
 		nameLabel.setText(entrant.getName());
 		nameModel.setData(entrant);
 
@@ -303,11 +269,9 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 		else
 			detailsLabel.setText("Difference");
 
-		detailsModel.setData(erlist.get(0), myresult, rawdiff, netdiff, showLast);
-		
+		detailsModel.setData(erlist.get(0), myresult, announcer.getRawDiff(), announcer.getNetDiff(), showLast);
 		classLabel.setText(classcode);
 		classModel.setData(erlist);
-		
 		classRenderer.setHighlightValue(entrant);
 	}
 	

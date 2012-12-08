@@ -43,8 +43,6 @@ t_eventresults = Table('eventresults', metadata,
 	Column('diff', Float),
 	Column('diffpoints', Float),
 	Column('pospoints', SmallInteger),
-	Column('updated', DateTime),
-	Column('lastcourse', SmallInteger),
 	UniqueConstraint('eventid', 'carid', name='eridx_2')
 	)
 Index('eridx_1', t_eventresults.c.eventid)
@@ -56,6 +54,30 @@ class EventResult(object):
 				setattr(self, k, v)
 
 mapper(EventResult, t_eventresults, properties = {'car':relation(Car, backref='results'), 'class':relation(Class)})
+
+
+## Announcer information precalculated
+t_announcer = Table('announcer', metadata,
+	Column('id', Integer, primary_key=True),
+	Column('eventid', Integer, ForeignKey('events.id')),
+	Column('carid', Integer, ForeignKey('cars.id')),
+	Column('rawdiff', Float),
+	Column('netdiff', Float),
+	Column('oldsum', Float),  # if latest run on lastcourse is fastest, records values with old run 
+	Column('potentialsum', Float), # if latest not clean but potentially faster, record those values
+	Column('olddiffpoints', Float),
+	Column('potentialdiffpoints', Float),
+	Column('oldpospoints', SmallInteger),
+	Column('potentialpospoints', SmallInteger),
+	Column('updated', DateTime), 
+	UniqueConstraint('eventid', 'carid', name='annidx_2')
+)
+Index('annidx_1', t_announcer.c.carid)
+
+class AnnouncerData(object):
+	pass
+
+mapper(AnnouncerData, t_announcer)
 
 
 ## Previous table

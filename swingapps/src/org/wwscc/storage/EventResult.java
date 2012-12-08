@@ -10,22 +10,21 @@ package org.wwscc.storage;
 
 public class EventResult implements Comparable<EventResult>
 {
-	//private static final Logger log = Logger.getLogger("org.wwscc.storage.EventResults");
-
 	protected int id;
+	protected int eventid;
 	protected int carid;
-	protected String firstname;
-	protected String lastname;
-	protected String indexcode;
+	protected String classcode;
 	protected int position;
 	protected int courses; /* How many courses in the calculation */
 	protected double sum;
 	protected double diff;
 	protected double diffpoints;
 	protected int pospoints;
-	protected SADateTime updated;
-	protected int lastcourse; // the active course when last updated, more important for pros where you go back/forth
 	
+	// privates not follwed by AUTO load or table definition
+	private String firstname;
+	private String lastname;
+	private String indexcode;
 	private double indexvalue;
 
 	public String getFullName() { return firstname + " " + lastname; }
@@ -35,9 +34,18 @@ public class EventResult implements Comparable<EventResult>
 	public String getIndexCode() { return indexcode; }
 	public double getIndex() { return indexvalue; }
 	public int getPosition() { return position; }
-	public int getLastCourse() { return lastcourse; }
 	
-	protected void setIndex(double value) { indexvalue = value; }
+	protected void setIndex(String code, double value) 
+	{ 
+		indexcode = code;
+		indexvalue = value;
+	}
+	
+	protected void setName(String first, String last)
+	{
+		firstname = first;
+		lastname = last;
+	}
 	
 	@Override
 	public int compareTo(EventResult o) {

@@ -1,6 +1,6 @@
 
 from meta import metadata, Session
-from data import Data, EventResult, PrevEntry
+from data import Data, EventResult, AnnouncerData, PrevEntry
 from driver import Driver, DriverExtra, DriverField
 from runs import Run
 from cars import Car
@@ -34,6 +34,7 @@ __all__ = (
 'Car',
 'Run',
 'EventResult',
+'AnnouncerData',
 'Registration',
 'RunOrder',
 'RunGroup',

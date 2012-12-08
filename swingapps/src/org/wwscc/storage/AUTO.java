@@ -443,50 +443,92 @@ public class AUTO
 	{
 		org.wwscc.storage.EventResult o = new org.wwscc.storage.EventResult();
 		o.id = rs.getInt("id");
+		o.eventid = rs.getInt("eventid");
 		o.carid = rs.getInt("carid");
-		o.firstname = rs.getString("firstname");
-		o.lastname = rs.getString("lastname");
-		o.indexcode = rs.getString("indexcode");
+		o.classcode = rs.getString("classcode");
 		o.position = rs.getInt("position");
 		o.courses = rs.getInt("courses");
 		o.sum = rs.getDouble("sum");
 		o.diff = rs.getDouble("diff");
 		o.diffpoints = rs.getDouble("diffpoints");
 		o.pospoints = rs.getInt("pospoints");
-		o.updated = rs.getSADateTime("updated");
-		o.lastcourse = rs.getInt("lastcourse");
 		return o;
 	}
 	
 	public static String getEventResultVarStr()
 	{
-		return "carid,firstname,lastname,indexcode,position,courses,sum,diff,diffpoints,pospoints,updated,lastcourse";
+		return "eventid,carid,classcode,position,courses,sum,diff,diffpoints,pospoints";
 	}
 	
 	public static String getEventResultArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getEventResultSetStr()
 	{
-		return "carid=?,firstname=?,lastname=?,indexcode=?,position=?,courses=?,sum=?,diff=?,diffpoints=?,pospoints=?,updated=?,lastcourse=?";
+		return "eventid=?,carid=?,classcode=?,position=?,courses=?,sum=?,diff=?,diffpoints=?,pospoints=?";
 	}
 	
 	public static void addEventResultValues(org.wwscc.storage.EventResult o, List<Object> l)
 	{
+		l.add(o.eventid);
 		l.add(o.carid);
-		l.add(o.firstname);
-		l.add(o.lastname);
-		l.add(o.indexcode);
+		l.add(o.classcode);
 		l.add(o.position);
 		l.add(o.courses);
 		l.add(o.sum);
 		l.add(o.diff);
 		l.add(o.diffpoints);
 		l.add(o.pospoints);
+	}
+	
+	public static org.wwscc.storage.AnnouncerData loadAnnouncerData(ResultRow rs) throws IOException
+	{
+		org.wwscc.storage.AnnouncerData o = new org.wwscc.storage.AnnouncerData();
+		o.id = rs.getInt("id");
+		o.eventid = rs.getInt("eventid");
+		o.carid = rs.getInt("carid");
+		o.rawdiff = rs.getDouble("rawdiff");
+		o.netdiff = rs.getDouble("netdiff");
+		o.oldsum = rs.getDouble("oldsum");
+		o.potentialsum = rs.getDouble("potentialsum");
+		o.olddiffpoints = rs.getDouble("olddiffpoints");
+		o.potentialdiffpoints = rs.getDouble("potentialdiffpoints");
+		o.oldpospoints = rs.getInt("oldpospoints");
+		o.potentialpospoints = rs.getInt("potentialpospoints");
+		o.updated = rs.getSADateTime("updated");
+		return o;
+	}
+	
+	public static String getAnnouncerDataVarStr()
+	{
+		return "eventid,carid,rawdiff,netdiff,oldsum,potentialsum,olddiffpoints,potentialdiffpoints,oldpospoints,potentialpospoints,updated";
+	}
+	
+	public static String getAnnouncerDataArgStr()
+	{
+		return "?,?,?,?,?,?,?,?,?,?,?";
+	}
+	
+	public static String getAnnouncerDataSetStr()
+	{
+		return "eventid=?,carid=?,rawdiff=?,netdiff=?,oldsum=?,potentialsum=?,olddiffpoints=?,potentialdiffpoints=?,oldpospoints=?,potentialpospoints=?,updated=?";
+	}
+	
+	public static void addAnnouncerDataValues(org.wwscc.storage.AnnouncerData o, List<Object> l)
+	{
+		l.add(o.eventid);
+		l.add(o.carid);
+		l.add(o.rawdiff);
+		l.add(o.netdiff);
+		l.add(o.oldsum);
+		l.add(o.potentialsum);
+		l.add(o.olddiffpoints);
+		l.add(o.potentialdiffpoints);
+		l.add(o.oldpospoints);
+		l.add(o.potentialpospoints);
 		l.add(o.updated);
-		l.add(o.lastcourse);
 	}
 	
 }

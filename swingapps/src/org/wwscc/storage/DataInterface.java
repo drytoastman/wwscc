@@ -107,6 +107,7 @@ public abstract class DataInterface
 	public abstract void deleteRun(int id);
 
 	public abstract List<EventResult> getResultsForClass(String classcode);
+	public abstract AnnouncerData getAnnouncerDataForCar(int carid);
 
 	//** Challenge **/
 	public abstract Set<Integer> getCarIdsByChallenge(int challengeid);

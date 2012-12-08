@@ -259,7 +259,7 @@ public class WebDataSource extends SQLDataInterface
 	protected void updateClassResults(String classcode, int carid)
 	{
 		try {
-			addRequest(FUNCTION, "UpdateClass", newList(currentEvent.id, classcode, carid));
+			addRequest(FUNCTION, "UpdateClass", newList(currentEvent.id, currentCourse, classcode, carid));
 			performRequests();
 		} catch (IOException ioe) { 
 			log.log(Level.SEVERE, "updateClassResults failed: " + ioe.getMessage(), ioe);
