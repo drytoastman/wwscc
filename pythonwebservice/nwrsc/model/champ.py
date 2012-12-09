@@ -13,6 +13,7 @@ class PointStorage(object):
 		self.storage = {}
 		self.total = 0
 		self.drop = []
+		self.usingbest = 0
 
 	def get(self, eventid):
 		return self.storage.get(eventid, None)
@@ -20,9 +21,19 @@ class PointStorage(object):
 	def set(self, eventid, points):
 		self.storage[eventid] = points
 
+	def theory(self, eventid, points):
+		save = self.storage[eventid]
+		self.storage[eventid] = points
+		self.calc(self.usingbest)
+		ret = self.total
+		self.storage[eventid] = save
+		self.calc(self.usingbest)
+		return ret
+		
 	def calc(self, bestof):
 		self.total = 0
 		self.drop = []
+		self.usingbest = bestof
 		for ii, points in enumerate(sorted(self.storage.values(), reverse=True)):
 			if ii < bestof:
 				self.total += points  # Add to total points

@@ -67,10 +67,10 @@ def UpdateClassResults(session, eventid, course, classcode, carid):
 		prev = thesum
 
 	if course != 0 and carid != 0:
-		UpdateAnnouncerDetails(session, eventid, course, carid, mysum, sumlist, PPOINTS)
+		UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, sumlist, PPOINTS)
 
 
-def UpdateAnnouncerDetails(session, eventid, course, carid, mysum, sumlist, PPOINTS):
+def UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, sumlist, PPOINTS):
 	"""
 		Calculate from other sums based on old runs or clean runs, based on runs on currentCourse
 	"""
@@ -81,6 +81,7 @@ def UpdateAnnouncerDetails(session, eventid, course, carid, mysum, sumlist, PPOI
 	session.add(data)
 	data.eventid = eventid
 	data.carid = carid
+	data.classcode = classcode
 	data.lastcourse = course
 	data.updated = datetime.datetime.now()
 	

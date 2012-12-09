@@ -990,23 +990,25 @@ public abstract class SQLDataInterface extends DataInterface
 				mysum = sum;
 		}
 
-		UpdateAnnouncerDetails(carid, mysum, sums, ppoints);
+		UpdateAnnouncerDetails(carid, classcode, mysum, sums, ppoints);
 		executeGroupUpdate("INSERTCLASSRESULTS", lists);
 	}	
 
 	/**
 	 * Calculate from other sums based on old runs or clean runs, based on runs on currentCourse
-	 * @param carid the carid in question
-	 * @param index the index for the car
-	 * @param sum the current sum (may include several courses)
-	 * @return array of two sums [0] is previous run sum if improved, [1] is better run if entrant was clean
-	 * @throws IOException 
+	 * @param carid  id of car that just finished
+	 * @param classcode classcode of car that just finished
+	 * @param mysum the sum of the entrant that just finished
+	 * @param sums the list of sums for the class
+	 * @param ppoints the ppoints object for assigned position based pooints
+	 * @throws IOException
 	 */
-	protected void UpdateAnnouncerDetails(int carid, double mysum, List<Double> sums, PositionPoints ppoints) throws IOException
+	protected void UpdateAnnouncerDetails(int carid, String classcode, double mysum, List<Double> sums, PositionPoints ppoints) throws IOException
 	{
     	AnnouncerData data = new AnnouncerData();
     	data.eventid = currentEvent.id;
     	data.carid = carid;
+    	data.classcode = classcode;
     	data.lastcourse = currentCourse;
     	data.updated = new SADateTime();
     	
@@ -1048,7 +1050,7 @@ public abstract class SQLDataInterface extends DataInterface
     	data.potentialdiffpoints = firstplace/data.potentialsum*100;
 
 		sums.remove(mysum);
-    	if (!Double.isNaN(data.oldsum))
+    	if (data.oldsum > 0)
     	{
     		sums.add(data.oldsum);
     		Collections.sort(sums);
@@ -1056,7 +1058,7 @@ public abstract class SQLDataInterface extends DataInterface
     		sums.remove(data.oldsum);
     	}    	
     	
-    	if (!Double.isNaN(data.potentialsum))
+    	if (data.potentialsum > 0)
     	{
 	    	sums.add(data.potentialsum);
 	    	Collections.sort(sums);

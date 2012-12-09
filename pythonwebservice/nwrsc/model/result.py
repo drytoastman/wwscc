@@ -153,6 +153,15 @@ class TopTimesList(object):
 		self.carids.append(entrant.carid)
 		self.rows.append((firstname + " " + lastname,) + vals)
 
+	def getFeed(self):
+		d = dict()
+		for k,v in self.__dict__.iteritems():
+			if v is None or k in ['_sa_instance_state', 'carids']:
+				continue
+			d[k] = v
+		return d
+
+
 
 class TopTimesStorage(object):
 

@@ -69,10 +69,6 @@ class AnnouncerController(BaseController):
 		"""
 			Returns the top times tables that are shown in the announer panel
 		"""
-		return self._loadTopTimes()
-
-
-	def _loadTopTimes(self):
 		c.classdata = ClassData(self.session)
 		c.highlight = int(request.GET.get('carid', 0))
 
@@ -106,14 +102,6 @@ class AnnouncerController(BaseController):
 
 	@jsonify
 	def _allentrant(self, carid):
-		self._loadResults(carid)
-		ret = {}
-		ret['updated'] = int(request.GET.get('updated', 0)) # Return it
-		ret['entrantresult'] = render_mako('/announcer/entrant.mako').replace('\n', '')
-		return ret
-
-
-	def _loadResults(self, carid):
 		"""
 			Returns the collection of tables shown for a single entrant
 		"""
@@ -158,4 +146,9 @@ class AnnouncerController(BaseController):
 
 		c.results.sort(key=operator.attrgetter('sum'))
 		c.champresults = getChampResults(self.session, self.settings, c.cls.code).get(c.cls.code, [])
+
+		ret = {}
+		ret['updated'] = int(request.GET.get('updated', 0)) # Return it
+		ret['entrantresult'] = render_mako('/announcer/entrant.mako').replace('\n', '')
+		return ret
 

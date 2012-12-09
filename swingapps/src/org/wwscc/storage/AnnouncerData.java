@@ -13,6 +13,7 @@ public class AnnouncerData
 	protected int id;
 	protected int eventid;
 	protected int carid;
+	protected String classcode;
 	protected int lastcourse;
 	protected double rawdiff;
 	protected double netdiff;
