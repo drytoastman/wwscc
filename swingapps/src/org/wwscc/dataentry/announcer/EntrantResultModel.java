@@ -2,6 +2,7 @@ package org.wwscc.dataentry.announcer;
 
 import javax.swing.table.AbstractTableModel;
 
+import org.wwscc.storage.AnnouncerData;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.Run;
 import org.wwscc.util.NF;
@@ -11,30 +12,46 @@ import org.wwscc.util.NF;
  */
 public class EntrantResultModel extends AbstractTableModel
 {
-	Entrant data;
+	Run runs[];
+	String labels[];
 
 	public EntrantResultModel()
 	{
-		data = null;
+		runs = null;
 	}
 
-	public void setData(Entrant e)
+	public void setData(Entrant e, AnnouncerData a)
 	{
-		data = e;
+		runs = e.getRuns();
+		labels = new String[runs.length];
+		
+		for (int ii = 0; ii < runs.length; ii++)
+        {
+			if (runs[ii] == null)
+				continue;
+            if (runs[ii].getNetOrder() == 1) 
+            	labels[ii] = "current";
+            if (runs[ii].getNetOrder() == 2 && a.getOldSum() > 0)
+            	labels[ii] = "old";
+        }
+        
+        if (runs[runs.length-1].getNetOrder() != 1 && a.getPotentialSum() > 0)
+        	labels[runs.length-1] = "raw";
+
 		fireTableDataChanged();
 	}
 
-	public Run getRun(int row)
+	public String getLabel(int row)
 	{
-		if (data == null)
+		if (labels == null)
 			return null;
-		return data.getRun(row+1);
+		return labels[row];
 	}
 
 	public int getRowCount()
 	{
-		if (data == null) return 0;
-		return data.runCount();
+		if (runs == null) return 0;
+		return runs.length;
 	}
 
 	public int getColumnCount()
@@ -57,8 +74,8 @@ public class EntrantResultModel extends AbstractTableModel
 	public Object getValueAt(int row, int col)
 	{
 		Run r = null;
-		if (data == null) return "";
-		r = data.getRun(row+1);
+		if (runs == null) return "";
+		r = runs[row];
 		if (r == null) return "";
 
 		switch (col)

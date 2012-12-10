@@ -17,20 +17,14 @@ ecolumns = 5 + c.event.getSegmentCount()
 %endfor
 <th>C</th><th>G</th><th>Net</th></tr>
 
-%for ii, run in enumerate([c.runs.get(index,None) for index in range(1, c.event.runs+1)]):
-%if run is not None:
+%for run in c.runs:
 
-<%
-sega = run.validSegments(c.event.getSegments())
-trclass = ""
-if run.norder == 1: trclass = 'highlight'
-if run == c.couldhaverun: trclass = 'couldhave'
-%>
-<tr class='${trclass}'>
-<td>${ii+1}</td>
+<% sega = run.validSegments(c.event.getSegments()) %>
+<tr class='${c.e2label(run)}'>
+<td>${run.run}</td>
 <td>${h.t3(run.raw)}
-	%if run.rdiff:
-		(${h.t3(run.rdiff)})
+	%if hasattr(run, 'rawdiff'):
+		(${h.t3(run.rawdiff)})
 	%endif
 </td>
 %for jj in range(c.event.getSegmentCount()):
@@ -39,28 +33,13 @@ if run == c.couldhaverun: trclass = 'couldhave'
 <td>${run.cones}</td>
 <td>${run.gates}</td>
 <td>${h.t3(run.net)}
-	%if run.ndiff:
-		(${h.t3(run.ndiff, sign=True)})
+	%if hasattr(run, 'netdiff'):
+		(${h.t3(run.netdiff, sign=True)})
 	%endif
 </td>
 </tr>
 
 
-%else:
-
-
-<tr>
-<td></td>
-%for jj in range(c.event.getSegmentCount()):
-<td></td>
-%endfor
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-
-%endif
 %endfor
 
 </tbody>

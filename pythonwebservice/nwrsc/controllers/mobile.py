@@ -26,31 +26,40 @@ def _extract(obj, *keys):
 			ret[k] = t3(v)
 	return ret
 
-def _convertTTS(tts):
+def _convertTTS(tts, carid, oldsum, rawsum):
 	ret = []
 	position = 1
 	cols = tts.cols
-	for row in tts.rows:
+	
+	for row, tcarid in zip(tts.rows, tts.carids):
 		ret.append(dict([(cols[ii].lower() or 'indexcode', row[ii]) for ii in range(len(cols))]))
 		ret[-1]['position'] = position
 		position += 1
+		if tcarid == carid:
+			ret[-1]['label'] = 'current'
+			if oldsum is not None and oldsum > 0:
+				oldentry = ret[-1].copy()
+				oldentry.update({'position':'old', 'time':t3(oldsum), 'label':'old'})
+				ret.append(oldentry)
+			if rawsum is not None and rawsum > 0:
+				rawentry = ret[-1].copy()
+				rawentry.update({'position':'raw', 'time':t3(rawsum), 'label':'raw'})
+				ret.append(rawentry)
+
+	if oldsum is not None or rawsum is not None:
+		ret.sort(key=operator.itemgetter('time'))
 	return ret
 
 
 class MobileController(BaseController):
 
 	def __before__(self):
-		self.eventid = self.routingargs.get('eventid', None)
-		if int(self.eventid) > 0:
+		self.eventid = self.routingargs.get('eventid', "")
+		try:
 			self.eventid = int(self.eventid)
 			self.event = self.session.query(Event).get(self.eventid)
-
-		carid = self.routingargs.get('other', None)
-		if carid is not None:
-			self.carid = int(carid)
-	
-		self._loaded = False
-
+		except ValueError:
+			pass
 
 	def _encode(self, head, o):
 		response.headers['Content-type'] = 'text/javascript'
@@ -82,48 +91,80 @@ class MobileController(BaseController):
 
 
 	def toptimes(self):
+		carid = int(self.routingargs.get('other', 0))
+		return self._encode("toptimes", self._toptimes(carid))
+
+	def _toptimes(self, carid):
 		ret = {}
 		classdata = ClassData(self.session)
+		car = self.session.query(Car).get(carid)
+		self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
+		if self.announcer is None:
+			raise BeforePage('')
+		index = classdata.getEffectiveIndex(car.classcode, car.indexcode)
+
 		toptimes = TopTimesStorage(self.session, self.event, classdata)
-		ret['topraw'] = _convertTTS(toptimes.getList(allruns=False, raw=True, course=0))
-		ret['topnet'] = _convertTTS(toptimes.getList(allruns=False, raw=False, course=0))
-		return self._encode("toptimes", ret)
+		ret['topraw'] = _convertTTS(toptimes.getList(allruns=False, raw=True, course=0), carid, self.announcer.oldsum/index, self.announcer.potentialsum/index)
+		ret['topnet'] = _convertTTS(toptimes.getList(allruns=False, raw=False, course=0), carid, self.announcer.oldsum, self.announcer.potentialsum)
+		return ret
+
 
 
 	def entrant(self):
-		(self.driver, self.car) = self.session.query(Driver,Car).join('cars').filter(Car.id==self.carid).first()
+		carid = int(self.routingargs.get('other', 0))
+		return self._encode("entrant", self._entrant(int(carid)))
+
+	def _entrant(self, carid):
+		(self.driver, self.car) = self.session.query(Driver,Car).join('cars').filter(Car.id==carid).first()
 		if self.driver.alias and not config['nwrsc.private']:
 			self.driver.firstname = self.driver.alias
 			self.driver.lastname = ""
 
 		self.cls = self.session.query(Class).filter(Class.code==self.car.classcode).first()
-		self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==self.carid).first()
+		self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
 		if self.announcer is None:
 			raise BeforePage('')
 
 		ret = {}
-		ret['runlist'] = self._runlist()
-		ret['classlist'] = self._classlist()
-		ret['champlist'] = self._champlist()
-		return self._encode("entrant", ret)
+		ret['runlist'] = self._runlist(carid)
+		ret['classlist'] = self._classlist(carid)
+		ret['champlist'] = self._champlist(carid)
+		return ret
 		
-	def _runlist(self):
-		query = self.session.query(Run).filter(Run.carid==self.carid).filter(Run.eventid==self.eventid)
-		query = query.filter(Run.course==1).filter(Run.course==self.announcer.lastcourse).order_by(Run.run)
-		return query.all()
 
-	def _classlist(self):
+	def _runlist(self, carid):
+		query = self.session.query(Run).filter(Run.carid==carid).filter(Run.eventid==self.eventid)
+		query = query.filter(Run.course==self.announcer.lastcourse).filter(Run.course==self.announcer.lastcourse).order_by(Run.run)
+		runs = query.all()
+		if self.announcer.rawdiff:
+			runs[-1].rawdiff = self.announcer.rawdiff
+		if self.announcer.netdiff:
+			runs[-1].netdiff = self.announcer.netdiff
+		for r in runs:
+			if r.norder == 1: r.label = 'current'
+			if r.norder == 2 and self.announcer.oldsum > 0: r.label = 'old'
+		if runs[-1].norder != 1 and self.announcer.potentialsum > 0:
+			runs[-1].label = 'raw'
+			
+		return runs
+
+
+	def _classlist(self, carid):
 		ret = []
 		for res in getClassResultsShort(self.session, self.settings, self.event, self.cls):
-			ret.append(_extract(res, 'sum', 'pospoints', 'diffpoints', 'carid', 'firstname', 'lastname', 'indexstr', 'position', 'trophy'))
+			ret.append(_extract(res, 'sum', 'pospoints', 'diffpoints', 'carid', 'firstname', 'lastname', 'indexstr', 'position', 'trophy', 'diff'))
+			if res.carid == carid:
+				ret[-1]['label'] = "current"
+
 		if self.announcer.oldsum > 0:
-			ret.append({'sum': t3(self.announcer.oldsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'old'})
+			ret.append({'sum': t3(self.announcer.oldsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'old', 'label':'old'})
 		if self.announcer.potentialsum > 0:
-			ret.append({'sum': t3(self.announcer.potentialsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'raw'})
+			ret.append({'sum': t3(self.announcer.potentialsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'raw', 'label':'raw'})
 		ret.sort(key=operator.itemgetter('sum'))
 		return ret
 
-	def _champlist(self):
+
+	def _champlist(self, carid):
 		ret = []
 		pos = 1
 		for res in getChampResults(self.session, self.settings, self.cls.code).get(self.cls.code, []):
@@ -137,18 +178,21 @@ class MobileController(BaseController):
 			ret.append(entry)
 			pos += 1
 
-			if res.carid != self.carid:
+			if res.carid != carid:
 				continue
 			
+			entry['label'] = 'current'
 			if res.points == res.pospoints:
 				if self.announcer.oldpospoints > 0:
 					entry = entry.copy()
 					entry['position'] = "old"
+					entry['label'] = "old"
 					entry['points'] = res.pospoints.theory(self.eventid, self.announcer.oldpospoints)
 					ret.append(entry)
 				if self.announcer.potentialpospoints > 0:
 					entry = entry.copy()
 					entry['position'] = "raw"
+					entry['label'] = "raw"
 					entry['points'] = res.pospoints.theory(self.eventid, self.announcer.potentialpospoints)
 					ret.append(entry)
 
@@ -156,11 +200,13 @@ class MobileController(BaseController):
 				if self.announcer.olddiffpoints > 0:
 					entry = entry.copy()
 					entry['position'] = "old"
+					entry['label'] = "old"
 					entry['points'] = t3(res.diffpoints.theory(self.eventid, self.announcer.olddiffpoints))
 					ret.append(entry)
 				if self.announcer.potentialdiffpoints > 0:
 					entry = entry.copy()
 					entry['position'] = "raw"
+					entry['label'] = "raw"
 					entry['points'] = t3(res.diffpoints.theory(self.eventid, self.announcer.potentialdiffpoints))
 					ret.append(entry)
 

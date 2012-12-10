@@ -79,8 +79,12 @@ def getClassResultsShort(session, settings, event, cls):
 		ret.append(Result(row, usepospoints=settings.usepospoints))
 
 	trophydepth = ceil(len(ret) / 3.0)
+	last = None
 	for ii, result in enumerate(ret):
 		result.trophy = (cls.eventtrophy) and (ii < trophydepth)
+		if last is not None:
+			result.diff = result.sum - last
+		last = result.sum
 
 	return ret
 

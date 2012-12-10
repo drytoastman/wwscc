@@ -262,17 +262,17 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 		Collections.sort(erlist);
 		
 		nameLabel.setText(entrant.getName());
-		nameModel.setData(entrant);
+		nameModel.setData(entrant, announcer);
 
 		if (showLast)
 			detailsLabel.setText("Last Run");			
 		else
 			detailsLabel.setText("Difference");
-
 		detailsModel.setData(erlist.get(0), myresult, 
 				announcer.getRawDiff() != 0 ? announcer.getRawDiff() : null, 
 				announcer.getNetDiff() != 0 ? announcer.getNetDiff() : null, 
 				showLast);
+		
 		classLabel.setText(classcode);
 		classModel.setData(erlist);
 		classRenderer.setHighlightValue(entrant);

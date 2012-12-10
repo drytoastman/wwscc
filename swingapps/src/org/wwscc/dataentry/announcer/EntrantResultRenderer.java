@@ -6,8 +6,6 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.wwscc.storage.Run;
-
 /**
  * render for entrant results table
  */
@@ -24,23 +22,35 @@ class EntrantResultRenderer extends DefaultTableCellRenderer
 		cell.setHorizontalAlignment(JLabel.CENTER);
 
 		EntrantResultModel m = (EntrantResultModel)t.getModel();
-		Run run = m.getRun(r);
-		if ((run != null) && (run.getNetOrder() == 1))
+		String label = m.getLabel(r);
+		if (label != null)
 		{
-			cell.setFont(AnnouncerPanel.boldFont);
-			cell.setBackground(AnnouncerPanel.grayBackground);
-		}
-		else if ((run != null) && (run.getRawOrder() == 1))
-		{
-			cell.setFont(AnnouncerPanel.boldFont);
-			cell.setBackground(AnnouncerPanel.redBackground);
-		}
-		else
-		{
-			cell.setFont(AnnouncerPanel.regularFont);
-			cell.setBackground(Color.WHITE);
+			if (label.equals("old"))
+			{
+				cell.setFont(AnnouncerPanel.boldFont);
+				cell.setForeground(AnnouncerPanel.blueStroke);
+				cell.setBackground(AnnouncerPanel.blueBackground);
+				return cell;
+			}
+			else if (label.equals("current"))
+			{
+				cell.setFont(AnnouncerPanel.boldFont);
+				cell.setForeground(Color.BLACK);
+				cell.setBackground(AnnouncerPanel.grayBackground);
+				return cell;
+			}
+			else if (label.equals("raw"))
+			{
+				cell.setFont(AnnouncerPanel.boldFont);
+				cell.setForeground(AnnouncerPanel.redStroke);
+				cell.setBackground(AnnouncerPanel.redBackground);
+				return cell;
+			}
 		}
 
+		cell.setFont(AnnouncerPanel.regularFont);
+		cell.setForeground(Color.BLACK);
+		cell.setBackground(Color.WHITE);
 		return cell;
 	}
 }
