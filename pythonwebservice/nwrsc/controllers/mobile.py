@@ -54,11 +54,11 @@ def _convertTTS(tts, carid, oldsum, rawsum):
 class MobileController(BaseController):
 
 	def __before__(self):
-		self.eventid = self.routingargs.get('eventid', "")
+		self.eventid = self.routingargs.get('eventid', None)
 		try:
 			self.eventid = int(self.eventid)
 			self.event = self.session.query(Event).get(self.eventid)
-		except ValueError:
+		except (ValueError, TypeError):
 			pass
 
 	def _encode(self, head, o):
@@ -169,7 +169,7 @@ class MobileController(BaseController):
 		pos = 1
 		for res in getChampResults(self.session, self.settings, self.cls.code).get(self.cls.code, []):
 			entry = dict()
-			entry['points'] = res.points.total
+			entry['points'] = t3(res.points.total)
 			entry['carid'] = res.carid
 			entry['firstname'] = res.firstname
 			entry['lastname'] = res.lastname
@@ -210,6 +210,6 @@ class MobileController(BaseController):
 					entry['points'] = t3(res.diffpoints.theory(self.eventid, self.announcer.potentialdiffpoints))
 					ret.append(entry)
 
-		ret.sort(key=operator.itemgetter('points'), reverse=True)
+		ret.sort(key=lambda x: float(x['points']), reverse=True)
 		return ret
 

@@ -1027,34 +1027,35 @@ public abstract class SQLDataInterface extends DataInterface
 				prevbest = runs[ii];
 		}
 		
-        if (lastrun.getNetOrder() == 1)  // we improved our position
-        {
-            data.oldsum = mysum - lastrun.getNet() + prevbest.getNet();
-            data.rawdiff = lastrun.getRaw() - prevbest.getRaw();
-            data.netdiff = lastrun.getNet() - prevbest.getNet();
-        }
+		if (runs.length > 1)
+		{
+	        if (lastrun.getNetOrder() == 1)  // we improved our position
+	        {
+	            data.oldsum = mysum - lastrun.getNet() + prevbest.getNet();
+	            data.rawdiff = lastrun.getRaw() - prevbest.getRaw();
+	            data.netdiff = lastrun.getNet() - prevbest.getNet();
+	        }
+	        
+	        if (lastrun.getCones() != 0 || lastrun.getGates() != 0)
+	        {
+	            double theory = mysum - curbest.getNet() + ( lastrun.getRaw() * entrant.index );
+	            if (theory < mysum) // raw was an improvement
+	            {
+	            	data.potentialsum = theory;
+	            	data.rawdiff = lastrun.getRaw() - curbest.getRaw();
+	            	data.netdiff = lastrun.getNet() - curbest.getNet();
+	            }
+	        }
+		}
         
-        if (lastrun.getCones() != 0 || lastrun.getGates() != 0)
-        {
-            double theory = mysum - curbest.getNet() + ( lastrun.getRaw() * entrant.index );
-            if (theory < mysum) // raw was an improvement
-            {
-            	data.potentialsum = theory;
-            	data.rawdiff = lastrun.getRaw() - curbest.getRaw();
-            	data.netdiff = lastrun.getNet() - curbest.getNet();
-            }
-        }
-        
-        double firstplace = sums.get(0);
-    	data.olddiffpoints = firstplace/data.oldsum*100;
-    	data.potentialdiffpoints = firstplace/data.potentialsum*100;
-
+		double firstplace = sums.get(0);
 		sums.remove(mysum);
     	if (data.oldsum > 0)
     	{
     		sums.add(data.oldsum);
     		Collections.sort(sums);
     		data.oldpospoints = ppoints.get(sums.indexOf(data.oldsum)+1);
+	    	data.olddiffpoints = Math.min(100, firstplace/data.oldsum*100);
     		sums.remove(data.oldsum);
     	}    	
     	
@@ -1063,6 +1064,7 @@ public abstract class SQLDataInterface extends DataInterface
 	    	sums.add(data.potentialsum);
 	    	Collections.sort(sums);
 	    	data.potentialpospoints = ppoints.get(sums.indexOf(data.potentialsum)+1);
+	    	data.potentialdiffpoints = Math.min(100, firstplace/data.potentialsum*100);
     		sums.remove(data.potentialsum);
     	}
     	

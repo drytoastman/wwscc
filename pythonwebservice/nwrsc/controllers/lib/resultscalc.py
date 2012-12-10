@@ -92,23 +92,25 @@ def UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, su
 
 	runlist = sorted(runs.keys())
 	lastrun = runs[runlist[-1]]
-	if lastrun.norder == 1:  # we improved our position
-		# find run with norder = 2, create the old entry with sum - lastrun + prevrun
-		prevbest = [x for x in runs.values() if x.norder == 2][0]
-		data.rawdiff = lastrun.raw - prevbest.raw
-		data.netdiff = lastrun.net - prevbest.net
-		data.oldsum = mysum - lastrun.net + prevbest.net
 
-	if lastrun.cones != 0 or lastrun.gates != 0:
-		# add table entry with what could have been without penalties
-		car = session.query(Car).get(carid)
-		index = ClassData(session).getEffectiveIndex(car.classcode, car.indexcode)
-		curbest = [x for x in runs.values() if x.norder == 1][0]
-		theory = mysum - curbest.net + ( lastrun.raw * index )
-		if theory < mysum:
-			data.rawdiff = lastrun.raw - curbest.raw
-			data.netdiff = lastrun.net - curbest.net
-			data.potentialsum = theory
+	if len(runs) > 1:
+		if lastrun.norder == 1:  # we improved our position
+			# find run with norder = 2, create the old entry with sum - lastrun + prevrun
+			prevbest = [x for x in runs.values() if x.norder == 2][0]
+			data.rawdiff = lastrun.raw - prevbest.raw
+			data.netdiff = lastrun.net - prevbest.net
+			data.oldsum = mysum - lastrun.net + prevbest.net
+	
+		if lastrun.cones != 0 or lastrun.gates != 0:
+			# add table entry with what could have been without penalties
+			car = session.query(Car).get(carid)
+			index = ClassData(session).getEffectiveIndex(car.classcode, car.indexcode)
+			curbest = [x for x in runs.values() if x.norder == 1][0]
+			theory = mysum - curbest.net + ( lastrun.raw * index )
+			if theory < mysum:
+				data.rawdiff = lastrun.raw - curbest.raw
+				data.netdiff = lastrun.net - curbest.net
+				data.potentialsum = theory
 
 
 	sumlist.remove(mysum);
@@ -117,7 +119,7 @@ def UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, su
 		sumlist.sort();
 		position = sumlist.index(data.oldsum)+1
 		data.oldpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
-		data.olddiffpoints = sumlist[0]/data.oldsum*100;
+		data.olddiffpoints = min(100, sumlist[0]/data.oldsum*100);
 		sumlist.remove(data.oldsum);
 
 	if data.potentialsum > 0:
@@ -125,7 +127,7 @@ def UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, su
 		sumlist.sort()
 		position = sumlist.index(data.potentialsum)+1
 		data.potentialpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
-		data.potentialdiffpoints = sumlist[0]/data.potentialsum*100;
+		data.potentialdiffpoints = min(100, sumlist[0]/data.potentialsum*100);
 
 	session.commit()
 
