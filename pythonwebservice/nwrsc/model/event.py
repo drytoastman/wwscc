@@ -57,8 +57,7 @@ class Event(object):
 	def getFeed(self):
 		d = dict()
 		for k,v in self.__dict__.iteritems():
-			if v is None or k in ['_sa_instance_state', 'password', 'regopened', 'regclosed',
-									'perlimit', 'totlimit', 'paypal', 'snail', 'cost', 'notes']:
+			if v is None or k in ['_sa_instance_state', 'password', 'paypal', 'snail', 'cost', ]:
 				continue
 			d[k] = v
 		return d
