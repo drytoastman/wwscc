@@ -3,6 +3,8 @@ package org.wwscc.android.Results;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Handler;
 import android.util.Log;
 
@@ -28,10 +30,6 @@ public class DataRetriever
 	{
 		if (!done) return;
 		lastupdate = 0;
-		try {
-			if (active != null)
-				active.join(); // incase it was still running after done was set to true
-		} catch (InterruptedException e) {}
 		done = false;
 		active = new Thread(new Runner());
 		active.start();
@@ -39,22 +37,38 @@ public class DataRetriever
 	
 	public void stop()
 	{
+		done = true;
 		if (active != null)
 			active.interrupt();
-		done = true;
 	}
 	
-	class Runner implements Runnable
+	class Runner implements Runnable, OnSharedPreferenceChangeListener
 	{
+		@Override
+		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) 
+		{
+			lastupdate = 0;  // if the prefs changed, reset our couter so we rerequest things
+			active.interrupt();
+		}
+		
 		@Override
 		public void run()
 		{
-			MobileURL url = new MobileURL(context.getSharedPreferences(null, 0));
+			SharedPreferences prefs = context.getSharedPreferences(null, 0);
+			prefs.registerOnSharedPreferenceChangeListener(this);			
+			MobileURL url = new MobileURL(prefs);
 			
 			while (!done)
 			{
 				try
 				{
+					if (!url.validURLs())
+					{
+						lastupdate = 0;
+						Thread.sleep(500);
+						continue;
+					}
+					
 				    JSONObject reply = Util.downloadJSONObject(url.getLastTime());
 				    if (reply.getLong("updated") > lastupdate)
 				    {					    
@@ -71,11 +85,11 @@ public class DataRetriever
 					    Thread.sleep(1500); // quicker recheck if we aren't loading anything
 				    }
 				}
+				catch (InterruptedException ie) {}
 				catch (Exception e)
 				{
 					Log.e("NetBrowser", "Failed to get last: " + e.getMessage());
-					try {
-						Thread.sleep(6000);  // keep out of super loop
+					try { Thread.sleep(4000);  // keep out of super loop
 					} catch (InterruptedException e1) {}
 				}
 			}

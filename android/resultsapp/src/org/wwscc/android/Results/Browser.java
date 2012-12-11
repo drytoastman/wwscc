@@ -1,12 +1,10 @@
 package org.wwscc.android.Results;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.wwscc.android.Results.NetworkStatus.NetworkWatcher;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.ActionBar.TabListener;
@@ -19,7 +17,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
-public class Browser extends SherlockFragmentActivity implements NetworkWatcher, TabListener
+public class Browser extends SherlockFragmentActivity implements TabListener
 {	
 	DataHandler dataHandler;
 	DataRetriever dataRetrieval;
@@ -96,43 +94,30 @@ public class Browser extends SherlockFragmentActivity implements NetworkWatcher,
 				e.printStackTrace();
 			}
         }
-	}
-	
+	}    
 	
     @Override
-    public void connected()
+    protected void onStart()
     {
-    	if (requireDataRequests) dataRetrieval.start();
+    	super.onStart();
+    	dataRetrieval.start();
     }
-    
+
     @Override
-    public void disconnected()
-    {
-    	if (requireDataRequests) dataRetrieval.stop();
-    }
-    
-	
-	@Override
 	protected void onResume()
 	{
 		super.onResume();
 		Log.d("MAIN", "++RESUME");
-		networkStatus.register(this, this);
-    	if (!networkStatus.isConnected())
-        	Util.alert(this, "No network, will try to search when available.");        
-    	else
-    		connected();
+    	//if (!networkStatus.isConnected())
+        	//Util.alert(this, "No network, will try to search when available.");        
 	}
 	
 	@Override
-	protected void onPause()
+	protected void onStop()
 	{
-		super.onPause();
-		Log.e("MAIN", "++PAUSE");
-    	disconnected();
-    	networkStatus.unregister();
+		super.onStop();
+    	dataRetrieval.stop();
 	}
-
 
 	@Override
 	public void onTabSelected(Tab tab, FragmentTransaction ft)
@@ -151,12 +136,6 @@ public class Browser extends SherlockFragmentActivity implements NetworkWatcher,
 				tab.setTag(plf);
 			}
 		}
-		
-		requireDataRequests = (o != settings);
-		if (requireDataRequests)
-			dataRetrieval.start();
-		else
-			dataRetrieval.stop();
 	}
 
 

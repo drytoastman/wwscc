@@ -20,6 +20,14 @@ public class MobileURL
 		return String.format("http://%s/mobile/%s", prefs.getString("HOST", ""), prefs.getString("SERIES", ""));
 	}
 	
+	public boolean validURLs()
+	{
+		return	((prefs.getString("HOST", "").length() > 0) 
+				&& (prefs.getString("SERIES", "").length() > 0)
+				&& (prefs.getInt("EVENTID", 0) > 0)
+				&& (prefs.getString("CLASSCODE", "").length() > 0));
+	}
+	
 	public URL getLastTime() throws MalformedURLException
 	{
 		return new URL(String.format("%s/%s/last?class=%s", getBase(), prefs.getInt("EVENTID", 0), prefs.getString("CLASSCODE", "")));

@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import org.wwscc.services.FoundService;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
-
 import com.actionbarsherlock.app.SherlockFragment;
 
 import android.os.AsyncTask;
@@ -30,7 +29,7 @@ import android.content.SharedPreferences;
 /**
  * Handles everything in the settings panel as we don't use a separate activity
  */
-public class SettingsFragment extends SherlockFragment implements OnItemSelectedListener
+public class SettingsFragment extends SherlockFragment
 {
 	class EventWrapper
 	{
@@ -41,7 +40,6 @@ public class SettingsFragment extends SherlockFragment implements OnItemSelected
 		public EventWrapper(String n, int i) { name = n; eventid = i; }
 	}
 	
-	//private Activity parent;
     private SharedPreferences prefs;
 	private ProgressBar progress;
 	private ServiceFinder serviceFinder;
@@ -94,77 +92,80 @@ public class SettingsFragment extends SherlockFragment implements OnItemSelected
         seriesArray = new ServiceListAdapter(getActivity());
         seriesArray.setDropDownViewResource(R.layout.spinner_display);
         series.setAdapter(seriesArray);
-        series.setOnItemSelectedListener(this);
         
         eventArray = new ArrayAdapter<EventWrapper>(getActivity(), R.layout.spinner_basic);
         eventArray.setDropDownViewResource(R.layout.spinner_display);
         events.setAdapter(eventArray);
-        events.setOnItemSelectedListener(this);
         
         classArray = new ArrayAdapter<String>(getActivity(), R.layout.spinner_basic);
         classArray.setDropDownViewResource(R.layout.spinner_display);
         classes.setAdapter(classArray);
-        classes.setOnItemSelectedListener(this);
         
         prefs = getActivity().getSharedPreferences(null, 0);
+
+        series.setOnItemSelectedListener(new OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View arg1,int arg2, long arg3) { new UpdateSpinners().execute(); }
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {}
+		});
+
         return ret;
 	}
+	
+
+    @Override
+    public void onStart()
+    {
+    	super.onStart();
+    	if (serviceFinder != null)
+    		serviceFinder.start();
+    }
+
+    @Override
+	public void onStop()
+	{
+    	super.onStop();
+    	if (serviceFinder != null)
+    		serviceFinder.stop();
+
+    	try
+    	{
+	    	SharedPreferences.Editor editor = prefs.edit();
+	    	FoundService selected = (FoundService)series.getSelectedItem();
+		    editor.putString("HOST", selected.getHost().getHostAddress());
+		    editor.putString("SERIES", selected.getId());
+	    	editor.putInt("EVENTID", ((EventWrapper)events.getSelectedItem()).eventid);
+	    	editor.putString("CLASSCODE", classes.getSelectedItem().toString());
+	    	editor.apply();
+    	}
+    	catch (Exception e)
+    	{
+    	}
+
+    	seriesArray.clear();
+	}
+
 
     class FoundServiceHandler extends Handler
     {
         @Override
         public void handleMessage(Message msg) 
         {
-        	seriesArray.add((FoundService)msg.obj);
+        	FoundService fs = (FoundService)msg.obj;
+        	seriesArray.add(fs);
         	seriesArray.sort(new FoundService.Compare());
+
+        	String oldseries = prefs.getString("SERIES", null);
+            String oldhost = prefs.getString("HOST", null);
+            if ((oldseries == null) || (oldhost == null))
+            	return;
+        	if (fs.getHost().getHostAddress().equals(oldhost) && (fs.getId().equals(oldseries)))
+        		series.setSelection(seriesArray.getPosition(fs));
         }
     };    
     
-    @Override
-    public void onResume()
-    {
-    	super.onResume();
-    	if (serviceFinder != null)
-    		serviceFinder.start();
-    }
     
-    @Override
-    public void onPause()
-    {
-    	super.onPause();
-    	if (serviceFinder != null)
-    		serviceFinder.stop();
-    	seriesArray.clear();
-    }
-	
-	@Override
-	public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) 
-	{
-		SharedPreferences.Editor editor = prefs.edit();
-		 
-		if (parent == series)
-		{
-			FoundService found = (FoundService)parent.getSelectedItem();
-		    editor.putString("HOST", found.getHost().getHostAddress());
-		    editor.putString("SERIES", found.getId());
-		    new UpdateSpinners().execute();
-		}
-		else
-		{	   
-		    if (events.getSelectedItem() != null)
-		    	editor.putInt("EVENTID", ((EventWrapper)events.getSelectedItem()).eventid);
-		    if (classes.getSelectedItem() != null)
-		    	editor.putString("CLASSCODE", classes.getSelectedItem().toString());
-		}
-		
-	    editor.apply();
-	}
-
-	@Override
-	public void onNothingSelected(AdapterView<?> parent) {}
-	
-	
-
 	class UpdateSpinners extends AsyncTask<Void, Void, Void>
 	{
 		JSONArray eventsJSON;
@@ -198,12 +199,21 @@ public class SettingsFragment extends SherlockFragment implements OnItemSelected
 		{
 			try
 			{
-				eventArray.clear();
+		    	int matchid = prefs.getInt("EVENTID", -1);
+		    	EventWrapper foundEvent = null;
+		    	
+		    	eventArray.clear();
 				for (int ii = 0; ii < eventsJSON.length(); ii++)
 				{
 					JSONObject event = eventsJSON.getJSONObject(ii);
-					eventArray.add(new EventWrapper(event.getString("name"), event.getInt("id")));
+					EventWrapper wrap = new EventWrapper(event.getString("name"), event.getInt("id"));
+					if (wrap.eventid == matchid)
+						foundEvent = wrap;
+					eventArray.add(wrap);
 				}
+				
+				if (foundEvent != null)
+					events.setSelection(eventArray.getPosition(foundEvent));
 						
 				classArray.clear();
 				for (int ii = 0; ii < classesJSON.length(); ii++)
@@ -211,6 +221,10 @@ public class SettingsFragment extends SherlockFragment implements OnItemSelected
 					JSONObject myclass = classesJSON.getJSONObject(ii);
 					classArray.add(myclass.getString("code"));
 				}
+				
+				int classIndex = classArray.getPosition(prefs.getString("CLASSCODE", "noclass"));
+				if (classIndex >= 0)
+					classes.setSelection(classIndex);
 			}
 			catch (Exception je)
 			{

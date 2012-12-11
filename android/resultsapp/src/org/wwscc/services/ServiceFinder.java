@@ -64,6 +64,7 @@ public class ServiceFinder implements ThreadedClass
 	{
 		if (!done) return;
 		done = false;
+		found.clear();
 		new Thread(new FinderThread()).start();
 	}
 	
@@ -71,7 +72,6 @@ public class ServiceFinder implements ThreadedClass
 	public void stop()
 	{
 		done = true;
-		found.clear();
 	}
 
 	class FinderThread implements Runnable
@@ -106,8 +106,6 @@ public class ServiceFinder implements ThreadedClass
 				try
 				{
 					sock.send(request);
-					log.log(Level.INFO, "finder sent {0}", msg);
-
 					sock.setSoTimeout(1000);
 					long marker = System.currentTimeMillis() + 1000;
 					while (System.currentTimeMillis() < marker)  // make sure we break at some point if flood of messages
@@ -115,7 +113,7 @@ public class ServiceFinder implements ThreadedClass
 						try { sock.receive(recv); }
 						catch (SocketTimeoutException toe) { break; } // full timeout, break out to resend
 						String data = new String(recv.getData(), 0, recv.getLength());
-						log.log(Level.INFO, "finder receives {0}", data);
+						log.log(Level.INFO, "finder receives " + data);
 
 						if (!data.contains(","))  // nothing good in that packet, don't bother trying
 							continue;
