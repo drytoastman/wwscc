@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <color name="current_background">#DDD</color>
+   <color name="current_foreground">#000</color>
+   <color name="old_background">#EEF</color>
+   <color name="old_foreground">#99E</color>
+   <color name="raw_background">#EDD</color>
+   <color name="raw_foreground">#E77</color>
+   <color name="regular_background">#FFF</color>
+   <color name="regular_foreground">#000</color>
+</resources>

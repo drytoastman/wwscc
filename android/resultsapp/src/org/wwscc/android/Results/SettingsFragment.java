@@ -1,10 +1,8 @@
 package org.wwscc.android.Results;
 
 import java.io.IOException;
-import java.net.URL;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.wwscc.android.Results.NetworkStatus.NetworkWatcher;
 import org.wwscc.services.FoundService;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
@@ -32,7 +30,7 @@ import android.content.SharedPreferences;
 /**
  * Handles everything in the settings panel as we don't use a separate activity
  */
-public class SettingsFragment extends SherlockFragment implements OnItemSelectedListener, NetworkWatcher
+public class SettingsFragment extends SherlockFragment implements OnItemSelectedListener
 {
 	class EventWrapper
 	{
@@ -47,6 +45,7 @@ public class SettingsFragment extends SherlockFragment implements OnItemSelected
     private SharedPreferences prefs;
 	private ProgressBar progress;
 	private ServiceFinder serviceFinder;
+    private FoundServiceHandler servicePipe;
     
     private Spinner series;
 	private Spinner events;
@@ -65,14 +64,14 @@ public class SettingsFragment extends SherlockFragment implements OnItemSelected
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		Log.e("ASD", "CREATE");
+	    servicePipe = new FoundServiceHandler();
         try
         {
 	        serviceFinder = new ServiceFinder("RemoteDatabase");
 			serviceFinder.addListener(new ServiceFinderListener() {
 				@Override
 				public void newService(FoundService service) {
-					mHandler.obtainMessage(1, service).sendToTarget();
+					servicePipe.obtainMessage(1, service).sendToTarget();
 			}});
         } 
         catch (IOException ioe)
@@ -109,43 +108,30 @@ public class SettingsFragment extends SherlockFragment implements OnItemSelected
         
         prefs = getActivity().getSharedPreferences(null, 0);
         return ret;
-
 	}
 
-	
-    private final Handler mHandler = new Handler() {
+    class FoundServiceHandler extends Handler
+    {
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(Message msg) 
+        {
         	seriesArray.add((FoundService)msg.obj);
         	seriesArray.sort(new FoundService.Compare());
         }
-    };
-    
+    };    
     
     @Override
     public void onResume()
     {
     	super.onResume();
-    	connected();
+    	if (serviceFinder != null)
+    		serviceFinder.start();
     }
     
     @Override
     public void onPause()
     {
     	super.onPause();
-    	disconnected();
-    }
-    
-    @Override
-    public void connected()
-    {
-    	if (serviceFinder != null)
-    		serviceFinder.start();
-    }
-    
-    @Override
-    public void disconnected()
-    {
     	if (serviceFinder != null)
     		serviceFinder.stop();
     	seriesArray.clear();
@@ -190,8 +176,8 @@ public class SettingsFragment extends SherlockFragment implements OnItemSelected
 			try
 			{
 				MobileURL url = new MobileURL(prefs);
-				eventsJSON = Util.downloadJSONArray(new URL(url.getEventList()));
-				classesJSON = Util.downloadJSONArray(new URL(url.getClassList()));
+				eventsJSON = Util.downloadJSONArray(url.getEventList());
+				classesJSON = Util.downloadJSONArray(url.getClassList());
 			}
 			catch (Exception e)
 			{

@@ -1,5 +1,8 @@
 package org.wwscc.android.Results;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import android.content.SharedPreferences;
 
 /** Generator for urls */
@@ -17,23 +20,33 @@ public class MobileURL
 		return String.format("http://%s/mobile/%s", prefs.getString("HOST", ""), prefs.getString("SERIES", ""));
 	}
 	
-	public String getLastTime()
+	public URL getLastTime() throws MalformedURLException
 	{
-		return String.format("%s/%s/last?class=%s", getBase(), prefs.getInt("EVENTID", 0), prefs.getString("CLASSCODE", ""));
+		return new URL(String.format("%s/%s/last?class=%s", getBase(), prefs.getInt("EVENTID", 0), prefs.getString("CLASSCODE", "")));
 	}
 	
-	public String getClassResults(int carid)
+	public URL getEntrantResults(int carid) throws MalformedURLException
 	{
-		return String.format("%s/%s/classlist?carid=%s", getBase(), prefs.getInt("EVENTID", 0), carid);			
-	}
-	
-	public String getEventList() 
-	{
-		return String.format("%s/events",  getBase());
+		return new URL(String.format("%s/%s/entrant/%s", getBase(), prefs.getInt("EVENTID", 0), carid));			
 	}
 
-	public String getClassList() 
+	public URL getTopTimes(int carid) throws MalformedURLException
 	{
-		return String.format("%s/classes",  getBase());
+		return new URL(String.format("%s/%s/toptimes/%s", getBase(), prefs.getInt("EVENTID", 0), carid));			
+	}
+	
+	public URL getEventList() throws MalformedURLException 
+	{
+		return new URL(getBase());
+	}
+
+	public URL getClassList() throws MalformedURLException 
+	{
+		return new URL(String.format("%s/classes",  getBase()));
+	}
+
+	public URL getIndexList() throws MalformedURLException 
+	{
+		return new URL(String.format("%s/indexes",  getBase()));
 	}
 }
