@@ -6,7 +6,8 @@
     <string name="button_event">Results</string>
     <string name="button_champ">Champ</string>
     <string name="button_pax">PAX</string>
-    
+    <string name="button_raw">Raw</string>
+        
     <string name="settings_series">Series</string>
     <string name="settings_class">Class</string>
     <string name="settings_event">Event</string>

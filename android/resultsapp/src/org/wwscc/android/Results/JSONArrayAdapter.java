@@ -22,7 +22,7 @@ public abstract class JSONArrayAdapter extends BaseAdapter
 {
 	List<JSONObject> data;
 	LayoutInflater inflater;
-	Map<Integer, TextView> components;
+	
 	int current_background;
 	int current_foreground;
 	int old_background;
@@ -35,7 +35,8 @@ public abstract class JSONArrayAdapter extends BaseAdapter
 	public JSONArrayAdapter(Context c)
 	{
 		data = new ArrayList<JSONObject>();
-		inflater = (LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);    			
+		inflater = (LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		
 		current_background = c.getResources().getColor(R.color.current_background);
 		current_foreground = c.getResources().getColor(R.color.current_foreground);
 		old_background = c.getResources().getColor(R.color.old_background);
@@ -44,14 +45,13 @@ public abstract class JSONArrayAdapter extends BaseAdapter
 		raw_foreground = c.getResources().getColor(R.color.raw_foreground);
 		regular_background = c.getResources().getColor(R.color.regular_background);
 		regular_foreground = c.getResources().getColor(R.color.regular_foreground);
-		components = new HashMap<Integer, TextView>();
 	}
 	
 	public abstract View generateView(ViewGroup parent);
 	public abstract int[] getLabels();
-	public abstract void updateLabels(JSONObject o) throws JSONException;
+	public abstract void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException;
 
-	protected void updateColors(JSONObject obj) throws JSONException
+	protected void updateColors(JSONObject obj,  Map<Integer, TextView> textviews) throws JSONException
 	{
 		int fore = regular_foreground;
 		int back = regular_background;
@@ -76,7 +76,7 @@ public abstract class JSONArrayAdapter extends BaseAdapter
         	}
         }
 		
-		for (TextView v : components.values())
+		for (TextView v : textviews.values())
 		{
 			v.setBackgroundColor(back);
 			v.setTextColor(fore);
@@ -90,7 +90,8 @@ public abstract class JSONArrayAdapter extends BaseAdapter
         if (convertView == null) 
         {  			
     		convertView = generateView(parent);
-    		components.clear();
+    		Map<Integer, TextView> components = new HashMap<Integer, TextView>();
+    		convertView.setTag(components);
     		for (int id : getLabels())
     		{
     			TextView v = (TextView)convertView.findViewById(id);
@@ -99,11 +100,12 @@ public abstract class JSONArrayAdapter extends BaseAdapter
     		}
         }
         
+        Map<Integer, TextView> components = (HashMap<Integer, TextView>)convertView.getTag();
         try
         {
 	        JSONObject o = getItem(position);
-	        updateColors(o);
-	        updateLabels(o);
+	        updateColors(o, components);
+	        updateLabels(o, components);
         }
         catch (JSONException je)
         {

@@ -62,6 +62,8 @@ public class DataRetriever
 				    	int carid = reply.getInt("carid");
 				    	JSONObject data = Util.downloadJSONObject(url.getEntrantResults(carid));
 				    	listener.obtainMessage(ENTRANT_DATA, data).sendToTarget();
+				    	JSONObject ttdata = Util.downloadJSONObject(url.getTopTimes(carid));
+				    	listener.obtainMessage(TOPTIME_DATA, ttdata).sendToTarget();
 				    	Thread.sleep(10000); // generally no one finishes within 10 seconds of each other
 				    }
 				    else

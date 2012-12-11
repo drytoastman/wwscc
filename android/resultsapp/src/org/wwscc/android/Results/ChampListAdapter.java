@@ -1,10 +1,13 @@
 package org.wwscc.android.Results;
 
+import java.util.Map;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 /**
  * Displays the updating class list from data
@@ -28,11 +31,11 @@ public class ChampListAdapter extends JSONArrayAdapter
 		return labels;
 	}
 	
-	public void updateLabels(JSONObject o) throws JSONException
+	public void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException
 	{
-		components.get(R.id.position).setText(o.getString("position"));
-		components.get(R.id.name).setText(o.getString("firstname") + " " + o.getString("lastname"));
-		components.get(R.id.events).setText(o.getString("events"));
-		components.get(R.id.points).setText(o.getString("points"));
+		textviews.get(R.id.position).setText(o.getString("position"));
+		textviews.get(R.id.name).setText(o.getString("firstname") + " " + o.getString("lastname"));
+		textviews.get(R.id.events).setText(o.getString("events"));
+		textviews.get(R.id.points).setText(o.getString("points"));
 	}
 }

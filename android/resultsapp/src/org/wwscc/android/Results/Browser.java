@@ -29,7 +29,8 @@ public class Browser extends SherlockFragmentActivity implements NetworkWatcher,
 	
 	ClassListAdapter classlist;
 	ChampListAdapter champlist;
-	//ChampListAdapter paxlist;
+	PaxListAdapter paxlist;
+	RawListAdapter rawlist;
 	Map<String, PreLoadListFragment> fragments;
 
     @Override
@@ -41,12 +42,15 @@ public class Browser extends SherlockFragmentActivity implements NetworkWatcher,
 		settings = new SettingsFragment();
 		classlist = new ClassListAdapter(this);
 		champlist = new ChampListAdapter(this);
-		//paxlist = new ChampListAdapter(this);
+		paxlist = new PaxListAdapter(this);
+		rawlist = new RawListAdapter(this);
 		
 		fragments = new HashMap<String, PreLoadListFragment>();
 		fragments.put(getString(R.string.button_event), new PreLoadListFragment(classlist));
 		fragments.put(getString(R.string.button_champ), new PreLoadListFragment(champlist));
-		//fragments.put(getString(R.string.button_pax), new PreLoadListFragment(paxlist));
+		fragments.put(getString(R.string.button_pax), new PreLoadListFragment(paxlist));
+		fragments.put(getString(R.string.button_raw), new PreLoadListFragment(rawlist));
+
 		
 		FragmentManager mgr = getSupportFragmentManager();
 		FragmentTransaction trans = mgr.beginTransaction();
@@ -65,6 +69,7 @@ public class Browser extends SherlockFragmentActivity implements NetworkWatcher,
 		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_event));
 		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_champ));
 		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_pax));
+		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_raw));
 	}
 
 
@@ -73,22 +78,26 @@ public class Browser extends SherlockFragmentActivity implements NetworkWatcher,
         @Override
         public void handleMessage(Message msg) 
         {
-        	switch (msg.what)
+        	JSONObject obj = (JSONObject)msg.obj;
+        	try 
         	{
-        		case DataRetriever.ENTRANT_DATA:
-        			JSONObject o = (JSONObject)msg.obj;
-					try {
-						classlist.updateData(o.getJSONArray("classlist"));
-						champlist.updateData(o.getJSONArray("champlist"));
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-        			break;
-        		case DataRetriever.TOPTIME_DATA:
-        			break;
-        	}
+	        	switch (msg.what)
+	        	{
+	        		case DataRetriever.ENTRANT_DATA: 
+						classlist.updateData(obj.getJSONArray("classlist"));
+						champlist.updateData(obj.getJSONArray("champlist"));
+	        			break;
+	        		case DataRetriever.TOPTIME_DATA:
+						paxlist.updateData(obj.getJSONArray("topnet"));
+						rawlist.updateData(obj.getJSONArray("topraw"));						
+	        			break;
+	        	}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
         }
 	}
+	
 	
     @Override
     public void connected()
