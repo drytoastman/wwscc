@@ -64,16 +64,17 @@ class AnnouncerController(MobileController):
 		"""
 			Returns the top times tables that are shown in the announer panel
 		"""
-		data = self._toptimes(int(request.GET.get('carid', 0)))
+		carid = int(request.GET.get('carid', 0))
+		##data = self._toptimes(int(request.GET.get('carid', 0)))
 		c.e2label = self.e2label
 
 		ret = {}
 		ret['updated'] = int(request.GET.get('updated', 0)) # Return it
 
-		c.toptimes = data['topnet']
+		c.toptimes = self._loadTopTimes(carid, raw=False) #data['topnet']
 		ret['topnet'] = render_mako('/announcer/topnettimes.mako').replace('\n', '')
 
-		c.toptimes = data['topraw']
+		c.toptimes = self._loadTopTimes(carid, raw=True) #data['topraw']
 		ret['topraw'] = render_mako('/announcer/toprawtimes.mako').replace('\n', '')
 
 		if self.event.getSegmentCount() > 0:

@@ -1,155 +1,79 @@
 package org.wwscc.android.Results;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.app.ActionBar.TabListener;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
-public class Browser extends SherlockFragmentActivity implements TabListener
-{	
-	DataHandler dataHandler;
-	DataRetriever dataRetrieval;
-	SettingsFragment settings;
-	NetworkStatus networkStatus;
-	boolean requireDataRequests;
+public class Browser extends SherlockFragmentActivity
+{
+	DataRetriever data;
 	
-	ClassListAdapter classlist;
-	ChampListAdapter champlist;
-	PaxListAdapter paxlist;
-	RawListAdapter rawlist;
-	Map<String, PreLoadListFragment> fragments;
-
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
 	protected void onCreate(Bundle savedInstanceState) 
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-
-		settings = new SettingsFragment();
-		classlist = new ClassListAdapter(this);
-		champlist = new ChampListAdapter(this);
-		paxlist = new PaxListAdapter(this);
-		rawlist = new RawListAdapter(this);
+	    		
+	    MobileURL gen = new MobileURL(getSharedPreferences(null, 0));
+		ActionBar b = getSupportActionBar();
+		b.setTitle(gen.getTitle());
 		
-		fragments = new HashMap<String, PreLoadListFragment>();
-		fragments.put(getString(R.string.button_event), new PreLoadListFragment(classlist));
-		fragments.put(getString(R.string.button_champ), new PreLoadListFragment(champlist));
-		fragments.put(getString(R.string.button_pax), new PreLoadListFragment(paxlist));
-		fragments.put(getString(R.string.button_raw), new PreLoadListFragment(rawlist));
-
+		if (getWindowManager().getDefaultDisplay().getWidth() > 300)
+			setContentView(R.layout.base_twoviewers);
+		else
+			setContentView(R.layout.base_oneviewer);
 		
 		FragmentManager mgr = getSupportFragmentManager();
-		FragmentTransaction trans = mgr.beginTransaction();
-		trans.add(R.id.container, settings, "settings");
-		trans.commit();
+		FragmentTransaction ft = mgr.beginTransaction();
+		data = (DataRetriever)mgr.findFragmentByTag("data");
 
-		dataHandler = new DataHandler();
-		dataRetrieval = new DataRetriever(this, dataHandler);
-		networkStatus = new NetworkStatus();
-		requireDataRequests = false;
-
-		ActionBar b = getSupportActionBar();
-		b.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-	    b.setDisplayShowTitleEnabled(false);
-		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_setup).setTag(settings));
-		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_event));
-		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_champ));
-		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_pax));
-		b.addTab(b.newTab().setTabListener(this).setText(R.string.button_raw));
-	}
-
-
-	class DataHandler extends Handler
-	{
-        @Override
-        public void handleMessage(Message msg) 
-        {
-        	JSONObject obj = (JSONObject)msg.obj;
-        	try 
-        	{
-	        	switch (msg.what)
-	        	{
-	        		case DataRetriever.ENTRANT_DATA: 
-						classlist.updateData(obj.getJSONArray("classlist"));
-						champlist.updateData(obj.getJSONArray("champlist"));
-	        			break;
-	        		case DataRetriever.TOPTIME_DATA:
-						paxlist.updateData(obj.getJSONArray("topnet"));
-						rawlist.updateData(obj.getJSONArray("topraw"));						
-	        			break;
-	        	}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-        }
+		if (data == null)
+		{
+			Log.e("TEST", "creating new retriever");
+			data = new DataRetriever();
+			data.setRetainInstance(true);
+			ft.add(data, "data");
+		}
+				
+		verifyList(R.id.list1, "list1", ft);
+		verifyList(R.id.list2, "list2", ft);
+		
+		ft.commit();
 	}    
-	
-    @Override
-    protected void onStart()
+	   
+    private void verifyList(int rootid, String label, FragmentTransaction ft)
     {
-    	super.onStart();
-    	dataRetrieval.start();
-    }
-
-    @Override
-	protected void onResume()
-	{
-		super.onResume();
-		Log.d("MAIN", "++RESUME");
-    	//if (!networkStatus.isConnected())
-        	//Util.alert(this, "No network, will try to search when available.");        
-	}
-	
-	@Override
-	protected void onStop()
-	{
-		super.onStop();
-    	dataRetrieval.stop();
-	}
-
-	@Override
-	public void onTabSelected(Tab tab, FragmentTransaction ft)
-	{
-		Object o = tab.getTag();
-		if (o instanceof Fragment)
+		if (findViewById(rootid) != null)
 		{
-			ft.attach((Fragment)o);
-		}
-		else
-		{
-			PreLoadListFragment plf = fragments.get(tab.getText().toString());
-			if (plf != null)
+			DataListFragment frag = (DataListFragment)getSupportFragmentManager().findFragmentByTag(label);
+			if (frag == null)
 			{
-				ft.add(R.id.container, plf);
-				tab.setTag(plf);
+				frag = new DataListFragment();
+				ft.add(rootid, frag, label);
 			}
-		}
+			frag.setDataSource(data);
+		}    	
+    }
+    
+    public boolean doSetup(MenuItem item) 
+	{
+		Intent intent = new Intent(this, SettingsActivity.class);
+		startActivity(intent);
+		return true;
 	}
 
-
 	@Override
-	public void onTabUnselected(Tab tab, FragmentTransaction ft)
-	{
-		Object o = tab.getTag();
-		if (o instanceof Fragment)
-			ft.detach((Fragment)o);
-	}
-
-
-	@Override
-	public void onTabReselected(Tab tab, FragmentTransaction ft)
-	{
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getSupportMenuInflater();
+	    inflater.inflate(R.menu.setupmenu, menu);
+	    return true;
 	}
 }

@@ -8,9 +8,10 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import org.wwscc.android.Results.R;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +19,12 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 @SuppressLint("UseSparseArrays")
-public abstract class JSONArrayAdapter extends BaseAdapter
+public abstract class JSONArrayAdapter extends BaseAdapter implements Interface.DataDest
 {
 	List<JSONObject> data;
 	LayoutInflater inflater;
+	int[] labelIds;
+	int layoutId;
 	
 	int current_background;
 	int current_foreground;
@@ -32,24 +35,25 @@ public abstract class JSONArrayAdapter extends BaseAdapter
 	int regular_background;
 	int regular_foreground;
 		
-	public JSONArrayAdapter(Context c)
+	public abstract void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException;
+	
+	public JSONArrayAdapter(Context c, int[] labels, int layout)
 	{
 		data = new ArrayList<JSONObject>();
 		inflater = (LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		labelIds = labels;
+		layoutId = layout;
 		
-		current_background = c.getResources().getColor(R.color.current_background);
-		current_foreground = c.getResources().getColor(R.color.current_foreground);
-		old_background = c.getResources().getColor(R.color.old_background);
-		old_foreground = c.getResources().getColor(R.color.old_foreground);
-		raw_background = c.getResources().getColor(R.color.raw_background);
-		raw_foreground = c.getResources().getColor(R.color.raw_foreground);
-		regular_background = c.getResources().getColor(R.color.regular_background);
-		regular_foreground = c.getResources().getColor(R.color.regular_foreground);
+		Resources r = c.getResources();
+		current_background = r.getColor(R.color.current_background);
+		current_foreground = r.getColor(R.color.current_foreground);
+		old_background = r.getColor(R.color.old_background);
+		old_foreground = r.getColor(R.color.old_foreground);
+		raw_background = r.getColor(R.color.raw_background);
+		raw_foreground = r.getColor(R.color.raw_foreground);
+		regular_background = r.getColor(R.color.regular_background);
+		regular_foreground = r.getColor(R.color.regular_foreground);
 	}
-	
-	public abstract View generateView(ViewGroup parent);
-	public abstract int[] getLabels();
-	public abstract void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException;
 
 	protected void updateColors(JSONObject obj,  Map<Integer, TextView> textviews) throws JSONException
 	{
@@ -84,15 +88,16 @@ public abstract class JSONArrayAdapter extends BaseAdapter
 	}
 	
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) 
 	{
         if (convertView == null) 
         {  			
-    		convertView = generateView(parent);
+    		convertView = inflater.inflate(layoutId, parent, false);
     		Map<Integer, TextView> components = new HashMap<Integer, TextView>();
     		convertView.setTag(components);
-    		for (int id : getLabels())
+    		for (int id : labelIds)
     		{
     			TextView v = (TextView)convertView.findViewById(id);
     			v.setTextSize(24);

@@ -1,13 +1,17 @@
 package org.wwscc.android.Results;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.wwscc.android.Results.R;
 import org.wwscc.services.FoundService;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
-import com.actionbarsherlock.app.SherlockFragment;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,7 +33,7 @@ import android.content.SharedPreferences;
 /**
  * Handles everything in the settings panel as we don't use a separate activity
  */
-public class SettingsFragment extends SherlockFragment
+public class SettingsActivity extends SherlockActivity
 {
 	class EventWrapper
 	{
@@ -47,22 +51,19 @@ public class SettingsFragment extends SherlockFragment
     
     private Spinner series;
 	private Spinner events;
-	private Spinner classes;
 	
 	private ArrayAdapter<FoundService> seriesArray;
 	private ArrayAdapter<EventWrapper> eventArray;
-	private ArrayAdapter<String> classArray;
-	
-	public SettingsFragment()
-	{
-	}
+	private List<String> savedClasses;
 	
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-	    servicePipe = new FoundServiceHandler();
+		this.setContentView(R.layout.activity_settings);
+
+		servicePipe = new FoundServiceHandler();
         try
         {
 	        serviceFinder = new ServiceFinder("RemoteDatabase");
@@ -71,46 +72,32 @@ public class SettingsFragment extends SherlockFragment
 				public void newService(FoundService service) {
 					servicePipe.obtainMessage(1, service).sendToTarget();
 			}});
-        } 
-        catch (IOException ioe)
-        {
-        	Util.alert(getActivity(), "Failed to create service finder: " + ioe.getMessage());
+        } catch (IOException ioe) {
+        	Util.alert(this, "Failed to create service finder: " + ioe.getMessage());
         }
-	}
-	
-	
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-	{
-		View ret = inflater.inflate(R.layout.fragment_settings, container, false);
 		
-		series = (Spinner)ret.findViewById(R.id.seriesselect);
-        events = (Spinner)ret.findViewById(R.id.eventselect);
-        classes = (Spinner)ret.findViewById(R.id.classselect);
-        progress = (ProgressBar)ret.findViewById(R.id.progressBar);
+		series = (Spinner)findViewById(R.id.seriesselect);
+        events = (Spinner)findViewById(R.id.eventselect);
+        progress = (ProgressBar)findViewById(R.id.progressBar);
         
-        seriesArray = new ServiceListAdapter(getActivity());
+        seriesArray = new ServiceListAdapter(this);
         seriesArray.setDropDownViewResource(R.layout.spinner_display);
         series.setAdapter(seriesArray);
         
-        eventArray = new ArrayAdapter<EventWrapper>(getActivity(), R.layout.spinner_basic);
+        eventArray = new ArrayAdapter<EventWrapper>(this, R.layout.spinner_basic);
         eventArray.setDropDownViewResource(R.layout.spinner_display);
         events.setAdapter(eventArray);
         
-        classArray = new ArrayAdapter<String>(getActivity(), R.layout.spinner_basic);
-        classArray.setDropDownViewResource(R.layout.spinner_display);
-        classes.setAdapter(classArray);
         
-        prefs = getActivity().getSharedPreferences(null, 0);
-
+        savedClasses = new ArrayList<String>();
+        prefs = getSharedPreferences(null, 0);
+        
         series.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> arg0, View arg1,int arg2, long arg3) { new UpdateSpinners().execute(); }
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {}
 		});
-
-        return ret;
 	}
 	
 
@@ -128,7 +115,21 @@ public class SettingsFragment extends SherlockFragment
     	super.onStop();
     	if (serviceFinder != null)
     		serviceFinder.stop();
+    	seriesArray.clear();
+	}
 
+    private String join(List<String> c)
+    {
+    	if (c.size() == 0) return "";
+    	Iterator<String> iter = c.iterator();
+    	StringBuilder b = new StringBuilder(iter.next());
+    	while(iter.hasNext())
+    		b.append(',').append(iter.next());
+    	return b.toString();
+    }
+    
+	public void setupDone(View v) 
+	{
     	try
     	{
 	    	SharedPreferences.Editor editor = prefs.edit();
@@ -136,16 +137,12 @@ public class SettingsFragment extends SherlockFragment
 		    editor.putString("HOST", selected.getHost().getHostAddress());
 		    editor.putString("SERIES", selected.getId());
 	    	editor.putInt("EVENTID", ((EventWrapper)events.getSelectedItem()).eventid);
-	    	editor.putString("CLASSCODE", classes.getSelectedItem().toString());
+	    	editor.putString("CLASSES", join(savedClasses));
 	    	editor.apply();
-    	}
-    	catch (Exception e)
-    	{
-    	}
-
-    	seriesArray.clear();
+    	} catch (Exception e) {}
+    	
+    	finish();
 	}
-
 
     class FoundServiceHandler extends Handler
     {
@@ -165,80 +162,9 @@ public class SettingsFragment extends SherlockFragment
         }
     };    
     
-    
-	class UpdateSpinners extends AsyncTask<Void, Void, Void>
-	{
-		JSONArray eventsJSON;
-		JSONArray classesJSON;
-		
-		@Override
-		protected Void doInBackground(Void... params)
-		{
-			try
-			{
-				MobileURL url = new MobileURL(prefs);
-				eventsJSON = Util.downloadJSONArray(url.getEventList());
-				classesJSON = Util.downloadJSONArray(url.getClassList());
-			}
-			catch (Exception e)
-			{
-				Log.e("ClassSelect", "Failed to update classes/events: " + e.getMessage());
-			}
-			
-			return null;
-		}
-		
-		@Override
-		protected void onPreExecute()
-		{
-			progress.setVisibility(View.VISIBLE);
-		}
-		
-		@Override
-		protected void onPostExecute(Void result) 
-		{
-			try
-			{
-		    	int matchid = prefs.getInt("EVENTID", -1);
-		    	EventWrapper foundEvent = null;
-		    	
-		    	eventArray.clear();
-				for (int ii = 0; ii < eventsJSON.length(); ii++)
-				{
-					JSONObject event = eventsJSON.getJSONObject(ii);
-					EventWrapper wrap = new EventWrapper(event.getString("name"), event.getInt("id"));
-					if (wrap.eventid == matchid)
-						foundEvent = wrap;
-					eventArray.add(wrap);
-				}
-				
-				if (foundEvent != null)
-					events.setSelection(eventArray.getPosition(foundEvent));
-						
-				classArray.clear();
-				for (int ii = 0; ii < classesJSON.length(); ii++)
-				{
-					JSONObject myclass = classesJSON.getJSONObject(ii);
-					classArray.add(myclass.getString("code"));
-				}
-				
-				int classIndex = classArray.getPosition(prefs.getString("CLASSCODE", "noclass"));
-				if (classIndex >= 0)
-					classes.setSelection(classIndex);
-			}
-			catch (Exception je)
-			{
-				Util.alert(getActivity(), "Can't get event or class list: " + je.getMessage());  
-			}
-					
-			progress.setVisibility(View.INVISIBLE);
-	    }
-	}
-	
 	
 	static class ServiceListAdapter extends ArrayAdapter<FoundService> 
 	{
-		
 		public ServiceListAdapter(Context c)
 		{
 			super(c, R.layout.line_foundservice);
@@ -266,6 +192,67 @@ public class SettingsFragment extends SherlockFragment
 	    public View getDropDownView(int position, View convertView, ViewGroup parent)
 	    {
 	    	return getView(position, convertView, parent);
+	    }
+	}
+
+	
+	class UpdateSpinners extends AsyncTask<Void, Void, Void>
+	{
+		String selectedAddr;
+		String selectedSeries;
+		JSONArray eventsJSON;
+		JSONArray classesJSON;
+		
+		@Override
+		protected Void doInBackground(Void... params)
+		{
+			try {
+				eventsJSON = Util.downloadJSONArray(MobileURL.staticSeriesEvents(selectedAddr, selectedSeries));
+				classesJSON = Util.downloadJSONArray(MobileURL.staticSeriesClasses(selectedAddr, selectedSeries));
+			} catch (Exception e) {
+				Log.e("ClassSelect", "Failed to update classes/events: " + e.getMessage());
+			}
+			
+			return null;
+		}
+		
+		@Override
+		protected void onPreExecute()
+		{
+			progress.setVisibility(View.VISIBLE);
+			FoundService selected = (FoundService)series.getSelectedItem();
+			selectedAddr = selected.getHost().getHostAddress();
+			selectedSeries = selected.getId();
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) 
+		{
+			try {
+		    	int matchid = prefs.getInt("EVENTID", -1);
+		    	EventWrapper foundEvent = null;
+		    	
+		    	eventArray.clear();
+				for (int ii = 0; ii < eventsJSON.length(); ii++)
+				{
+					JSONObject event = eventsJSON.getJSONObject(ii);
+					EventWrapper wrap = new EventWrapper(event.getString("name"), event.getInt("id"));
+					if (wrap.eventid == matchid)
+						foundEvent = wrap;
+					eventArray.add(wrap);
+				}
+				
+				savedClasses.clear();
+				for (int ii = 0; ii < classesJSON.length(); ii++)
+					savedClasses.add(classesJSON.getJSONObject(ii).getString("code"));
+				
+				if (foundEvent != null)
+					events.setSelection(eventArray.getPosition(foundEvent));
+			} catch (Exception je) {
+				Util.alert(SettingsActivity.this, "Can't get event list: " + je.getMessage());  
+			}
+					
+			progress.setVisibility(View.INVISIBLE);
 	    }
 	}
 }
