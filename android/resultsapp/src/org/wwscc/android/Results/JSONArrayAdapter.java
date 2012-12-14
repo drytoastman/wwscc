@@ -100,7 +100,7 @@ public abstract class JSONArrayAdapter extends BaseAdapter implements Interface.
     		for (int id : labelIds)
     		{
     			TextView v = (TextView)convertView.findViewById(id);
-    			v.setTextSize(24);
+    			v.setTextSize(20);
     			components.put(id, v);
     		}
         }
@@ -120,6 +120,11 @@ public abstract class JSONArrayAdapter extends BaseAdapter implements Interface.
         return convertView;
 	}	
 
+	public void clear()
+	{
+		data.clear();
+		notifyDataSetChanged();
+	}
 	
 	public void updateData(JSONArray newData)
 	{

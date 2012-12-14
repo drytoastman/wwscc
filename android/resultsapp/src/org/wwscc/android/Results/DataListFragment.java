@@ -2,6 +2,7 @@ package org.wwscc.android.Results;
 
 import org.json.JSONArray;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -52,25 +53,25 @@ public class DataListFragment extends SherlockFragment implements OnItemSelected
         currentType = 0;
         return main;
 	}
+		
+	@Override
+    public void onActivityCreated(Bundle inState) 
+	{
+        super.onActivityCreated(inState);
+		SharedPreferences prefs = getActivity().getSharedPreferences(null, 0);
+        classes.setSelection(prefs.getInt(getId()+"classSel", classes.getSelectedItemPosition()));
+        types.setSelection(prefs.getInt(getId()+"typeSel", types.getSelectedItemPosition()));
+	}
 	
 	public void setDataSource(Interface.DataSource d)
 	{
-		Log.e("TEST", "set data source " + d);
 		retriever = d;
-	}
-	
-	@Override
-	public void onStart()
-	{
-		super.onStart();
-		Log.e("TEST", "start " + this);
 	}
 	
 	@Override
 	public void onStop()
 	{
 		super.onStop();
-		Log.e("TEST", "stop " + this);
 		if (retriever != null)
 			retriever.stopListening(this);
 	}
@@ -84,7 +85,7 @@ public class DataListFragment extends SherlockFragment implements OnItemSelected
 	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
 	{
-		Log.e("TEST", "item selected " + view + ", " + position);
+		Log.e("TEST", "item selected " + parent + ", " + position);
 		if (parent == types)
 		{
 			String type = (String)types.getSelectedItem();
@@ -103,7 +104,17 @@ public class DataListFragment extends SherlockFragment implements OnItemSelected
 			}
 			display.setAdapter(currentAdapter);
 		}
+		else // class selection
+		{
+			if (currentAdapter != null)
+				currentAdapter.clear();
+		}
 	
+		SharedPreferences.Editor prefs = getActivity().getSharedPreferences(null, 0).edit();
+		prefs.putInt(getId()+"classSel", classes.getSelectedItemPosition());
+		prefs.putInt(getId()+"typeSel", types.getSelectedItemPosition());
+		prefs.apply();
+		
 		if ((retriever != null) && (currentType > 0))
 		{
 			retriever.startListening(this, currentType, (String)classes.getSelectedItem());
@@ -112,6 +123,5 @@ public class DataListFragment extends SherlockFragment implements OnItemSelected
 
 	@Override
 	public void onNothingSelected(AdapterView<?> arg0) {}
-
 
 }

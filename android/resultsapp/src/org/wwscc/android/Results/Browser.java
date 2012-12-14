@@ -26,7 +26,7 @@ public class Browser extends SherlockFragmentActivity
 		ActionBar b = getSupportActionBar();
 		b.setTitle(gen.getTitle());
 		
-		if (getWindowManager().getDefaultDisplay().getWidth() > 300)
+		if (getWindowManager().getDefaultDisplay().getWidth() > 600)
 			setContentView(R.layout.base_twoviewers);
 		else
 			setContentView(R.layout.base_oneviewer);

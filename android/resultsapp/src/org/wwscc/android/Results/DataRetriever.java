@@ -25,8 +25,8 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	
 	Thread active;
 	Runner runner;
-	DataHandler inPipe = new DataHandler();
 	Map<Interface.DataDest, ListenerType> requestMap;
+	Map<ListenerType, JSONArray> cache;
     
 	class DataHandler extends Handler
 	{
@@ -40,7 +40,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
         		if ((wrap.type == t.type) && (wrap.classcode.equals(t.classcode)))
         		{
         			toUpdate.updateData(wrap.data);
-        			break;
+        			cache.put(t, wrap.data);
         		}
         	}
         }
@@ -51,30 +51,20 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	public void onCreate(Bundle b)
 	{
 		super.onCreate(b);
-		Log.e("TEST", "create data");
 		requestMap = new HashMap<Interface.DataDest, ListenerType>();
-		runner = new Runner(inPipe);
+		cache = new HashMap<ListenerType, JSONArray>();
+		runner = new Runner(new DataHandler());
 		active = new Thread(runner);
+		active.setDaemon(true);
 		active.start();
-	}
-
-	@Override
-	public void onStart()
-	{
-		super.onStart();
-	}
-	
-	@Override
-	public void onStop()
-	{
-		super.onStop();
 	}
 	
 	@Override
 	public void onDestroy()
 	{
 		super.onDestroy();
-		Log.e("TEST", "destroy data");
+		requestMap.clear();
+		cache.clear();
 		runner.done = true;
 		if (active != null)
 			active.interrupt();
@@ -83,54 +73,20 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	@Override
 	public void startListening(Interface.DataDest dest, int dataType, String classcode)
 	{
-		Log.e("TEST", "start listening: " + dest + ", " + dataType + ", " + classcode);
-		requestMap.put(dest, new ListenerType(dataType, classcode));
+		ListenerType t = new ListenerType(dataType, classcode);
+		if (cache.containsKey(t))
+			dest.updateData(cache.get(t));
+		requestMap.put(dest, t);
 		runner.setRequests(requestMap.values());
 	}
 	
 	@Override
 	public void stopListening(Interface.DataDest dest)
 	{
-		Log.e("TEST", "stop listening: " + dest);
 		requestMap.remove(dest);
 		runner.setRequests(requestMap.values());
 	}
 	
-	static class ListenerType
-	{
-		int type;
-		String classcode;
-		public ListenerType(int type, String classcode)
-		{
-			this.type = type;
-			this.classcode = classcode;
-		}
-	}
-
-	static class ClassStatus
-	{
-		String classcode;
-		long lastupdate;
-		Set<Integer> requests;
-		public ClassStatus(String code)
-		{
-			classcode = code;
-			lastupdate = 0;
-			requests = new HashSet<Integer>();
-		}
-	}
-	
-	static class MessageWrapper
-	{
-		int type;
-		String classcode;
-		JSONArray data;
-		public MessageWrapper(int t, String c)
-		{
-			classcode = c;
-			type = t;
-		}
-	}
 	
 	class Runner implements Runnable
 	{
@@ -138,6 +94,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 		Handler outPipe;
 		Collection<ListenerType> newrequests;
 		Map<String, ClassStatus> requests;
+		MobileURL url;
 
 		public Runner(Handler pipe)
 		{
@@ -145,11 +102,13 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 			done = false;
 			requests = new HashMap<String, ClassStatus>();
 			newrequests = null;
+			url = new MobileURL(getActivity().getSharedPreferences(null, 0));
 		}
 		
 		public synchronized void setRequests(Collection<ListenerType> collection)
 		{ // will be picked up on next loop, both access to newrequests are in synchronized methods
 			newrequests = collection;
+			active.interrupt();
 		}
 		
 		private synchronized void prepareNewRequests()
@@ -164,66 +123,66 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 			newrequests = null;
 		}
 
+		private int doClass(ClassStatus classStatus)
+		{
+			try
+			{
+				Log.i("Data", "Loop for " + classStatus.classcode);
+			    JSONObject reply = Util.downloadJSONObject(url.getLastTime(classStatus.classcode));			    
+			    if (reply.getLong("updated") > classStatus.lastupdate)
+			    {				
+			    	classStatus.lastupdate = reply.getLong("updated");
+			    	int carid = reply.getInt("carid");
+	
+			    	for (Integer type : classStatus.requests)
+			    	{
+			    		MessageWrapper msg = new MessageWrapper(type, classStatus.classcode);
+			    		switch (type)
+			    		{
+			    			case EVENTRESULT:
+			    				msg.data = Util.downloadJSONArray(url.getClassList(carid));
+			    				break;
+			    			case CHAMPRESULT:
+			    				msg.data = Util.downloadJSONArray(url.getChampList(carid));
+			    				break;
+			    			case TOPNET:
+			    				msg.data = Util.downloadJSONArray(url.getTopNet(carid));
+			    				break;
+			    			case TOPRAW:
+			    				msg.data = Util.downloadJSONArray(url.getTopRaw(carid));
+			    				break;
+			    		}
+			    		if (msg.data != null)
+			    			outPipe.obtainMessage(msg.type, msg).sendToTarget();	    	
+			    	}
+					
+			    	return 10000; // generally no one finishes within 10 seconds of each other
+			    }
+			    
+			    return 1500;
+			}
+			catch (Exception e)
+			{
+				Log.e("Data", "Error in processing for " + classStatus.classcode);
+				return 5000;
+			}
+		}
+		
+		
     	@Override
 		public void run()
 		{
-			MobileURL url = new MobileURL(getActivity().getSharedPreferences(null, 0));
-			long waittime;
-			
 			while (!done)
 			{
 				try
 				{
-					if (!url.validURLs())
-					{
-						Thread.sleep(1500);
-						continue;
-					}
-
 					if (newrequests != null)
 						prepareNewRequests();
 					
-					waittime = 10000;
-					
-					for (ClassStatus classStatus : requests.values())
-					{		
-						Log.e("TEST", "Loop for " + classStatus.classcode);
-					    JSONObject reply = Util.downloadJSONObject(url.getLastTime(classStatus.classcode));
-					    
-					    if (reply.getLong("updated") > classStatus.lastupdate)
-					    {				
-					    	classStatus.lastupdate = reply.getLong("updated");
-					    	int carid = reply.getInt("carid");
-	
-					    	for (Integer type : classStatus.requests)
-					    	{
-						    	Log.e("TEST", "subloop for " + type);
-					    		MessageWrapper msg = new MessageWrapper(type, classStatus.classcode);
-					    		switch (type)
-					    		{
-					    			case EVENTRESULT:
-					    				msg.data = Util.downloadJSONArray(url.getClassList(carid));
-					    				break;
-					    			case CHAMPRESULT:
-					    				msg.data = Util.downloadJSONArray(url.getChampList(carid));
-					    				break;
-					    			case TOPNET:
-					    				msg.data = Util.downloadJSONArray(url.getTopNet(carid));
-					    				break;
-					    			case TOPRAW:
-					    				msg.data = Util.downloadJSONArray(url.getTopRaw(carid));
-					    				break;
-					    		}
-					    		if (msg.data != null)
-					    			outPipe.obtainMessage(msg.type, msg).sendToTarget();	    	
-					    	}
-	        				waittime = Math.min(waittime, 10000); // generally no one finishes within 10 seconds of each other
-					    }
-					    else
-					    {
-						    waittime = Math.min(waittime, 1500); // quicker recheck if we aren't loading anything
-					    }
-					} // for ClassStatus loop
+					long waittime = 10000;
+					if (url.validURLs())
+						for (ClassStatus classStatus : requests.values())
+							waittime = Math.min(waittime, doClass(classStatus));
 					
 					Thread.sleep(waittime);
 				}
@@ -238,4 +197,59 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 		}
 	}
 
+	// Support and wrapper classes
+	static class ListenerType
+	{
+		int type;
+		String classcode;
+		public ListenerType(int type, String classcode)
+		{
+			this.type = type;
+			this.classcode = classcode;
+		}
+		
+		@Override
+		public int hashCode() 
+		{ 
+			return type + classcode.hashCode(); 
+		}
+		
+		@Override
+		public boolean equals(Object o) 
+		{
+			if (o instanceof ListenerType)
+			{
+				ListenerType t = (ListenerType)o;
+				return (t.classcode.equals(classcode) && (t.type == type));
+			}
+			return false;
+		}
+	}
+
+	static class ClassStatus
+	{
+		String classcode;
+		long lastupdate;
+		Set<Integer> requests;
+
+		public ClassStatus(String code)
+		{
+			classcode = code;
+			lastupdate = 0;
+			requests = new HashSet<Integer>();
+		}
+	}
+	
+	static class MessageWrapper
+	{
+		int type;
+		String classcode;
+		JSONArray data;
+
+		public MessageWrapper(int t, String c)
+		{
+			classcode = c;
+			type = t;
+		}
+	}
 }
