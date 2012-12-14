@@ -18,7 +18,7 @@ import com.actionbarsherlock.app.SherlockFragment;
 
 public class DataListFragment extends SherlockFragment implements OnItemSelectedListener, Interface.DataDest
 {
-	private static final String[] TYPES =  new String[] {"event", "champ", "pax", "net"};
+	private static final String[] TYPES =  new String[] {"event", "champ", "pax", "raw"};
 	
     private Spinner classes;
 	private Spinner types;
@@ -37,6 +37,7 @@ public class DataListFragment extends SherlockFragment implements OnItemSelected
         display = (ListView)main.findViewById(R.id.datalist);
         
         ArrayAdapter<String> classList = new ArrayAdapter<String>(getActivity(), R.layout.spinner_basic);
+        classList.setDropDownViewResource(R.layout.spinner_display);
         String available[] = getActivity().getSharedPreferences(null, 0).getString("CLASSES", "").split(",");
         for (String s : available)
         	classList.add(s);
@@ -44,6 +45,7 @@ public class DataListFragment extends SherlockFragment implements OnItemSelected
         classes.setOnItemSelectedListener(this);
 
         ArrayAdapter<String> typesList = new ArrayAdapter<String>(getActivity(), R.layout.spinner_basic);
+        typesList.setDropDownViewResource(R.layout.spinner_display);
         for (String s : TYPES)
         	typesList.add(s);
         types.setAdapter(typesList);
@@ -98,7 +100,7 @@ public class DataListFragment extends SherlockFragment implements OnItemSelected
 			} else if (type.equals("pax")) {
 				currentAdapter = new A.PaxListAdapter(getActivity());
 				currentType = DataRetriever.TOPNET;
-			} else if (type.equals("net")) {
+			} else if (type.equals("raw")) {
 				currentAdapter = new A.RawListAdapter(getActivity());
 				currentType = DataRetriever.TOPRAW;
 			}

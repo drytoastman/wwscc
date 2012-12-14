@@ -11,16 +11,20 @@
         android:id="@+id/list1"
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_marginRight="1dp"
         android:layout_weight="1"
         android:orientation="vertical" >
+
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/list2"
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_marginLeft="1dp"
         android:layout_weight="1"
         android:orientation="vertical" >
+
     </LinearLayout>
 
 </LinearLayout>

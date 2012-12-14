@@ -11,14 +11,16 @@
 
         <Spinner
             android:id="@+id/classselect"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="-2dp"
             android:layout_weight="1" />
 
         <Spinner
             android:id="@+id/typeselect"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="-2dp"
             android:layout_weight="1" />
 
     </LinearLayout>
