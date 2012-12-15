@@ -22,9 +22,8 @@ public class Browser extends SherlockFragmentActivity
 	{
 		super.onCreate(savedInstanceState);
 	    		
-	    MobileURL gen = new MobileURL(getSharedPreferences(null, 0));
 		ActionBar b = getSupportActionBar();
-		b.setTitle(gen.getTitle());
+		b.setTitle(getSharedPreferences(null, 0).getString("EVENTNAME", ""));
 		
 		if (getWindowManager().getDefaultDisplay().getWidth() > 600)
 			setContentView(R.layout.base_twoviewers);
@@ -37,7 +36,6 @@ public class Browser extends SherlockFragmentActivity
 
 		if (data == null)
 		{
-			Log.e("TEST", "creating new retriever");
 			data = new DataRetriever();
 			data.setRetainInstance(true);
 			ft.add(data, "data");
@@ -67,6 +65,7 @@ public class Browser extends SherlockFragmentActivity
 	{
 		Intent intent = new Intent(this, SettingsActivity.class);
 		startActivity(intent);
+		finish();
 		return true;
 	}
 

@@ -61,15 +61,21 @@ public class DataListFragment extends SherlockFragment implements OnItemSelected
 	{
         super.onActivityCreated(inState);
 		SharedPreferences prefs = getActivity().getSharedPreferences(null, 0);
-        classes.setSelection(prefs.getInt(getId()+"classSel", classes.getSelectedItemPosition()));
-        types.setSelection(prefs.getInt(getId()+"typeSel", types.getSelectedItemPosition()));
+		
+		int csel = prefs.getInt(getId()+"classSel", classes.getSelectedItemPosition());
+		if (csel < classes.getCount())
+			classes.setSelection(csel);
+		
+        int tsel = prefs.getInt(getId()+"typeSel", types.getSelectedItemPosition());
+		if (tsel < types.getCount())
+			types.setSelection(tsel);
 	}
 	
 	public void setDataSource(Interface.DataSource d)
 	{
 		retriever = d;
 	}
-	
+
 	@Override
 	public void onStop()
 	{
@@ -87,7 +93,6 @@ public class DataListFragment extends SherlockFragment implements OnItemSelected
 	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
 	{
-		Log.e("TEST", "item selected " + parent + ", " + position);
 		if (parent == types)
 		{
 			String type = (String)types.getSelectedItem();

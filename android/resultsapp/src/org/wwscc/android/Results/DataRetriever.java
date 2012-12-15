@@ -26,7 +26,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	Thread active;
 	Runner runner;
 	Map<Interface.DataDest, ListenerType> requestMap;
-	Map<ListenerType, JSONArray> cache;
+	Map<ListenerType, MessageWrapper> cache;
     
 	class DataHandler extends Handler
 	{
@@ -40,7 +40,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
         		if ((wrap.type == t.type) && (wrap.classcode.equals(t.classcode)))
         		{
         			toUpdate.updateData(wrap.data);
-        			cache.put(t, wrap.data);
+        			cache.put(t, wrap);
         		}
         	}
         }
@@ -51,8 +51,9 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	public void onCreate(Bundle b)
 	{
 		super.onCreate(b);
+		Log.i("Data", "Creating thread");
 		requestMap = new HashMap<Interface.DataDest, ListenerType>();
-		cache = new HashMap<ListenerType, JSONArray>();
+		cache = new HashMap<ListenerType, MessageWrapper>();
 		runner = new Runner(new DataHandler());
 		active = new Thread(runner);
 		active.setDaemon(true);
@@ -63,6 +64,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	public void onDestroy()
 	{
 		super.onDestroy();
+		Log.i("Data", "Killing thread");
 		requestMap.clear();
 		cache.clear();
 		runner.done = true;
@@ -75,9 +77,10 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	{
 		ListenerType t = new ListenerType(dataType, classcode);
 		if (cache.containsKey(t))
-			dest.updateData(cache.get(t));
-		requestMap.put(dest, t);
-		runner.setRequests(requestMap.values());
+			dest.updateData(cache.get(t).data);
+		ListenerType old = requestMap.put(dest, t);
+		if (!t.equals(old)) // don't update if we just overwrote with the same thing
+			runner.setRequests(requestMap.values());
 	}
 	
 	@Override
@@ -127,7 +130,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 		{
 			try
 			{
-				Log.i("Data", "Loop for " + classStatus.classcode);
+				Log.i("Data", "Loop for " + classStatus.classcode + ", updated " + classStatus.lastupdate);
 			    JSONObject reply = Util.downloadJSONObject(url.getLastTime(classStatus.classcode));			    
 			    if (reply.getLong("updated") > classStatus.lastupdate)
 			    {				
@@ -135,8 +138,12 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 			    	int carid = reply.getInt("carid");
 	
 			    	for (Integer type : classStatus.requests)
-			    	{
-			    		MessageWrapper msg = new MessageWrapper(type, classStatus.classcode);
+			    	{  // try and shortcut times when start back up and cached is already up to date
+			    		MessageWrapper old = cache.get(new ListenerType(type, classStatus.classcode));
+			    		if ((old != null) && (old.updatetime == classStatus.lastupdate))
+			    			continue;
+			    		
+			    		MessageWrapper msg = new MessageWrapper(type, classStatus.classcode, classStatus.lastupdate);
 			    		switch (type)
 			    		{
 			    			case EVENTRESULT:
@@ -159,7 +166,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 			    	return 10000; // generally no one finishes within 10 seconds of each other
 			    }
 			    
-			    return 1500;
+			    return 2000;
 			}
 			catch (Exception e)
 			{
@@ -197,6 +204,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 		}
 	}
 
+	/*** ********************************************************************************* ***/
 	// Support and wrapper classes
 	static class ListenerType
 	{
@@ -244,12 +252,14 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	{
 		int type;
 		String classcode;
+		long updatetime;
 		JSONArray data;
-
-		public MessageWrapper(int t, String c)
+		
+		public MessageWrapper(int t, String c, long u)
 		{
 			classcode = c;
 			type = t;
+			updatetime = u;
 		}
 	}
 }

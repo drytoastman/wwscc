@@ -19,12 +19,7 @@ public class MobileURL
 	{
 		return String.format("http://%s/mobile/%s", prefs.getString("HOST", ""), prefs.getString("SERIES", ""));
 	}
-	
-	public String getTitle()
-	{
-		return String.format("%s/%s", prefs.getString("HOST", ""), prefs.getString("SERIES", ""));		
-	}
-	
+
 	public boolean validURLs()
 	{
 		return	((prefs.getString("HOST", "").length() > 0) 

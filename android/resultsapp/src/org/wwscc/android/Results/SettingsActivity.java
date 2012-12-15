@@ -27,6 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 
 
@@ -137,10 +138,13 @@ public class SettingsActivity extends SherlockActivity
 		    editor.putString("HOST", selected.getHost().getHostAddress());
 		    editor.putString("SERIES", selected.getId());
 	    	editor.putInt("EVENTID", ((EventWrapper)events.getSelectedItem()).eventid);
+	    	editor.putString("EVENTNAME", ((EventWrapper)events.getSelectedItem()).name);
 	    	editor.putString("CLASSES", join(savedClasses));
 	    	editor.apply();
     	} catch (Exception e) {}
     	
+		Intent intent = new Intent(this, Browser.class);
+		startActivity(intent);
     	finish();
 	}
 
