@@ -57,7 +57,9 @@ class MobileController(BaseController):
 	def last(self):
 		query = self.session.query(AnnouncerData.updated, AnnouncerData.carid)
 		query = query.filter(AnnouncerData.eventid==self.eventid)
-		query = query.join(Class).filter(Class.code == request.GET['class'])
+		clazz = request.GET.get('class', '*')
+		if clazz != '*':
+			query = query.join(Class).filter(Class.code == clazz)
 		query = query.order_by(AnnouncerData.updated.desc())
 		row = query.first()
 		if row is None:

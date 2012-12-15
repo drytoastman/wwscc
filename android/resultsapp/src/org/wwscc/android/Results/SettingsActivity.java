@@ -139,6 +139,7 @@ public class SettingsActivity extends SherlockActivity
 		    editor.putString("SERIES", selected.getId());
 	    	editor.putInt("EVENTID", ((EventWrapper)events.getSelectedItem()).eventid);
 	    	editor.putString("EVENTNAME", ((EventWrapper)events.getSelectedItem()).name);
+	    	savedClasses.add("*");
 	    	editor.putString("CLASSES", join(savedClasses));
 	    	editor.apply();
     	} catch (Exception e) {}
