@@ -9,6 +9,7 @@
 package org.wwscc.services;
 
 import java.net.InetAddress;
+import java.util.Comparator;
 
 /**
  *
@@ -60,4 +61,12 @@ public final class FoundService
 		return hash;
 	}
 	
+	public static class Compare implements Comparator<FoundService>
+	{
+		@Override
+		public int compare(FoundService lhs, FoundService rhs)
+		{
+			return lhs.description.getId().compareTo(rhs.description.getId());
+		}
+	}
 }
