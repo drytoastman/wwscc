@@ -25,7 +25,7 @@ public class Entrant
 	String lastname;
 	Car car;
 	Map<Integer, Run> runs;
-	double index = 1.000;  // TODO load index when loading entrant
+	double index = 1.000;  // loaded/calculated when loading entrant
 
 	public Entrant()
 	{
@@ -47,7 +47,7 @@ public class Entrant
 	public String getCarColor() { return car.color; }
 	public String getCarDesc() { return car.year + " " + car.model + " " + car.color; }
 	public String getClassCode() { return car.classcode; }
-	public String getIndexCode() { return car.indexcode; }
+	public String getIndexStr() { return car.getIndexStr(); }
 	public double getIndex() { return index; }
 	public int getNumber() { return car.number; }
 

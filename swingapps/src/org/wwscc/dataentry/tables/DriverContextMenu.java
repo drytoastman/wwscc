@@ -113,7 +113,7 @@ class DriverContextMenu extends MouseAdapter
 
 	private void addCarAction(final Car c)
 	{
-		JMenuItem lbl = new JMenuItem(String.format("%s(%s) #%s %s %s", c.getClassCode(), c.getIndexCode(), c.getNumber(), c.getMake(), c.getModel()));
+		JMenuItem lbl = new JMenuItem(String.format("%s %s #%s %s %s", c.getClassCode(), c.getIndexStr(), c.getNumber(), c.getMake(), c.getModel()));
 		lbl.setFont(itemFont);
 		lbl.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {

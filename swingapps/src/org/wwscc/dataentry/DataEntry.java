@@ -100,8 +100,8 @@ public class DataEntry extends JFrame implements MessageListener
 		prereg = new PreregPanel(numberTree);
 		
 		tabs = new JTabbedPane();
-		tabs.setMinimumSize(new Dimension(250, 400));
-		tabs.setPreferredSize(new Dimension(250, 768));
+		tabs.setMinimumSize(new Dimension(270, 400));
+		tabs.setPreferredSize(new Dimension(270, 768));
 		tabs.addTab("Add By Name", driverEntry);
 		tabs.addTab("Preregistered", prereg);
 		tabs.addTab(" Announcer Data ", announcer);

@@ -171,11 +171,7 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 
 				case 1:
 					topLine = e.getFirstName() + " " + e.getLastName();
-					String index = e.getIndexCode();
-					if (index.equals(""))
-						bottomLine = e.getCarDesc();
-					else
-						bottomLine = e.getCarDesc() + " ("+index+") ";
+					bottomLine = e.getCarDesc() + " " + e.getIndexStr();
 					break;
 
 				default:	

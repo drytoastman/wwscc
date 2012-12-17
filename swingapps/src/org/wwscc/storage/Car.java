@@ -60,6 +60,12 @@ public class Car implements Serializable
 	public int getDriverId() { return driverid; }
 	public String getClassCode() { return classcode; }
 	public String getIndexCode() { return indexcode; }
+	public String getIndexStr() 
+	{
+		if (indexcode.equals("") && !tireindexed)
+			return "";
+		return String.format("(%s%s)", indexcode, tireindexed?"+T":"");
+	}
 	public int getNumber() { return number; }
 	public String getYear() { return year; }
 	public String getMake() { return make; }

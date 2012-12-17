@@ -201,10 +201,7 @@ public class DriverEntry extends DriverCarPanel
 			if (value instanceof Car)
 			{
 				Car c = (Car)value;
-				String myclass = c.getClassCode();
-				if (!c.getIndexCode().equals(""))
-					myclass += " ("+c.getIndexCode()+")";
-				
+				String myclass = c.getClassCode() + " " + c.getIndexStr();
 				setText(myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor());
 				if (c.isInRunOrder)
 				{

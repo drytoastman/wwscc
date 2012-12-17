@@ -1101,7 +1101,7 @@ public abstract class SQLDataInterface extends DataInterface
 			for (ResultRow r : d)
 			{
 				EventResult er = AUTO.loadEventResult(r);
-				er.setIndex(r.getString("indexcode"), getEffectiveIndex(classcode, r.getString("indexcode"), r.getBoolean("tireindexed")));
+				er.setIndex(r.getString("indexcode"), r.getBoolean("tireindexed"), getEffectiveIndex(classcode, r.getString("indexcode"), r.getBoolean("tireindexed")));
 				er.setName(r.getString("firstname"), r.getString("lastname"));
 				ret.add(er);
 			}

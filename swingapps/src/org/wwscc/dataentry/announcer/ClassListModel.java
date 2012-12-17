@@ -84,7 +84,7 @@ public class ClassListModel extends AbstractTableModel
 					return ((FakeResult) e).getType();
 				return e.getPosition();
 			case 1: return e.getFullName();
-			case 2: return e.getIndexCode();
+			case 2: return e.getIndexStr();
 			case 3: return NF.format(e.getSum());
 		}
 		return null;

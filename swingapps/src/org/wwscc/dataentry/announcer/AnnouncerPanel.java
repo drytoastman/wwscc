@@ -196,9 +196,9 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 
 		TableColumnModel cm = classTable.getColumnModel();
 		cm.getColumn(0).setPreferredWidth(80);
-		cm.getColumn(1).setPreferredWidth(500);
-		cm.getColumn(2).setPreferredWidth(80);
-		cm.getColumn(3).setPreferredWidth(250);
+		cm.getColumn(1).setPreferredWidth(430);
+		cm.getColumn(2).setPreferredWidth(150);
+		cm.getColumn(3).setPreferredWidth(220);
 	}
 	
 

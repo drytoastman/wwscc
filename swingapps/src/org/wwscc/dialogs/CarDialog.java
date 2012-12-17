@@ -29,20 +29,27 @@ public class CarDialog extends BaseDialog<Car>
 	
 	protected JButton add;
 	protected boolean addToRunOrder;
+	protected boolean showGlobalTireIndex;
 	
+    public CarDialog(Car car, ClassData cd, boolean addoption)
+    {
+    	this(car, cd, addoption, cd.getGlobalTireIndex() < 1.0);
+    }
+    
 	/**
 	 * Create the dialog.
 	 * @param car		the initial car data to use
 	 * @param cd		the classdata to use for classes/indexes
 	 * @param addoption whether to add the create and add button
 	 */
-    public CarDialog(Car car, ClassData cd, boolean addoption)
+    public CarDialog(Car car, ClassData cd, boolean addoption, boolean showTireOption)
 	{
 		super(new MigLayout("", "[70, align right][100, fill]"), true);
 
 		if (car == null)
 			car = new Car();
 		
+		showGlobalTireIndex = showTireOption;
 		addToRunOrder = false;
 		if (addoption)
 		{
@@ -87,8 +94,11 @@ public class CarDialog extends BaseDialog<Car>
 		mainPanel.add(label("Index", true), "");
 		mainPanel.add(select("indexcode", cd.getIndex(car.getIndexCode()), indexlist, null), "wrap");
 
-		mainPanel.add(label("Global Tire Index", true), "");
-		mainPanel.add(checkbox("tireindexed", car.isTireIndexed()), "wrap");
+		if (showGlobalTireIndex)
+		{
+			mainPanel.add(label("Global Tire Index", true), "");
+			mainPanel.add(checkbox("tireindexed", car.isTireIndexed()), "wrap");
+		}
 		
 		actionPerformed(new ActionEvent(selects.get("classcode"), 1, ""));
 
@@ -203,7 +213,11 @@ public class CarDialog extends BaseDialog<Car>
 				result.setIndexCode("");
 			}
 	
-			result.setTireIndexed(isChecked("tireindexed"));
+			if (showGlobalTireIndex)
+			{
+				result.setTireIndexed(isChecked("tireindexed"));
+			}
+			
 			result.setNumber(Integer.valueOf(getEntryText("number")));
 			return result;
 		}
