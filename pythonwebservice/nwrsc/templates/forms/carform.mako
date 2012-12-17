@@ -22,6 +22,7 @@ for code in sorted(c.classdata.classlist):
 %>
 </select>
 </td></tr>
+
 <tr><th>Index</th> <td>
 <select id='indexcode' name='indexcode'>
 <option value=''></option>
@@ -30,6 +31,14 @@ for code in sorted(c.classdata.classlist):
 %endfor
 </select>
 </td></tr>
+
+%if c.settings.globaltireindex < 1.0:
+<tr>
+%else:
+<tr style='display:none;'>
+%endif
+<th>Tire Index</th> <td> <input name='tireindexed' type='checkbox'/></td></tr>
+
 <tr>
    <th>Number</th><td>
 	%if numberhidden:

@@ -24,7 +24,7 @@ table.auditreport .bold { font-weight: bold; }
 	<td class='${c.order == "firstname" and "bold" or ""}'>${entrant.firstname[:8]}</td>
 	<td class='${c.order == "lastname" and "bold" or ""}'>${entrant.lastname[:8]}</td>
 	<td>${entrant.number}</td>
-	<td>${entrant.classcode} (${entrant.indexcode})</td>
+	<td>${entrant.classcode} ${h.ixstr(entrant)}</td>
 
 	%for run in entrant.runs:
 		<td>

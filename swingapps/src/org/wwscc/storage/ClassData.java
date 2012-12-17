@@ -18,11 +18,13 @@ public class ClassData
 
 	HashMap <String, ClassData.Class> classes;
 	HashMap <String, ClassData.Index> indexes;
-
+	double globaltireindex;
+	
 	public ClassData()
 	{
 		classes = new HashMap<String, ClassData.Class>();
 		indexes = new HashMap<String, ClassData.Index>();
+		globaltireindex = 1.0;
 	}
 
 	protected void add(ClassData.Class c)
@@ -34,6 +36,11 @@ public class ClassData
 	{
 		indexes.put(i.getCode(), i);
 	}
+	
+	protected void setGlobalTireIndex(double d)
+	{
+		globaltireindex = d;
+	}
 
 	public ClassData.Class getClass(String code)
 	{
@@ -43,6 +50,11 @@ public class ClassData
 	public ClassData.Index getIndex(String code)
 	{
 		return indexes.get(code);
+	}
+	
+	public double getGlobalTireIndex()
+	{
+		return globaltireindex;
 	}
 
 	public ArrayList<ClassData.Class> getClasses()

@@ -82,6 +82,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		self.action = self.routingargs.get('action', '')
 
 		c.isLocked = self.settings.locked
+		c.settings = self.settings
 		c.event = None
 		if self.eventid and self.eventid.isdigit():
 			c.event = self.session.query(Event).get(self.eventid)

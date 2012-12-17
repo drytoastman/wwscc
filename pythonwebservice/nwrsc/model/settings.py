@@ -23,6 +23,7 @@ class Settings(object):
 	INTS = ["largestcarnumber", "useevents", "minevents"]
 	BOOLS = ["locked", "superuniquenumbers", "indexafterpenalties", "usepospoints"]
 	STRS = ["pospointlist", "champsorting", "seriesname", "sponsorlink", "password", "schema", "parentseries"]
+	FLOATS = ["globaltireindex"]
 
 	def __init__(self):
 		self.locked = False
@@ -42,11 +43,15 @@ class Settings(object):
 		self.useevents = 6
 		self.minevents = 0
 
+		self.globaltireindex = 1.0
+
 
 	def set(self, items):
 		for k, v in items.iteritems():
 			if k in Settings.INTS:
 				setattr(self, k, int(v))
+			elif k in Settings.FLOATS:
+				setattr(self, k, float(v))
 			elif k in Settings.BOOLS:
 				setattr(self, k, v in ("True", "1", True, "checked"))
 			else:
@@ -57,13 +62,15 @@ class Settings(object):
 		for s in session.query(Setting):
 			if s.name in Settings.INTS:
 				setattr(self, s.name, int(s.val))
+			elif s.name in Settings.FLOATS:
+				setattr(self, s.name, float(s.val))
 			elif s.name in Settings.BOOLS:
 				setattr(self, s.name, s.val in ("True", "1"))
 			else:
 				setattr(self, s.name, s.val)
 
 	def save(self, session):
-		for name in Settings.INTS + Settings.STRS + Settings.BOOLS:
+		for name in Settings.INTS + Settings.FLOATS + Settings.STRS + Settings.BOOLS:
 			s = session.query(Setting).get(name)
 			if s is None:
 				s = Setting()

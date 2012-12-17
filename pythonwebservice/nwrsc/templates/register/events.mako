@@ -1,5 +1,5 @@
 <%def name="formatCar(car)">
-${"%s/%s - %s %s %s %s" % (car.classcode, car.number, car.year, car.make, car.model, car.color)}
+${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year, car.make, car.model, car.color)}
 </%def>
 
 <%def name="paypalLink(event)">

@@ -134,6 +134,9 @@ def convert20122(session):
 	log.info("Drop old tables")
 	session.execute("DROP TABLE oldeventresults")
 
+	# Add new cars flag
+	session.execute("ALTER TABLE cars ADD COLUMN tireindexed BOOLEAN DEFAULT 0")
+
 	# add usepospoints, champsorting, change ppoints to pospointlist
 	log.info("update settings")
 	settings = Settings()

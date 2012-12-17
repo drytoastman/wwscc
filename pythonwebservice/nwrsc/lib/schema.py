@@ -79,6 +79,7 @@ class SettingsSchema(Schema):
 	largestcarnumber = Int(min=99)
 	minevents = Int(if_empty=0)
 	useevents = Int(not_empty=True)
+	globaltireindex = Number(if_empty=1.0, max=1.0)
 	sponsorlink = String()
 	pospointlist = String()
 	champsorting = String()

@@ -29,6 +29,7 @@ function editcar(did, cid)
 		$('#careditor [name=indexcode]').val(cars[cid].indexcode);
 		classchange();
 		setnum(cars[cid].number);
+		$('#careditor [name=tireindexed]').prop('checked', cars[cid].tireindexed);
 	}
 	else
 	{
@@ -38,6 +39,7 @@ function editcar(did, cid)
 		$('#careditor [name=color]').val("");
 		$('#careditor [name=classcode]').val("");
 		$('#careditor [name=indexcode]').val("");
+		$('#careditor [name=tireindexed]').prop('checked', false);
 		setnum("")
 	}
 

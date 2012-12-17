@@ -20,7 +20,7 @@
 <tr>
 <td class='counter'>${counter}</td>
 <td class='number'>${car.number}</td>
-<td>${car.year} ${car.make} ${car.model} ${car.color} ${car.indexcode and "(%s)"%car.indexcode}</td>
+<td>${car.year} ${car.make} ${car.model} ${car.color} ${h.ixstr(car)}</td>
 <td>${driver.firstname} ${driver.lastname}</td>
 </tr>
 

@@ -354,7 +354,7 @@ public abstract class SQLDataInterface extends DataInterface
 			e.driverid = erow.getInt("driverid");
 			e.firstname = erow.getString("firstname");
 			e.lastname = erow.getString("lastname");
-			e.index = getEffectiveIndex(e.car.classcode, e.car.indexcode);
+			e.index = getEffectiveIndex(e.car.classcode, e.car.indexcode, e.car.tireindexed);
 
 			if (runs != null)
 			{
@@ -1101,7 +1101,7 @@ public abstract class SQLDataInterface extends DataInterface
 			for (ResultRow r : d)
 			{
 				EventResult er = AUTO.loadEventResult(r);
-				er.setIndex(r.getString("indexcode"), getEffectiveIndex(classcode, r.getString("indexcode")));
+				er.setIndex(r.getString("indexcode"), getEffectiveIndex(classcode, r.getString("indexcode"), r.getBoolean("tireindexed")));
 				er.setName(r.getString("firstname"), r.getString("lastname"));
 				ret.add(er);
 			}
@@ -1271,11 +1271,12 @@ public abstract class SQLDataInterface extends DataInterface
 			{
 				String classcode = r.getString("classcode");
 				String indexcode = r.getString("indexcode");
+				boolean tireindexed = r.getBoolean("tireindexed");
 				int position = r.getInt("position");
 				int carid = r.getInt("carid");
 				double myraw = r.getDouble("myraw");
 				double mynet = r.getDouble("mynet");
-				double index = getEffectiveIndex(classcode, indexcode);
+				double index = getEffectiveIndex(classcode, indexcode, tireindexed);
 
 				if (position == 1)
 					leaders.put(classcode, new Leader(carid, myraw * index, mynet));
@@ -1525,6 +1526,10 @@ public abstract class SQLDataInterface extends DataInterface
 			for (ResultRow r : idata)
 				ret.add(AUTO.loadIndex(r));
 
+			ResultData setting = executeSelect("GETSETTING", newList("globaltireindex"));
+			if (setting.size() > 0)
+				ret.setGlobalTireIndex(setting.get(0).getDouble("val"));
+			
 			classCache = ret; // save for index lookups, user may preload cache for us
 			return ret;
 		}
@@ -1536,7 +1541,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	ClassData classCache = null;
-	public double getEffectiveIndex(String classcode, String indexcode)
+	public double getEffectiveIndex(String classcode, String indexcode, boolean tireindexed)
 	{
 		if (classCache == null)
 			getClassData();
@@ -1557,6 +1562,12 @@ public abstract class SQLDataInterface extends DataInterface
 					indexVal *= indexData.getValue();
 			}
 
+			/* Apply possible global tire index */
+			if (tireindexed)
+			{
+				indexVal *= classCache.getGlobalTireIndex();
+			}
+			
 			/* Apply class index (linked to index tables) */
 			if (!classData.classindex.equals(""))
 			{

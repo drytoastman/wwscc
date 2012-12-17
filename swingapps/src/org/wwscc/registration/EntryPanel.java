@@ -37,6 +37,8 @@ import net.miginfocom.swing.MigLayout;
 import org.wwscc.barcodes.Code39;
 import org.wwscc.components.DriverCarPanel;
 import org.wwscc.components.UnderlineBorder;
+import org.wwscc.dialogs.CarDialog;
+import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.storage.Car;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Driver;
@@ -49,7 +51,7 @@ public class EntryPanel extends DriverCarPanel
 {
 	private static final Logger log = Logger.getLogger(EntryPanel.class.getCanonicalName());
 
-	JButton addit, removeit;
+	JButton addit, removeit, editcar;
 	JComboBox<PrintService> printers;
 	Code39 activeLabel;
 
@@ -71,6 +73,10 @@ public class EntryPanel extends DriverCarPanel
 		removeit = new JButton("Unregister Entrant");
 		removeit.addActionListener(this);
 		removeit.setEnabled(false);
+		
+		editcar = new JButton("Edit Car");
+		editcar.addActionListener(this);
+		editcar.setEnabled(false);
 		
 		activeLabel = new Code39();
 
@@ -96,8 +102,9 @@ public class EntryPanel extends DriverCarPanel
 		
 		add(createTitle("3. Car"), "spanx 3, growx, gaptop 4, wrap");
 		add(cscroll, "spany 2, hmin 150, grow");
-		add(smallButton("New Car"), "growx");
-		add(smallButton("New From"), "growx, wrap"); 
+		add(smallButton("New Car"), "split 3, spanx 2, growx");
+		add(smallButton("New From"), "growx");
+		add(editcar, "growx, wrap"); 
 		carInfo.setLineWrap(false);
 		add(carInfo, "spanx 2, growx, top, wrap");
 		
@@ -176,6 +183,24 @@ public class EntryPanel extends DriverCarPanel
 					Database.d.unregisterCar(selectedCar.getId());
 					reloadCars(selectedCar);
 			}
+			else if (cmd.equals("Edit Car") && (selectedCar != null))
+			{
+				final CarDialog cd = new CarDialog(selectedCar, Database.d.getClassData(), false);
+				cd.doDialog("Edit Car", new DialogFinisher<Car>() {
+					@Override
+					public void dialogFinished(Car c) {
+						if ((c == null) || (selectedDriver == null))
+							return;
+						try {
+							c.setDriverId(selectedDriver.getId());
+							Database.d.updateCar(c);
+							reloadCars(c);
+						} catch (IOException ioe) {
+							log.log(Level.SEVERE, "Failed to edit car: " + ioe, ioe);
+						}
+					}
+				});
+			}
 			else if (cmd.equals("Print Label") && (selectedDriver != null))
 			{
 				try {
@@ -218,6 +243,7 @@ public class EntryPanel extends DriverCarPanel
 		{
 			addit.setEnabled(!selectedCar.isRegistered);
 			removeit.setEnabled(selectedCar.isRegistered && !selectedCar.isInRunOrder);
+			editcar.setEnabled(!selectedCar.isInRunOrder);
 		}
 		else
 		{

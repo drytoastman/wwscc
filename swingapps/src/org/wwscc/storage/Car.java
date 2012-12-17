@@ -23,6 +23,7 @@ public class Car implements Serializable
 	protected int number;
 	protected String classcode;
 	protected String indexcode;
+	protected boolean tireindexed;
 
 	/* meta, not added or retrieved from database */
 	public boolean isInRunOrder = false;
@@ -51,6 +52,7 @@ public class Car implements Serializable
 		number = 0;
 		classcode = "";
 		indexcode = "";
+		tireindexed = false;
 		isInRunOrder = false;
 	}
 
@@ -63,7 +65,8 @@ public class Car implements Serializable
 	public String getMake() { return make; }
 	public String getModel() { return model; }
 	public String getColor() { return color; }
-
+	public boolean isTireIndexed() { return tireindexed;}
+	
 	public void setDriverId(int id) { driverid = id; }
 	public void setNumber(int n) { number = n; }
 	public void setYear(String s) { year = s; }
@@ -72,6 +75,7 @@ public class Car implements Serializable
 	public void setColor(String s) { color = s; }
 	public void setClassCode(String s) { classcode = s; }
 	public void setIndexCode(String s) { indexcode = s; }
+	public void setTireIndexed(boolean b) { tireindexed = b; }
 	
 	@Override
 	public boolean equals(Object o)

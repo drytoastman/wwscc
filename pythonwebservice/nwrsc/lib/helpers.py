@@ -45,6 +45,11 @@ def t3(val, sub = None, sign = False):
 	else:
 		return "%0.3f" % (val)
 
+def ixstr(car):
+	if car.indexcode != "" or car.tireindexed:
+		return "(%s%s)" % (car.indexcode, car.tireindexed and "+T" or "")
+	return ""
+
 def encodesqlobj(obj):
 	d = dict()
 	for k in obj.__dict__.copy():

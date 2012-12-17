@@ -16,6 +16,7 @@ t_cars = Table('cars', metadata,
 	Column('driverid', Integer, ForeignKey('drivers.id')),
 	Column('classcode', String(16)),
 	Column('indexcode', String(16)),
+	Column('tireindexed', Boolean),
 	)
 Index('caridx_1', t_cars.c.driverid)
 

@@ -104,7 +104,7 @@ def UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, su
 		if lastrun.cones != 0 or lastrun.gates != 0:
 			# add table entry with what could have been without penalties
 			car = session.query(Car).get(carid)
-			index = ClassData(session).getEffectiveIndex(car.classcode, car.indexcode)
+			index = ClassData(session).getEffectiveIndex(car)
 			curbest = [x for x in runs.values() if x.norder == 1][0]
 			theory = mysum - curbest.net + ( lastrun.raw * index )
 			if theory < mysum:
@@ -143,13 +143,13 @@ def RecalculateResults(session, settings):
 			session.execute("delete from eventresults where eventid=%d" % event.id) # If admin changes car class, this is needed
 	
 			for car in session.query(Run.carid).distinct().filter(Run.eventid==event.id):
-				codes = session.query(Car.classcode,Car.indexcode).filter(Car.id==car.carid).first()
+				codes = session.query(Car.classcode,Car.indexcode,Car.tireindexed).filter(Car.id==car.carid).first()
 				if codes is None:
 					yield "\tId: %s **** Missing car ****\n" % car.carid
 					continue
-				val = classdata.getEffectiveIndex(codes.classcode, codes.indexcode)
+				val = classdata.getEffectiveIndex(codes) 
 				counted = min(classdata.getCountedRuns(codes.classcode), event.getCountedRuns())
-				istr = classdata.getIndexStr(codes.classcode, codes.indexcode)
+				istr = classdata.getIndexStr(codes)
 				yield "\tId: %s (%s, %s, %s)\n" % (car.carid, val, istr, (counted < 100 and counted or "all"))
 
 				for course in range(1, event.courses+1):

@@ -64,7 +64,7 @@ class ObjectEditor(object):
 
 
 	def _extractCar(self, car):
-		for attr in ('year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode'):
+		for attr in ('year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode', 'tireindexed'):
 			setattr(car, attr, request.POST.get(attr, ''))
 		return car
 

@@ -10,8 +10,8 @@ class Result(object):
 			setattr(self, k, getattr(row,k))
 
 		if 'classdata' in kwargs:
-			self.indexstr = kwargs['classdata'].getIndexStr(self.classcode, self.indexcode)
-			self.indexval = kwargs['classdata'].getEffectiveIndex(self.classcode, self.indexcode)
+			self.indexstr = kwargs['classdata'].getIndexStr(self)
+			self.indexval = kwargs['classdata'].getEffectiveIndex(self)
 		else:
 			self.indexstr = self.indexcode
 			self.indexval = 1.0
@@ -42,7 +42,7 @@ class Result(object):
 		return ret
 
 
-auditList = """select r.*,d.firstname,d.lastname,d.alias,c.year,c.number,c.make,c.model,c.color,c.classcode,c.indexcode 
+auditList = """select r.*,d.firstname,d.lastname,d.alias,c.year,c.number,c.make,c.model,c.color,c.classcode,c.indexcode,c.tireindexed
 				from runorder as r, cars as c, drivers as d  
 				where r.carid=c.id and c.driverid=d.id and 
 				r.eventid=:eventid and r.course=:course and r.rungroup=:group """
@@ -64,7 +64,7 @@ def getAuditResults(session, settings, event, course, rungroup):
 
 
 
-classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.indexcode, d.firstname, d.lastname, d.alias
+classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.indexcode, c.tireindexed, d.firstname, d.lastname, d.alias
 				from eventresults as r, cars as c, drivers as d 
 				where r.carid=c.id and c.driverid=d.id and r.eventid=%d and r.classcode in (%s)
 				order by r.position"""
@@ -126,7 +126,7 @@ def getClassResults(session, settings, event, classdata, codes):
 	return ret
 
 
-top1 = "select d.firstname as firstname, d.lastname as lastname, d.alias as alias, c.classcode as classcode, c.indexcode as indexcode, c.id as carid "
+top1 = "select d.firstname as firstname, d.lastname as lastname, d.alias as alias, c.classcode as classcode, c.indexcode as indexcode, c.tireindexed as tireindexed, c.id as carid "
 top2 = "from runs as r, cars as c, drivers as d where r.carid=c.id and c.driverid=d.id and r.eventid=:eventid "
 
 
@@ -264,8 +264,8 @@ def loadTopCourseNetTimes(session, event, course, classdata, allruns=False):
 
 	ttl = TopTimesList("Top Index Times (Course %d)" % course, "Name", "Index", "", "Time")
 	for row in session.execute(sql, params={'eventid':event.id, 'course':course}):
-		eis = classdata.getIndexStr(row.classcode, row.indexcode)
-		eiv = classdata.getEffectiveIndex(row.classcode, row.indexcode)
+		eis = classdata.getIndexStr(row)
+		eiv = classdata.getEffectiveIndex(row)
 		ttl.add(row, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
 	return ttl
 
@@ -294,8 +294,8 @@ def loadTopNetTimes(session, event, classdata, allruns=False):
 
 	ttl = TopTimesList(title, "Name", "Index", "", "Time")
 	for row in session.execute(sql, params={'eventid':event.id}):
-		eis = classdata.getIndexStr(row.classcode, row.indexcode)
-		eiv = classdata.getEffectiveIndex(row.classcode, row.indexcode)
+		eis = classdata.getIndexStr(row)
+		eiv = classdata.getEffectiveIndex(row)
 		ttl.add(row, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
 	return ttl
 

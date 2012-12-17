@@ -3,6 +3,8 @@ from sqlalchemy.orm import mapper, relation
 from sqlalchemy.types import Integer, String, Boolean, Float
 
 from meta import metadata
+from settings import Setting
+
 import logging
 import sys
 
@@ -99,6 +101,7 @@ class ClassData(object):
 			self.classlist[cls.code] = cls
 		for idx in session.query(Index):
 			self.indexlist[idx.code] = idx
+		self.globaltireindex = float(session.query(Setting.val).filter(Setting.name=='globaltireindex').first().val)
 
 
 	def getCountedRuns(self, classcode):
@@ -107,12 +110,15 @@ class ClassData(object):
 		except:
 			return sys.maxint
 		
-	def getIndexStr(self, classcode, indexcode):
-		indexstr = indexcode
+	def getIndexStr(self, car): #classcode, indexcode, tireindexed):
+		indexstr = car.indexcode
 		try:
-			cls = self.classlist[classcode]
+			cls = self.classlist[car.classcode]
 			if cls.classindex != "":
 				indexstr = cls.classindex
+
+			if car.tireindexed:
+				indexstr = indexstr + "+T"
 
 			if cls.classmultiplier < 1.000:
 				indexstr = indexstr + '*'
@@ -121,20 +127,23 @@ class ClassData(object):
 		return indexstr
 
 
-	def getEffectiveIndex(self, classcode, indexcode):
+	def getEffectiveIndex(self, car): #classcode, indexcode, tireindexed):
 		indexval = 1.0
 		try:
-			cls = self.classlist[classcode]
+			cls = self.classlist[car.classcode]
 
 			if cls.classindex != "":
 				indexval *= self.indexlist[cls.classindex].value
 
-			if cls.carindexed and indexcode:
-				indexval *= self.indexlist[indexcode].value
+			if car.tireindexed:
+				indexval *= self.globaltireindex
+
+			if cls.carindexed and car.indexcode:
+				indexval *= self.indexlist[car.indexcode].value
 
 			indexval *= cls.classmultiplier
 		except Exception, e:
-			log.warning("getEffectiveIndex(%s,%s) failed: %s" % (classcode, indexcode, e))
+			log.warning("getEffectiveIndex(%s,%s,%s) failed: %s" % (car.classcode, car.indexcode, car.tireindexed, e))
 
 		return indexval
 

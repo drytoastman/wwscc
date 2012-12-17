@@ -191,11 +191,12 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 		return cb.getSelectedItem();
 	}
 
-	protected JCheckBox checkbox(String name)
+	protected JCheckBox checkbox(String name, boolean selected)
 	{
 		JCheckBox rb = new JCheckBox(name);
 		rb.setActionCommand(name);
 		rb.setText("");
+		rb.setSelected(selected);
 		checks.put(name, rb);
 		return rb;
 	}

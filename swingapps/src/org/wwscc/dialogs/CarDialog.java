@@ -87,6 +87,9 @@ public class CarDialog extends BaseDialog<Car>
 		mainPanel.add(label("Index", true), "");
 		mainPanel.add(select("indexcode", cd.getIndex(car.getIndexCode()), indexlist, null), "wrap");
 
+		mainPanel.add(label("Global Tire Index", true), "");
+		mainPanel.add(checkbox("tireindexed", car.isTireIndexed()), "wrap");
+		
 		actionPerformed(new ActionEvent(selects.get("classcode"), 1, ""));
 
 		result = car;
@@ -200,6 +203,7 @@ public class CarDialog extends BaseDialog<Car>
 				result.setIndexCode("");
 			}
 	
+			result.setTireIndexed(isChecked("tireindexed"));
 			result.setNumber(Integer.valueOf(getEntryText("number")));
 			return result;
 		}

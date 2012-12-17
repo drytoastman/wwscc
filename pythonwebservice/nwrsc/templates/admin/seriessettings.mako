@@ -39,6 +39,11 @@
 <span class='input'><input type="text" name="champsorting" value="${c.settings.champsorting}" size="40" /></span>
 </div>
 
+<div title="A globally applied street tire multiplier used for cars marked as such.  If 1.0, option is not visible to users.">
+<span class='title'>Global Tire Index</span>
+<span class='input'><input type="text" name="globaltireindex" value="${c.settings.globaltireindex}" size="40" /></span>
+</div>
+
 <div title="Use position to determine points rather than difference from first">
 <span class='title'>Use Position for Points</span>
 <span class='input'><input type="checkbox" name="usepospoints" ${c.settings.usepospoints and "checked"} /></span>

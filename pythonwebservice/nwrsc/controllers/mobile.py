@@ -84,7 +84,7 @@ class MobileController(BaseController):
 		self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
 		if self.announcer is None:
 			raise BeforePage('')
-		index = classdata.getEffectiveIndex(car.classcode, car.indexcode)
+		index = classdata.getEffectiveIndex(car)
 
 		toptimes = TopTimesStorage(self.session, self.event, classdata)
 		if raw:

@@ -10,6 +10,7 @@ class Entry(object):
 		self.lastname = row['lastname']
 		self.classcode = row['classcode']
 		self.indexcode = row['indexcode']
+		self.tireindexed = row['tireindexed']
 		self.carid = row['carid']
 		self.raw = row['myraw']
 		self.net = row['mynet']
@@ -31,8 +32,8 @@ class Dialins(list):
 		classdata = ClassData(session)
 		for r in session.sqlmap("GETDIALINS", (eventid, eventid)):
 			entry = Entry(r)
-			entry.indexVal = classdata.getEffectiveIndex(entry.classcode, entry.indexcode)
-			entry.indexStr = classdata.getIndexStr(entry.classcode, entry.indexcode)
+			entry.indexVal = classdata.getEffectiveIndex(entry)
+			entry.indexStr = classdata.getIndexStr(entry)
 
 			if entry.position == 1:
 				self.leaders[entry.classcode] = entry

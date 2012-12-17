@@ -171,22 +171,23 @@ public class AUTO
 		o.number = rs.getInt("number");
 		o.classcode = rs.getString("classcode");
 		o.indexcode = rs.getString("indexcode");
+		o.tireindexed = rs.getBoolean("tireindexed");
 		return o;
 	}
 	
 	public static String getCarVarStr()
 	{
-		return "driverid,year,make,model,color,number,classcode,indexcode";
+		return "driverid,year,make,model,color,number,classcode,indexcode,tireindexed";
 	}
 	
 	public static String getCarArgStr()
 	{
-		return "?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getCarSetStr()
 	{
-		return "driverid=?,year=?,make=?,model=?,color=?,number=?,classcode=?,indexcode=?";
+		return "driverid=?,year=?,make=?,model=?,color=?,number=?,classcode=?,indexcode=?,tireindexed=?";
 	}
 	
 	public static void addCarValues(org.wwscc.storage.Car o, List<Object> l)
@@ -199,6 +200,7 @@ public class AUTO
 		l.add(o.number);
 		l.add(o.classcode);
 		l.add(o.indexcode);
+		l.add(o.tireindexed);
 	}
 	
 	public static org.wwscc.storage.Run loadRun(ResultRow rs) throws IOException
