@@ -120,4 +120,7 @@ public enum MT {
 	START_FAKE_USER,
 	STOP_FAKE_USER,
 	CONFIGURE_FAKE_USER,
+	
+	// Registration,
+	TRACKING_CHANGE_MADE
 }

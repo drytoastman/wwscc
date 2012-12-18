@@ -24,9 +24,9 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import org.wwscc.components.DriverCarPanel;
 import org.wwscc.components.UnderlineBorder;
-import org.wwscc.storage.Car;
 import org.wwscc.storage.Driver;
 import org.wwscc.storage.Entrant;
+import org.wwscc.storage.MetaCar;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 
@@ -152,7 +152,7 @@ public class DriverEntry extends DriverCarPanel
 	public void valueChanged(ListSelectionEvent e) 
 	{
 		super.valueChanged(e);
-		carAlreadyInOrder = ((selectedCar == null) || (selectedCar.isInRunOrder));
+		carAlreadyInOrder = ((selectedCar == null) || (selectedCar.isInRunOrder()));
 		addit.setEnabled(!carAlreadyInOrder);
 		changeit.setEnabled(!carAlreadyInOrder && entrantIsSelected);
 	}
@@ -198,12 +198,12 @@ public class DriverEntry extends DriverCarPanel
 
 			setForeground(Color.BLACK);
 
-			if (value instanceof Car)
+			if (value instanceof MetaCar)
 			{
-				Car c = (Car)value;
+				MetaCar c = (MetaCar)value;
 				String myclass = c.getClassCode() + " " + c.getIndexStr();
 				setText(myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor());
-				if (c.isInRunOrder)
+				if (c.isInRunOrder())
 				{
 					setForeground(mygray);
 					if (iss)

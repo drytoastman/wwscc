@@ -8,7 +8,6 @@
 
 package org.wwscc.registration;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -25,13 +24,12 @@ import javax.print.SimpleDoc;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.standard.Copies;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.barcodes.Code39;
@@ -40,8 +38,8 @@ import org.wwscc.components.UnderlineBorder;
 import org.wwscc.dialogs.CarDialog;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.storage.Car;
-import org.wwscc.storage.Database;
 import org.wwscc.storage.Driver;
+import org.wwscc.storage.Database;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.Prefs;
@@ -51,19 +49,29 @@ public class EntryPanel extends DriverCarPanel
 {
 	private static final Logger log = Logger.getLogger(EntryPanel.class.getCanonicalName());
 
-	JButton addit, removeit, editcar;
+	JButton addit, removeit, editcar, deletecar;
 	JComboBox<PrintService> printers;
 	Code39 activeLabel;
 
 	public EntryPanel()
 	{
 		super();
-		setLayout(new MigLayout("fill", "[250, grow 25][150, grow 25][150, grow 25]"));
+		setLayout(new MigLayout("fill", "[400, grow 25][150, grow 25][150, grow 25]"));
 		Messenger.register(MT.EVENT_CHANGED, this);
 
-		RegListRenderer listRenderer = new RegListRenderer();
-		drivers.setCellRenderer(listRenderer);
-		cars.setCellRenderer(listRenderer);
+
+		drivers.setCellRenderer(new DefaultListCellRenderer() {
+			Font font = getFont().deriveFont(14f);
+			public Component getListCellRendererComponent(JList<?> l, Object o, int i, boolean s, boolean c)
+			{
+				super.getListCellRendererComponent(l, o, i, s, c);
+				setFont(font);
+				setText(((Driver)o).getId() + ": " + ((Driver)o).getFullName());
+				return this;
+			}
+		});
+		
+		cars.setCellRenderer(new RegListRenderer());
 
 		/* Buttons */
 		addit = new JButton("Register Entrant");
@@ -77,6 +85,10 @@ public class EntryPanel extends DriverCarPanel
 		editcar = new JButton("Edit Car");
 		editcar.addActionListener(this);
 		editcar.setEnabled(false);
+		
+		deletecar = new JButton("Delete Car");
+		deletecar.addActionListener(this);
+		deletecar.setEnabled(false);
 		
 		activeLabel = new Code39();
 
@@ -101,10 +113,11 @@ public class EntryPanel extends DriverCarPanel
 
 		
 		add(createTitle("3. Car"), "spanx 3, growx, gaptop 4, wrap");
-		add(cscroll, "spany 2, hmin 150, grow");
-		add(smallButton("New Car"), "split 3, spanx 2, growx");
-		add(smallButton("New From"), "growx");
-		add(editcar, "growx, wrap"); 
+		add(cscroll, "spany 3, hmin 150, grow");
+		add(smallButton("New Car"), "growx");
+		add(smallButton("New From"), "growx, wrap");
+		add(editcar, "growx"); 
+		add(deletecar, "growx, wrap");
 		carInfo.setLineWrap(false);
 		add(carInfo, "spanx 2, growx, top, wrap");
 		
@@ -163,6 +176,12 @@ public class EntryPanel extends DriverCarPanel
 		return printers;
 	}
 
+	public void reloadCars(Car select)
+	{
+		super.reloadCars(select);
+		Messenger.sendEvent(MT.TRACKING_CHANGE_MADE, null);
+	}
+	
 	/**
 	 * Process events from the various buttons
 	 * @param e 
@@ -182,6 +201,14 @@ public class EntryPanel extends DriverCarPanel
 			{
 					Database.d.unregisterCar(selectedCar.getId());
 					reloadCars(selectedCar);
+			}
+			else if (cmd.equals("Delete Car") && (selectedCar != null))
+			{
+				if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the selected car?", "Delete Car", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
+				{
+					Database.d.deleteCar(selectedCar);
+					reloadCars(null);
+				}
 			}
 			else if (cmd.equals("Edit Car") && (selectedCar != null))
 			{
@@ -217,6 +244,8 @@ public class EntryPanel extends DriverCarPanel
 		{
 			log.log(Level.SEVERE, "Registation failed: " + ioe, ioe);
 		}
+		
+		Messenger.sendEvent(MT.TRACKING_CHANGE_MADE, null);
 	}
 
 
@@ -241,9 +270,10 @@ public class EntryPanel extends DriverCarPanel
 		
 		if (selectedCar != null)
 		{
-			addit.setEnabled(!selectedCar.isRegistered);
-			removeit.setEnabled(selectedCar.isRegistered && !selectedCar.isInRunOrder);
-			editcar.setEnabled(!selectedCar.isInRunOrder);
+			addit.setEnabled(!selectedCar.isRegistered());
+			removeit.setEnabled(selectedCar.isRegistered() && !selectedCar.isInRunOrder());
+			editcar.setEnabled(!selectedCar.isInRunOrder() && !selectedCar.hasActivity());
+			deletecar.setEnabled(!selectedCar.isRegistered() && !selectedCar.isInRunOrder() && !selectedCar.hasActivity());
 		}
 		else
 		{
@@ -264,41 +294,6 @@ public class EntryPanel extends DriverCarPanel
 				
 			default:
 				super.event(type, o);
-		}
-	}
-
-	static class RegListRenderer extends DefaultListCellRenderer
-	{
-		private Icon runs = new ImageIcon(getClass().getResource("/org/wwscc/images/run.gif"));
-		private Icon reg = new ImageIcon(getClass().getResource("/org/wwscc/images/reg.gif"));
-		private Icon blank = new ImageIcon(getClass().getResource("/org/wwscc/images/blank.gif"));
-
-		@Override
-		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean iss, boolean chf)
-		{
-			super.getListCellRendererComponent(list, value, index, iss, chf);
-
-			setForeground(Color.BLACK);
-
-			if (value instanceof Car)
-			{
-				Car c = (Car)value;
-				String myclass = c.getClassCode() + " " + c.getIndexStr();				
-				setText(myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor());
-				if (c.isInRunOrder)
-					setIcon(runs);
-				else if (c.isRegistered)
-					setIcon(reg);
-				else
-					setIcon(blank);
-			}
-			else if (value instanceof Driver)
-			{
-				Driver d = (Driver)value;
-				setText(d.getId() + ": " + d.getFullName());
-			}
-
-			return this;
 		}
 	}
 }

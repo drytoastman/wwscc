@@ -39,6 +39,7 @@ import org.wwscc.storage.Car;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Driver;
 import org.wwscc.storage.DriverField;
+import org.wwscc.storage.MetaCar;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -63,7 +64,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 
 	protected boolean carAddOption = false;
 	protected Driver selectedDriver;
-	protected Car selectedCar;
+	protected MetaCar selectedCar;
 	
 	protected List<DriverField> driverFields;
 
@@ -191,14 +192,14 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 			return;
 
 		List<Car> driverCars = Database.d.getCarsForDriver(d.getId());
+		Vector<MetaCar> touse = new Vector<MetaCar>();
 		for (Iterator<Car> citer = driverCars.iterator(); citer.hasNext(); )
 		{
 			Car c = citer.next();
-			c.isRegistered = Database.d.isRegistered(c);
-			c.isInRunOrder = Database.d.isInOrder(c.getId());
+			touse.add(new MetaCar(c, Database.d.isRegistered(c), Database.d.isInOrder(c.getId()), Database.d.hasActivity(c.getId())));
 		}
 
-		cars.setListData(new Vector<Car>(driverCars));
+		cars.setListData(touse);
 		if (select != null)
 			focusOnCar(select.getId());
 		else
@@ -327,9 +328,9 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 			else if (source == cars)
 			{
 				Object o = cars.getSelectedValue();
-				if (o instanceof Car)
+				if (o instanceof MetaCar)
 				{
-					selectedCar = (Car)o;
+					selectedCar = (MetaCar)o;
 					carInfo.setText(carDisplay(selectedCar));
 				}
 				else

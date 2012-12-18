@@ -25,11 +25,6 @@ public class Car implements Serializable
 	protected String indexcode;
 	protected boolean tireindexed;
 
-	/* meta, not added or retrieved from database */
-	public boolean isInRunOrder = false;
-	public boolean isRegistered = false;
-	public int runcount = 0;
-
 	static public class NumOrder implements Comparator<Car>
 	{
 	    public int compare(Car c1, Car c2)
@@ -53,7 +48,20 @@ public class Car implements Serializable
 		classcode = "";
 		indexcode = "";
 		tireindexed = false;
-		isInRunOrder = false;
+	}
+	
+	public Car(Car other)
+	{
+		id = other.id;
+		driverid = other.driverid;
+		year = other.year;
+		make = other.make;
+		model = other.model;
+		color = other.color;
+		number = other.number;
+		classcode = other.classcode;
+		indexcode = other.indexcode;
+		tireindexed = other.tireindexed;
 	}
 
 	public int getId() { return id; }
@@ -82,7 +90,7 @@ public class Car implements Serializable
 	public void setClassCode(String s) { classcode = s; }
 	public void setIndexCode(String s) { indexcode = s; }
 	public void setTireIndexed(boolean b) { tireindexed = b; }
-	
+		
 	@Override
 	public boolean equals(Object o)
 	{

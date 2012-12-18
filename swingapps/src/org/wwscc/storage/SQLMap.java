@@ -43,6 +43,7 @@ public class SQLMap
 		sql.put("GETALLCARS", "select * from cars");
 		sql.put("GETALLRUNS", "select * from runs");
 		sql.put("GETANNOUNCERDATABYENTRANT", "select * from announcer where eventid=? and carid=?");
+		sql.put("GETANYRUNS", "select count(id) as count from runs where carid=?");
 		sql.put("GETCARIDSBYCHALLENGE", "select car1id,car2id from challengerounds where challengeid=?");
 		sql.put("GETCARIDSFORCOURSE", "select carid from runorder where eventid=? AND course=?");
 		sql.put("GETCARIDSFORGROUP", "select carid from runorder where eventid=? AND course=? AND rungroup=? order by row");

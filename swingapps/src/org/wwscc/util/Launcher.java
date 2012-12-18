@@ -10,7 +10,6 @@ package org.wwscc.util;
 
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
-import org.wwscc.admin.Admin;
 import org.wwscc.bwtimer.Timer;
 import org.wwscc.challenge.ChallengeGUI;
 import org.wwscc.dataentry.DataEntry;
@@ -48,9 +47,7 @@ public class Launcher
 			Prefs.setLastApplication(app);
 			LibLoader.installLibrary("sqliteintf", "database access");
 			LibLoader.installLibrary("rxtxSerial", "serial port access");
-			if (app.equals("Admin"))
-				Admin.main(args);
-			else if (app.equals("DataEntry"))
+			if (app.equals("DataEntry"))
 				DataEntry.main(args);
 			else if (app.equals("ChallengeGUI"))
 				ChallengeGUI.main(args);

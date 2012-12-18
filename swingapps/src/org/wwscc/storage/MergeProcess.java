@@ -84,6 +84,13 @@ public class MergeProcess
 						c.driverid = driveridmap.get(c.driverid);
 					dest.updateCar(c);
 				}
+				else if (type.equals("DELETECAR"))
+				{
+					Car c = (Car)change.arg;
+					if (caridmap.containsKey(c.id)) // map carid
+						c.id = caridmap.get(c.id);
+					dest.deleteCar(c);
+				}
 				else if (type.equals("UNREGISTERCAR"))
 				{
 					Integer carid = (Integer)change.arg;

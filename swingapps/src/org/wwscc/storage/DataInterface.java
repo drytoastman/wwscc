@@ -81,6 +81,7 @@ public abstract class DataInterface
 	public abstract void removeFromRunOrderOpposite(int carid); // remove carid from opposite course run order
 	public abstract boolean hasRuns(int carid);  // return true if car has runs recorded
 	public abstract boolean hasRunsOpposite(int carid); // return true if car has runs recorded opposite
+	public abstract boolean hasActivity(int carid); // return true if car has runs recorded for any event/course
 
 	public abstract List<String> getRunGroupMapping(); // return the class codes assigned to the current run group
 

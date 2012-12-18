@@ -18,8 +18,6 @@ import java.util.Map;
 
 public class Entrant
 {
-	//private static final Logger log = Logger.getLogger(Entrant.class.getCanonicalName());
-
 	int driverid;
 	String firstname;
 	String lastname;
@@ -50,9 +48,6 @@ public class Entrant
 	public String getIndexStr() { return car.getIndexStr(); }
 	public double getIndex() { return index; }
 	public int getNumber() { return car.number; }
-
-	public boolean isInRunOrder() { return car.isInRunOrder; }
-	public void setInRunOrder(boolean flag) { car.isInRunOrder = flag; }
 
 
 	public Run getRun(int num)

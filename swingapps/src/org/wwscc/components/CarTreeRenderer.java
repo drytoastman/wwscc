@@ -54,12 +54,6 @@ public class CarTreeRenderer extends DefaultTreeCellRenderer
 			
 			String display = e.getNumber() + " - " + e.getName() + " - " + e.getCarModel() + " " + e.getIndexStr();
 			setText(display);
-
-			if (e.isInRunOrder())
-			{
-				setForeground(grey);
-				setBackground(Color.WHITE);
-			}
 		}
 
 		return this;

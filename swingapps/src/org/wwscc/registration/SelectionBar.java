@@ -39,6 +39,8 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		super();
 
 		Messenger.register(MT.DATABASE_CHANGED, this);
+		Messenger.register(MT.TRACKING_CHANGE_MADE, this);
+		
 		setLayout(new MigLayout("ins 2, center, gap 4"));
 		setBorder(new BevelBorder(0));
 
@@ -77,6 +79,10 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				else if (eventSelect.getItemCount() > 0)
 					eventSelect.setSelectedIndex(0);
 				
+				count.setText("" + Database.d.countChanges());
+				break;
+				
+			case TRACKING_CHANGE_MADE:
 				count.setText("" + Database.d.countChanges());
 				break;
 		}

@@ -634,6 +634,22 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
+	public boolean hasActivity(int carid)
+	{
+		try
+		{
+			ResultData d = executeSelect("GETANYRUNS", newList(carid));
+			return (d.get(0).getInt("count") > 0);
+		}
+		catch (Exception ioe)
+		{
+			logError("hasActivity", ioe);
+			return false;
+		}
+	}
+	
+	
+	@Override
 	public List<String> getRunGroupMapping() // return the class codes assigned to the current event
 	{
 		try
@@ -800,6 +816,7 @@ public abstract class SQLDataInterface extends DataInterface
 	public void deleteCar(Car c) throws IOException
 	{
 		executeUpdate("DELETECAR", newList(c.id));
+		trackChange("DELETECAR", c);
 	}
 
 	@Override
