@@ -77,10 +77,12 @@ public class EntryPanel extends DriverCarPanel
 		addit = new JButton("Register Entrant");
 		addit.addActionListener(this);
 		addit.setEnabled(false);
+		addit.setFont(addit.getFont().deriveFont(12f));
 
 		removeit = new JButton("Unregister Entrant");
 		removeit.addActionListener(this);
 		removeit.setEnabled(false);
+		removeit.setFont(removeit.getFont().deriveFont(12f));
 		
 		editcar = new JButton("Edit Car");
 		editcar.addActionListener(this);
@@ -113,7 +115,7 @@ public class EntryPanel extends DriverCarPanel
 
 		
 		add(createTitle("3. Car"), "spanx 3, growx, gaptop 4, wrap");
-		add(cscroll, "spany 3, hmin 150, grow");
+		add(cscroll, "spany 3, hmin 130, grow");
 		add(smallButton("New Car"), "growx");
 		add(smallButton("New From"), "growx, wrap");
 		add(editcar, "growx"); 
@@ -122,7 +124,7 @@ public class EntryPanel extends DriverCarPanel
 		add(carInfo, "spanx 2, growx, top, wrap");
 		
 		add(createTitle("4. Do it"), "spanx 3, growx, gaptop 4, wrap");
-		add(addit, "split 2, spanx 3");
+		add(addit, "split 2, spanx 3, gapbottom 3");
 		add(removeit, "wrap");
 		
 	}

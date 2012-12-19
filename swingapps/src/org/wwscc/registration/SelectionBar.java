@@ -9,6 +9,7 @@
 
 package org.wwscc.registration;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,6 +66,19 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		add(count, "");
 	}
 
+	private void updateCountLabel()
+	{
+		if (Database.d.isTrackingRegChanges())
+		{
+			count.setText("" + Database.d.countChanges());
+			count.setForeground(Color.BLACK);
+		}
+		else
+		{
+			count.setText("Not Tracking");
+			count.setForeground(Color.RED);
+		}
+	}
 	
 	@Override
 	public void event(MT type, Object o)
@@ -72,6 +86,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		switch (type)
 		{
 			case DATABASE_CHANGED:
+				Database.d.trackRegChanges(true);
 				eventSelect.setModel(new DefaultComboBoxModel<Event>(Database.d.getEvents().toArray(new Event[0])));
 				int select = Prefs.getEventId(0);
 				if (select < eventSelect.getItemCount())
@@ -79,11 +94,11 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				else if (eventSelect.getItemCount() > 0)
 					eventSelect.setSelectedIndex(0);
 				
-				count.setText("" + Database.d.countChanges());
+				updateCountLabel();
 				break;
 				
 			case TRACKING_CHANGE_MADE:
-				count.setText("" + Database.d.countChanges());
+				updateCountLabel();
 				break;
 		}
 	}

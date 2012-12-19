@@ -63,8 +63,6 @@ public class Registration extends JFrame implements ActionListener
 		setJMenuBar(bar);
 
 		Database.openDefault();
-		Database.d.trackRegChanges(true);
-		
 		pack();
 		setVisible(true);
 	}
@@ -87,14 +85,12 @@ public class Registration extends JFrame implements ActionListener
 		else if (cmd.equals("Open Local Database"))
 		{
 			Database.open(true, false);
-			Database.d.trackRegChanges(true);
 		}
 		else if (cmd.equals("Download Database Copy"))
 		{
 			new Thread(new Runnable() {
 				public void run() {
 					Database.download(false);
-					Database.d.trackRegChanges(true);
 				}
 			}).start();
 		}
