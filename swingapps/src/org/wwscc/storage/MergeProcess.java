@@ -23,10 +23,13 @@ public class MergeProcess
 {
 	private static Logger log = Logger.getLogger(MergeProcess.class.getCanonicalName());
 
-	public static void mergeTo(String host, String name)
+	/**
+	 * Merge the current open database to a remote host and then download the merged copy.
+	 * @param host the hostname
+	 * @param name the series name on the remote host
+	 */
+	public static boolean mergeTo(String host, String name)
 	{
-		Map<Integer, Integer> driveridmap = new HashMap<Integer,Integer>();
-		Map<Integer, Integer> caridmap = new HashMap<Integer,Integer>();
 		WebDataSource dest;
 		
 		try
@@ -36,8 +39,44 @@ public class MergeProcess
 		catch (IOException ex)
 		{
 			log.severe("Unable to connect: " + ex);
-			return;
+			return false;
 		}
+
+		if (!mergeTo(dest))
+			return false;
+		
+		/* download the merged version from the server so we are completely synced again */
+		try  
+		{
+			File db = Database.file;
+			Database.d.close();
+			if (!db.delete())
+				throw new IOException("Error deleting old version already on disk ("+db+")");
+
+			dest.server.downloadDatabase(db, false);
+			Database.openDatabaseFile(db);
+			Database.d.trackRegChanges(true);
+			Database.d.setCurrentEvent(Database.d.getCurrentEvent());
+			JOptionPane.showMessageDialog(null, "Merge Complete");
+			return true;
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, "Unable to download new merged version from server:\n " + e, e);
+			return false;
+		}
+	}
+	
+	
+	/**
+	 * Perform merge of two sqldatainterface based databases, could be remote or local 
+	 * but we specify SQLDataInteface so we can use the start/commit/rollback access.
+	 * @param dest the destination to merge to
+	 */
+	public static boolean mergeTo(SQLDataInterface dest)
+	{
+		Map<Integer, Integer> driveridmap = new HashMap<Integer,Integer>();
+		Map<Integer, Integer> caridmap = new HashMap<Integer,Integer>();
 
 		try
 		{
@@ -109,31 +148,14 @@ public class MergeProcess
 
 			dest.commit();
 			Database.d.clearChanges();
+			return true;
 		}
 		catch (Exception e)
 		{
 			dest.rollback();
 			log.log(Level.SEVERE, "Unable to merge: " + e, e);
-			return;
+			return false;
 		}
 
-		/* download the merged version from the server so we are completely synced again */
-		try  
-		{
-			File db = Database.file;
-			Database.d.close();
-			if (!db.delete())
-				throw new IOException("Error deleting old version already on disk ("+db+")");
-
-			dest.server.downloadDatabase(db, false);
-			Database.openDatabaseFile(db);
-			Database.d.trackRegChanges(true);
-			Database.d.setCurrentEvent(Database.d.getCurrentEvent());
-			JOptionPane.showMessageDialog(null, "Merge Complete");
-		}
-		catch (Exception e)
-		{
-			log.log(Level.SEVERE, "Unable to download new merged version from server:\n " + e, e);
-		}
 	}
 }
