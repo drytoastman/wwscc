@@ -66,7 +66,7 @@ public class EntryPanel extends DriverCarPanel
 			{
 				super.getListCellRendererComponent(l, o, i, s, c);
 				setFont(font);
-				setText(((Driver)o).getId() + ": " + ((Driver)o).getFullName());
+				setText(((Driver)o).getFullName());
 				return this;
 			}
 		});

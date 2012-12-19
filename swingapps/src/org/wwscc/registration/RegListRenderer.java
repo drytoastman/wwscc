@@ -5,36 +5,74 @@ import java.awt.Component;
 import java.awt.Font;
 
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
+
+import net.miginfocom.swing.MigLayout;
+
 import org.wwscc.storage.MetaCar;
 
 
 class RegListRenderer extends DefaultListCellRenderer
 {
-	private Font font = getFont().deriveFont(12f);
-	private Color red = Color.RED;
-	private Color hired = new Color(255, 220, 220);
+	private MyPanel p = new MyPanel();
 	
-	// ugly snot but dual label jpanel gave me a two hour layout auto resizing headache and I gave up
 	@Override
 	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
 	{
-		super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		setFont(font);
-		
 		MetaCar c = (MetaCar)value;
 		String myclass = c.getClassCode() + " " + c.getIndexStr();				
-		String t = myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor();
-		if (c.hasActivity() | c.isInRunOrder())
-		{
-			setText("<html><b>In Use &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b> " + t);
-			if (isSelected) setForeground(hired);
-			else setForeground(red);
-		}
+
+		p.label2.setText(myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor());
+		if (c.isInRunOrder())
+			p.label1.setText("In Event");
 		else if (c.isRegistered())
-			setText("<html><b>Registered</b> " + t);
+			p.label1.setText("Registered");
+		else if(c.hasActivity())
+			p.label1.setText("Used");
 		else
-			setText("<html><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b>" + t);
-		return this;
+			p.label1.setText("");
+		
+		if (isSelected)
+		{
+			p.setBackground(list.getSelectionBackground());
+			p.setForeground(list.getSelectionForeground());			
+		}
+		else
+		{	
+			p.setBackground(list.getBackground());
+			p.setForeground(list.getForeground());
+		}
+
+		return p;
+	}
+	
+}
+
+class MyPanel extends JPanel
+{
+	JLabel label1;
+	JLabel label2;
+	
+	public MyPanel()
+	{
+		setLayout(new MigLayout("ins 0", "[85!][100:500:10000]", "[20!]"));
+		
+		label1 = new JLabel();
+		label1.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+		add(label1, "ay center");
+		
+		label2 = new JLabel();
+		label2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+		add(label2, "ay center");
+	}
+	
+	@Override
+	public void setForeground(Color f)
+	{
+		super.setForeground(f);
+		if (label1 != null) label1.setForeground(f);
+		if (label2 != null) label2.setForeground(f);
 	}
 }
