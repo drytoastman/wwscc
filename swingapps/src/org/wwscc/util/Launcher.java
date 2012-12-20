@@ -20,8 +20,7 @@ import org.wwscc.registration.Registration;
  */
 public class Launcher
 {
-	static String[] apps = new String[] {"Admin", "DataEntry", "ChallengeGUI", "ProTimer",
-										"BWTimer", "Registration"};
+	static String[] apps = new String[] {"DataEntry", "Registration", "ChallengeGUI", "ProTimer", "BWTimer" };
 
 	public static void main(String args[])
 	{

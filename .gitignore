@@ -2,6 +2,7 @@
 *.o
 *.log*
 *.version
+wwjarsigner.key
 wwsccapps*.jar
 WWSCC*.exe
 swingapps/*.dll

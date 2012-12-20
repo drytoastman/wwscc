@@ -17,6 +17,7 @@ import org.wwscc.storage.MetaCar;
 class RegListRenderer extends DefaultListCellRenderer
 {
 	private MyPanel p = new MyPanel();
+	private Color superLightGray = new Color(200, 200, 200);
 	
 	@Override
 	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
@@ -24,16 +25,6 @@ class RegListRenderer extends DefaultListCellRenderer
 		MetaCar c = (MetaCar)value;
 		String myclass = c.getClassCode() + " " + c.getIndexStr();				
 
-		p.label2.setText(myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor());
-		if (c.isInRunOrder())
-			p.label1.setText("In Event");
-		else if (c.isRegistered())
-			p.label1.setText("Registered");
-		else if(c.hasActivity())
-			p.label1.setText("Used");
-		else
-			p.label1.setText("");
-		
 		if (isSelected)
 		{
 			p.setBackground(list.getSelectionBackground());
@@ -44,6 +35,20 @@ class RegListRenderer extends DefaultListCellRenderer
 			p.setBackground(list.getBackground());
 			p.setForeground(list.getForeground());
 		}
+
+		p.label2.setText(myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor());
+		if (c.isInRunOrder())
+			p.label1.setText("In Event");
+		else if (c.isRegistered())
+			p.label1.setText("Registered");
+		else if(c.hasActivity())
+		{
+			p.label1.setText("Used");
+			p.label1.setForeground(superLightGray);
+		}
+		else
+			p.label1.setText("");
+		
 
 		return p;
 	}
@@ -61,7 +66,7 @@ class MyPanel extends JPanel
 		
 		label1 = new JLabel();
 		label1.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-		add(label1, "ay center");
+		add(label1, "gap left 5, ay center");
 		
 		label2 = new JLabel();
 		label2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));

@@ -115,6 +115,7 @@ public class SQLMap
 		sql.put("TRACKCOUNT", "select count(*) from changes");
 		
 		sql.put("UNREGISTERCAR", "delete from registered where eventid=? and carid=?");
+		sql.put("UPDATEBOOLEANSETTING", "update settings set val=? where name=?");
 		sql.put("UPDATECAR", "update cars set "+ AUTO.getCarSetStr() + " where id=?");
 		sql.put("UPDATECHALLENGE", "update challenges set "+ AUTO.getChallengeSetStr() + " where id=?");
 		sql.put("UPDATECHALLENGEROUND", "update challengerounds set challengeid=?,round=?,swappedstart=?,"+

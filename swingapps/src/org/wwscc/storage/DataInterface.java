@@ -52,6 +52,7 @@ public abstract class DataInterface
 	
 	public abstract String getSetting(String key);
 	public abstract boolean getBooleanSetting(String key);
+	public abstract void putBooleanSetting(String key, boolean val);
 	
 	/** get a list of all events in the database */
 	public abstract List<Event> getEvents(); 

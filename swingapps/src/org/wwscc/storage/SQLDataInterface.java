@@ -219,6 +219,16 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 		return booleanCache.get(key);
 	}
+	
+	@Override
+	public void putBooleanSetting(String key, boolean val)
+	{
+		try {
+			executeUpdate("UPDATEBOOLEANSETTING", newList(val, key));
+		} catch (Exception ioe) {
+			logError("putBooleanSetting", ioe);
+		}
+	}
 
 	@Override
 	public void clearChanges()

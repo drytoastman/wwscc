@@ -64,6 +64,7 @@ sqlmap = {
 'TRACKCLEAR':'delete from changes',
 'TRACKCOUNT':'select count(*) from changes',
 'UNREGISTERCAR':'delete from registered where eventid=:h1 and carid=:h2',
+'UPDATEBOOLEANSETTING':'update settings set val=:h1 where name=:h2',
 'UPDATECAR':'update cars set driverid=:h1,year=:h2,make=:h3,model=:h4,color=:h5,number=:h6,classcode=:h7,indexcode=:h8,tireindexed=:h9 where id=:h10',
 'UPDATECHALLENGE':'update challenges set eventid=:h1,name=:h2,depth=:h3 where id=:h4',
 'UPDATECHALLENGEROUND':'update challengerounds set challengeid=:h1,round=:h2,swappedstart=:h3,car1id=:h4,car1dial=:h5,car1result=:h6,car1newdial=:h7,car2id=:h8,car2dial=:h9,car2result=:h10,car2newdial=:h11 where id=:h12',

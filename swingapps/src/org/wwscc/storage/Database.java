@@ -24,8 +24,6 @@ import org.wwscc.util.MultiInputDialog;
 import org.wwscc.util.Prefs;
 
 /**
- *
- * @author bwilson
  */
 public class Database
 {
@@ -41,7 +39,7 @@ public class Database
 	public static void open(boolean showFile, boolean showNetwork)
 	{
 		DatabaseDialog dd = new DatabaseDialog(
-				showFile ? Prefs.getSeriesFile(Prefs.getInstallRoot()+"/series/default.db") : null,
+				showFile ? Prefs.getSeriesFile(new File(new File(Prefs.getInstallRoot(), "series"), "default.db").getPath()) : null,
 				showNetwork ? Prefs.getSeriesURL("") : null,
 				showNetwork ? Prefs.useSeriesURL() : false);
 
@@ -155,11 +153,24 @@ public class Database
 						null);
 			if (dbname == null)
 				return null;
-			File out = new File(Prefs.getInstallRoot()+"/series/"+dbname+".db");
-			if (out.exists())
+
+			File outdir = new File(Prefs.getInstallRoot(), "series");
+			if (!outdir.exists())
 			{
+				if (JOptionPane.showConfirmDialog(null, outdir + " does not exist, create?", "Create Directory", JOptionPane.OK_CANCEL_OPTION)
+						!= JOptionPane.OK_OPTION)
+					return null;
+				outdir.mkdirs();
+			}
+			
+			File out = new File(outdir, dbname+".db");
+			if (out.exists())
+			{				
 				if (!lockServerSide)
 				{
+					if (JOptionPane.showConfirmDialog(null, out + " already exists, delete old?", "Delete File", JOptionPane.OK_CANCEL_OPTION)
+							!= JOptionPane.OK_OPTION)
+						return null;
 					if ((file != null) && file.equals(out))
 						d.close();
 					if (!out.delete())
@@ -171,6 +182,8 @@ public class Database
 
 			conn.downloadDatabase(out, lockServerSide);
 			openDatabaseFile(out);
+			if (lockServerSide) // unlock on our side for admin site use at event
+				d.putBooleanSetting("locked", false);
 			d.clearChanges();
 			return out;
 		}
@@ -180,7 +193,7 @@ public class Database
 		}
 		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, "Download error: " + ex, ex);
+			log.log(Level.SEVERE, "Can't finish download: " + ex, ex);
 			return null;
 		}
 	}
@@ -199,9 +212,9 @@ public class Database
 			conn.uploadDatabase(save);
 
 			String newname = save.getName() + "-" + (System.currentTimeMillis()/1000);
-			File back = new File(Prefs.getInstallRoot() + "/backup/" + newname).getCanonicalFile();
+			File back = new File (new File(Prefs.getInstallRoot(), "backup"), newname).getCanonicalFile();
 			if (!save.renameTo(back))
-				log.warning("backup/rename failed, file will remain in place for now");
+				log.warning("backup/rename failed, old copy of series will remain in place for now");
 
 			Messenger.sendEvent(MT.COURSE_CHANGED, null);
 			Messenger.sendEvent(MT.RUNGROUP_CHANGED, null);
