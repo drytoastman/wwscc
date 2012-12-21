@@ -18,6 +18,7 @@ public class FakeResult extends EventResult
 	
 	public String getFullName() { return entrant.getFirstName() + " " + entrant.getLastName(); }
 	public String getIndexCode() { return "";}
+	public String getIndexStr() { return "";}
 	public double getSum() {return theorectical; }
 	public String getType() { return type; }
 }

@@ -24,6 +24,9 @@ public class Car implements Serializable
 	protected String classcode;
 	protected String indexcode;
 	protected boolean tireindexed;
+	
+	// not part of car tables
+	private String indexstr;
 
 	static public class NumOrder implements Comparator<Car>
 	{
@@ -48,6 +51,7 @@ public class Car implements Serializable
 		classcode = "";
 		indexcode = "";
 		tireindexed = false;
+		indexstr = null;
 	}
 	
 	public Car(Car other)
@@ -62,18 +66,14 @@ public class Car implements Serializable
 		classcode = other.classcode;
 		indexcode = other.indexcode;
 		tireindexed = other.tireindexed;
+		indexstr = other.indexstr;
 	}
 
 	public int getId() { return id; }
 	public int getDriverId() { return driverid; }
 	public String getClassCode() { return classcode; }
 	public String getIndexCode() { return indexcode; }
-	public String getIndexStr() 
-	{
-		if (indexcode.equals("") && !tireindexed)
-			return "";
-		return String.format("(%s%s)", indexcode, tireindexed?"+T":"");
-	}
+	public String getIndexStr() { return (indexstr != null) ? indexstr: indexcode; } 
 	public int getNumber() { return number; }
 	public String getYear() { return year; }
 	public String getMake() { return make; }
@@ -91,6 +91,8 @@ public class Car implements Serializable
 	public void setIndexCode(String s) { indexcode = s; }
 	public void setTireIndexed(boolean b) { tireindexed = b; }
 		
+	protected void setIndexStr(String s) { indexstr = s; }
+	
 	@Override
 	public boolean equals(Object o)
 	{

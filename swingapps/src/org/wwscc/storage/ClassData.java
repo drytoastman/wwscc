@@ -11,20 +11,20 @@ package org.wwscc.storage;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ClassData
 {
-	//private static Logger log = Logger.getLogger("org.wwscc.storage.ClassData");
+	private static Logger log = Logger.getLogger(ClassData.class.getCanonicalName());
 
 	HashMap <String, ClassData.Class> classes;
 	HashMap <String, ClassData.Index> indexes;
-	double globaltireindex;
 	
 	public ClassData()
 	{
 		classes = new HashMap<String, ClassData.Class>();
 		indexes = new HashMap<String, ClassData.Index>();
-		globaltireindex = 1.0;
 	}
 
 	protected void add(ClassData.Class c)
@@ -36,11 +36,6 @@ public class ClassData
 	{
 		indexes.put(i.getCode(), i);
 	}
-	
-	protected void setGlobalTireIndex(double d)
-	{
-		globaltireindex = d;
-	}
 
 	public ClassData.Class getClass(String code)
 	{
@@ -50,11 +45,6 @@ public class ClassData
 	public ClassData.Index getIndex(String code)
 	{
 		return indexes.get(code);
-	}
-	
-	public double getGlobalTireIndex()
-	{
-		return globaltireindex;
 	}
 
 	public ArrayList<ClassData.Class> getClasses()
@@ -87,6 +77,67 @@ public class ClassData
 		return result;
 	}
 
+	
+	public double getEffectiveIndex(String classcode, String indexcode, boolean tireindexed)
+	{
+		double indexVal = 1.0;
+		try
+		{
+			ClassData.Class classData = getClass(classcode);
+			ClassData.Index indexData;
+
+			if (classData == null)
+				throw new Exception("Invalid class: " + classcode);
+
+			/* Apply car index */
+			if (classData.carindexed)
+			{
+				if ((indexData = getIndex(indexcode)) != null)
+					indexVal *= indexData.getValue();
+			}
+			
+			/* Apply class index (linked to index tables) */
+			if (!classData.classindex.equals(""))
+			{
+				if ((indexData = getIndex(classData.classindex)) != null)
+					indexVal *= indexData.getValue();
+			}
+
+			/* Apply special class multiplier (only < 1.000 for Tire class at this point) */
+			if (classData.classmultiplier < 1.0 && (!classData.usecarflag || tireindexed))
+				indexVal *= classData.classmultiplier;
+		}
+		catch (Exception ioe)
+		{
+			log.log(Level.WARNING, "getEffectiveIndex failed: " + ioe, ioe);
+		}
+
+		return indexVal;
+	}
+
+	public String getIndexStr(String classcode, String indexcode, boolean tireindexed)
+	{
+        String indexstr = indexcode;
+        try
+        {
+			ClassData.Class cls = getClass(classcode);
+			if (cls == null)
+				throw new Exception("Invalid class: " + classcode);
+
+            if (!cls.classindex.equals(""))
+                indexstr = cls.classindex;
+
+            if (cls.classmultiplier < 1.000 && (!cls.usecarflag || tireindexed))
+                indexstr = indexstr + "*";
+        }
+        catch (Exception e)
+        {
+        }
+        
+        if (indexstr.equals(""))
+        	return indexstr;
+        return String.format("(%s)", indexstr);
+	}
 
 	/***********************************************************************/
 	/* Class */
@@ -101,6 +152,7 @@ public class ClassData
 		protected boolean champtrophy;
 		protected int numorder;
 		protected int countedruns;
+		protected boolean usecarflag;
 
 		public Class()
 		{
@@ -128,6 +180,10 @@ public class ClassData
 		
 		public boolean carsNeedIndex() {
 			return carindexed;
+		}
+		
+		public boolean useCarFlag() {
+			return usecarflag;
 		}
 
 		static public class StringOrder implements Comparator<ClassData.Class>

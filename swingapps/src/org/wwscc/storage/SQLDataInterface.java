@@ -360,7 +360,7 @@ public abstract class SQLDataInterface extends DataInterface
 		for (ResultRow erow : d)
 		{
 			Entrant e = new Entrant();
-			e.car = AUTO.loadCar(erow);
+			e.car = loadCar(erow);
 			e.driverid = erow.getInt("driverid");
 			e.firstname = erow.getString("firstname");
 			e.lastname = erow.getString("lastname");
@@ -380,7 +380,19 @@ public abstract class SQLDataInterface extends DataInterface
 
 		return ret;
 	}
+	
+	/**
+	 * Wrap car loading so we can calculate the cached indexstr
+	 * @throws IOException 
+	 */
+	Car loadCar(ResultRow r) throws IOException
+	{
+		Car c = AUTO.loadCar(r);
+		c.setIndexStr(getIndexStr(c.classcode, c.indexcode, c.tireindexed));
+		return c;
+	}
 
+	
 	
 	@Override
 	public List<Entrant> getEntrantsByEvent()
@@ -421,7 +433,7 @@ public abstract class SQLDataInterface extends DataInterface
 			ResultData data = executeSelect("GETREGISTEREDCARS", newList(currentEvent.id, driverid));
 			ret = new ArrayList<Car>();
 			for (ResultRow r : data)
-				ret.add(AUTO.loadCar(r));
+				ret.add(loadCar(r));
 		}
 		catch (Exception ioe)
 		{
@@ -753,7 +765,7 @@ public abstract class SQLDataInterface extends DataInterface
 			ResultData d = executeSelect("LOADDRIVERCARS", newList(driverid));
 			List<Car> ret = new ArrayList<Car>();
 			for (ResultRow r : d)
-				ret.add(AUTO.loadCar(r));
+				ret.add(loadCar(r));
 			return ret;
 		}
 		catch (Exception ioe)
@@ -1128,7 +1140,10 @@ public abstract class SQLDataInterface extends DataInterface
 			for (ResultRow r : d)
 			{
 				EventResult er = AUTO.loadEventResult(r);
-				er.setIndex(r.getString("indexcode"), r.getBoolean("tireindexed"), getEffectiveIndex(classcode, r.getString("indexcode"), r.getBoolean("tireindexed")));
+				String indexcode = r.getString("indexcode");
+				boolean tireindexed = r.getBoolean("tireindexed");
+
+				er.setIndex(getIndexStr(classcode, indexcode, tireindexed), getEffectiveIndex(classcode, indexcode, tireindexed));
 				er.setName(r.getString("firstname"), r.getString("lastname"));
 				ret.add(er);
 			}
@@ -1485,7 +1500,7 @@ public abstract class SQLDataInterface extends DataInterface
 			ret = new HashMap<Integer, Car>();
 			for (ResultRow r : d)
 			{
-				Car car = AUTO.loadCar(r);
+				Car car = loadCar(r);
 				ret.put(car.id, car);
 			}
 			return ret;
@@ -1552,10 +1567,6 @@ public abstract class SQLDataInterface extends DataInterface
 			ResultData idata = executeSelect("GETINDEXES", null);
 			for (ResultRow r : idata)
 				ret.add(AUTO.loadIndex(r));
-
-			ResultData setting = executeSelect("GETSETTING", newList("globaltireindex"));
-			if (setting.size() > 0)
-				ret.setGlobalTireIndex(setting.get(0).getDouble("val"));
 			
 			classCache = ret; // save for index lookups, user may preload cache for us
 			return ret;
@@ -1568,48 +1579,17 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	ClassData classCache = null;
-	public double getEffectiveIndex(String classcode, String indexcode, boolean tireindexed)
+	protected double getEffectiveIndex(String classcode, String indexcode, boolean tireindexed)
 	{
 		if (classCache == null)
 			getClassData();
-
-		double indexVal = 1.0;
-		try
-		{
-			ClassData.Class classData = classCache.getClass(classcode);
-			ClassData.Index indexData;
-
-			if (classData == null)
-				throw new Exception("Invalid class: " + classcode);
-
-			/* Apply car index */
-			if (classData.carindexed)
-			{
-				if ((indexData = classCache.getIndex(indexcode)) != null)
-					indexVal *= indexData.getValue();
-			}
-
-			/* Apply possible global tire index */
-			if (tireindexed)
-			{
-				indexVal *= classCache.getGlobalTireIndex();
-			}
-			
-			/* Apply class index (linked to index tables) */
-			if (!classData.classindex.equals(""))
-			{
-				if ((indexData = classCache.getIndex(classData.classindex)) != null)
-					indexVal *= indexData.getValue();
-			}
-
-			/* Apply special class multiplier (only < 1.000 for Tire class at this point) */
-			indexVal *= classData.classmultiplier;
-		}
-		catch (Exception ioe)
-		{
-			logError("getEffectiveIndex", ioe);
-		}
-
-		return indexVal;
+		return classCache.getEffectiveIndex(classcode, indexcode, tireindexed);
+	}
+	
+	protected String getIndexStr(String classcode, String indexcode, boolean tireindexed)
+	{
+		if (classCache == null)
+			getClassData();
+		return classCache.getIndexStr(classcode, indexcode, tireindexed);
 	}
 }

@@ -25,16 +25,10 @@ import org.wwscc.storage.Database;
  */
 public class CarDialog extends BaseDialog<Car>
 {
-	private static Logger log = Logger.getLogger("org.wwscc.dialogs.CarDialog");
+	private static Logger log = Logger.getLogger(CarDialog.class.getCanonicalName());
 	
 	protected JButton add;
 	protected boolean addToRunOrder;
-	protected boolean showGlobalTireIndex;
-	
-    public CarDialog(Car car, ClassData cd, boolean addoption)
-    {
-    	this(car, cd, addoption, cd.getGlobalTireIndex() < 1.0);
-    }
     
 	/**
 	 * Create the dialog.
@@ -42,14 +36,13 @@ public class CarDialog extends BaseDialog<Car>
 	 * @param cd		the classdata to use for classes/indexes
 	 * @param addoption whether to add the create and add button
 	 */
-    public CarDialog(Car car, ClassData cd, boolean addoption, boolean showTireOption)
+    public CarDialog(Car car, ClassData cd, boolean addoption)
 	{
 		super(new MigLayout("", "[70, align right][100, fill]"), true);
 
 		if (car == null)
 			car = new Car();
 		
-		showGlobalTireIndex = showTireOption;
 		addToRunOrder = false;
 		if (addoption)
 		{
@@ -94,11 +87,8 @@ public class CarDialog extends BaseDialog<Car>
 		mainPanel.add(label("Index", true), "");
 		mainPanel.add(select("indexcode", cd.getIndex(car.getIndexCode()), indexlist, null), "wrap");
 
-		if (showGlobalTireIndex)
-		{
-			mainPanel.add(label("Global Tire Index", true), "");
-			mainPanel.add(checkbox("tireindexed", car.isTireIndexed()), "wrap");
-		}
+		mainPanel.add(label("Extra Tire Index", true), "");
+		mainPanel.add(checkbox("tireindexed", car.isTireIndexed()), "wrap");
 		
 		actionPerformed(new ActionEvent(selects.get("classcode"), 1, ""));
 
@@ -117,8 +107,11 @@ public class CarDialog extends BaseDialog<Car>
 			ClassData.Class c = (ClassData.Class)cb.getSelectedItem();
 			if (c == null) return;
 
-			JComboBox<Object> index = selects.get("indexcode");
-			index.setEnabled(c.carsNeedIndex());
+			labels.get("Index").setVisible(c.carsNeedIndex());
+			selects.get("indexcode").setVisible(c.carsNeedIndex());
+			
+			labels.get("Extra Tire Index").setVisible(c.useCarFlag());
+			checks.get("tireindexed").setVisible(c.useCarFlag());
 		}
 		else if (ae.getSource() == add)
 		{
@@ -212,11 +205,12 @@ public class CarDialog extends BaseDialog<Car>
 			{
 				result.setIndexCode("");
 			}
-	
-			if (showGlobalTireIndex)
-			{
+
+			if (c.useCarFlag())
 				result.setTireIndexed(isChecked("tireindexed"));
-			}
+			else
+				result.setTireIndexed(false);
+
 			
 			result.setNumber(Integer.valueOf(getEntryText("number")));
 			return result;

@@ -21,7 +21,7 @@ public class EventResult implements Comparable<EventResult>
 	protected double diffpoints;
 	protected int pospoints;
 	
-	// privates not follwed by AUTO load or table definition
+	// privates not followed by AUTO load or table definition
 	private String firstname;
 	private String lastname;
 	private String indexstr;
@@ -36,13 +36,10 @@ public class EventResult implements Comparable<EventResult>
 	public int getPosition() { return position; }
 	
 
-	protected void setIndex(String code, boolean tireindexed, double value) 
+	protected void setIndex(String str, double value) 
 	{
-		if (code.equals("") && !tireindexed)
-			indexstr = "";
-		else
-			indexstr = String.format("%s%s", code, tireindexed?"+T":"");
 		indexvalue = value;
+		indexstr = str;
 	}
 	
 	protected void setName(String first, String last)
@@ -53,7 +50,9 @@ public class EventResult implements Comparable<EventResult>
 	
 	@Override
 	public int compareTo(EventResult o) {
-		return (int)(1000*(getSum() - o.getSum()));
+		if (o.courses == courses)
+			return (int)(1000*(getSum() - o.getSum()));
+		return o.courses - courses;
 	}
 }
 

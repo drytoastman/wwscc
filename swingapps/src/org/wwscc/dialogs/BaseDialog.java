@@ -39,6 +39,7 @@ import org.wwscc.util.NumberField;
  */
 public class BaseDialog<E> extends JPanel implements ActionListener
 {
+	protected HashMap<String,JLabel> labels;
 	protected HashMap<String,JTextField> fields;
 	protected HashMap<String,JComboBox<Object>> selects;
 	protected HashMap<String,JCheckBox> checks;
@@ -78,6 +79,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 		currentDialog = null;
 		floating = floatme;
 		
+		labels = new HashMap<String,JLabel>();
 		fields = new HashMap<String,JTextField>();
 		selects = new HashMap<String,JComboBox<Object>>();
 		checks = new HashMap<String,JCheckBox>();
@@ -115,6 +117,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 		if (bold) lbl.setFont(base.deriveFont(Font.BOLD));
 		else lbl.setFont(base.deriveFont(Font.PLAIN));
 
+		labels.put(name, lbl);
 		return lbl;
 	}
 
