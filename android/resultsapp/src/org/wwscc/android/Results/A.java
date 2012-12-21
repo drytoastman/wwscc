@@ -52,7 +52,7 @@ public class A
 		{
 			textviews.get(R.id.position).setText(o.getString("position"));
 			textviews.get(R.id.name).setText(o.getString("name"));
-			textviews.get(R.id.index).setText(o.getString("index"));
+			textviews.get(R.id.index).setText(o.getString("indexstr"));
 			textviews.get(R.id.sum).setText(o.getString("toptime"));
 		}
 	}
@@ -68,7 +68,7 @@ public class A
 		{
 			textviews.get(R.id.position).setText(o.getString("position"));
 			textviews.get(R.id.name).setText(o.getString("name"));
-			textviews.get(R.id.classcode).setText(o.getString("class"));
+			textviews.get(R.id.classcode).setText(o.getString("classcode"));
 			textviews.get(R.id.sum).setText(o.getString("toptime"));
 		}
 	}
