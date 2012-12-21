@@ -11,13 +11,13 @@
 	<input type="text" name="clslist-${ii}.descrip" value="${cls.descrip}" size="50" />
 </td>
 <td title="Receives trophies at events">
-	<input type="checkbox" name="clslist-${ii}.eventtrophy" ${cls.eventtrophy and 'checked="yes"' or ''|n} />
+	<input type="checkbox" name="clslist-${ii}.eventtrophy" ${cls.eventtrophy and 'checked="checked"' or ''|n} />
 </td>
 <td title="Receives trophies for the series">
-	<input type="checkbox" name="clslist-${ii}.champtrophy" ${cls.champtrophy and 'checked="yes"' or ''|n} />
+	<input type="checkbox" name="clslist-${ii}.champtrophy" ${cls.champtrophy and 'checked="checked"' or ''|n} />
 </td>
 <td title="Cars are individually indexed by index value">
-	<input type="checkbox" name="clslist-${ii}.carindexed" ${cls.carindexed and 'checked="yes"' or ''|n} />
+	<input type="checkbox" name="clslist-${ii}.carindexed" ${cls.carindexed and 'checked="checked"' or ''|n} />
 </td>
 <td title="Entire class is indexed by this index code">
 	<select name="clslist-${ii}.classindex">
@@ -25,6 +25,7 @@
 		<option value="${code}" ${cls.classindex==code and "selected" or ""}>${code}</option>
 	%endfor
 	</select>
+	<input type="checkbox" name="clslist-${ii}.usecarflag" ${cls.usecarflag and 'checked="checked"' or ''|n} />
 </td>
 <td title="This multiplier is applied to entire class, i.e. street tire factor">
 	<input type="text" name="clslist-${ii}.classmultiplier" value="${"%0.3f" % (cls.classmultiplier or 1.000)}" size="5" />

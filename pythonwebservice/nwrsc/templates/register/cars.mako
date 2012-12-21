@@ -13,7 +13,7 @@ disabled='disabled' title='Cars registered or in use cannot be edited or deleted
 	<td><button class='delete' onclick="deletecar(${car.id});" ${car.inuse and disablewarn()}></button></td>
 	<td class='carclass'>${car.classcode}</td>
 	<td class='carnumber'>${car.number}</td>
-	<td class='carindex'>${h.ixstr(car)}</td>
+	<td class='carindex'>${c.classdata.getIndexStr(car)}</td>
 	<td class='cardesc'>${car.year} ${car.make} ${car.model} ${car.color}</td>
 	</tr>
 %endfor

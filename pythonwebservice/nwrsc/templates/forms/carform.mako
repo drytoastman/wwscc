@@ -17,13 +17,15 @@ for code in sorted(c.classdata.classlist):
 	cls = c.classdata.classlist[code]
 	context.write("<option value='%s' " % (cls.code))
 	if cls.carindexed:
-		context.write("indexed='1'")
+		context.write("indexed='1' ")
+	if cls.usecarflag:
+		context.write("usecarflag='1' ")
 	context.write(">%s - %s</option>\n" % (cls.code, cls.descrip))
 %>
 </select>
 </td></tr>
 
-<tr><th>Index</th> <td>
+<tr class='indexcodecontainer'><th>Index</th> <td>
 <select id='indexcode' name='indexcode'>
 <option value=''></option>
 %for code in sorted(c.classdata.indexlist):
@@ -32,12 +34,7 @@ for code in sorted(c.classdata.classlist):
 </select>
 </td></tr>
 
-%if c.settings.globaltireindex < 1.0:
-<tr>
-%else:
-<tr style='display:none;'>
-%endif
-<th>Tire Index</th> <td> <input name='tireindexed' type='checkbox'/></td></tr>
+<tr class='tireindexcontainer'><th>Tire Index</th> <td> <input name='tireindexed' type='checkbox'/></td></tr>
 
 <tr>
    <th>Number</th><td>

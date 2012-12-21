@@ -3,12 +3,22 @@ function classchange()
 {
 	if ($("#careditor [name=classcode] option:selected").attr('indexed'))
 	{
-		$('#careditor [name=indexcode]').removeAttr('disabled');
+		$('.indexcodecontainer').toggle(true);
 	}
 	else
 	{
 		$('#careditor [name=indexcode]').val(0);
-		$('#careditor [name=indexcode]').attr('disabled', 'disabled');
+		$('.indexcodecontainer').toggle(false);
+	}
+
+	
+	if ($("#careditor [name=classcode] option:selected").attr('usecarflag'))
+	{
+		$('.tireindexcontainer').toggle(true)
+	}
+	else
+	{
+		$('.tireindexcontainer').toggle(false)
 	}
 
 	setnum("");
@@ -27,9 +37,9 @@ function editcar(did, cid)
 		$('#careditor [name=color]').val(cars[cid].color);
 		$('#careditor [name=classcode]').val(cars[cid].classcode);
 		$('#careditor [name=indexcode]').val(cars[cid].indexcode);
+		$('#careditor [name=tireindexed]').prop('checked', cars[cid].tireindexed);
 		classchange();
 		setnum(cars[cid].number);
-		$('#careditor [name=tireindexed]').prop('checked', cars[cid].tireindexed);
 	}
 	else
 	{
