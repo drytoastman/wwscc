@@ -6,6 +6,7 @@ available to Controllers. This module is available to both as 'h'.
 # Import helpers as desired, or define your own, ie:
 # from webhelpers.html.tags import checkbox, password
 
+from pylons import tmpl_context as c
 from webhelpers.html.tags import stylesheet_link, javascript_link
 from routes import url_for, redirect_to
 from simplejson import dumps
@@ -46,9 +47,10 @@ def t3(val, sub = None, sign = False):
 		return "%0.3f" % (val)
 
 def ixstr(car):
-	if car.indexcode != "" or car.tireindexed:
-		return "(%s%s)" % (car.indexcode, car.tireindexed and "+T" or "")
-	return ""
+	ret = c.classdata.getIndexStr(car)
+	if ret == "":
+		return ret
+	return "(%s)" % ret
 
 def encodesqlobj(obj):
 	d = dict()

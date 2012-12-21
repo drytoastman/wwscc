@@ -119,8 +119,6 @@ def convert20121(session):
 def convert20122(session):
 
 	metadata.bind = session.bind
-	# Needed as previous conversion forgot to in some cases
-	session.execute("DROP TABLE IF EXISTS oldeventresults")
 
 	# Add new announcer table
 	metadata.tables['announcer'].create()
@@ -137,22 +135,38 @@ def convert20122(session):
 	# Add new cars flag
 	session.execute("ALTER TABLE cars ADD COLUMN tireindexed BOOLEAN DEFAULT 0")
 
-	# add usepospoints, champsorting, change ppoints to pospointlist
 	log.info("update settings")
 	settings = Settings()
-	settings.load(session)  # also loads new default values
+	settings.load(session)
 	settings.schema = '20123'
 	settings.save(session)
 
 	session.commit()
 
 
+def convert20123(session):
+
+	metadata.bind = session.bind
+
+	# Add new cars flag
+	session.execute("ALTER TABLE classlist ADD COLUMN usecarflag BOOLEAN DEFAULT 0")
+
+	log.info("update settings")
+	settings = Settings()
+	settings.load(session)
+	settings.schema = '20124'
+	settings.save(session)
+
+	session.commit()
+
 
 converters = {
 	'20112': convert2011,
 	'20121': convert20121,
 	'20122': convert20122,
+	'20123': convert20123,
 }
+
 
 def convert(session):
 	try:

@@ -103,6 +103,7 @@ class EntrantEditor(object):
 	def getitems(self):
 		c.items = list()
 		c.fields = self.session.query(DriverField).all()
+		c.classdata = ClassData(self.session)
 		for drid in map(int, request.GET.get('driverids', "").split(',')):
 			dr = self.session.query(Driver).filter(Driver.id==drid).first();
 			cars = self.session.query(Car).filter(Car.driverid==drid).all();

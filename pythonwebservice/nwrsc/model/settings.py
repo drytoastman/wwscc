@@ -23,7 +23,7 @@ class Settings(object):
 	INTS = ["largestcarnumber", "useevents", "minevents"]
 	BOOLS = ["locked", "superuniquenumbers", "indexafterpenalties", "usepospoints"]
 	STRS = ["pospointlist", "champsorting", "seriesname", "sponsorlink", "password", "schema", "parentseries"]
-	FLOATS = ["globaltireindex"]
+	FLOATS = []
 
 	def __init__(self):
 		self.locked = False
@@ -42,8 +42,6 @@ class Settings(object):
 		self.largestcarnumber = 1999
 		self.useevents = 6
 		self.minevents = 0
-
-		self.globaltireindex = 1.0
 
 
 	def set(self, items):

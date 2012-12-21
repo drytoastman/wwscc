@@ -21,6 +21,7 @@ t_classlist = Table('classlist', metadata,
 	Column('champtrophy', Boolean, default=True),
 	Column('numorder', Integer),
 	Column('countedruns', Integer),
+	Column('usecarflag', Boolean),
 	UniqueConstraint('code', name='classidx_1')
 	)
 
@@ -101,7 +102,6 @@ class ClassData(object):
 			self.classlist[cls.code] = cls
 		for idx in session.query(Index):
 			self.indexlist[idx.code] = idx
-		self.globaltireindex = float(session.query(Setting.val).filter(Setting.name=='globaltireindex').first().val)
 
 
 	def getCountedRuns(self, classcode):
@@ -110,6 +110,7 @@ class ClassData(object):
 		except:
 			return sys.maxint
 		
+
 	def getIndexStr(self, car): #classcode, indexcode, tireindexed):
 		indexstr = car.indexcode
 		try:
@@ -117,10 +118,7 @@ class ClassData(object):
 			if cls.classindex != "":
 				indexstr = cls.classindex
 
-			if car.tireindexed:
-				indexstr = indexstr + "+T"
-
-			if cls.classmultiplier < 1.000:
+			if cls.classmultiplier < 1.000 and (not cls.usecarflag or car.tireindexed):
 				indexstr = indexstr + '*'
 		except:
 			pass
@@ -135,13 +133,12 @@ class ClassData(object):
 			if cls.classindex != "":
 				indexval *= self.indexlist[cls.classindex].value
 
-			if car.tireindexed:
-				indexval *= self.globaltireindex
-
 			if cls.carindexed and car.indexcode:
 				indexval *= self.indexlist[car.indexcode].value
 
-			indexval *= cls.classmultiplier
+			if cls.classmultiplier < 1.000 and (not cls.usecarflag or car.tireindexed):
+				indexval *= cls.classmultiplier
+
 		except Exception, e:
 			log.warning("getEffectiveIndex(%s,%s,%s) failed: %s" % (car.classcode, car.indexcode, car.tireindexed, e))
 
