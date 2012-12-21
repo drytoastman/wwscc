@@ -27,6 +27,7 @@ public class SQLMap
 	
 	static
 	{
+		sql.put("DELETEANNOUNCERDATA", "delete from announcer where eventid=? and carid=?");
 		sql.put("DELETECAR", "delete from cars where id=?");
 		sql.put("DELETECLASSRESULTS", "delete from eventresults where classcode=? and eventid=?");
 		sql.put("DELETECHALLENGE", "delete from challenges where id=?");

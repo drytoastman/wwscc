@@ -251,7 +251,7 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 		
 		if ((myresult == null) || (announcer == null))
 		{
-			log.warning("Announcer panel missing result for entrant, skipping processing");
+			log.info("Announcer panel missing result for entrant, skipping processing");
 			return;
 		}
 

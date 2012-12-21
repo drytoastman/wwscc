@@ -77,7 +77,7 @@ def UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, su
 
 	session.query(AnnouncerData).filter(AnnouncerData.carid==carid).filter(AnnouncerData.eventid==eventid).delete()
 
-	data = AnnouncerData()
+	data = AnnouncerData()  # This is our object to be updated
 	session.add(data)
 	data.eventid = eventid
 	data.carid = carid
@@ -89,6 +89,9 @@ def UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, su
 	runs = {}
 	for r in session.query(Run).filter(Run.carid==carid).filter(Run.eventid==eventid).filter(Run.course==course): 
 		runs[r.run] = r
+
+	if not len(runs):
+		return  # Nothing to do
 
 	runlist = sorted(runs.keys())
 	lastrun = runs[runlist[-1]]

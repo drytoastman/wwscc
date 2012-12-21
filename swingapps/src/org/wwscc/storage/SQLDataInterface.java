@@ -1053,7 +1053,12 @@ public abstract class SQLDataInterface extends DataInterface
     	
     	Entrant entrant = loadEntrant(currentCourse, carid, true);
 		Run runs[] = entrant.getRuns();
-		    	
+		if (runs.length == 0)
+		{
+			executeUpdate("DELETEANNOUNCERDATA", newList(currentEvent.id, carid));
+			return;
+		}
+		
 		Run curbest, prevbest, lastrun;
 		curbest = prevbest = lastrun = runs[runs.length-1];
 		for (int ii = 0; ii < runs.length; ii++)
