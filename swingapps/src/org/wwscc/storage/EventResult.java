@@ -34,6 +34,7 @@ public class EventResult implements Comparable<EventResult>
 	public String getIndexStr() { return indexstr; }
 	public double getIndex() { return indexvalue; }
 	public int getPosition() { return position; }
+	public int getCourseCount() { return courses; }
 	
 
 	protected void setIndex(String str, double value) 

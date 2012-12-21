@@ -9,10 +9,10 @@
 
 %for entry in c.toptimes:
 <tr class='${c.e2label(entry)}'> 
-<td>${entry['position']}</td>
-<td>${entry['name']}</td>
-<td>${entry['class']}</td>
-<td>${entry['time']}</td>
+<td>${entry.position}</td>
+<td>${entry.name}</td>
+<td>${entry.classcode}</td>
+<td>${entry.toptime}</td>
 </tr>
 %endfor
 

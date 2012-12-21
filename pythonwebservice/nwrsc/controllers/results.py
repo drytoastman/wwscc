@@ -164,23 +164,23 @@ class ResultsController(BaseController):
 
 
 	def topindex(self):
-		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
-		c.toptimes.backAppend(False, False, 0) # self._loadTopIndexTimes()
+		tt = TopTimesStorage(self.session, c.event, c.classdata)
+		c.toptimes = [tt.getList(allruns=False, raw=False, course=0)]
 		return render_mako('db:toptimes.mako')
 
 	def topindexall(self):
-		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
-		c.toptimes.backAppend(True, False, 0) # self._loadTopIndexTimes(True)
+		tt = TopTimesStorage(self.session, c.event, c.classdata)
+		c.toptimes = [tt.getList(allruns=True, raw=False, course=0)] 
 		return render_mako('db:toptimes.mako')
 
 	def topraw(self):
-		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
-		c.toptimes.backAppend(False, True, 0)  # self._loadTopTimes()
+		tt = TopTimesStorage(self.session, c.event, c.classdata)
+		c.toptimes = [tt.getList(allruns=False, raw=True, course=0)] 
 		return render_mako('db:toptimes.mako')
 
 	def toprawall(self):
-		c.toptimes = TopTimesStorage(self.session, c.event, c.classdata)
-		c.toptimes.backAppend(True, True, 0)  # self._loadTopTimes(True)
+		tt = TopTimesStorage(self.session, c.event, c.classdata)
+		c.toptimes = [tt.getList(allruns=True, raw=True, course=0)] 
 		return render_mako('db:toptimes.mako')
 
 	"""

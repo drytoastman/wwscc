@@ -256,9 +256,9 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 		}
 
 		if (announcer.getOldSum() > 0) 
-            erlist.add(new FakeResult(entrant, "old", announcer.getOldSum()));
+            erlist.add(new FakeResult(myresult, "old", announcer.getOldSum()));
 		if (announcer.getPotentialSum() > 0)
-            erlist.add(new FakeResult(entrant, "raw", announcer.getPotentialSum()));		            
+            erlist.add(new FakeResult(myresult, "raw", announcer.getPotentialSum()));		            
 		Collections.sort(erlist);
 		
 		nameLabel.setText(entrant.getName());

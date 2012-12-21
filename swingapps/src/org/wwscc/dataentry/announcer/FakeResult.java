@@ -1,24 +1,22 @@
 package org.wwscc.dataentry.announcer;
 
-import org.wwscc.storage.Entrant;
 import org.wwscc.storage.EventResult;
 
 public class FakeResult extends EventResult
 {
-	Entrant entrant;
 	String type;
-	Double theorectical;
-
-	public FakeResult(Entrant e, String t, Double theory)
+	String fullname;
+	
+	public FakeResult(EventResult r, String t, Double theory)
 	{
-		entrant = e;
 		type = t;
-		theorectical = theory;
+		sum = theory;
+		courses = r.getCourseCount();
+		fullname = r.getFullName();
 	}
 	
-	public String getFullName() { return entrant.getFirstName() + " " + entrant.getLastName(); }
+	public String getFullName() { return fullname; }
 	public String getIndexCode() { return "";}
 	public String getIndexStr() { return "";}
-	public double getSum() {return theorectical; }
 	public String getType() { return type; }
 }

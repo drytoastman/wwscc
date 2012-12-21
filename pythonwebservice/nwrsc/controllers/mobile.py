@@ -95,29 +95,25 @@ class MobileController(BaseController):
 
 
 	def _convertTTS(self, tts, carid, oldsum, rawsum):
-		ret = []
 		position = 1
-		cols = tts.cols
+		additions = list()
 		
-		for row, tcarid in zip(tts.rows, tts.carids):
-			ret.append(dict([(cols[ii].lower() or 'indexcode', row[ii]) for ii in range(len(cols))]))
-			ret[-1]['position'] = position
+		for entry in tts.rows:
+			entry.position = position
 			position += 1
-			if tcarid == carid:
-				ret[-1]['label'] = 'current'
+			if entry.carid == carid:
+				entry.label = 'current'
 				if oldsum is not None and oldsum > 0:
-					oldentry = ret[-1].copy()
-					oldentry.update({'position':'old', 'time':t3(oldsum), 'label':'old'})
-					ret.append(oldentry)
+					additions.append(entry.copyWith(position='old', toptime=t3(oldsum), label='old'))
 				if rawsum is not None and rawsum > 0:
-					rawentry = ret[-1].copy()
-					rawentry.update({'position':'raw', 'time':t3(rawsum), 'label':'raw'})
-					ret.append(rawentry)
+					additions.append(entry.copyWith(position='raw', toptime=t3(rawsum), label='raw'))
 	
-		if oldsum is not None or rawsum is not None:
-			ret.sort(key=operator.itemgetter('time'))
-		return ret
+		if additions:
+			tts.rows.extend(additions)
+			tts.rows.sort(key=operator.attrgetter('toptime'))
+			tts.rows.sort(key=operator.attrgetter('courses'), reverse=True)
 
+		return tts.rows
 
 
 	def _entrant(self, carid):
@@ -162,22 +158,25 @@ class MobileController(BaseController):
 		if self.driver.alias and not config['nwrsc.private']:
 			self.driver.firstname = self.driver.alias
 			self.driver.lastname = ""
-		self.cls = self.session.query(Class).filter(Class.code==self.car.classcode).first()
 		self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
 		if self.announcer is None:
 			raise BeforePage('')
 
 		ret = []
-		for res in getClassResultsShort(self.session, self.settings, self.event, self.cls):
-			ret.append(_extract(res, 'sum', 'pospoints', 'diffpoints', 'carid', 'firstname', 'lastname', 'indexstr', 'position', 'trophy', 'diff'))
+		classdata = ClassData(self.session)
+		savecourses = 0
+		for res in getClassResultsShort(self.session, self.settings, self.event, classdata, self.car.classcode):
+			ret.append(_extract(res, 'sum', 'pospoints', 'diffpoints', 'carid', 'firstname', 'lastname', 'indexstr', 'position', 'trophy', 'diff', 'courses'))
 			if res.carid == carid:
 				ret[-1]['label'] = "current"
+				savecourses = ret[-1]['courses']
 
 		if self.announcer.oldsum > 0:
-			ret.append({'sum': t3(self.announcer.oldsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'old', 'label':'old'})
+			ret.append({'sum': t3(self.announcer.oldsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'old', 'label':'old', 'courses':savecourses})
 		if self.announcer.potentialsum > 0:
-			ret.append({'sum': t3(self.announcer.potentialsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'raw', 'label':'raw'})
+			ret.append({'sum': t3(self.announcer.potentialsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'raw', 'label':'raw', 'courses':savecourses})
 		ret.sort(key=operator.itemgetter('sum'))
+		ret.sort(key=operator.itemgetter('courses'), reverse=True)
 		return ret
 
 

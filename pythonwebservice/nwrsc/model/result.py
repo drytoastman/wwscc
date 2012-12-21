@@ -1,6 +1,7 @@
 from math import ceil
 from runs import Run
 from pylons import config
+from nwrsc.lib.helpers import t3
 
 class Result(object):
 	""" Contains driver name, car description, overall result and 2D array of runs by course and run # """
@@ -69,19 +70,20 @@ classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.index
 				where r.carid=c.id and c.driverid=d.id and r.eventid=%d and r.classcode in (%s)
 				order by r.position"""
 
-def getClassResultsShort(session, settings, event, cls):
+def getClassResultsShort(session, settings, event, classdata, code):
 	"""
 		Similar to getClassResults but but doesn't include any run information.
 		For display of final points, nettime, only, this will be quicker and use less memory
 	"""
 	ret = []
-	for row in session.execute(classResult % (event.id, "'%s'" % cls.code)):
-		ret.append(Result(row, usepospoints=settings.usepospoints))
+	for row in session.execute(classResult % (event.id, "'%s'" % code)):
+		ret.append(Result(row, classdata=classdata, usepospoints=settings.usepospoints))
 
 	trophydepth = ceil(len(ret) / 3.0)
 	last = None
+	eventtrophy = classdata.classlist[code].eventtrophy
 	for ii, result in enumerate(ret):
-		result.trophy = (cls.eventtrophy) and (ii < trophydepth)
+		result.trophy = eventtrophy and (ii < trophydepth)
 		if last is not None:
 			result.diff = result.sum - last
 		last = result.sum
@@ -130,37 +132,65 @@ top1 = "select d.firstname as firstname, d.lastname as lastname, d.alias as alia
 top2 = "from runs as r, cars as c, drivers as d where r.carid=c.id and c.driverid=d.id and r.eventid=:eventid "
 
 
-topCourseRaw    = top1 + ", (r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
+topCourseRaw	= top1 + ", (r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
 topCourseRawAll = top1 + ", (r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.course=:course and r.bnorder=1 order by toptime"
-topCourseNet    = top1 + ", r.net as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
+topCourseNet	= top1 + ", r.net as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
 topCourseNetAll = top1 + ", r.net as toptime " + top2 + " and r.course=:course and r.bnorder=1 order by toptime"
-topRaw    = top1 + ", SUM(r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.norder=1 group by c.id order by toptime"
-topRawAll = top1 + ", SUM(r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.bnorder=1 group by c.id order by toptime"
-topNet    = top1 + ", SUM(r.net) as toptime " + top2 + " and r.norder=1 group by c.id order by toptime"
-topNetAll = top1 + ", SUM(r.net) as toptime " + top2 + " and r.bnorder=1 group by c.id order by toptime"
+topRaw	= top1 + ", COUNT(r.raw) as courses, SUM(r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.norder=1 group by c.id order by courses DESC, toptime"
+topRawAll = top1 + ", COUNT(r.raw) as courses, SUM(r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.bnorder=1 group by c.id order by courses DESC, toptime"
+topNet	= top1 + ", COUNT(r.net) as courses, SUM(r.net) as toptime " + top2 + " and r.norder=1 group by c.id order by courses DESC, toptime"
+topNetAll = top1 + ", COUNT(r.net) as courses, SUM(r.net) as toptime " + top2 + " and r.bnorder=1 group by c.id order by courses DESC, toptime"
+
+
+class TopTimeEntry(object):
+	def __init__(self, rowproxy=None):
+		if rowproxy is not None:
+			self.__dict__.update(zip(rowproxy.keys(), rowproxy.values()))
+			if self.alias and not config['nwrsc.private']:
+				self.name = self.alias
+			else:
+				self.name = self.firstname + " " + self.lastname
+
+	def setIter(self, attributes):
+		""" set the attributes that should be iterated over if someone tries to iterate us """
+		self._attributes = attributes
+
+	def __iter__(self):
+		""" return a set of attributes as determined by setIter """
+		for attr in self._attributes:
+			yield getattr(self, attr)
+
+	def copyWith(self, **kwargs):
+		ret = TopTimeEntry()
+		ret.__dict__ = self.__dict__.copy()
+		ret.__dict__.update(kwargs)
+		return ret
+		
+	def getFeed(self):
+		d = dict()
+		for k,v in self.__dict__.iteritems():
+			if v is None or k in ['alias', 'firstname', 'lastname', '_attributes']:
+				continue
+			d[k] = v
+		return d
+
 
 
 class TopTimesList(object):
-	def __init__(self, title, *cols):
+	def __init__(self, title, headers, attributes):
 		self.title = title
-		self.cols = cols
-		self.carids = list()
+		self.cols = headers
+		self.attributes = attributes
 		self.rows = list()
 
-	def add(self, entrant, *vals):
-		if entrant.alias and not config['nwrsc.private']:
-			firstname = entrant.alias
-			lastname = ""
-		else:
-			firstname = entrant.firstname
-			lastname = entrant.lastname
-		self.carids.append(entrant.carid)
-		self.rows.append((firstname + " " + lastname,) + vals)
+	def add(self, entry):
+		entry.setIter(self.attributes)
+		self.rows.append(entry)
 
 	def getFeed(self):
 		d = dict()
 		for k,v in self.__dict__.iteritems():
-			if v is None or k in ['_sa_instance_state', 'carids']:
+			if v is None or k in ['_sa_instance_state']:
 				continue
 			d[k] = v
 		return d
@@ -186,27 +216,7 @@ class TopTimesStorage(object):
 
 		self.segs = [[None]*self.event.getSegmentCount()]*self.event.courses
 
-		self.back = list()
 
-
-	# for backwards compatibility with what old templates where getting
-	def __getitem__(self, key):
-		""" call list with backAppend arguments """
-		return self.getList(*self.back[key])
-
-	def __len__(self):
-		""" just return length of back appended list """
-		return len(self.back)
-
-	def __iter__(self):
-		""" Allow iteration as we are backwards compatible with list """
-		for ii in range(len(self.back)):
-			yield self[ii]
-
-	def backAppend(self, allruns=False, raw=False, course=0):
-		""" Save the arguments to use at the next index """
-		self.back.append((allruns, raw, course))
-		
 	def getList(self, allruns=False, raw=False, course=0, settitle=None):
 		if self.store[allruns][raw][course] is None:
 			if course == 0:
@@ -238,9 +248,11 @@ def loadTopSegRawTimes(session, event, course, seg):
 	getcol = ", MIN(r.seg%d) as toptime " % (seg)
 	topSegRaw = top1 + getcol + top2 + " and r.course=:course and r.seg%d > %d group by r.carid order by toptime " % (seg, event.getSegments()[seg-1])
 
-	ttl = TopTimesList("Top Segment Times (Course %d)" % course, "Name", "Class", "Time")
+	ttl = TopTimesList("Top Segment Times (Course %d)" % course, ['Name', 'Class', 'Time'], ['name', 'classcode', 'toptime'])
 	for row in session.execute(topSegRaw, params={'eventid':event.id, 'course':course}):
-		ttl.add(row, row.classcode, "%0.3f" % row.toptime)
+		entry = TopTimeEntry(row)
+		entry.toptime = t3(entry.toptime)
+		ttl.add(entry)
 	return ttl
 			
 
@@ -250,9 +262,11 @@ def loadTopCourseRawTimes(session, event, course, classdata, allruns=False):
 	else:
 		sql = topCourseRaw
 
-	ttl = TopTimesList("Top Times (Course %d)" % course, "Name", "Class", "Time")
+	ttl = TopTimesList("Top Times (Course %d)" % course, ['Name', 'Class', 'Time'], ['name', 'classcode', 'toptime'])
 	for row in session.execute(sql, params={'eventid':event.id, 'course':course, 'conepen':event.conepen, 'gatepen':event.gatepen}):
-		ttl.add(row, row.classcode, "%0.3f" % row.toptime)
+		entry = TopTimeEntry(row)
+		entry.toptime = t3(entry.toptime)
+		ttl.add(entry)
 	return ttl
 		
 
@@ -262,11 +276,13 @@ def loadTopCourseNetTimes(session, event, course, classdata, allruns=False):
 	else:
 		sql = topCourseNet
 
-	ttl = TopTimesList("Top Index Times (Course %d)" % course, "Name", "Index", "", "Time")
+	ttl = TopTimesList("Top Index Times (Course %d)" % course, ['Name', 'Index', '', 'Time'], ['name', 'indexstr', 'indexvalue', 'toptime'])
 	for row in session.execute(sql, params={'eventid':event.id, 'course':course}):
-		eis = classdata.getIndexStr(row)
-		eiv = classdata.getEffectiveIndex(row)
-		ttl.add(row, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
+		entry = TopTimeEntry(row)
+		entry.indexstr = classdata.getIndexStr(entry)
+		entry.indexvalue = t3(classdata.getEffectiveIndex(entry))
+		entry.toptime = t3(entry.toptime)
+		ttl.add(entry)
 	return ttl
 
 
@@ -278,9 +294,11 @@ def loadTopRawTimes(session, event, classdata, allruns=False):
 		sql = topRaw
 		title = "Top Times (Counted)"
 
-	ttl = TopTimesList(title, "Name", "Class", "Time")
+	ttl = TopTimesList(title, ['Name', 'Class', 'Time'], ['name', 'classcode', 'toptime'])
 	for row in session.execute(sql, params={'eventid':event.id,'conepen':event.conepen,'gatepen':event.gatepen}):
-		ttl.add(row, row.classcode, "%0.3f" % row.toptime)
+		entry = TopTimeEntry(row)
+		entry.toptime = t3(entry.toptime)
+		ttl.add(entry)
 	return ttl
 
 
@@ -292,10 +310,12 @@ def loadTopNetTimes(session, event, classdata, allruns=False):
 		sql = topNet
 		title = "Top Index Times (Counted)"
 
-	ttl = TopTimesList(title, "Name", "Index", "", "Time")
+	ttl = TopTimesList(title, ['Name', 'Index', '', 'Time'], ['name', 'indexstr', 'indexvalue', 'toptime'])
 	for row in session.execute(sql, params={'eventid':event.id}):
-		eis = classdata.getIndexStr(row)
-		eiv = classdata.getEffectiveIndex(row)
-		ttl.add(row, "%0.3f" % eiv, eis, "%0.3f" % row.toptime)
+		entry = TopTimeEntry(row)
+		entry.indexstr = classdata.getIndexStr(row)
+		entry.indexvalue = t3(classdata.getEffectiveIndex(row))
+		entry.toptime = t3(row.toptime)
+		ttl.add(entry)
 	return ttl
 
