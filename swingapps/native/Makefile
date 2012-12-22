@@ -18,6 +18,13 @@ CC = gcc
 all:  ${BDIR}/libsqliteintf.jnilib
 endif
 
+ifeq "${TARGET}" "Mac64"
+JAVAHOME=$(shell /usr/libexec/java_home)
+JVMINC=-I${JAVAHOME}/include/ 
+CC = gcc
+all:  ${BDIR}/libsqliteintf.jnilib
+endif
+
 ifeq "${TARGET}" "Windows32"
 JAVAHOME=/cygdrive/c/Program\ Files/Java/jdk1.6.0_16
 JVMINC=-I${JAVAHOME}/include -I${JAVAHOME}/include/win32
