@@ -11,7 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
-public class Browser extends SherlockFragmentActivity
+public class BrowserActivity extends SherlockFragmentActivity
 {
 	DataRetriever data;
 	

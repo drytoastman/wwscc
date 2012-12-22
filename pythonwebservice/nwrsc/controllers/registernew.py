@@ -123,6 +123,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		c.driverid = self.user.getDriverId()
 		c.previouserror = self.user.getPreviousError()
 		c.events = self.session.query(Event).all()
+		c.classdata = ClassData(self.session)
 
 		if action not in ('view', 'scripts') and self.settings.locked:
 			# Delete any saved session data for this person
@@ -185,7 +186,6 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 			if e.closed or not e.opened:
 				e.tdclass = 'closed'
 
-		c.classdata = ClassData(self.session)
 		c.inuse = []
 		c.notinuse = []
 		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]

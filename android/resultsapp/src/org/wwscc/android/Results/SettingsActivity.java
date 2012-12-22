@@ -144,7 +144,7 @@ public class SettingsActivity extends SherlockActivity
 	    	editor.apply();
     	} catch (Exception e) {}
     	
-		Intent intent = new Intent(this, Browser.class);
+		Intent intent = new Intent(this, BrowserActivity.class);
 		startActivity(intent);
     	finish();
 	}
