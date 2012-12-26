@@ -230,8 +230,8 @@ public class SettingsActivity extends SherlockActivity
 		protected Void doInBackground(Void... params)
 		{
 			try {
-				eventsJSON = Util.downloadJSONArray(MobileURL.staticSeriesEvents(selectedAddr, selectedSeries));
-				classesJSON = Util.downloadJSONArray(MobileURL.staticSeriesClasses(selectedAddr, selectedSeries));
+				eventsJSON = Util.downloadJSONArray(MyPreferences.getSeriesEventsURL(selectedAddr, selectedSeries));
+				classesJSON = Util.downloadJSONArray(MyPreferences.getSeriesClassesURL(selectedAddr, selectedSeries));
 			} catch (Exception e) {
 				Log.e("ClassSelect", "Failed to update classes/events: " + e.getMessage());
 			}

@@ -16,10 +16,20 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 
-public class DataListFragment extends SherlockFragment implements Interface.DataDest
+public class DataListFragment extends SherlockFragment implements ResultsInterface.DataDest
 {
 	private ListView display;
 	private JSONArrayAdapter currentAdapter;
+	
+	public static DataListFragment newInstance(String type, String classcode)
+	{
+		Bundle bundle = new Bundle();
+		bundle.putString("classcode", classcode);
+		bundle.putString("type", type);
+		DataListFragment ret = new DataListFragment();
+		ret.setArguments(bundle);
+		return ret;
+	}
 	
 	@Override
 	public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -27,8 +37,13 @@ public class DataListFragment extends SherlockFragment implements Interface.Data
 		View main = inflater.inflate(R.layout.fragment_list, container, false);
         display = (ListView)main.findViewById(R.id.datalist);        
         currentAdapter = null;
+        String classcode = getArguments().getString("classcode");
         String type = getArguments().getString("type");
- 
+
+        TextView header = (TextView)main.findViewById(R.id.header);
+        header.setText(classcode + " " + type);
+        System.out.println("set header text " + classcode + type);
+        
 		if (type.equals("event")) {
 			currentAdapter = new EventListAdapter(getActivity());
 		} else if (type.equals("champ")) {
@@ -39,8 +54,7 @@ public class DataListFragment extends SherlockFragment implements Interface.Data
 			currentAdapter = new RawListAdapter(getActivity());
 		}
 
-		display.setAdapter(currentAdapter);		
-		//retriever.startListening(this, currentType, classname);        
+		display.setAdapter(currentAdapter);		  
         return main;
 	}
 				

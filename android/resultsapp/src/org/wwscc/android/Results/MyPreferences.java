@@ -11,7 +11,8 @@ import android.content.SharedPreferences;
 
 public class MyPreferences 
 {
-	private static final String[] TYPES = new String[] { "Event", "Champ", "PAX", "Raw" };
+	public static final String[] TYPES = new String[] { "Event", "Champ", "PAX", "Raw" };
+	
 	/** IP address string of selected series */
 	public static final String HOST = "HOST";
 	/** string name of selected series */
@@ -152,13 +153,13 @@ public class MyPreferences
 		return new URL(String.format("%s/%s/topraw/%s", getURLBase(), getEventId(), carid));			
 	}
 		
-	public URL seriesEventsURL() throws MalformedURLException
+	public static URL getSeriesEventsURL(String host, String series) throws MalformedURLException
 	{
-		return new URL(getURLBase());
+		return new URL(String.format("http://%s/mobile/%s", host, series));
 	}
 	
-	public URL getSeriesClassesURL() throws MalformedURLException
+	public static URL getSeriesClassesURL(String host, String series) throws MalformedURLException
 	{
-		return new URL(String.format("%s/classes", getURLBase()));
+		return new URL(String.format("http://%s/mobile/%s/classes", host, series));
 	}
 }

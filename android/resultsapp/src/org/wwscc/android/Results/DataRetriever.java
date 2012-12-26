@@ -16,7 +16,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-public class DataRetriever extends SherlockFragment implements Interface.DataSource
+public class DataRetriever extends SherlockFragment implements ResultsInterface.DataSource
 {		
 	public static final int EVENTRESULT = 100;
 	public static final int CHAMPRESULT = 101;
@@ -25,7 +25,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	
 	Thread active;
 	Runner runner;
-	Map<Interface.DataDest, ListenerType> requestMap;
+	Map<ResultsInterface.DataDest, ListenerType> requestMap;
 	Map<ListenerType, MessageWrapper> cache;
     
 	class DataHandler extends Handler
@@ -34,7 +34,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
         public void handleMessage(Message msg) 
         {
         	MessageWrapper wrap = (MessageWrapper)msg.obj;
-        	for (Interface.DataDest toUpdate : requestMap.keySet())
+        	for (ResultsInterface.DataDest toUpdate : requestMap.keySet())
         	{
         		ListenerType t = requestMap.get(toUpdate);
         		if ((wrap.type == t.type) && (wrap.classcode.equals(t.classcode)))
@@ -52,7 +52,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	{
 		super.onCreate(b);
 		Log.i("Data", "Creating thread");
-		requestMap = new HashMap<Interface.DataDest, ListenerType>();
+		requestMap = new HashMap<ResultsInterface.DataDest, ListenerType>();
 		cache = new HashMap<ListenerType, MessageWrapper>();
 		runner = new Runner(new DataHandler());
 		active = new Thread(runner);
@@ -73,9 +73,17 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	}
 
 	@Override
-	public void startListening(Interface.DataDest dest, int dataType, String classcode)
+	public void startListening(ResultsInterface.DataDest dest, String dataType, String classcode)
 	{
-		ListenerType t = new ListenerType(dataType, classcode);
+		int dtype = 100; // defaults to event results if we don't know it
+		for (int ii = 0; ii < MyPreferences.TYPES.length; ii++) {
+			if (MyPreferences.TYPES[ii].equals(dataType)) {
+				dtype = ii+100;
+				break;
+			}
+		}
+
+		ListenerType t = new ListenerType(dtype, classcode);
 		if (cache.containsKey(t))
 			dest.updateData(cache.get(t).data);
 		ListenerType old = requestMap.put(dest, t);
@@ -84,12 +92,18 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 	}
 	
 	@Override
-	public void stopListening(Interface.DataDest dest)
+	public void stopListening(ResultsInterface.DataDest dest)
 	{
 		requestMap.remove(dest);
 		runner.setRequests(requestMap.values());
 	}
 	
+	@Override
+	public void stopListeningAll()
+	{
+		requestMap.clear();
+		runner.setRequests(requestMap.values());
+	}
 	
 	class Runner implements Runnable
 	{
@@ -97,7 +111,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 		Handler outPipe;
 		Collection<ListenerType> newrequests;
 		Map<String, ClassStatus> requests;
-		MobileURL url;
+		MyPreferences prefs;
 
 		public Runner(Handler pipe)
 		{
@@ -105,7 +119,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 			done = false;
 			requests = new HashMap<String, ClassStatus>();
 			newrequests = null;
-			url = new MobileURL(getActivity().getSharedPreferences(null, 0));
+			prefs = new MyPreferences(getActivity());
 		}
 		
 		public synchronized void setRequests(Collection<ListenerType> collection)
@@ -131,7 +145,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 			try
 			{
 				Log.i("Data", "Loop for " + classStatus.classcode + ", updated " + classStatus.lastupdate);
-			    JSONObject reply = Util.downloadJSONObject(url.getLastTime(classStatus.classcode));			    
+			    JSONObject reply = Util.downloadJSONObject(prefs.getLastTimeURL(classStatus.classcode));			    
 			    if (reply.getLong("updated") > classStatus.lastupdate)
 			    {				
 			    	classStatus.lastupdate = reply.getLong("updated");
@@ -147,16 +161,16 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 			    		switch (type)
 			    		{
 			    			case EVENTRESULT:
-			    				msg.data = Util.downloadJSONArray(url.getClassList(carid));
+			    				msg.data = Util.downloadJSONArray(prefs.getClassListURL(carid));
 			    				break;
 			    			case CHAMPRESULT:
-			    				msg.data = Util.downloadJSONArray(url.getChampList(carid));
+			    				msg.data = Util.downloadJSONArray(prefs.getChampListURL(carid));
 			    				break;
 			    			case TOPNET:
-			    				msg.data = Util.downloadJSONArray(url.getTopNet(carid));
+			    				msg.data = Util.downloadJSONArray(prefs.getTopNetURL(carid));
 			    				break;
 			    			case TOPRAW:
-			    				msg.data = Util.downloadJSONArray(url.getTopRaw(carid));
+			    				msg.data = Util.downloadJSONArray(prefs.getTopRawURL(carid));
 			    				break;
 			    		}
 			    		if (msg.data != null)
@@ -187,7 +201,7 @@ public class DataRetriever extends SherlockFragment implements Interface.DataSou
 						prepareNewRequests();
 					
 					long waittime = 10000;
-					if (url.validURLs())
+					if (prefs.validURLs())
 						for (ClassStatus classStatus : requests.values())
 							waittime = Math.min(waittime, doClass(classStatus));
 					

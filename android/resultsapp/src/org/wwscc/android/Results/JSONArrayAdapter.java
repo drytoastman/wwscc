@@ -19,7 +19,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 @SuppressLint("UseSparseArrays")
-public abstract class JSONArrayAdapter extends BaseAdapter implements Interface.DataDest
+public abstract class JSONArrayAdapter extends BaseAdapter implements ResultsInterface.DataDest
 {
 	List<JSONObject> data;
 	LayoutInflater inflater;

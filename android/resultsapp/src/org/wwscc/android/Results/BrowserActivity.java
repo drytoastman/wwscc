@@ -1,5 +1,9 @@
 package org.wwscc.android.Results;
 
+import java.util.List;
+
+import org.wwscc.android.Results.MyPreferences.ResultsView;
+
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
@@ -8,59 +12,74 @@ import com.actionbarsherlock.view.MenuItem;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 
 public class BrowserActivity extends SherlockFragmentActivity
 {
 	DataRetriever data;
+	MyPreferences prefs;
+	ViewPager pager;
+	ResultFragmentAdapter adapter;
 	
-    @SuppressWarnings("deprecation")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
 	{
 		super.onCreate(savedInstanceState);
-	    		
+	    prefs = new MyPreferences(this);
+	    
 		ActionBar b = getSupportActionBar();
-		b.setTitle(new MyPreferences(this).getEventName());
-		
-		if (getWindowManager().getDefaultDisplay().getWidth() > 600)
-			setContentView(R.layout.base_twoviewers);
-		else
-			setContentView(R.layout.base_oneviewer);
-		
-		FragmentManager mgr = getSupportFragmentManager();
-		FragmentTransaction ft = mgr.beginTransaction();
-		data = (DataRetriever)mgr.findFragmentByTag("data");
+		b.setTitle(prefs.getEventName());
+		setContentView(R.layout.base_oneviewer);
 
+		FragmentManager mgr = getSupportFragmentManager();
+
+		adapter = new ResultFragmentAdapter(mgr);
+		pager = (ViewPager)findViewById(R.id.pager);
+        pager.setAdapter(adapter);
+
+		
+		FragmentTransaction ft = mgr.beginTransaction();
+		data = (DataRetriever)mgr.findFragmentByTag("data");        
 		if (data == null)
 		{
 			data = new DataRetriever();
 			data.setRetainInstance(true);
 			ft.add(data, "data");
 		}
-				
-		verifyList(R.id.list1, "list1", ft);
-		verifyList(R.id.list2, "list2", ft);
-		
-		ft.commit();
+		ft.commit();		
 	}    
-	   
-    private void verifyList(int rootid, String label, FragmentTransaction ft)
+    
+    
+    class ResultFragmentAdapter extends FragmentPagerAdapter
     {
-		if (findViewById(rootid) != null)
+    	List<ResultsView> views;
+    	
+		public ResultFragmentAdapter(FragmentManager fm) 
 		{
-			DataListFragment frag = (DataListFragment)getSupportFragmentManager().findFragmentByTag(label);
-			if (frag == null)
-			{
-				frag = new DataListFragment();
-				Bundle bundle = new Bundle();
-				bundle.putString("type", "event");
-				frag.setArguments(bundle);
-				ft.add(rootid, frag, label);
-			}
-			//frag.setDataSource(data);
-		}    	
+			super(fm);
+			views = prefs.getViews();
+		}
+
+		@Override
+		public Fragment getItem(int index) 
+		{
+			ResultsView v = views.get(index);		
+			DataListFragment ret = DataListFragment.newInstance(v.type, v.classcode);
+			data.startListening(ret, v.type, v.classcode);
+			System.out.println("getitem " + index);
+			return ret;
+		}
+
+		@Override
+		public int getCount() 
+		{
+			return prefs.getViews().size();
+		}
+    	
     }
     
     public boolean doSetup(MenuItem item) 
