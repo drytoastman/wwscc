@@ -22,7 +22,7 @@ public class BrowserActivity extends SherlockFragmentActivity
 		super.onCreate(savedInstanceState);
 	    		
 		ActionBar b = getSupportActionBar();
-		b.setTitle(getSharedPreferences(null, 0).getString("EVENTNAME", ""));
+		b.setTitle(new MyPreferences(this).getEventName());
 		
 		if (getWindowManager().getDefaultDisplay().getWidth() > 600)
 			setContentView(R.layout.base_twoviewers);
@@ -54,9 +54,12 @@ public class BrowserActivity extends SherlockFragmentActivity
 			if (frag == null)
 			{
 				frag = new DataListFragment();
+				Bundle bundle = new Bundle();
+				bundle.putString("type", "event");
+				frag.setArguments(bundle);
 				ft.add(rootid, frag, label);
 			}
-			frag.setDataSource(data);
+			//frag.setDataSource(data);
 		}    	
     }
     
@@ -69,9 +72,27 @@ public class BrowserActivity extends SherlockFragmentActivity
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(Menu menu) 
+	{
 	    MenuInflater inflater = getSupportMenuInflater();
-	    inflater.inflate(R.menu.setupmenu, menu);
+	    inflater.inflate(R.menu.mainmenu, menu);
 	    return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) 
+	{
+	    switch (item.getItemId()) 
+	    {	        	
+	        case R.id.view:
+	        	finish(); startActivity(new Intent(this, ViewSetupActivity.class));
+	            return true;
+	        case R.id.setup:
+	        	finish(); startActivity(new Intent(this, SettingsActivity.class));
+	            return true;
+	        case R.id.browse:
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
 	}
 }

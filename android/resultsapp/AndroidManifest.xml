@@ -27,6 +27,10 @@
             android:name="org.wwscc.android.Results.SettingsActivity"
             android:label="@string/app_setup" android:theme="@style/Theme.Sherlock">
         </activity>
-        </application>
+        <activity
+            android:name="org.wwscc.android.Results.ViewSetupActivity"
+            android:label="@string/app_views" android:theme="@style/Theme.Sherlock">
+        </activity>
+    </application>
 
 </manifest>

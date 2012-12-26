@@ -1,133 +1,115 @@
 package org.wwscc.android.Results;
 
-import org.json.JSONArray;
+import java.util.Map;
 
-import android.content.SharedPreferences;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 
-public class DataListFragment extends SherlockFragment implements OnItemSelectedListener, Interface.DataDest
+public class DataListFragment extends SherlockFragment implements Interface.DataDest
 {
-	private static final String[] TYPES =  new String[] {"event", "champ", "pax", "raw"};
-	
-    private Spinner classes;
-	private Spinner types;
 	private ListView display;
 	private JSONArrayAdapter currentAdapter;
-	private int currentType;
-	private Interface.DataSource retriever;
 	
 	@Override
 	public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
 		View main = inflater.inflate(R.layout.fragment_list, container, false);
-
-		classes = (Spinner)main.findViewById(R.id.classselect);
-        types = (Spinner)main.findViewById(R.id.typeselect);
-        display = (ListView)main.findViewById(R.id.datalist);
-        
-        ArrayAdapter<String> classList = new ArrayAdapter<String>(getActivity(), R.layout.spinner_basic);
-        classList.setDropDownViewResource(R.layout.spinner_display);
-        String available[] = getActivity().getSharedPreferences(null, 0).getString("CLASSES", "").split(",");
-        for (String s : available)
-        	classList.add(s);
-        classes.setAdapter(classList);
-        classes.setOnItemSelectedListener(this);
-
-        ArrayAdapter<String> typesList = new ArrayAdapter<String>(getActivity(), R.layout.spinner_basic);
-        typesList.setDropDownViewResource(R.layout.spinner_display);
-        for (String s : TYPES)
-        	typesList.add(s);
-        types.setAdapter(typesList);
-        types.setOnItemSelectedListener(this);
-        
+        display = (ListView)main.findViewById(R.id.datalist);        
         currentAdapter = null;
-        currentType = 0;
+        String type = getArguments().getString("type");
+ 
+		if (type.equals("event")) {
+			currentAdapter = new EventListAdapter(getActivity());
+		} else if (type.equals("champ")) {
+			currentAdapter = new ChampListAdapter(getActivity());
+		} else if (type.equals("pax")) {
+			currentAdapter = new PaxListAdapter(getActivity());
+		} else if (type.equals("raw")) {
+			currentAdapter = new RawListAdapter(getActivity());
+		}
+
+		display.setAdapter(currentAdapter);		
+		//retriever.startListening(this, currentType, classname);        
         return main;
 	}
-		
-	@Override
-    public void onActivityCreated(Bundle inState) 
-	{
-        super.onActivityCreated(inState);
-		SharedPreferences prefs = getActivity().getSharedPreferences(null, 0);
-		
-		int csel = prefs.getInt(getId()+"classSel", classes.getSelectedItemPosition());
-		if (csel < classes.getCount())
-			classes.setSelection(csel);
-		
-        int tsel = prefs.getInt(getId()+"typeSel", types.getSelectedItemPosition());
-		if (tsel < types.getCount())
-			types.setSelection(tsel);
-	}
-	
-	public void setDataSource(Interface.DataSource d)
-	{
-		retriever = d;
-	}
-
-	@Override
-	public void onStop()
-	{
-		super.onStop();
-		if (retriever != null)
-			retriever.stopListening(this);
-	}
-	
+				
 	@Override
 	public void updateData(JSONArray newData)
 	{
 		currentAdapter.updateData(newData);
 	}
-	
-	@Override
-	public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+
+	class ChampListAdapter extends JSONArrayAdapter
 	{
-		if (parent == types)
+		public ChampListAdapter(Context c) 
 		{
-			String type = (String)types.getSelectedItem();
-			if (type.equals("event")) {
-				currentAdapter = new A.EventListAdapter(getActivity());
-				currentType = DataRetriever.EVENTRESULT;
-			} else if (type.equals("champ")) {
-				currentAdapter = new A.ChampListAdapter(getActivity());
-				currentType = DataRetriever.CHAMPRESULT;
-			} else if (type.equals("pax")) {
-				currentAdapter = new A.PaxListAdapter(getActivity());
-				currentType = DataRetriever.TOPNET;
-			} else if (type.equals("raw")) {
-				currentAdapter = new A.RawListAdapter(getActivity());
-				currentType = DataRetriever.TOPRAW;
-			}
-			display.setAdapter(currentAdapter);
+			super(c, new int[] {  R.id.position, R.id.name, R.id.events, R.id.points }, R.layout.line_champresults);
 		}
-		else // class selection
+
+		public void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException
 		{
-			if (currentAdapter != null)
-				currentAdapter.clear();
+			textviews.get(R.id.position).setText(o.getString("position"));
+			textviews.get(R.id.name).setText(o.getString("firstname") + " " + o.getString("lastname"));
+			textviews.get(R.id.events).setText(o.getString("events"));
+			textviews.get(R.id.points).setText(o.getString("points"));
 		}
-	
-		SharedPreferences.Editor prefs = getActivity().getSharedPreferences(null, 0).edit();
-		prefs.putInt(getId()+"classSel", classes.getSelectedItemPosition());
-		prefs.putInt(getId()+"typeSel", types.getSelectedItemPosition());
-		prefs.apply();
-		
-		if ((retriever != null) && (currentType > 0))
+	}	
+
+	class EventListAdapter extends JSONArrayAdapter
+	{
+		public EventListAdapter(Context c) 
 		{
-			retriever.startListening(this, currentType, (String)classes.getSelectedItem());
+			super(c, new int[] {  R.id.position, R.id.name, R.id.sum }, R.layout.line_eventresults);
+		}
+
+		public void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException
+		{
+			textviews.get(R.id.position).setText(o.getString("position"));
+			textviews.get(R.id.name).setText(o.getString("firstname") + " " + o.getString("lastname"));
+			textviews.get(R.id.sum).setText(o.getString("sum"));
+		}
+	}	
+
+	class PaxListAdapter extends JSONArrayAdapter
+	{
+		public PaxListAdapter(Context c) 
+		{
+			super(c, new int[] { R.id.position, R.id.name, R.id.index, R.id.sum }, R.layout.line_paxresults);
+		}
+
+		public void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException
+		{
+			textviews.get(R.id.position).setText(o.getString("position"));
+			textviews.get(R.id.name).setText(o.getString("name"));
+			textviews.get(R.id.index).setText(o.getString("indexstr"));
+			textviews.get(R.id.sum).setText(o.getString("toptime"));
 		}
 	}
 
-	@Override
-	public void onNothingSelected(AdapterView<?> arg0) {}
+	class RawListAdapter extends JSONArrayAdapter
+	{
+		public RawListAdapter(Context c) 
+		{
+			super(c, new int[] { R.id.position, R.id.name, R.id.classcode, R.id.sum }, R.layout.line_rawresults);
+		}
 
+		public void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException
+		{
+			textviews.get(R.id.position).setText(o.getString("position"));
+			textviews.get(R.id.name).setText(o.getString("name"));
+			textviews.get(R.id.classcode).setText(o.getString("classcode"));
+			textviews.get(R.id.sum).setText(o.getString("toptime"));
+		}
+	}
 }

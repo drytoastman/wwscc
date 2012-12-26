@@ -2,7 +2,6 @@ package org.wwscc.android.Results;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,6 +11,10 @@ import org.wwscc.services.ServiceFinder;
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,7 +31,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 
 
 /**
@@ -45,7 +47,7 @@ public class SettingsActivity extends SherlockActivity
 		public EventWrapper(String n, int i) { name = n; eventid = i; }
 	}
 	
-    private SharedPreferences prefs;
+    private MyPreferences prefs;
 	private ProgressBar progress;
 	private ServiceFinder serviceFinder;
     private FoundServiceHandler servicePipe;
@@ -91,7 +93,7 @@ public class SettingsActivity extends SherlockActivity
         
         
         savedClasses = new ArrayList<String>();
-        prefs = getSharedPreferences(null, 0);
+        prefs = new MyPreferences(this);
         
         series.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
@@ -119,29 +121,45 @@ public class SettingsActivity extends SherlockActivity
     	seriesArray.clear();
 	}
 
-    private String join(List<String> c)
-    {
-    	if (c.size() == 0) return "";
-    	Iterator<String> iter = c.iterator();
-    	StringBuilder b = new StringBuilder(iter.next());
-    	while(iter.hasNext())
-    		b.append(',').append(iter.next());
-    	return b.toString();
-    }
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) 
+	{
+	    MenuInflater inflater = getSupportMenuInflater();
+	    inflater.inflate(R.menu.mainmenu, menu);
+	    return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) 
+	{
+	    switch (item.getItemId()) 
+	    {	        	
+	        case R.id.view:
+	        	finish(); startActivity(new Intent(this, ViewSetupActivity.class));
+	            return true;
+	        case R.id.browse:
+	        	finish(); startActivity(new Intent(this, BrowserActivity.class));
+	            return true;
+	        case R.id.setup:
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
+	}
+	
     
 	public void setupDone(View v) 
 	{
     	try
     	{
-	    	SharedPreferences.Editor editor = prefs.edit();
 	    	FoundService selected = (FoundService)series.getSelectedItem();
-		    editor.putString("HOST", selected.getHost().getHostAddress());
-		    editor.putString("SERIES", selected.getId());
-	    	editor.putInt("EVENTID", ((EventWrapper)events.getSelectedItem()).eventid);
-	    	editor.putString("EVENTNAME", ((EventWrapper)events.getSelectedItem()).name);
+	    	EventWrapper event = (EventWrapper)events.getSelectedItem();
 	    	savedClasses.add("*");
-	    	editor.putString("CLASSES", join(savedClasses));
-	    	editor.apply();
+	    	prefs.setCurrentEvent(
+	    			selected.getHost().getHostAddress(), 
+	    			selected.getId(), 
+	    			event.eventid, 
+	    			event.name, 
+	    			savedClasses);
     	} catch (Exception e) {}
     	
 		Intent intent = new Intent(this, BrowserActivity.class);
@@ -158,8 +176,8 @@ public class SettingsActivity extends SherlockActivity
         	seriesArray.add(fs);
         	seriesArray.sort(new FoundService.Compare());
 
-        	String oldseries = prefs.getString("SERIES", null);
-            String oldhost = prefs.getString("HOST", null);
+        	String oldseries = prefs.getSeries();
+            String oldhost = prefs.getHost();
             if ((oldseries == null) || (oldhost == null))
             	return;
         	if (fs.getHost().getHostAddress().equals(oldhost) && (fs.getId().equals(oldseries)))
@@ -234,7 +252,7 @@ public class SettingsActivity extends SherlockActivity
 		protected void onPostExecute(Void result) 
 		{
 			try {
-		    	int matchid = prefs.getInt("EVENTID", -1);
+		    	int matchid = prefs.getEventId();
 		    	EventWrapper foundEvent = null;
 		    	
 		    	eventArray.clear();
