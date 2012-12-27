@@ -10,12 +10,7 @@ import org.wwscc.services.FoundService;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-
+import com.actionbarsherlock.app.SherlockFragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,13 +26,12 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.content.Context;
-import android.content.Intent;
 
 
 /**
  * Handles everything in the settings panel as we don't use a separate activity
  */
-public class SettingsActivity extends SherlockActivity
+public class SettingsActivity extends SherlockFragment
 {
 	class EventWrapper
 	{
@@ -52,7 +46,6 @@ public class SettingsActivity extends SherlockActivity
 	private ProgressBar progress;
 	private ServiceFinder serviceFinder;
     private FoundServiceHandler servicePipe;
-    private Tabs tabs;
     
     private Spinner series;
 	private Spinner events;
@@ -63,12 +56,9 @@ public class SettingsActivity extends SherlockActivity
 	
 	
 	@Override
-	public void onCreate(Bundle savedInstanceState)
+	public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
-		super.onCreate(savedInstanceState);
-		this.setContentView(R.layout.activity_settings);
-
-		tabs = new Tabs(this, getSupportActionBar());
+		View main = inflater.inflate(R.layout.activity_settings, container, false);
 		
 		servicePipe = new FoundServiceHandler();
         try
@@ -80,24 +70,24 @@ public class SettingsActivity extends SherlockActivity
 					servicePipe.obtainMessage(1, service).sendToTarget();
 			}});
         } catch (IOException ioe) {
-        	Util.alert(this, "Failed to create service finder: " + ioe.getMessage());
+        	Util.alert(getActivity(), "Failed to create service finder: " + ioe.getMessage());
         }
 		
-		series = (Spinner)findViewById(R.id.seriesselect);
-        events = (Spinner)findViewById(R.id.eventselect);
-        progress = (ProgressBar)findViewById(R.id.progressBar);
+		series = (Spinner)main.findViewById(R.id.seriesselect);
+        events = (Spinner)main.findViewById(R.id.eventselect);
+        progress = (ProgressBar)main.findViewById(R.id.progressBar);
         
-        seriesArray = new ServiceListAdapter(this);
+        seriesArray = new ServiceListAdapter(getActivity());
         seriesArray.setDropDownViewResource(R.layout.spinner_display);
         series.setAdapter(seriesArray);
         
-        eventArray = new ArrayAdapter<EventWrapper>(this, R.layout.spinner_basic);
+        eventArray = new ArrayAdapter<EventWrapper>(getActivity(), R.layout.spinner_basic);
         eventArray.setDropDownViewResource(R.layout.spinner_display);
         events.setAdapter(eventArray);
         
         
         savedClasses = new ArrayList<String>();
-        prefs = new MyPreferences(this);
+        prefs = new MyPreferences(getActivity());
         
         series.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
@@ -105,6 +95,8 @@ public class SettingsActivity extends SherlockActivity
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {}
 		});
+        
+        return main;
 	}
 	
 
@@ -123,33 +115,7 @@ public class SettingsActivity extends SherlockActivity
     	if (serviceFinder != null)
     		serviceFinder.stop();
     	seriesArray.clear();
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) 
-	{
-	    MenuInflater inflater = getSupportMenuInflater();
-	    inflater.inflate(R.menu.mainmenu, menu);
-	    return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) 
-	{
-	    switch (item.getItemId()) 
-	    {	        	
-	        case R.id.view:
-	        	finish(); startActivity(new Intent(this, ViewSetupActivity.class));
-	            return true;
-	        case R.id.browse:
-	        	finish(); startActivity(new Intent(this, BrowserActivity.class));
-	            return true;
-	        case R.id.setup:
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
-	}
-	
+	}	
     
 	public void setupDone(View v) 
 	{
@@ -166,9 +132,10 @@ public class SettingsActivity extends SherlockActivity
 	    			savedClasses);
     	} catch (Exception e) {}
 
-    	finish();
-		Intent intent = new Intent(this, ViewSetupActivity.class);
-		startActivity(intent);
+    	// switch tabs
+    	//finish();
+		//Intent intent = new Intent(this, ViewSetupActivity.class);
+		//startActivity(intent);
 	}
 
     class FoundServiceHandler extends Handler
@@ -276,7 +243,7 @@ public class SettingsActivity extends SherlockActivity
 				if (foundEvent != null)
 					events.setSelection(eventArray.getPosition(foundEvent));
 			} catch (Exception je) {
-				Util.alert(SettingsActivity.this, "Can't get event list: " + je.getMessage());  
+				Util.alert(getActivity(), "Can't get event list: " + je.getMessage());  
 			}
 					
 			progress.setVisibility(View.INVISIBLE);

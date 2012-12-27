@@ -4,22 +4,16 @@ import java.util.List;
 
 import org.wwscc.android.Results.MyPreferences.ResultsView;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.app.ActionBar.TabListener;
 import com.actionbarsherlock.app.SherlockFragment;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 public class BrowserActivity extends SherlockFragment
 {
@@ -27,36 +21,30 @@ public class BrowserActivity extends SherlockFragment
 	MyPreferences prefs;
 	ViewPager pager;
 	ResultFragmentAdapter adapter;
-	Tabs tabs;
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) 
+	public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
-		super.onCreate(savedInstanceState);
-	    prefs = new MyPreferences(this);
+	    prefs = new MyPreferences(getActivity());
 	    
-		ActionBar b = getSupportActionBar();
-		b.setTitle(prefs.getEventName());
-		setContentView(R.layout.base_oneviewer);
-
-		tabs = new Tabs(this, b);
-		
-		FragmentManager mgr = getSupportFragmentManager();
+		View main = inflater.inflate(R.layout.base_oneviewer, container, false);
 
 		adapter = new ResultFragmentAdapter(getChildFragmentManager());
-		pager = (ViewPager)findViewById(R.id.pager);
+		pager = (ViewPager)main.findViewById(R.id.pager);
         pager.setAdapter(adapter);
 
 		
-		FragmentTransaction ft = mgr.beginTransaction();
-		data = (DataRetriever)mgr.findFragmentByTag("data");        
+		FragmentTransaction ft = getChildFragmentManager().beginTransaction();
+		data = (DataRetriever)getChildFragmentManager().findFragmentByTag("data");        
 		if (data == null)
 		{
 			data = new DataRetriever();
 			data.setRetainInstance(true);
 			ft.add(data, "data");
 		}
-		ft.commit();		
+		ft.commit();
+		
+		return main;
 	}    
     
     
@@ -87,37 +75,4 @@ public class BrowserActivity extends SherlockFragment
 		}
     	
     }
-    
-    public boolean doSetup(MenuItem item) 
-	{
-		Intent intent = new Intent(this, SettingsActivity.class);
-		startActivity(intent);
-		finish();
-		return true;
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) 
-	{
-	    MenuInflater inflater = getSupportMenuInflater();
-	    inflater.inflate(R.menu.mainmenu, menu);
-	    return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) 
-	{
-	    switch (item.getItemId()) 
-	    {	        	
-	        case R.id.view:
-	        	finish(); startActivity(new Intent(this, ViewSetupActivity.class));
-	            return true;
-	        case R.id.setup:
-	        	finish(); startActivity(new Intent(this, SettingsActivity.class));
-	            return true;
-	        case R.id.browse:
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
-	}
 }

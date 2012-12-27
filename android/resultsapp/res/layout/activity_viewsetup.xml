@@ -14,13 +14,12 @@
     </ListView>
 
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/okbutton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_toLeftOf="@+id/addbutton"
-        android:onClick="done"
         android:text="OK" />
 
     <Button
@@ -30,7 +29,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_centerHorizontal="false"
-        android:onClick="addRow"
         android:text="Add" />
 
 </RelativeLayout>

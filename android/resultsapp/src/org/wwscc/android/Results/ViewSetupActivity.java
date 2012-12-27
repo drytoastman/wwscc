@@ -6,10 +6,10 @@ import java.util.List;
 import org.wwscc.android.Results.MyPreferences.ResultsView;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -18,74 +18,48 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.app.SherlockFragment;
 
-public class ViewSetupActivity extends SherlockActivity
+public class ViewSetupActivity extends SherlockFragment
 {
 	ListView mainList;
 	SettingAdapter settings;
 	MyPreferences prefs;
-	Tabs tabs;
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) 
+	public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_viewsetup);
-		tabs = new Tabs(this, getSupportActionBar());
+		View main = inflater.inflate(R.layout.activity_viewsetup, container, false);
 		
-		settings = new SettingAdapter(this, R.layout.line_classsetting);
-		mainList = (ListView)this.findViewById(R.id.list);
+		settings = new SettingAdapter(getActivity(), R.layout.line_classsetting);
+		mainList = (ListView)main.findViewById(R.id.list);
 		mainList.setAdapter(settings);
+		prefs = new MyPreferences(getActivity());
+
+		Button add = (Button)main.findViewById(R.id.addbutton);
+		add.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				settings.add(new ResultsView(prefs.getClasses()[0], prefs.getViewTypes()[0]));				
+		}});
+
+		Button ok = (Button)main.findViewById(R.id.okbutton);
+		ok.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				//switch tabs
+		}});
 		
-		prefs = new MyPreferences(this);
+		return  main;
 	}
 	
 	@Override
-	protected void onResume()
+	public void onResume()
 	{
 		super.onResume();
 		settings.clear();
 		for (ResultsView v : prefs.getViews())
 			settings.add(v);
-	}
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) 
-	{
-	    MenuInflater inflater = getSupportMenuInflater();
-	    inflater.inflate(R.menu.mainmenu, menu);
-	    return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) 
-	{
-	    switch (item.getItemId()) 
-	    {	        	
-	        case R.id.browse:
-	            finish(); startActivity(new Intent(this, BrowserActivity.class));
-	            return true;
-	        case R.id.setup:
-	        	finish(); startActivity(new Intent(this, SettingsActivity.class));
-	            return true;
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
-	}
-
-	public void done(View v)
-	{
-		finish(); startActivity(new Intent(this, BrowserActivity.class));
-	}
-	
-	public void addRow(View v)
-	{
-		settings.add(new ResultsView(prefs.getClasses()[0], prefs.getViewTypes()[0]));
 	}
 	
 	/** pull all the current options and write to preferences */
@@ -96,12 +70,7 @@ public class ViewSetupActivity extends SherlockActivity
 			collection.add(settings.getItem(ii));
 		prefs.setViews(collection);
 	}
-	
-	public void deleteEntry(View v)
-	{
-		settings.remove(settings.getItem((Integer)v.getTag()));
-		rewriteOptions();
-	}
+
 	
 	class SettingAdapter extends ArrayAdapter<ResultsView> implements OnItemSelectedListener
 	{
@@ -130,7 +99,7 @@ public class ViewSetupActivity extends SherlockActivity
 		
 		private void spinnerSetup(Spinner spinner, String[] strings)
 		{
-    		ArrayAdapter<String> adapter = new ArrayAdapter<String>(ViewSetupActivity.this, R.layout.spinner_basic, strings);
+    		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.spinner_basic, strings);
     		adapter.setDropDownViewResource(R.layout.spinner_display);
     		spinner.setAdapter(adapter);
     		spinner.setOnItemSelectedListener(this);
@@ -141,13 +110,19 @@ public class ViewSetupActivity extends SherlockActivity
 		{
 	        if (convertView == null) 
 	        {
-	            LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	            LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	    		convertView = inflater.inflate(R.layout.line_classsetting, parent, false);
 	    		Spinner cSelect = (Spinner)convertView.findViewById(R.id.classselect);
 	    		spinnerSetup(cSelect, prefs.getClasses());
 	    		Spinner tSelect = (Spinner)convertView.findViewById(R.id.typeselect);
 	    		spinnerSetup(tSelect, prefs.getViewTypes());
 	    		Button button = (Button)convertView.findViewById(R.id.deleteentry);
+	    		button.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						remove(getItem((Integer)v.getTag()));
+						rewriteOptions();
+				}});
 	    		View[] components = new View[] { cSelect, tSelect, button }; 
 	    		convertView.setTag(components);
 	        }
@@ -168,5 +143,4 @@ public class ViewSetupActivity extends SherlockActivity
 		}
 	}
 }
-
 
