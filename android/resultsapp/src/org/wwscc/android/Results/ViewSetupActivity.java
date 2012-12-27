@@ -17,6 +17,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
+
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -27,12 +29,14 @@ public class ViewSetupActivity extends SherlockActivity
 	ListView mainList;
 	SettingAdapter settings;
 	MyPreferences prefs;
+	Tabs tabs;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_viewsetup);
+		tabs = new Tabs(this, getSupportActionBar());
 		
 		settings = new SettingAdapter(this, R.layout.line_classsetting);
 		mainList = (ListView)this.findViewById(R.id.list);
@@ -76,7 +80,7 @@ public class ViewSetupActivity extends SherlockActivity
 
 	public void done(View v)
 	{
-		System.out.println("done");
+		finish(); startActivity(new Intent(this, BrowserActivity.class));
 	}
 	
 	public void addRow(View v)

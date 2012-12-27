@@ -10,6 +10,7 @@ import org.wwscc.services.FoundService;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -51,6 +52,7 @@ public class SettingsActivity extends SherlockActivity
 	private ProgressBar progress;
 	private ServiceFinder serviceFinder;
     private FoundServiceHandler servicePipe;
+    private Tabs tabs;
     
     private Spinner series;
 	private Spinner events;
@@ -66,6 +68,8 @@ public class SettingsActivity extends SherlockActivity
 		super.onCreate(savedInstanceState);
 		this.setContentView(R.layout.activity_settings);
 
+		tabs = new Tabs(this, getSupportActionBar());
+		
 		servicePipe = new FoundServiceHandler();
         try
         {
@@ -161,10 +165,10 @@ public class SettingsActivity extends SherlockActivity
 	    			event.name, 
 	    			savedClasses);
     	} catch (Exception e) {}
-    	
-		Intent intent = new Intent(this, BrowserActivity.class);
-		startActivity(intent);
+
     	finish();
+		Intent intent = new Intent(this, ViewSetupActivity.class);
+		startActivity(intent);
 	}
 
     class FoundServiceHandler extends Handler

@@ -21,11 +21,14 @@ public class DataListFragment extends SherlockFragment implements ResultsInterfa
 	private ListView display;
 	private JSONArrayAdapter currentAdapter;
 	
-	public static DataListFragment newInstance(String type, String classcode)
+	public static DataListFragment newInstance(String type, String classcode, boolean left, boolean right)
 	{
 		Bundle bundle = new Bundle();
 		bundle.putString("classcode", classcode);
 		bundle.putString("type", type);
+		bundle.putString("header", classcode + " " + type);
+		bundle.putBoolean("leftarrow", left);
+		bundle.putBoolean("rightarrow", right);
 		DataListFragment ret = new DataListFragment();
 		ret.setArguments(bundle);
 		return ret;
@@ -37,12 +40,17 @@ public class DataListFragment extends SherlockFragment implements ResultsInterfa
 		View main = inflater.inflate(R.layout.fragment_list, container, false);
         display = (ListView)main.findViewById(R.id.datalist);        
         currentAdapter = null;
-        String classcode = getArguments().getString("classcode");
-        String type = getArguments().getString("type");
+        Bundle args = getArguments();
+        String type = args.getString("type");
+        String header = args.getString("header");
 
-        TextView header = (TextView)main.findViewById(R.id.header);
-        header.setText(classcode + " " + type);
-        System.out.println("set header text " + classcode + type);
+        TextView ltv = (TextView)main.findViewById(R.id.leftarrow);
+        TextView tv = (TextView)main.findViewById(R.id.header);
+        TextView rtv = (TextView)main.findViewById(R.id.rightarrow);
+
+        ltv.setVisibility(args.getBoolean("leftarrow", false) ? TextView.VISIBLE : TextView.INVISIBLE);
+       	tv.setText(header);
+        rtv.setVisibility(args.getBoolean("rightarrow", false) ? TextView.VISIBLE : TextView.INVISIBLE);
         
 		if (type.equals("event")) {
 			currentAdapter = new EventListAdapter(getActivity());

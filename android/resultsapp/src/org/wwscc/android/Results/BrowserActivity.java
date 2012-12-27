@@ -5,6 +5,9 @@ import java.util.List;
 import org.wwscc.android.Results.MyPreferences.ResultsView;
 
 import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.Tab;
+import com.actionbarsherlock.app.ActionBar.TabListener;
+import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -18,12 +21,13 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 
-public class BrowserActivity extends SherlockFragmentActivity
+public class BrowserActivity extends SherlockFragment
 {
 	DataRetriever data;
 	MyPreferences prefs;
 	ViewPager pager;
 	ResultFragmentAdapter adapter;
+	Tabs tabs;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
@@ -35,9 +39,11 @@ public class BrowserActivity extends SherlockFragmentActivity
 		b.setTitle(prefs.getEventName());
 		setContentView(R.layout.base_oneviewer);
 
+		tabs = new Tabs(this, b);
+		
 		FragmentManager mgr = getSupportFragmentManager();
 
-		adapter = new ResultFragmentAdapter(mgr);
+		adapter = new ResultFragmentAdapter(getChildFragmentManager());
 		pager = (ViewPager)findViewById(R.id.pager);
         pager.setAdapter(adapter);
 
@@ -68,7 +74,7 @@ public class BrowserActivity extends SherlockFragmentActivity
 		public Fragment getItem(int index) 
 		{
 			ResultsView v = views.get(index);		
-			DataListFragment ret = DataListFragment.newInstance(v.type, v.classcode);
+			DataListFragment ret = DataListFragment.newInstance(v.type, v.classcode, index > 0, index < views.size()-1);
 			data.startListening(ret, v.type, v.classcode);
 			System.out.println("getitem " + index);
 			return ret;
