@@ -112,7 +112,7 @@ class ClassData(object):
 		
 
 	def getIndexStr(self, car): #classcode, indexcode, tireindexed):
-		indexstr = car.indexcode
+		indexstr = car.indexcode or ""
 		try:
 			cls = self.classlist[car.classcode]
 			if cls.classindex != "":
