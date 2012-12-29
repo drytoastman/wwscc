@@ -197,6 +197,7 @@ class MobileController(BaseController):
 			entry = dict()
 			entry['points'] = t3(res.points.total)
 			entry['carid'] = res.carid
+			entry['driverid'] = res.id
 			entry['firstname'] = res.firstname
 			entry['lastname'] = res.lastname
 			entry['events'] = res.events
@@ -204,7 +205,7 @@ class MobileController(BaseController):
 			ret.append(entry)
 			pos += 1
 
-			if res.carid != carid:
+			if res.id != self.car.driverid:
 				continue
 			
 			entry['label'] = 'current'
