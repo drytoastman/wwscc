@@ -36,8 +36,11 @@ import android.content.Context;
 /**
  * Handles everything in the settings panel as we don't use a separate activity
  */
-public class SettingsActivity extends SherlockFragment
+public class SeriesSelectFragment extends SherlockFragment
 {
+	private static final int FOUND_SERVICE = 1;
+	private static final int LOST_SERVICE = 2;
+	
 	class EventWrapper
 	{
 		public String name;
@@ -72,8 +75,13 @@ public class SettingsActivity extends SherlockFragment
 			serviceFinder.addListener(new ServiceFinderListener() {
 				@Override
 				public void newService(FoundService service) {
-					servicePipe.obtainMessage(1, service).sendToTarget();
-			}});
+					servicePipe.obtainMessage(FOUND_SERVICE, service).sendToTarget();
+				}
+				@Override
+				public void serviceTimedOut(FoundService service) {
+					servicePipe.obtainMessage(LOST_SERVICE, service).sendToTarget();	
+				}
+			});
         } catch (IOException ioe) {
         	Util.alert(getActivity(), "Failed to create service finder: " + ioe.getMessage());
         }
@@ -98,7 +106,7 @@ public class SettingsActivity extends SherlockFragment
 			@Override
 			public void onItemSelected(AdapterView<?> arg0, View arg1,int arg2, long arg3) { new UpdateSpinners().execute(); }
 			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {}
+			public void onNothingSelected(AdapterView<?> arg0) { eventArray.clear(); }
 		});
         
 		Button ok = (Button)main.findViewById(R.id.okbutton);
@@ -149,15 +157,22 @@ public class SettingsActivity extends SherlockFragment
         public void handleMessage(Message msg) 
         {
         	FoundService fs = (FoundService)msg.obj;
-        	seriesArray.add(fs);
-        	seriesArray.sort(new FoundService.Compare());
+        	if (msg.what == FOUND_SERVICE)
+        	{
+        		seriesArray.add(fs);
+        		seriesArray.sort(new FoundService.Compare());
+            	String oldseries = prefs.getSeries();
+                String oldhost = prefs.getHost();
+                if ((oldseries == null) || (oldhost == null))
+                	return;
+            	if (fs.getHost().getHostAddress().equals(oldhost) && (fs.getId().equals(oldseries)))
+            		series.setSelection(seriesArray.getPosition(fs));
+        	}
+        	else if (msg.what == LOST_SERVICE)
+        	{
+        		seriesArray.remove(fs);
+        	}
 
-        	String oldseries = prefs.getSeries();
-            String oldhost = prefs.getHost();
-            if ((oldseries == null) || (oldhost == null))
-            	return;
-        	if (fs.getHost().getHostAddress().equals(oldhost) && (fs.getId().equals(oldseries)))
-        		series.setSelection(seriesArray.getPosition(fs));
         }
     };    
     

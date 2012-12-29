@@ -22,7 +22,7 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 
-public class ViewSetupActivity extends SherlockFragment
+public class ViewSetupFragment extends SherlockFragment
 {
 	ListView mainList;
 	SettingAdapter settings;

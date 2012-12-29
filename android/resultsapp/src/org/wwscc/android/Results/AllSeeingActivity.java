@@ -48,11 +48,11 @@ public class AllSeeingActivity extends SherlockFragmentActivity implements TabLi
 	private SherlockFragment createFragment(String tag)
 	{
 		if (tag.equals("browser"))
-			return new BrowserActivity();
+			return new BrowserFragment();
 		else if (tag.equals("views"))
-			return new ViewSetupActivity();
+			return new ViewSetupFragment();
 		else if (tag.equals("settings"))
-			return new SettingsActivity();
+			return new SeriesSelectFragment();
 		return null;
 	}
 	    

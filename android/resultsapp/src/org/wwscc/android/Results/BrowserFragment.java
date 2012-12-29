@@ -1,6 +1,5 @@
 package org.wwscc.android.Results;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.wwscc.android.Results.MyPreferences.ResultsView;
@@ -17,7 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class BrowserActivity extends SherlockFragment
+public class BrowserFragment extends SherlockFragment
 {
 	DataRetriever data;
 	MyPreferences prefs;
@@ -53,15 +52,12 @@ public class BrowserActivity extends SherlockFragment
 		return main;
 	}    
     
-
-	@Override
-	public void onDestroyView() 
+	public void onStop()
 	{
-		System.out.println("destroy view");
-		super.onDestroyView();
+		super.onStop();
 		data.stopListeningAll();
 	}
-
+	
 	
     class ResultFragmentAdapter extends PagerAdapter
     {
