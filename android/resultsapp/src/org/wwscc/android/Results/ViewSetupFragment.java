@@ -17,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragment;
@@ -24,6 +25,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 public class ViewSetupFragment extends SherlockFragment
 {
+	TextView helpLabel;
 	ListView mainList;
 	SettingAdapter settings;
 	MyPreferences prefs;
@@ -34,6 +36,7 @@ public class ViewSetupFragment extends SherlockFragment
 		View main = inflater.inflate(R.layout.activity_viewsetup, container, false);
 		
 		settings = new SettingAdapter(getActivity(), R.layout.line_classsetting);
+		helpLabel = (TextView)main.findViewById(R.id.help);
 		mainList = (ListView)main.findViewById(R.id.list);
 		mainList.setAdapter(settings);
 		prefs = new MyPreferences(getActivity());
@@ -49,6 +52,7 @@ public class ViewSetupFragment extends SherlockFragment
 		ok.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				rewriteOptions();
 				ActionBar b = ((SherlockFragmentActivity)getActivity()).getSupportActionBar();
 				b.setSelectedNavigationItem(b.getSelectedNavigationIndex()+1);				
 		}});
@@ -82,6 +86,12 @@ public class ViewSetupFragment extends SherlockFragment
 			super(context, textViewResourceId);
 		}
 
+		public void notifyDataSetChanged()
+		{
+			helpLabel.setVisibility(getCount() > 0 ? View.GONE : View.VISIBLE);
+			super.notifyDataSetChanged();
+		}
+		
 		@Override
 		public void onItemSelected(AdapterView<?> spinner, View v, int position, long id) 
 		{
@@ -93,8 +103,6 @@ public class ViewSetupFragment extends SherlockFragment
 				setting.classcode = s;
 			else
 				setting.type = s;
-			
-			rewriteOptions();
 		}
 
 		@Override
@@ -124,7 +132,6 @@ public class ViewSetupFragment extends SherlockFragment
 					@Override
 					public void onClick(View v) {
 						remove(getItem((Integer)v.getTag()));
-						rewriteOptions();
 				}});
 	    		View[] components = new View[] { cSelect, tSelect, button }; 
 	    		convertView.setTag(components);
