@@ -8,6 +8,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 public class MyPreferences 
 {
@@ -25,7 +26,11 @@ public class MyPreferences
 	public static final String CLASSLIST = "CLASSLIST";
 	/** string formatted list of view types for the series, uses ${CLASSLIST}VIEWEXT */
 	public static final String VIEWEXT = ".VIEW";
-
+	/** time of last run */
+	public static final String LASTRUN = "LASTRUN";
+	/** what tab were we on last */
+	public static final String LASTTAB = "LASTTAB";
+	
 	public static class ResultsView 
 	{
 		String classcode, type;
@@ -49,6 +54,8 @@ public class MyPreferences
 		public ResultsView decode(String s)
 		{
 			String p[] = s.split("/");
+			if (p.length < 2)
+				return this;
 			classcode = p[0];
 			type = p[1];
 			return this;
@@ -63,6 +70,8 @@ public class MyPreferences
 		store = c.getSharedPreferences(null, 0);
 	}
 	
+	public long getLastRun() { return store.getLong(LASTRUN, 0); }
+	public int getLastTab() { return store.getInt(LASTTAB, 0); }
 	public String getSeries() { return store.getString(SERIES, ""); }
 	public String getHost() { return store.getString(HOST, ""); }
 	public int getEventId() { return store.getInt(EVENTID, 0); }
@@ -73,7 +82,10 @@ public class MyPreferences
 	{
 		List<ResultsView> ret = new ArrayList<ResultsView>();
 		for (String view : store.getString(getSeries() + VIEWEXT, "").split(","))
+		{
+			if (view.trim().equals("")) continue;
 			ret.add(new ResultsView().decode(view));
+		}
 		return ret;
 	}
 	
@@ -90,11 +102,23 @@ public class MyPreferences
 	
 	public void setViews(List<ResultsView> views)
 	{
-		SharedPreferences.Editor edit = store.edit();
-		edit.putString(getSeries()+VIEWEXT, join(views));
-		edit.apply();
+		store.edit().putString(getSeries()+VIEWEXT, join(views)).apply();
 	}
 
+	public void setLastState(int tab, long time)
+	{
+		store.edit().putInt(LASTTAB, tab).putLong(LASTRUN, time).apply();
+	}
+	
+	public void registerListener(OnSharedPreferenceChangeListener listener)
+	{
+		store.registerOnSharedPreferenceChangeListener(listener);
+	}
+
+	public void unregisterListener(OnSharedPreferenceChangeListener listener)
+	{
+		store.unregisterOnSharedPreferenceChangeListener(listener);
+	}
 	
     public static String join(String c[])
     {

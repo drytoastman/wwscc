@@ -10,7 +10,10 @@ import org.wwscc.services.FoundService;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,9 +22,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -96,6 +101,8 @@ public class SettingsActivity extends SherlockFragment
 			public void onNothingSelected(AdapterView<?> arg0) {}
 		});
         
+		Button ok = (Button)main.findViewById(R.id.okbutton);
+		ok.setOnClickListener(new OnClickListener() { public void onClick(View v) { setupDone(); }});
         return main;
 	}
 	
@@ -117,7 +124,7 @@ public class SettingsActivity extends SherlockFragment
     	seriesArray.clear();
 	}	
     
-	public void setupDone(View v) 
+	public void setupDone() 
 	{
     	try
     	{
@@ -132,10 +139,8 @@ public class SettingsActivity extends SherlockFragment
 	    			savedClasses);
     	} catch (Exception e) {}
 
-    	// switch tabs
-    	//finish();
-		//Intent intent = new Intent(this, ViewSetupActivity.class);
-		//startActivity(intent);
+		ActionBar b = ((SherlockFragmentActivity)getActivity()).getSupportActionBar();
+		b.setSelectedNavigationItem(b.getSelectedNavigationIndex()+1);				
 	}
 
     class FoundServiceHandler extends Handler

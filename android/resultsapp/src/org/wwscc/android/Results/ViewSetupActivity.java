@@ -18,7 +18,9 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 public class ViewSetupActivity extends SherlockFragment
 {
@@ -47,7 +49,8 @@ public class ViewSetupActivity extends SherlockFragment
 		ok.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				//switch tabs
+				ActionBar b = ((SherlockFragmentActivity)getActivity()).getSupportActionBar();
+				b.setSelectedNavigationItem(b.getSelectedNavigationIndex()+1);				
 		}});
 		
 		return  main;
