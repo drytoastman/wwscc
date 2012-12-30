@@ -1,0 +1,142 @@
+
+mobile/  - returns list of series 
+	[
+		{
+			"name": string
+			"parentseries": string
+			"archived": boolean
+			"locked": boolean
+			"mtime": float
+		}
+	]
+
+
+mobile/<seriesname>  - returns a list of events
+	[
+		{
+			"id": 1, 
+			"name": "NWR SCCA Solo #1 at Packwood", 
+			"date": "", 
+			"sponsor": "", 
+			"host": "", 
+			"chair": "", 
+			"designer": "", 
+			"location": "Hampton Mills"
+			"regopened": "", 
+			"regclosed": "", 
+			"notes": "", 
+
+			"runs": 4, 
+			"segments": "", 
+			"countedruns": 0, 
+			"totlimit": 0, 
+			"perlimit": 2, 
+			"courses": 1, 
+			"practice": false, 
+			"ispro": false, 
+			"conepen": 2.0, 
+			"gatepen": 10.0, 
+
+		}
+	]
+
+
+mobile/<seriesname>/classes - returns a list of the classes
+	[
+		{
+			"code": "NOVAM", 
+			"descrip": "Novice AM", 
+			"champtrophy": 1/0
+			"eventtrophy": 1/0
+			"classmultiplier": float
+			"carindexed": 1/0
+			"classindex": string
+			"countedruns": 1/0
+			"usecarflag": 1/0
+			"numorder": int
+		}
+	]
+
+mobile/<seriesname>/indexes - returns a list of the indexes
+	[
+		{
+			"code": string
+			"value": float
+			"descrip": string
+		}
+	]
+
+mobile/<seriesname>/<eventid>/last?class=<classcode> - returns a the last finish time for the class, * means any class
+	{
+		updated: float
+		carid: int
+	}
+
+
+mobile/<seriesname>/<eventid>/classlist/<carid> - returns the class results, given extra info for specified car
+	[
+		{
+			"carid": int
+			"firstname": string
+			"lastname": string
+			"sum": float
+			"courses": int
+			"position": int
+			"diff":  float
+			"trophy": boolean
+			"indexstr": string
+			"pospoints": int
+			"diffpoints": float
+			"label": not present/current/raw/old
+		}
+	]
+
+
+mobile/<seriesname>/<eventid>/champlist/<carid> - returns the champ results, given extra info for specified car/driver
+	[
+		{
+			"driverid": int
+			"carid": int
+			"firstname": string
+			"lastname": string
+			"events": int
+			"position": int
+			"points": int or float depending on series config
+			"label": not present/current/raw/old
+		}
+	]
+
+
+
+mobile/<seriesname>/<eventid>/topraw/<carid> - returns the top raw times, given extra info for specified car/driver
+	[
+		{
+			"carid": int
+			"name": string
+			"toptime": float
+			"position": int
+			"classcode": string
+			"courses": int
+			"label": not present/current/raw/old
+		}
+	]
+
+
+
+mobile/<seriesname>/<eventid>/topnet/<carid> - returns the top net times, given extra info for specified car/driver
+	[
+		{
+			"carid": int
+			"name": string
+			"position": int
+			"toptime": float
+			"classcode": string
+			"indexstr": string
+			"indexcode": string
+			"indexvalue": float
+			"courses": int
+			"label": not present/current/raw/old
+		}
+	]
+
+
