@@ -3,7 +3,6 @@ package org.wwscc.android.Results;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.wwscc.android.Results.MyPreferences.ResultsView;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -45,7 +44,7 @@ public class ViewSetupFragment extends SherlockFragment
 		add.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				settings.add(new ResultsView(prefs.getClasses()[0], prefs.getViewTypes()[0]));				
+				settings.add(new ResultsViewConfig(prefs.getClasses()[0], prefs.getViewTypes()[0]));				
 		}});
 
 		Button ok = (Button)main.findViewById(R.id.okbutton);
@@ -65,21 +64,21 @@ public class ViewSetupFragment extends SherlockFragment
 	{
 		super.onResume();
 		settings.clear();
-		for (ResultsView v : prefs.getViews())
+		for (ResultsViewConfig v : prefs.getViews())
 			settings.add(v);
 	}
 	
 	/** pull all the current options and write to preferences */
 	public void rewriteOptions()
 	{
-		List<ResultsView> collection = new ArrayList<ResultsView>();
+		List<ResultsViewConfig> collection = new ArrayList<ResultsViewConfig>();
 		for (int ii = 0; ii < settings.getCount(); ii++)
 			collection.add(settings.getItem(ii));
 		prefs.setViews(collection);
 	}
 
 	
-	class SettingAdapter extends ArrayAdapter<ResultsView> implements OnItemSelectedListener
+	class SettingAdapter extends ArrayAdapter<ResultsViewConfig> implements OnItemSelectedListener
 	{
 		public SettingAdapter(Context context, int textViewResourceId) 
 		{
@@ -97,7 +96,7 @@ public class ViewSetupFragment extends SherlockFragment
 		{
 			int p[] = (int[])spinner.getTag();
 			String s = (String)spinner.getItemAtPosition(position);
-			ResultsView setting = getItem(p[1]);
+			ResultsViewConfig setting = getItem(p[1]);
 			
 			if (p[0] == 0)
 				setting.classcode = s;
@@ -142,7 +141,7 @@ public class ViewSetupFragment extends SherlockFragment
 	        Spinner tSelect = (Spinner)components[1];
 	        Button button = (Button)components[2];
 	        
-		    ResultsView setting = getItem(position);
+		    ResultsViewConfig setting = getItem(position);
 		    cSelect.setSelection(((ArrayAdapter<String>)cSelect.getAdapter()).getPosition(setting.classcode));
 		    cSelect.setTag(new int[] { 0, position });
 		    tSelect.setSelection(((ArrayAdapter<String>)tSelect.getAdapter()).getPosition(setting.type));

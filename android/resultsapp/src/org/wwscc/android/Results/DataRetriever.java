@@ -25,8 +25,8 @@ public class DataRetriever extends SherlockFragment implements ResultsInterface.
 	
 	Thread active;
 	Runner runner;
-	Map<ResultsInterface.DataDest, ListenerType> requestMap;
-	Map<ListenerType, MessageWrapper> cache;
+	Map<ResultsInterface.DataDest, ResultsViewConfig> requestMap;
+	Map<ResultsViewConfig, MessageWrapper> cache;
     
 	class DataHandler extends Handler
 	{
@@ -36,8 +36,8 @@ public class DataRetriever extends SherlockFragment implements ResultsInterface.
         	MessageWrapper wrap = (MessageWrapper)msg.obj;
         	for (ResultsInterface.DataDest toUpdate : requestMap.keySet())
         	{
-        		ListenerType t = requestMap.get(toUpdate);
-        		if ((wrap.type == t.type) && (wrap.classcode.equals(t.classcode)))
+        		ResultsViewConfig t = requestMap.get(toUpdate);
+        		if ((wrap.type.equals(t.type)) && (wrap.classcode.equals(t.classcode)))
         		{
         			toUpdate.updateData(wrap.data);
         			cache.put(t, wrap);
@@ -52,8 +52,8 @@ public class DataRetriever extends SherlockFragment implements ResultsInterface.
 	{
 		super.onCreate(b);
 		Log.i("Data", "Creating thread");
-		requestMap = new HashMap<ResultsInterface.DataDest, ListenerType>();
-		cache = new HashMap<ListenerType, MessageWrapper>();
+		requestMap = new HashMap<ResultsInterface.DataDest, ResultsViewConfig>();
+		cache = new HashMap<ResultsViewConfig, MessageWrapper>();
 		runner = new Runner(new DataHandler());
 		active = new Thread(runner);
 		active.setDaemon(true);
@@ -73,21 +73,12 @@ public class DataRetriever extends SherlockFragment implements ResultsInterface.
 	}
 
 	@Override
-	public void startListening(ResultsInterface.DataDest dest, String dataType, String classcode)
+	public void startListening(ResultsInterface.DataDest dest, ResultsViewConfig type)
 	{
-		int dtype = 100; // defaults to event results if we don't know it
-		for (int ii = 0; ii < MyPreferences.TYPES.length; ii++) {
-			if (MyPreferences.TYPES[ii].equals(dataType)) {
-				dtype = ii+100;
-				break;
-			}
-		}
-
-		ListenerType t = new ListenerType(dtype, classcode);
-		if (cache.containsKey(t))
-			dest.updateData(cache.get(t).data);
-		ListenerType old = requestMap.put(dest, t);
-		if (!t.equals(old)) // don't update if we just overwrote with the same thing
+		if (cache.containsKey(type))
+			dest.updateData(cache.get(type).data);
+		ResultsViewConfig old = requestMap.put(dest, type);
+		if (!type.equals(old)) // don't update if we just overwrote with the same thing
 			runner.setRequests(requestMap.values());
 	}
 	
@@ -109,7 +100,7 @@ public class DataRetriever extends SherlockFragment implements ResultsInterface.
 	{
 		boolean done;
 		Handler outPipe;
-		Collection<ListenerType> newrequests;
+		Collection<ResultsViewConfig> newrequests;
 		Map<String, ClassStatus> requests;
 		MyPreferences prefs;
 
@@ -122,7 +113,7 @@ public class DataRetriever extends SherlockFragment implements ResultsInterface.
 			prefs = new MyPreferences(getActivity());
 		}
 		
-		public synchronized void setRequests(Collection<ListenerType> collection)
+		public synchronized void setRequests(Collection<ResultsViewConfig> collection)
 		{ // will be picked up on next loop, both access to newrequests are in synchronized methods
 			newrequests = collection;
 			active.interrupt();
@@ -131,7 +122,7 @@ public class DataRetriever extends SherlockFragment implements ResultsInterface.
 		private synchronized void prepareNewRequests()
 		{ // also synchronized, formats are new requests
 			requests.clear();
-			for (ListenerType t : newrequests)
+			for (ResultsViewConfig t : newrequests)
 			{
 				if (!requests.containsKey(t.classcode))
 					requests.put(t.classcode, new ClassStatus(t.classcode));
@@ -151,30 +142,24 @@ public class DataRetriever extends SherlockFragment implements ResultsInterface.
 			    	classStatus.lastupdate = reply.getLong("updated");
 			    	int carid = reply.getInt("carid");
 	
-			    	for (Integer type : classStatus.requests)
+			    	for (String type : classStatus.requests)
 			    	{  // try and shortcut times when start back up and cached is already up to date
-			    		MessageWrapper old = cache.get(new ListenerType(type, classStatus.classcode));
+			    		MessageWrapper old = cache.get(new ResultsViewConfig(classStatus.classcode, type));
 			    		if ((old != null) && (old.updatetime == classStatus.lastupdate))
 			    			continue;
 			    		
 			    		MessageWrapper msg = new MessageWrapper(type, classStatus.classcode, classStatus.lastupdate);
-			    		switch (type)
-			    		{
-			    			case EVENTRESULT:
-			    				msg.data = Util.downloadJSONArray(prefs.getClassListURL(carid));
-			    				break;
-			    			case CHAMPRESULT:
-			    				msg.data = Util.downloadJSONArray(prefs.getChampListURL(carid));
-			    				break;
-			    			case TOPNET:
-			    				msg.data = Util.downloadJSONArray(prefs.getTopNetURL(carid));
-			    				break;
-			    			case TOPRAW:
-			    				msg.data = Util.downloadJSONArray(prefs.getTopRawURL(carid));
-			    				break;
-			    		}
-			    		if (msg.data != null)
-			    			outPipe.obtainMessage(msg.type, msg).sendToTarget();	    	
+			    		if (type.equals(MyPreferences.TYPE_EVENT))
+			    			msg.data = Util.downloadJSONArray(prefs.getClassListURL(carid));
+			    		else if (type.equals(MyPreferences.TYPE_CHAMP))
+			    			msg.data = Util.downloadJSONArray(prefs.getChampListURL(carid));
+			    		else if (type.equals(MyPreferences.TYPE_PAX))
+		    				msg.data = Util.downloadJSONArray(prefs.getTopNetURL(carid));
+			    		else if (type.equals(MyPreferences.TYPE_RAW))
+		    				msg.data = Util.downloadJSONArray(prefs.getTopRawURL(carid));
+
+		    			if (msg.data != null)
+			    			outPipe.obtainMessage(0, msg).sendToTarget();	    	
 			    	}
 					
 			    	return 10000; // generally no one finishes within 10 seconds of each other
@@ -220,56 +205,29 @@ public class DataRetriever extends SherlockFragment implements ResultsInterface.
 
 	/*** ********************************************************************************* ***/
 	// Support and wrapper classes
-	static class ListenerType
-	{
-		int type;
-		String classcode;
-		public ListenerType(int type, String classcode)
-		{
-			this.type = type;
-			this.classcode = classcode;
-		}
-		
-		@Override
-		public int hashCode() 
-		{ 
-			return type + classcode.hashCode(); 
-		}
-		
-		@Override
-		public boolean equals(Object o) 
-		{
-			if (o instanceof ListenerType)
-			{
-				ListenerType t = (ListenerType)o;
-				return (t.classcode.equals(classcode) && (t.type == type));
-			}
-			return false;
-		}
-	}
 
 	static class ClassStatus
 	{
 		String classcode;
 		long lastupdate;
-		Set<Integer> requests;
+		Set<String> requests;
 
 		public ClassStatus(String code)
 		{
 			classcode = code;
 			lastupdate = 0;
-			requests = new HashSet<Integer>();
+			requests = new HashSet<String>();
 		}
 	}
 	
 	static class MessageWrapper
 	{
-		int type;
+		String type;
 		String classcode;
 		long updatetime;
 		JSONArray data;
 		
-		public MessageWrapper(int t, String c, long u)
+		public MessageWrapper(String t, String c, long u)
 		{
 			classcode = c;
 			type = t;

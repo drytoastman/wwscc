@@ -7,32 +7,29 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
 public class DataListFragment implements ResultsInterface.DataDest
 {
-	private ViewGroup container;
 	private ListView display;
 	private JSONArrayAdapter currentAdapter;
+	private ResultsViewConfig config;
 		
-	public DataListFragment(Context context, String type)
+	public DataListFragment(Context context, ResultsViewConfig rv)
 	{
-		LayoutInflater inflater = LayoutInflater.from(context);
-		container = (ViewGroup) inflater.inflate(R.layout.fragment_list, null);
-        display = (ListView)container.findViewById(R.id.datalist);        
+		display = new ListView(context);
         currentAdapter = null;
+        config = rv;
 
-        if (type.equals("Event")) {
+        if (rv.type.equals("Event")) {
 			currentAdapter = new EventListAdapter(context);
-		} else if (type.equals("Champ")) {
+		} else if (rv.type.equals("Champ")) {
 			currentAdapter = new ChampListAdapter(context);
-		} else if (type.equals("PAX")) {
+		} else if (rv.type.equals("PAX")) {
 			currentAdapter = new PaxListAdapter(context);
-		} else if (type.equals("Raw")) {
+		} else if (rv.type.equals("Raw")) {
 			currentAdapter = new RawListAdapter(context);
 		} else {
 			currentAdapter = new BlankAdapter(context);
@@ -41,9 +38,14 @@ public class DataListFragment implements ResultsInterface.DataDest
 		display.setAdapter(currentAdapter);
 	}
 
-	public View getDisplay()
+	public View getView()
 	{
-		return container;
+		return display;
+	}
+	
+	public ResultsViewConfig getConfig()
+	{
+		return config;
 	}
 	
 	@Override
@@ -63,6 +65,7 @@ public class DataListFragment implements ResultsInterface.DataDest
 			super(c, new int[] {  R.id.position, R.id.name, R.id.events, R.id.points }, R.layout.line_champresults);
 		}
 
+		@Override
 		public void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException
 		{
 			textviews.get(R.id.position).setText(o.getString("position"));
@@ -79,6 +82,7 @@ public class DataListFragment implements ResultsInterface.DataDest
 			super(c, new int[] {  R.id.position, R.id.name, R.id.sum }, R.layout.line_eventresults);
 		}
 
+		@Override
 		public void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException
 		{
 			textviews.get(R.id.position).setText(o.getString("position"));
@@ -94,6 +98,7 @@ public class DataListFragment implements ResultsInterface.DataDest
 			super(c, new int[] { R.id.position, R.id.name, R.id.index, R.id.sum }, R.layout.line_paxresults);
 		}
 
+		@Override
 		public void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException
 		{
 			textviews.get(R.id.position).setText(o.getString("position"));
@@ -110,6 +115,7 @@ public class DataListFragment implements ResultsInterface.DataDest
 			super(c, new int[] { R.id.position, R.id.name, R.id.classcode, R.id.sum }, R.layout.line_rawresults);
 		}
 
+		@Override
 		public void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException
 		{
 			textviews.get(R.id.position).setText(o.getString("position"));
@@ -126,6 +132,7 @@ public class DataListFragment implements ResultsInterface.DataDest
 			super(c, new int[] { R.id.position, R.id.name, R.id.classcode, R.id.sum }, R.layout.line_rawresults);
 		}
 
+		@Override
 		public void updateLabels(JSONObject o, Map<Integer, TextView> textviews) throws JSONException
 		{
 			textviews.get(R.id.position).setText("blank");

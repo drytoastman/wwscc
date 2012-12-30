@@ -11,7 +11,7 @@ public class ResultsInterface
 
 	public static interface DataSource
 	{
-		public void startListening(DataDest dest, String dataType, String classcode);
+		public void startListening(DataDest dest, ResultsViewConfig type);
 		public void stopListening(DataDest dest);
 		public void stopListeningAll();
 	}

@@ -12,7 +12,11 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 public class MyPreferences 
 {
-	public static final String[] TYPES = new String[] { "Event", "Champ", "PAX", "Raw" };
+	public static final String TYPE_EVENT = "Event";
+	public static final String TYPE_CHAMP = "Champ";
+	public static final String TYPE_PAX = "PAX";
+	public static final String TYPE_RAW = "Raw";
+	public static final String[] TYPES = new String[] { TYPE_EVENT, TYPE_CHAMP, TYPE_PAX, TYPE_RAW };
 	
 	/** IP address string of selected series */
 	public static final String HOST = "HOST";
@@ -31,38 +35,6 @@ public class MyPreferences
 	/** what tab were we on last */
 	public static final String LASTTAB = "LASTTAB";
 	
-	public static class ResultsView 
-	{
-		String classcode, type;
-		public ResultsView()
-		{
-			classcode = "";
-			type = "";
-		}
-		
-		public ResultsView(String c, String t) 
-		{ 
-			classcode = c; 
-			type = t; 
-		}
-		
-		public String toString()
-		{
-			return classcode+"/"+type;
-		}
-		
-		public ResultsView decode(String s)
-		{
-			String p[] = s.split("/");
-			if (p.length < 2)
-				return this;
-			classcode = p[0];
-			type = p[1];
-			return this;
-		}
-	}
-	
-
 	SharedPreferences store;
 
 	public MyPreferences(Context c) 
@@ -78,13 +50,13 @@ public class MyPreferences
 	public String getEventName() { return store.getString(EVENTNAME, ""); }
 	public String[] getViewTypes() { return TYPES; }
 	public String[] getClasses() { return store.getString(CLASSLIST, "").split(","); }
-	public List<ResultsView> getViews() 
+	public List<ResultsViewConfig> getViews() 
 	{
-		List<ResultsView> ret = new ArrayList<ResultsView>();
+		List<ResultsViewConfig> ret = new ArrayList<ResultsViewConfig>();
 		for (String view : store.getString(getSeries() + VIEWEXT, "").split(","))
 		{
 			if (view.trim().equals("")) continue;
-			ret.add(new ResultsView().decode(view));
+			ret.add(new ResultsViewConfig().decode(view));
 		}
 		return ret;
 	}
@@ -100,7 +72,7 @@ public class MyPreferences
 		edit.apply();
 	}
 	
-	public void setViews(List<ResultsView> views)
+	public void setViews(List<ResultsViewConfig> views)
 	{
 		store.edit().putString(getSeries()+VIEWEXT, join(views)).apply();
 	}

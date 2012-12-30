@@ -47,6 +47,13 @@ public class JServiceList extends JList<FoundService> implements ServiceFinderLi
 		repaint();
 	}
 	
+	@Override
+	public void serviceTimedOut(FoundService service) 
+	{
+		serviceModel.removeElement(service);
+		repaint();
+	}
+	
 	public void mapIcon(String service, Icon icon)
 	{
 		renderer.mapIcon(service, icon);
