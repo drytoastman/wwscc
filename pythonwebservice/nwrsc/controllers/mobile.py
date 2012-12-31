@@ -14,7 +14,7 @@ class JEncoder(JSONEncoder):
 		if hasattr(o, 'getFeed'):
 			return o.getFeed()
 		else:
-			return ""
+			return str(o)
 
 def _extract(obj, *keys):
 	if type(obj) is dict:

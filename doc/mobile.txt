@@ -14,28 +14,28 @@ mobile/  - returns list of series
 mobile/<seriesname>  - returns a list of events
 	[
 		{
-			"id": 1, 
-			"name": "NWR SCCA Solo #1 at Packwood", 
-			"date": "", 
-			"sponsor": "", 
-			"host": "", 
-			"chair": "", 
-			"designer": "", 
-			"location": "Hampton Mills"
-			"regopened": "", 
-			"regclosed": "", 
-			"notes": "", 
+			"id": int
+			"name": string
+			"location": string
+			"date": "YYYY-MM-DD"
+			"regopened": "YYYY-MM-DD HH:MM:SS"
+			"regclosed": "YYYY-MM-DD HH:MM:SS"
 
-			"runs": 4, 
-			"segments": "", 
-			"countedruns": 0, 
-			"totlimit": 0, 
-			"perlimit": 2, 
-			"courses": 1, 
-			"practice": false, 
-			"ispro": false, 
-			"conepen": 2.0, 
-			"gatepen": 10.0, 
+			"sponsor": string
+			"host": string
+			"chair": string
+			"designer": string
+			"notes": string
+
+			"ispro": boolean
+			"practice": boolean
+			"runs": int
+			"countedruns": int
+			"totlimit": int
+			"perlimit": int
+			"courses": int
+			"conepen": float
+			"gatepen": float
 
 		}
 	]
@@ -44,15 +44,15 @@ mobile/<seriesname>  - returns a list of events
 mobile/<seriesname>/classes - returns a list of the classes
 	[
 		{
-			"code": "NOVAM", 
-			"descrip": "Novice AM", 
-			"champtrophy": 1/0
-			"eventtrophy": 1/0
+			"code": string
+			"descrip": string
+			"champtrophy": boolean
+			"eventtrophy": boolean
 			"classmultiplier": float
-			"carindexed": 1/0
+			"carindexed": boolean
 			"classindex": string
-			"countedruns": 1/0
-			"usecarflag": 1/0
+			"countedruns": boolean
+			"usecarflag": boolean
 			"numorder": int
 		}
 	]
@@ -87,7 +87,7 @@ mobile/<seriesname>/<eventid>/classlist/<carid> - returns the class results, giv
 			"indexstr": string
 			"pospoints": int
 			"diffpoints": float
-			"label": not present/current/raw/old
+			"label": (if present) "current","raw","old
 		}
 	]
 
@@ -102,7 +102,7 @@ mobile/<seriesname>/<eventid>/champlist/<carid> - returns the champ results, giv
 			"events": int
 			"position": int
 			"points": int or float depending on series config
-			"label": not present/current/raw/old
+			"label": (if present) "current","raw","old
 		}
 	]
 
@@ -117,7 +117,7 @@ mobile/<seriesname>/<eventid>/topraw/<carid> - returns the top raw times, given 
 			"position": int
 			"classcode": string
 			"courses": int
-			"label": not present/current/raw/old
+			"label": (if present) "current","raw","old
 		}
 	]
 
@@ -135,7 +135,7 @@ mobile/<seriesname>/<eventid>/topnet/<carid> - returns the top net times, given 
 			"indexcode": string
 			"indexvalue": float
 			"courses": int
-			"label": not present/current/raw/old
+			"label": (if present) "current","raw","old
 		}
 	]
 

@@ -46,8 +46,6 @@ class Class(object):
 			if isinstance(v, float):
 				if v != 0:
 					d[k] = "%0.3f" % (v)
-			if isinstance(v, bool):
-				d[k] = v and "1" or "0"
 			else:
 				d[k] = v
 		return d
