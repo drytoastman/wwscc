@@ -142,6 +142,10 @@ br { clear: left; }
 	border-color: #b8b8b8 !important;
 } 
 
+.ui-widget-overlay {
+	background: #222 !important;
+}
+
 h3.ui-accordion-header a {
 	color: #0073EA;
 }
