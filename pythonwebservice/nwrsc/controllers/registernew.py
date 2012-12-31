@@ -304,7 +304,9 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		return {'data': str(render_mako_def('/register/events.mako', 'eventdisplay', ev=event))}
 
 		 
-
+	def eventlist(self):
+		return render_mako('/register/eventlist.mako')
+		
 	def view(self):
 		id = request.GET.get('event', None)
 		if id is None:

@@ -4,7 +4,7 @@
 <div class='helpbox'>
 If you have a profile in this series, please login.
 If you have a profile in another active series, use that information and you will be given the option of copying the profile.
-Otherwise, create a new profile.
+Otherwise, create a new profile.  If you are just looking for entry lists, <a href='${h.url_for(action="eventlist")}'>click here</a>.
 </div>
 
 <table id='loginrow'>
@@ -42,24 +42,6 @@ OR
 </tr>
 </table>
 
-<div class='viewheader'>Events:</div>
-<table class='viewtable'>
-%for e in c.events:
-	<tr>
-	<td class='vname'>${e.name}</td>
-	<td class='vweekday'>${e.date.strftime('%a')}</td>
-	<td class='vmonth'>${e.date.strftime('%b')}</td>
-	<td class='vday'>${e.date.strftime('%d')}</td>
-	<td><a class='viewbutton' href='${h.url_for(action='view', event=e.id)}' >View</a></td>
-%if e.totlimit:
-	<td>${e.count}/${e.totlimit}</td>
-%else:
-	<td>${e.count}</td>
-%endif
-	</tr>
-%endfor
-</table>
-
 ${driverform(action=h.url_for(action='newprofile'), method='post')}
 
 <script type='text/javascript'>
@@ -68,7 +50,6 @@ $(document).ready(function() {
 	$("#loginForm").validate(); 
 	$("#loginsubmit").button();
 	$("button").button();
-	$(".viewbutton").button();
 	setupDriverDialog("New Driver");
 });
 
