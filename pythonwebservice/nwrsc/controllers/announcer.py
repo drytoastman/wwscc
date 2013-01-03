@@ -10,8 +10,6 @@ from nwrsc.model import *
 from mobile import MobileController
 
 
-CONVERT = {'old':'improvedon', 'raw':'couldhave', 'current':'highlight'}
-
 class AnnouncerController(MobileController):
 
 	def index(self):
@@ -24,13 +22,6 @@ class AnnouncerController(MobileController):
 		else:
 			return self.databaseSelector()
 
-
-	def e2label(self, e):
-		if hasattr(e, 'label'):
-			return CONVERT.get(getattr(e, 'label',''), '') 
-		if hasattr(e, '__getitem__'):
-			return CONVERT.get(e.get('label',''), '') 
-		return ''
 
 	@jsonify
 	def last(self):

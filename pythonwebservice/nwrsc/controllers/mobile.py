@@ -1,5 +1,5 @@
-from pylons import request, response
-from pylons.templating import render_mako
+from pylons import request, response, tmpl_context as c
+from pylons.templating import render_mako, render_mako_def
 from pylons.decorators import jsonify
 from nwrsc.model import *
 from nwrsc.controllers.lib.base import BeforePage, BaseController
@@ -8,6 +8,7 @@ from simplejson import JSONEncoder
 import time
 import operator
 
+CONVERT = {'old':'improvedon', 'raw':'couldhave', 'current':'highlight'}
 
 class JEncoder(JSONEncoder):
 	def default(self, o):
@@ -40,6 +41,13 @@ class MobileController(BaseController):
 		response.headers['Content-type'] = 'text/javascript'
 		return JEncoder(indent=1).encode(o)
 
+	def e2label(self, e):
+		if hasattr(e, 'label'):
+			return CONVERT.get(getattr(e, 'label',''), '') 
+		if hasattr(e, '__getitem__'):
+			return CONVERT.get(e.get('label',''), '') 
+		return ''
+
 	def index(self):
 		if self.database is None:
 			return self._encode("serieslist", self._databaseList())
@@ -53,18 +61,54 @@ class MobileController(BaseController):
 			return self._encode("nothing", [])
 
 
-	@jsonify
+	def browser(self):
+		return render_mako('/announcer/mobilebrowser.mako')
+
+	def Event(self):
+		carid = int(self.routingargs.get('other', 0))
+		c.results = self._classlist(carid)
+		c.e2label = self.e2label
+		return render_mako_def('/announcer/mobiletables.mako', 'classlist')
+
+	def Champ(self):
+		carid = int(self.routingargs.get('other', 0))
+		c.champ = self._champlist(carid)
+		c.cls = self.cls
+		c.e2label = self.e2label
+		return render_mako_def('/announcer/mobiletables.mako', 'champlist')
+
+	def PAX(self):
+		carid = int(self.routingargs.get('other', 0))
+		c.e2label = self.e2label
+		c.toptimes = self._loadTopTimes(carid, raw=False)
+		return render_mako('/announcer/topnettimes.mako').replace('\n', '')
+
+	def Raw(self):
+		carid = int(self.routingargs.get('other', 0))
+		c.e2label = self.e2label
+		c.toptimes = self._loadTopTimes(carid, raw=True)
+		return render_mako('/announcer/toprawtimes.mako').replace('\n', '')
+
+
+
 	def last(self):
 		query = self.session.query(AnnouncerData.updated, AnnouncerData.carid)
 		query = query.filter(AnnouncerData.eventid==self.eventid)
-		clazz = request.GET.get('class', '*')
-		if clazz != '*':
-			query = query.join(Class).filter(Class.code == clazz)
 		query = query.order_by(AnnouncerData.updated.desc())
-		row = query.first()
-		if row is None:
-			return {}
-		return {'updated':time.mktime(row[0].timetuple()), 'carid':row[1]}
+		classes = request.GET.get('class', '*').split(',')
+		ret = []
+		for clazz in classes:
+			if clazz != '*':
+				row = query.join(Class).filter(Class.code == clazz).first()
+			else:
+				row = query.first()
+
+			if row is None:
+				ret.append({'classcode':clazz, 'updated': 0})
+			else:
+				ret.append({'classcode':clazz, 'updated':time.mktime(row[0].timetuple()), 'carid':row[1]})
+
+		return self._encode("last", ret)
 
 
 	def topnet(self):
