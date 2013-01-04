@@ -95,7 +95,7 @@ class MobileController(BaseController):
 		query = self.session.query(AnnouncerData.updated, AnnouncerData.carid)
 		query = query.filter(AnnouncerData.eventid==self.eventid)
 		query = query.order_by(AnnouncerData.updated.desc())
-		classes = request.GET.get('class', '*').split(',')
+		classes = request.GET.get('classcodes', '*').split(',')
 		ret = []
 		for clazz in classes:
 			if clazz != '*':

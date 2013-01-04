@@ -25,7 +25,7 @@ codeset = set([v['code'] for v in views])
 <div data-role="page" data-theme="a" id="${view['id']}">
 	<div data-role="header" data-id="header${ii}" data-position="fixed">
 		%if ii > 0:
-		<a href="#${views[ii-1]['id']}" data-icon="arrow-l" data-role="button" >Prev</a>
+		<a href="#${views[ii-1]['id']}" data-icon="arrow-l" data-role="button" data-rel="back">Prev</a>
 		%endif
 		<h1>${view['code']} - ${view['type']}</h1>
 		%if ii < len(views)-1:
@@ -42,7 +42,7 @@ codeset = set([v['code'] for v in views])
 </html>
 
 
-<script>
+<script type='text/javascript'>
 
 var baseurl = "${h.url_for(action='')}";
 var views = Array();
@@ -76,10 +76,10 @@ function processLast(json)
 
 function updateCheck()
 {
-	$.getJSON('${h.url_for(action='last')}', { class: "${','.join(codeset)}" }, processLast);
+	$.getJSON('${h.url_for(action='last')}', { classcodes: "${','.join(codeset)}" }, processLast);
 }
 
-$(document).on('pageinit', function() {
+$(document).ready(function(){
 	updateCheck();
 	setInterval('updateCheck()', 3000);
 });
