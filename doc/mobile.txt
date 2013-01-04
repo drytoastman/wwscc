@@ -66,11 +66,14 @@ mobile/<seriesname>/indexes - returns a list of the indexes
 		}
 	]
 
-mobile/<seriesname>/<eventid>/last?class=<classcode> - returns a the last finish time for the class, * means any class
-	{
-		updated: float
-		carid: int
-	}
+mobile/<seriesname>/<eventid>/last?classcodes=<classcode>[,<classcode>,...] - returns a the last finish time for the class codes, * means any class
+	[
+		{
+			classcode: string
+			updated: float
+			carid: int
+		}
+	]
 
 
 mobile/<seriesname>/<eventid>/classlist/<carid> - returns the class results, given extra info for specified car
