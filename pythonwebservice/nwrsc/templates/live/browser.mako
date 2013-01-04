@@ -110,7 +110,7 @@ function processLast(json)
 
 function updateCheck()
 {
-	$.getJSON('${h.url_for(action='last')}', { classcodes: "${','.join(codeset)}" }, processLast);
+	$.getJSON('${h.url_for(action='last')}', { classcodes: "${','.join(codeset)|n}" }, processLast);
 }
 
 $(document).ready(function(){

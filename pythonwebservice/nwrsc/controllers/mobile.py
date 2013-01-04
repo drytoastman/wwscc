@@ -61,36 +61,6 @@ class MobileController(BaseController):
 			return self._encode("nothing", [])
 
 
-	def browser(self):
-		return render_mako('/announcer/mobilebrowser.mako')
-
-	def Event(self):
-		carid = int(self.routingargs.get('other', 0))
-		c.results = self._classlist(carid)
-		c.e2label = self.e2label
-		return render_mako_def('/announcer/mobiletables.mako', 'classlist')
-
-	def Champ(self):
-		carid = int(self.routingargs.get('other', 0))
-		c.champ = self._champlist(carid)
-		c.cls = self.cls
-		c.e2label = self.e2label
-		return render_mako_def('/announcer/mobiletables.mako', 'champlist')
-
-	def PAX(self):
-		carid = int(self.routingargs.get('other', 0))
-		c.e2label = self.e2label
-		c.toptimes = self._loadTopTimes(carid, raw=False)
-		return render_mako('/announcer/topnettimes.mako').replace('\n', '')
-
-	def Raw(self):
-		carid = int(self.routingargs.get('other', 0))
-		c.e2label = self.e2label
-		c.toptimes = self._loadTopTimes(carid, raw=True)
-		return render_mako('/announcer/toprawtimes.mako').replace('\n', '')
-
-
-
 	def last(self):
 		query = self.session.query(AnnouncerData.updated, AnnouncerData.carid)
 		query = query.filter(AnnouncerData.eventid==self.eventid)
