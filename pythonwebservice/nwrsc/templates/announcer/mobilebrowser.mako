@@ -22,7 +22,7 @@ codeset = set([v['code'] for v in views])
 <body> 
 
 %for ii, view in enumerate(views):
-<div data-role="page" data-theme="a" id="${view['id']}">
+<div data-role="page" data-theme="b" id="${view['id']}">
 	<div data-role="header" data-id="header${ii}" data-position="fixed">
 		%if ii > 0:
 		<a href="#${views[ii-1]['id']}" data-icon="arrow-l" data-role="button" data-rel="back">Prev</a>
@@ -41,6 +41,40 @@ codeset = set([v['code'] for v in views])
 </body>
 </html>
 
+<style type='text/css'>
+table
+{
+	background: white;
+	border: 1px solid gray;
+	border-collapse: collapse;
+	width: 100%;
+}
+
+table td, table th
+{ 
+	color: black; 
+	border: 1px solid gray;
+	text-shadow: none;  
+}
+
+tr.highlight td {
+	font-weight: bold;
+	background: #DDD; 
+}
+
+tr.improvedon td {
+	font-weight: bold;
+	background: #EEF; 
+	color: #99E;
+}
+
+tr.couldhave td {
+	font-weight: bold;
+	background: #EDD; 
+	color: #E77;
+}
+
+</style>
 
 <script type='text/javascript'>
 
