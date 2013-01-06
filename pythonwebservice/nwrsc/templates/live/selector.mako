@@ -61,7 +61,7 @@ def makeurl(code, usepax, useraw):
 	views = [code, "Event", code, "Champ"]
 	if usepax: views.extend(["Any", "PAX"])
 	if useraw: views.extend(["Any", "Raw"])
-	return h.url_for(action='browser', views=','.join(views))
+	return h.url_for(action='browser') + '?views=' + ','.join(views)
 %>
 
 <body> 
