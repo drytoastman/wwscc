@@ -11,32 +11,35 @@
 </head> 
 
 <%
-views = [
-		 {'id':'one', 'code':'OPAX', 'type':'Event'},
-		 {'id':'two', 'code':'OPAX', 'type':'Champ'}, 
-		 {'id':'three', 'code':'*',  'type':'PAX'}
-		]
-codeset = set([v['code'] for v in views])
+codeset = set([v['code'] for v in c.views])
+def idof(v): return v['type']+v['code']
+def titlefor(v):
+	if (v['code'] == 'Any'):
+		return v['type'];
+	return "%s - %s" % (v['code'], v['type'])
 %>
 	
 <body> 
 
-%for ii, view in enumerate(views):
-<div data-role="page" data-theme="b" id="${view['id']}">
-	<div data-role="header" data-id="header${ii}" data-position="fixed">
-		%if ii > 0:
-		<a href="#${views[ii-1]['id']}" data-icon="arrow-l" data-role="button" data-rel="back">Prev</a>
-		%endif
-		<h1>${view['code']} - ${view['type']}</h1>
-		%if ii < len(views)-1:
-		<a href="#${views[ii+1]['id']}" data-icon="arrow-r" data-role="button" class="ui-btn-right">Next</a>
-		%endif
+<div data-role="page" data-theme="b">
+	<div data-role="header" data-id="header" data-position="fixed">
+		<h1>Browser</h1>
+		<div data-role="navbar">
+			<ul>
+				%for v in c.views:
+					<li><a onclick='switchto("${idof(v)}");'>${titlefor(v)}</a></li>
+				%endfor
+			</ul>
+		</div>
 	</div>
-	<div data-role="content" id="content-${view['id']}">
-	</div>
-</div>
 
-%endfor
+	<div data-role="content">
+		%for v in c.views:
+			<div id="${idof(v)}" style='display:none;'></div>
+		%endfor
+	</div>
+
+</div>
 
 </body>
 </html>
@@ -79,17 +82,23 @@ tr.couldhave td {
 <script type='text/javascript'>
 
 var baseurl = "${h.url_for(action='')}";
+var current = "ignoremenotpresent";
 var views = Array();
 %for code in codeset:
 views["${code}"] = Object();
 views["${code}"].updated = 0;
 views["${code}"].pages = Array();
 %endfor
-%for v in views:
-views["${v['code']}"].pages.push(function(carid) {
-	$("#content-${v['id']|n}").load("${h.url_for(action=v['type'])|n}/"+carid);
-});
+%for v in c.views:
+views["${v['code']}"].pages.push(function(carid) { $("#${idof(v)}").load("${h.url_for(action=v['type'])}/"+carid); });
 %endfor
+
+function switchto(newid)
+{
+	$('#'+current).css('display', 'none');
+	$('#'+newid).css('display', 'block');
+	current = newid;
+}
 
 function processLast(json)
 {

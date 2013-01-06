@@ -8,7 +8,7 @@ class LiveController(MobileController):
 	def index(self):
 		if self.eventid:
 			c.event = self.event
-			c.classes = self.session.query(Class).all()
+			c.classes = ['Any'] + [x[0] for x in self.session.query(Class.code).all()] 
 			return render_mako('/live/selector.mako')
 		elif self.database is not None:
 			c.events = self.session.query(Event).all()
@@ -17,6 +17,12 @@ class LiveController(MobileController):
 			return self.databaseSelector()
 
 	def browser(self):
+		c.classes = ['Any'] + [x[0] for x in self.session.query(Class.code).all()] 
+		c.views = [
+		 {'code':'OPAX', 'type':'Event'},
+		 {'code':'OPAX', 'type':'Champ'}, 
+		 {'code':'Any',  'type':'PAX'}
+		]
 		return render_mako('/live/browser.mako')
 
 	def Event(self):
