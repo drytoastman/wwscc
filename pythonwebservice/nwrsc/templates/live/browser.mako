@@ -12,7 +12,8 @@
 
 <%
 codeset = set([v['code'] for v in c.views])
-def idof(v): return v['type']+v['code']
+def idfor(v):
+	return v['type']+v['code']
 def titlefor(v):
 	if (v['code'] == 'Any'):
 		return v['type'];
@@ -24,10 +25,10 @@ def titlefor(v):
 <div data-role="page" data-theme="b">
 	<div data-role="header" data-id="header" data-position="fixed">
 		<h1>Browser</h1>
-		<div data-role="navbar">
+		<div data-role="navbar" id="navbar">
 			<ul>
 				%for v in c.views:
-					<li><a onclick='switchto("${idof(v)}");'>${titlefor(v)}</a></li>
+					<li><a onclick='switchto("${idfor(v)}");'>${titlefor(v)}</a></li>
 				%endfor
 			</ul>
 		</div>
@@ -35,7 +36,7 @@ def titlefor(v):
 
 	<div data-role="content">
 		%for v in c.views:
-			<div id="${idof(v)}" style='display:none;'></div>
+			<div id="${idfor(v)}" style='display:none;'></div>
 		%endfor
 	</div>
 
@@ -81,7 +82,6 @@ tr.couldhave td {
 
 <script type='text/javascript'>
 
-var baseurl = "${h.url_for(action='')}";
 var current = "ignoremenotpresent";
 var views = Array();
 %for code in codeset:
@@ -90,7 +90,7 @@ views["${code}"].updated = 0;
 views["${code}"].pages = Array();
 %endfor
 %for v in c.views:
-views["${v['code']}"].pages.push(function(carid) { $("#${idof(v)}").load("${h.url_for(action=v['type'])}/"+carid); });
+views["${v['code']}"].pages.push(function(carid) { $("#${idfor(v)}").load("${h.url_for(action=v['type'])}/"+carid); });
 %endfor
 
 function switchto(newid)
@@ -125,6 +125,7 @@ function updateCheck()
 $(document).ready(function(){
 	updateCheck();
 	setInterval('updateCheck()', 3000);
+	$('#navbar a').first().click();
 });
 
 

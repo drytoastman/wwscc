@@ -1,4 +1,4 @@
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, request
 from pylons.templating import render_mako, render_mako_def
 from nwrsc.model import *
 from mobile import MobileController
@@ -8,7 +8,7 @@ class LiveController(MobileController):
 	def index(self):
 		if self.eventid:
 			c.event = self.event
-			c.classes = ['Any'] + [x[0] for x in self.session.query(Class.code).all()] 
+			c.classes = self.session.query(Class.code).all()
 			return render_mako('/live/selector.mako')
 		elif self.database is not None:
 			c.events = self.session.query(Event).all()
@@ -17,12 +17,10 @@ class LiveController(MobileController):
 			return self.databaseSelector()
 
 	def browser(self):
-		c.classes = ['Any'] + [x[0] for x in self.session.query(Class.code).all()] 
-		c.views = [
-		 {'code':'OPAX', 'type':'Event'},
-		 {'code':'OPAX', 'type':'Champ'}, 
-		 {'code':'Any',  'type':'PAX'}
-		]
+		c.views = []
+		args = request.GET.get('views', 'Any,PAX').split(',')
+		for v in zip(args[::2], args[1::2]):
+			c.views.append({'code':v[0], 'type':v[1]})
 		return render_mako('/live/browser.mako')
 
 	def Event(self):
