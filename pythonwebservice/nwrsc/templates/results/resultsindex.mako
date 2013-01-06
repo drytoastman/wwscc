@@ -80,6 +80,7 @@ padding: 0;
 
 <h3>Other</h3>
 <ul>
+<li><a href="${h.url_for(controller='live')}">Live Updates</a></li>
 %if config['nwrsc.private']:
 <li><a href="${h.url_for(controller='announcer')}">Announcer Panel</a></li>
 %endif
