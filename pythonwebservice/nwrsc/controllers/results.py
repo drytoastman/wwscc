@@ -259,18 +259,11 @@ class ResultsController(BaseController):
 	def dialins(self):
 		c.order = request.GET.get('order', 'Net')
 		c.filter = request.GET.get('filter', 'All')
-
-		dialins = Dialins(self.session, self.eventid)
-		if c.filter == 'Ladies':
-			c.dialins = [x for x in dialins if x.classcode[0] == 'L']
-		elif c.filter == 'Open':
-			c.dialins = [x for x in dialins if x.classcode[0] != 'L']
-		else:
-			c.dialins = dialins
+		c.dialins = Dialins(self.session, self.eventid)
 
 		if c.order == 'Diff':
 			c.dialins.sort(key=operator.attrgetter('diff'))
-		elif c.order == 'Net':
+		else:
 			c.dialins.sort(key=operator.attrgetter('net'))
 			
 		return render_mako('/challenge/dialins.mako')

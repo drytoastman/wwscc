@@ -16,6 +16,10 @@ class Entry(object):
 		self.net = row['mynet']
 		self.position = row['position']
 
+		self.rankingall = ""
+		self.rankingopen = ""
+		self.rankingladies = ""
+
 		if row['alias'] and not config['nwrsc.private']:
 			self.firstname = row['alias']
 			self.lastname = ""
@@ -65,3 +69,21 @@ class Dialins(list):
 			ret = classDial.get(carid, 0.0)
 		
 		return (int(ret * 1000.0))/1000.0
+
+
+	def sort(self, *args, **kwargs):
+		""" Override sort so we can recalc our various positions """
+		list.sort(self, *args, **kwargs)
+		allii = 0
+		ladiesii = 0
+		openii = 0
+		for entry in self:
+			allii += 1
+			entry.rankingall = allii
+			if entry.classcode[0] == 'L':
+				ladiesii += 1
+				entry.rankingladies = ladiesii
+			else:
+				openii += 1
+				entry.rankingopen = openii
+

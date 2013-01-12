@@ -13,7 +13,9 @@ h4 { margin-top: 0px; }
 
 <table class='dialins sortable'>
 <tr>
-<th class='sorttable_nosort'>Pos</th>
+<th class='sorttable_nosort'>A</th>
+<th class='sorttable_nosort'>O</th>
+<th class='sorttable_nosort'>L</th>
 <th>Name</th>
 <th>Class</th>
 <th>Index</th>
@@ -24,9 +26,11 @@ h4 { margin-top: 0px; }
 <th>Regular</th>
 </tr>
 
-%for ii, e in enumerate(c.dialins):
+%for e in c.dialins:
 	<tr>
-	<td>${ii+1}</td>
+	<td>${e.rankingall}</td>
+	<td>${e.rankingopen}</td>
+	<td>${e.rankingladies}</td>
 	<td>${e.firstname} ${e.lastname}</td>
 	<td>${e.classcode}</td>
 	<td>${e.indexStr}</td>

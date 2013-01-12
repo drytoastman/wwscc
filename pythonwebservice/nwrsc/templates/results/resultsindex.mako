@@ -80,8 +80,8 @@ padding: 0;
 
 <h3>Other</h3>
 <ul>
-<li><a href="${h.url_for(controller='live')}">Live Updates</a></li>
 %if config['nwrsc.private']:
+<li><a href="${h.url_for(controller='live')}">Movile Live Page</a></li>
 <li><a href="${h.url_for(controller='announcer')}">Announcer Panel</a></li>
 %endif
 <li><a href='${h.url_for(action='all')}'>All Classes</a></li>
@@ -92,15 +92,7 @@ padding: 0;
 	<li><a href='${h.url_for(action='grid', order='position')}'>Grid By Position</a></li>
 %endif
 %if c.event.ispro:
-	<li>Dialins &darr;
-	<ul>
-	<li>Ladies by <a href='${h.url_for(action='dialins', filter='Ladies')}'>Net</a>,
-			<a href='${h.url_for(action='dialins', filter='Ladies', order='Diff')}'>Diff</a></li>
-	<li>Open by <a href='${h.url_for(action='dialins', filter='Open')}'>Net</a>,
-			<a href='${h.url_for(action='dialins', filter='Open', order='Diff')}'>Diff</a></li>
-	<li>All by <a href='${h.url_for(action='dialins')}'>Net</a>,
-			<a href='${h.url_for(action='dialins', order='Diff')}'>Diff</a></li>
-	</ul>
-	</li>
+	<li><a href='${h.url_for(action='dialins')}'>Dialins By Net</a></li>
+	<li><a href='${h.url_for(action='dialins', order='Diff')}'>Dialins By Diff</a></li>
 %endif
 </ul>
