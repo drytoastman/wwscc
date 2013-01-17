@@ -3,6 +3,7 @@
 body {
 	margin: 0;
 	padding: 0;
+	padding-left: 2px;
 }
 
 #serieslinks a {
@@ -179,10 +180,6 @@ h3.eventclosed span {
 	vertical-align: top;
 }
 
-.eselector + button {
-	height: 20px;
-}
-
 .notifier {
 	font-weight: bold;
 	height: 23px;
@@ -202,80 +199,48 @@ span.limit
 	white-space:nowrap;
 }
 
-span.elabel
-{
-	width: 65px;
-	text-align: right;
-	margin-bottom: 2px;
-	margin-right: 10px;
-	font-weight: bold;
-}
-
-.evalue
-{
-	Xfloat: left;
-}
-
-
 #profile {
 	font-family: Helvetica, sans-serif;
+	font-size: 1.5em;
 }
 
 #profile span {
-	Xfont-size: 0.8em;
 	display: block;
 }
 
 #profile span.name, #profile span.email {
-	Xfont-size: 0.9em;
 	font-weight: bold;
 }
 
 #profile .ui-button {
-	Xfont-size: 0.7em !important;
 	margin-top: 10px;
-}
-
-#cars  {
-	Xborder-top: 1px solid #b8b9b8;
-	Xpadding-top: 5px;
-	Xmargin-top: 20px;
 }
 
 #carlist {
 	margin-left: 0px;
 	padding: 0;
-}
-
-
-#carlist td, #carlist th {
-	font-family: Helvetica, sans-serif;
+	border-collapse: collapse;
 }
 
 #carlist th {
-	Xfont-size: 0.8em;
+	font-family: Helvetica, sans-serif;
+	font-size: 140%;
 }
 
-#carlist button {
-	height: 25px;
+#carlist td {
+	font-family: Helvetica, sans-serif;
+	vertical-align: top;
+	padding: 5px;
+	border-top: 1px solid #DDD;
 }
 
-#carlist .carclass {
-	text-align: right;
-	padding-left: 3px;
+#carlist tr:first-child td {
+	border-top: 0px;
 }
 
-#carlist .carnumber {
-	Xfont-size: 1.0em;
-}
-
-#carlist .cardesc, #carlist .carindex {
-	Xfont-size: 0.8em;
-}
 
 #createcar {
 	margin-top: 5px; 
-	Xfont-size: 0.7em !important;
 }
 
 
@@ -286,13 +251,11 @@ table.carlist {
     border-collapse: collapse;
     empty-cells: show;
     font-family: arial;
-    Xwidth: 450px;  /* along with nowrap below this become min-width, even in IE */
 }
 
 table.carlist td, table.carlist th {
     border: solid 1px #555;
     padding: 3px;
-    Xfont-size: 0.9em;
     text-align: left;
     white-space:nowrap;
 }
@@ -383,10 +346,6 @@ table.eventdetails a {
 	vertical-align: middle
 }
 
-.unregbutton span {
-	font-size: 0.6em;
-}
-
 #seriesimg, #sponsorimg {
 	display: inline-block;
 	vertical-align: middle;
@@ -417,9 +376,9 @@ table.eventdetails a {
 }
 
 #eventsinner h3 {
-	border-top: 1px solid gray;
-	border-left: 1px solid gray;
-	border-right: 1px solid gray;
+	border-top: 1px solid #DDD;
+	border-left: 1px solid #DDD;
+	border-right: 1px solid #DDD;
 	border-radius: 0.5em 0.5em 0em 0em;
 	margin: 0px;
 	margin-top: -1px;
@@ -432,7 +391,7 @@ h3.eventopen a {
 }
 
 h3.lastevent.hidden {
-	border-bottom: 1px solid gray;
+	border-bottom: 1px solid #DDD;
 	border-radius: 0.5em 0.5em 0.5em 0.5em !important;
 }
 
@@ -441,9 +400,9 @@ h3.lastevent.hidden {
 	padding-left: 15px;
 	padding-bottom: 10px;
 	border-radius: 0em 0em 0.5em 0.5em;
-	border-left: 1px solid gray;
-	border-right: 1px solid gray;
-	border-bottom: 1px solid gray;
+	border-left: 1px solid #DDD; 
+	border-right: 1px solid #DDD;
+	border-bottom: 1px solid #DDD;
 }
 
 #logout {
@@ -458,9 +417,29 @@ a.viewlink {
 	color: blue;
 }
 
-.cardisplay, .cardisplay span {
-	display: inline-block;
+.cardisplay { display: inline-block; }
+.cardisplay span { display: block; }
+.cardisplay .code { font-weight: bold; font-size: 1.2em; }
+.cardisplay .desc { font-family: "Trebuchet MS", Helvetica, sans-serif; color: gray; }
+
+.ui-button-icon-only {
+	width: 25px !important;
+	height: 25px !important;
 }
 
-.cardisplay .code { font-weight: bold; font-size: 1.1em; min-width: 80px; text-align: right; margin-right: 4px; }
-.cardisplay .desc {  }
+.carevents {
+	padding-left: 20px !important;
+}
+
+.carevents ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+	color: gray;
+}
+
+.unregbutton {
+	vertical-align: top;
+}
+

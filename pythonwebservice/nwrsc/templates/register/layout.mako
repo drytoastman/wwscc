@@ -37,7 +37,7 @@ ${carlist()}
 
 
 <div id='eventsinner'>
-%for ii, ev in enumerate(sorted(c.events, key=lambda obj: obj.date)):
+%for ii, ev in enumerate(sorted(c.eventmap.values(), key=lambda obj: obj.date)):
 	<%
 		if ev.date < today:
 			accordindex = ii + 1
@@ -93,7 +93,7 @@ function caredited()
 {
 	$.post('${h.url_for(action='editcar')}', $("#careditor").serialize(), function() {
 		updateCars();
-		%for ev in c.events:
+		%for ev in c.eventmap.values():
 		%if not ev.closed:
 			updateEvent(${ev.id});
 		%endif
@@ -107,7 +107,7 @@ function deletecar(carid)
 		return;
 	$.post('${h.url_for(action='deletecar')}', {carid:carid}, function() {
 		updateCars();
-		%for ev in c.events:
+		%for ev in c.eventmap.values():
 		%if not ev.closed:
 			updateEvent(${ev.id});
 		%endif

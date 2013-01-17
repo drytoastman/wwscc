@@ -25,7 +25,7 @@ Other Series
   <img id='sponsorimg' src='${h.url_for(controller='db', name='sponsorimage')}' alt='Sponsor Image'/>
 %endif
 %if c.settings:
-<h2 id='seriesname'>${c.database.upper()} Registration - ${c.settings.seriesname}</h2>
+<h2 id='seriesname'>${c.database.upper()} - ${c.settings.seriesname}</h2>
 %endif
 </div> <!-- header -->
 

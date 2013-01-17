@@ -108,7 +108,7 @@ ${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year
 	%for reg in ev.regentries:
 		<div>
 		%if not ev.closed:
-		<button class='unregbutton' onclick='unregisterCar(this, ${ev.id}, ${reg.id});'>UnReg</button>
+		<button class='unregbutton' onclick='unregisterCar(this, ${ev.id}, ${reg.id});'>Unregister</button>
 		%endif
 		${carDisplay(reg.car)}
 		</div>
@@ -140,8 +140,7 @@ ${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year
 	%endif
 
 	<script type='text/javascript'>
-	$(".carselector button").button({icons: { primary:'ui-icon-scissors'}, text: false} );
-	$(".unregbutton").button();
+	$(".unregbutton").button({icons: { primary:'ui-icon-scissors'}, text: false} );
 	</script>
 
 </%def>

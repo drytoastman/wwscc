@@ -1,5 +1,6 @@
 import datetime
 import logging
+import operator
 
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako, render_mako_def
@@ -122,8 +123,16 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		c.database = self.database
 		c.driverid = self.user.getDriverId()
 		c.previouserror = self.user.getPreviousError()
-		c.events = self.session.query(Event).all()
 		c.classdata = ClassData(self.session)
+		c.eventmap = dict()
+		now = datetime.datetime.now()
+		for event in self.session.query(Event):
+			event.closed = now > event.regclosed 
+			event.opened = now > event.regopened
+			event.tdclass = ''
+			if event.closed or not event.opened:
+				event.tdclass = 'closed'
+			c.eventmap[event.id] = event
 
 		if action not in ('view', 'scripts') and self.settings.locked:
 			# Delete any saved session data for this person
@@ -163,35 +172,21 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		if self.database is None:
 			return render_mako('/register/blank.mako')
 
-		now = datetime.datetime.now()
-		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
+		self._loadDriver()
+		self._loadCars()
 		if c.driver is None:
 			c.previouserror = "Invalid driver ID saved in session, that is pretty weird, login again"
 			self.user.clearSeries()
 			c.otherseries = self.user.activeSeries()
 			return render_mako('/register/login.mako')
 
-		c.fields = self.session.query(DriverField).all()
-		for field in c.fields:
-			setattr(c.driver, field.name, c.driver.getExtra(field.name))
-
-		for e in c.events:
+		for e in c.eventmap.values():
 			e.regentries = self.session.query(Registration).join('car') \
 						.filter(Registration.eventid==e.id).filter(Car.driverid==c.driverid).all()
 			e.payments = self.session.query(Payment) \
 						.filter(Payment.eventid==e.id).filter(Payment.driverid==c.driverid).all()
-			e.closed = now > e.regclosed 
-			e.opened = now > e.regopened
-			e.tdclass = ''
-			if e.closed or not e.opened:
-				e.tdclass = 'closed'
 
-		c.inuse = []
-		c.notinuse = []
-		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]
-		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		for car in c.cars:
-			car.inuse = car.id in regids
+
 		return render_mako('/register/layout.mako')
 
 
@@ -265,40 +260,24 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 	@jsonify
 	def getprofile(self):
-		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
-		c.fields = self.session.query(DriverField).all()
-		for field in c.fields:
-			setattr(c.driver, field.name, c.driver.getExtra(field.name))
-
+		self._loadDriver()
 		return {'data': str(render_mako_def('/register/profile.mako', 'profile'))}
 
 	@jsonify
 	def getcars(self):
-		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
-		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		c.registration = self.session.query(Registration).join('car').distinct().filter(Car.driverid==c.driverid)
+		self._loadCars()
 		return {'data': str(render_mako_def('/register/cars.mako', 'carlist'))}
 
 	@jsonify
 	def getevent(self):
 		eventid = int(request.GET.get('eventid', 0))
-		event = self.session.query(Event).get(eventid)
+		event = c.eventmap.get(eventid, None)
 		if event is None:
 			return {'data': "Event does not exist" }
 
 		event.regentries = self.session.query(Registration).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==c.driverid).all()
 		event.payments = self.session.query(Payment).filter(Payment.eventid==event.id).filter(Payment.driverid==c.driverid).all()
-		now = datetime.datetime.now()
-		event.closed = now > event.regclosed 
-		event.opened = now > event.regopened
-		event.tdclass = ''
-		if event.closed or not event.opened:
-			event.tdclass = 'closed'
-
-		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]
-		for car in c.cars:
-			car.inuse = car.id in regids
+		self._loadCars()
 		return {'data': str(render_mako_def('/register/events.mako', 'eventdisplay', ev=event))}
 
 		 
@@ -317,4 +296,18 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		c.reglist = query.all()
 		return render_mako('/register/reglist.mako')
 
+
+	def _loadCars(self):
+		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
+		registration = self.session.query(Registration).join('car').distinct().filter(Car.driverid==c.driverid).all()
+		for car in c.cars:
+			car.regevents = sorted([(c.eventmap[reg.eventid], reg.id) for reg in registration if reg.carid == car.id], key = lambda x: x[0].date)
+
+	def _loadDriver(self):
+		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
+		if c.driver is None:
+			return
+		c.fields = self.session.query(DriverField).all()
+		for field in c.fields:
+			setattr(c.driver, field.name, c.driver.getExtra(field.name))
 
