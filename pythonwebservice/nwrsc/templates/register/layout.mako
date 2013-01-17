@@ -11,12 +11,32 @@
  %>
 
 
-<table id='colcontainer'>
-<tr>
-<td id='events'>
-<h2>Events</h2>
-<div id='eventsinner'>
+<div id='tabs'>
+	<ul>
+		<li><a href="#profile"><span>Profile</span></a></li>
+		<li><a href="#cars"><span>Cars</span></a></li>
+		<li><a href="#eventsinner"><span>Events</span></a></li>
+	</ul>
+	<input id='logout' type='button' value='Logout' onclick='document.location.href="${h.url_for(action="logout")}"'/>
 
+
+<div id='profile'>
+<div id='profilewrapper'>
+${profile()}
+</div>
+<input id='editprofile' type='button' value='Edit' onclick='editdriver(${c.driver.id})'/>
+</div>
+
+
+<div id='cars'>
+<div id='carswrapper'>
+${carlist()}
+</div>
+<input id='createcar' type='button' name='create' value='Create New Car' onclick='editcar(${c.driver.id}, -1);'/>
+</div>
+
+
+<div id='eventsinner'>
 %for ii, ev in enumerate(sorted(c.events, key=lambda obj: obj.date)):
 	<%
 		if ev.date < today:
@@ -24,6 +44,8 @@
 	%>
 			
 	<h3 class='${ev.closed and "eventclosed" or "eventopen"}'>
+	<span class='rightarrow'>&#9658;</span>
+	<span class='downarrow' style='display:none;'>&#9660;</span>
 	<a>
 	<span class='eventday'>${ev.date.strftime('%a')}</span>
 	<span class='eventmonth'>${ev.date.strftime('%b')}</span>
@@ -32,39 +54,14 @@
 	</a>
 	</h3>
 
-	<div id='event${ev.id}' class='eventholder'>
+	<div id='event${ev.id}' class='eventholder' style='display:none;'>
 	${eventdisplay(ev)}
-
 	</div>
 %endfor
-
-</div>
-</td>
-
-
-<td id='rightcol'>
-
-<div id='profile'>
-<h2>Profile</h2>
-<div id='profilewrapper'>
-${profile()}
-</div>
-<input id='editprofile' type='button' value='Edit' onclick='editdriver(${c.driver.id})'/>
-<input id='logout' type='button' value='Logout' onclick='document.location.href="${h.url_for(action="logout")}"'/>
 </div>
 
 
-<div id='cars'>
-<h2>Cars</h2>
-<div id='carswrapper'>
-${carlist()}
-</div>
-<input id='createcar' type='button' name='create' value='Create New Car' onclick='editcar(${c.driver.id}, -1);'/>
-</div>
-
-</td> <!-- rightcol -->
-</tr>
-</table> <!-- colcontainer -->
+</div> <!-- tabs -->
 
 ${driverform()}
 ${carform(True)}
@@ -74,12 +71,24 @@ ${carform(True)}
 
 $(document).ready(function() {
 	$.ajaxSetup({ cache: false });
-	$("#eventsinner").accordion({ active: ${accordindex}});
+	$("#tabs").tabs({selected: 2});
 	$("input[type='button']").button();
 	setupCarDialog(true);
 	setupDriverDialog("Edit Profile");
+
+	$('#eventsinner > h3').last().addClass('lastevent hidden');
+	$('#eventsinner > h3').click(function() {
+		if ($(this).next().toggle().css('display') != 'none') {
+			$(this).removeClass('hidden');
+		} else {
+			$(this).addClass('hidden');
+		}
+		$(this).find(".downarrow").toggle();
+		$(this).find(".rightarrow").toggle();
+	});
 });
 		
+
 function caredited()
 {
 	$.post('${h.url_for(action='editcar')}', $("#careditor").serialize(), function() {

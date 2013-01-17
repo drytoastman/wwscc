@@ -108,7 +108,7 @@ function setupCarDialog()
 
 	$('#careditor').dialog({
 		autoOpen: false,
-		width: 500,
+		width: "auto",
 		modal: true,
 		title: 'Car Editor',
 		position: [20, 100],

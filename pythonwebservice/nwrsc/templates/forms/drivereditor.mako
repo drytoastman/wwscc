@@ -76,7 +76,7 @@ function setupDriverDialog(title)
 
 	$("#drivereditor").dialog({
 		autoOpen: false,
-		width: 620,
+		width: "auto",
 		position: [20, 100],
 		modal: true,
 		title: title,

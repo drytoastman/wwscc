@@ -109,7 +109,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 		c.title = 'Scorekeeper Registration'
 		c.stylesheets = ['/css/register.css', '/css/forms.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css']
-		c.javascript = ['/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/jquery.validate.min.js']
+		c.javascript = ['/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/jquery.validate.min.js', '/js/register.js']
 
 		c.activeSeries = self._activeSeries()
 		if self.database is None:
@@ -155,7 +155,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		response.headers['Cache-Control'] = 'max-age=360' 
 		response.headers.pop('Pragma', None)
 		c.fields = self.session.query(DriverField).all()
-		return render_mako("/register/scripts.mako") + render_mako('/forms/careditor.mako') + render_mako('/forms/drivereditor.mako')
+		return render_mako('/forms/careditor.mako') + render_mako('/forms/drivereditor.mako')
 
 
 	def index(self):
@@ -276,9 +276,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 	def getcars(self):
 		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
 		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]
-		for car in c.cars:
-			car.inuse = car.id in regids
+		c.registration = self.session.query(Registration).join('car').distinct().filter(Car.driverid==c.driverid)
 		return {'data': str(render_mako_def('/register/cars.mako', 'carlist'))}
 
 	@jsonify

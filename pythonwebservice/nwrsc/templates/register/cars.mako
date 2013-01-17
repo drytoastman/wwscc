@@ -1,3 +1,5 @@
+<%namespace file="displays.mako" import="carDisplay"/>
+
 <%def name="disablewarn()">
 disabled='disabled' title='Cars registered or in use cannot be edited or deleted'
 </%def>
@@ -6,15 +8,13 @@ disabled='disabled' title='Cars registered or in use cannot be edited or deleted
 <%def name="carlist()">
 
 <table id='carlist'>
-<tr><th></th><th></th><th>Class</th><th>Num</th><th>Idx</th><th>Description</th></tr>
 %for car in c.cars:
+	<%
+		regevents = [reg.
 	<tr>
 	<td><button class='edit' onclick="editcar(${c.driver.id}, ${car.id});" ${car.inuse and disablewarn()} ></button></td>
 	<td><button class='delete' onclick="deletecar(${car.id});" ${car.inuse and disablewarn()}></button></td>
-	<td class='carclass'>${car.classcode}</td>
-	<td class='carnumber'>${car.number}</td>
-	<td class='carindex'>${c.classdata.getIndexStr(car)}</td>
-	<td class='cardesc'>${car.year} ${car.make} ${car.model} ${car.color}</td>
+	<td class='car'>${carDisplay(car)}</span>
 	</tr>
 %endfor
 </table>

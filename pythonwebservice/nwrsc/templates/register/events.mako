@@ -1,3 +1,5 @@
+<%namespace file="displays.mako" import="carDisplay"/>
+
 <%def name="formatCar(car)">
 ${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year, car.make, car.model, car.color)}
 </%def>
@@ -46,27 +48,41 @@ ${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year
 
 
 <%def name="eventdisplay(ev)">
-	<span class='elabel'>Closes:</span>
-	<span class='evalue'>${ev.opened and ev.regclosed.strftime('%a %b %d at %I:%M%p') or 'Has not opened yet'}</span>
 
+	<table class='eventdetails'>
+		<tr>
+		<th>Closes</th>
+		<td>${ev.opened and ev.regclosed.strftime('%a %b %d at %I:%M%p') or 'Has not opened yet'}</td>
+		</tr>
 	%if ev.host:
-		<span class='elabel'>Host:</span>
-		<span class='evalue'>${ev.host}</span>
+		<tr>
+		<th>Host</th>
+		<td>${ev.host}</td>
+		</tr>
 	%endif
-
 	%if ev.location:
-		<span class='elabel'>Location:</span>
-		<span class='evalue'>${ev.location}</span>
+		<tr>
+		<th>Location</th>
+		<td>${ev.location}</td>
+		</tr>
 	%endif
-
 	%if ev.opened:
-			<span class='elabel'>Entries:</span>
-		%if ev.totlimit:
-			<span class='evalue'>${ev.count}/${ev.totlimit}</span>
-		%else:
-			<span class='evalue'>${ev.count}</span>
+		<tr>
+		<th>Entries</th>
+		<td>
+		%if not ev.closed:
+		<a class='viewlink' href='${h.url_for(action='view', event=ev.id)}' >
 		%endif
-			<span class='evalue'> <a class='viewbutton' href='${h.url_for(action='view', event=ev.id)}' >View</a></span>
+		%if ev.totlimit:
+		${ev.count}/${ev.totlimit}
+		%else:
+		${ev.count}
+		%endif
+		%if not ev.closed:
+		</a>
+		%endif
+		</td>
+		</tr>
 	%endif
 
 	%if not ev.closed and ev.opened:
@@ -87,15 +103,21 @@ ${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year
 			<div class='evalue enotes'>${ev.notes|n}</div>
 		%endif
 	%endif
+		<tr>
+		<th>Cars</th><td>
+	%for reg in ev.regentries:
+		<div>
+		%if not ev.closed:
+		<button class='unregbutton' onclick='unregisterCar(this, ${ev.id}, ${reg.id});'>UnReg</button>
+		%endif
+		${carDisplay(reg.car)}
+		</div>
+	%endfor
+		<td></tr>
+	</table>
 
-	<br/>
 
-	%if ev.closed or not ev.opened:
-		<div class='erule'>Cars In Use</a></div>
-		%for reg in ev.regentries:
-			<span class='evalue'>${formatCar(reg.car)}</span>
-		%endfor
-	%else:
+	%if ev.opened and not ev.closed:
 		<%doc> Where they add a new registration </%doc>
 		<div class='erule'>Register a Car</div>
 		%if ev.totlimit and ev.count >= ev.totlimit:
@@ -108,17 +130,6 @@ ${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year
 			${carSelection(None, ev, c.cars, [x.carid for x in ev.regentries])}
 		%endif
 
-		<%doc> Where they change their registration </%doc>
-		<div class='erule'>Change/Unregister a Car</div>
-		%for reg in ev.regentries:
-			${carSelection(reg, ev, c.cars, [x.carid for x in ev.regentries])}
-		%endfor
-
-		<%doc> Space holder to keep accordian size at max requirement </%doc>
-		%for ii in range(len(ev.regentries), ev.perlimit):
-			<div class='carspaceholder'></div>
-		%endfor
-
 		<%doc> Just information payment information </%doc>
 		%if len(ev.payments) > 0:
 			<div class='erule'>Paypal Payments</div>
@@ -130,7 +141,7 @@ ${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year
 
 	<script type='text/javascript'>
 	$(".carselector button").button({icons: { primary:'ui-icon-scissors'}, text: false} );
-	$(".viewbutton").button();
+	$(".unregbutton").button();
 	</script>
 
 </%def>

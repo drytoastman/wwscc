@@ -81,7 +81,7 @@ padding: 0;
 <h3>Other</h3>
 <ul>
 %if config['nwrsc.private']:
-<li><a href="${h.url_for(controller='live')}">Movile Live Page</a></li>
+<li><a href="${h.url_for(controller='live')}">Mobile Live Page</a></li>
 <li><a href="${h.url_for(controller='announcer')}">Announcer Panel</a></li>
 %endif
 <li><a href='${h.url_for(action='all')}'>All Classes</a></li>
