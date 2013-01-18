@@ -26,10 +26,10 @@
 	%endfor
 	</select>
 </td>
-<td class='multcol' title="This multiplier is applied to entire class, i.e. street tire factor">
+<td class="multcol" title="This multiplier is applied to entire class, i.e. street tire factor">
 	<input type="text" name="clslist-${ii}.classmultiplier" value="${"%0.3f" % (cls.classmultiplier or 1.000)}" size="5" />
 </td>
-<td class='flagcol' title="Require that the car flag is checked for the additional multiplier to be applied">
+<td class="flagcol" title="Require that the car flag is checked for the additional multiplier to be applied">
 	<input type="checkbox" name="clslist-${ii}.usecarflag" ${cls.usecarflag and 'checked="checked"' or ''|n} />
 </td>
 <td title="Limit number of counted runs for this class">
