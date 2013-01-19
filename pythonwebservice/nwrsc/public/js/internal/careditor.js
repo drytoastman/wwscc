@@ -76,12 +76,12 @@ function setupCarDialog()
     $('#careditor').validate({
 		rules: {
 			indexcode: {
-				required: function(element) { return ($("#classcode option:selected").attr('indexed') == '1'); },
+				required: function(element) { return ($("#classcode option:selected").attr('indexed') == '1'); }
 			},
 			number: {
 				required: true,
 				min: 1,
-				max: 1999,
+				max: 1999
 			}
 		},
 
@@ -102,7 +102,7 @@ function setupCarDialog()
 
 		errorPlacement: function(error, element) {
 			$("#carerror").append(error);
-		},
+		}
 	});
 
 
@@ -147,7 +147,7 @@ function setupCarDialog()
 	$('#numberselect').button().click(function() { 
 		$('#numberselection').html("loading...");
 		$('#numberselection').dialog('open');
-		$('#numberselection').load('${h.url_for(action='carnumbers')}', {
+		$('#numberselection').load(url_for('carnumbers'), {
 					code : $("#careditor #classcode option:selected").val(),
 					driverid : $('#careditor [name=driverid]').val()
 				});

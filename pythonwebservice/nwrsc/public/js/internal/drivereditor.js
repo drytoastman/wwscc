@@ -9,7 +9,7 @@ function editdriverdirect(firstname, lastname, email)
 	editdriver(-2)
 }
 
-function editdriver(did)
+function editdriver(did, fieldnames)
 {
 	if (did in drivers)
 	{
@@ -23,9 +23,9 @@ function editdriver(did)
 		$('#drivereditor [name=phone]').val(drivers[did].phone);
 		$('#drivereditor [name=brag]').val(drivers[did].brag);
 		$('#drivereditor [name=sponsor]').val(drivers[did].sponsor);
-%for field in c.fields:
-		$('#drivereditor [name=${field.name}]').val(drivers[did].${field.name});
-%endfor
+		for (fname in fieldnames) {
+			$('#drivereditor [name='+fname+'}]').val(drivers[did][fname]);
+		}
 		$('#drivereditor [name=alias]').val(drivers[did].alias);
 		$('#aliasspan').html(drivers[did].alias);
 	}
@@ -43,9 +43,9 @@ function editdriver(did)
 		$('#drivereditor [name=phone]').val("");
 		$('#drivereditor [name=brag]').val("");
 		$('#drivereditor [name=sponsor]').val("");
-%for field in c.fields:
-		$('#drivereditor [name=${field.name}]').val("");
-%endfor
+		for (fname in fieldnames) {
+			$('#drivereditor [name='+fname+'}]').val(drivers[did][fname]);
+		}
 	}
 
 	$('#drivereditor [name=driverid]').val(did);
