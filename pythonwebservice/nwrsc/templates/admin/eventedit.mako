@@ -73,7 +73,7 @@
 <td><input type='text' size='4' name='runs' value="${c.event.runs}"></td>
 </tr>
 
-<tr class='advanced' title='the number of runs counted toward final results'>
+<tr title='the number of runs counted toward final results, applies to all classes'>
 <th>Counted Runs</th>
 <td><input type='text' size='4' name='countedruns' value="${c.event.countedruns}"></td>
 </tr>
@@ -113,14 +113,9 @@
 <td><input type='text' size='40' name='cost' value="${c.event.cost}"></td>
 </tr>
 
-<tr class='advanced' title='a mailing address to send payments to, use HTML to format'>
-<th>Mailing Address</th>
-<td><textarea cols='40' rows='6' name='snail'>${c.event.snail}</textarea></td>
-</tr>
-
-<tr class='advanced' title='notes to appears on the registration page, use HTML to format'>
+<tr title='notes to appears on the registration page, use HTML to format'>
 <th>Notes</th>
-<td><textarea cols='40' rows='6' name='notes'>${c.event.notes}</textarea></td>
+<td><textarea cols='40' rows='4' name='notes'>${c.event.notes}</textarea></td>
 </tr>
 
 <tr>

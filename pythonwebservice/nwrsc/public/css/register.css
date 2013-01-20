@@ -100,8 +100,8 @@ h2 {
 	font-size: 1.4em;
 }
 
-.ui-widget {
-	font-size: 0.8em !important;
+.ui-widget, .ui-widget input {
+	font-size: 11px !important;
 	font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
 }
 
@@ -140,20 +140,20 @@ h3.eventclosed span {
 	background: #f6f9f9;
 }
 
-#events .eventday {
-	Xfloat: left;
+.eventday {
+	display: inline-block;
 	width: 27px;
 	margin-right: 2px;
 }
 
-#events .eventmonth {
-	Xfloat: left;
+.eventmonth {
+	display: inline-block;
 	width: 27px;
 	margin-right: 2px;
 }
 
-#events .eventdate {
-	Xfloat: left;
+.eventdate {
+	display: inline-block;
 	width: 23px;
 	margin-right: 2px;
 }
@@ -185,12 +185,15 @@ h3.eventclosed span {
 	height: 23px;
 }
 
+.notifier a {
+	color: blue !important;
+	cursor: pointer;
+}
+
 .erule
 {
-	margin-top: 10px;
 	margin-bottom: 8px;
 	border-bottom: 1px solid #AAA;
-	font-size: 0.9em;
 }
 
 span.limit
@@ -201,7 +204,7 @@ span.limit
 
 #profile {
 	font-family: Helvetica, sans-serif;
-	font-size: 1.5em;
+	font-size: 1.2em;
 }
 
 #profile span {
@@ -218,13 +221,18 @@ span.limit
 
 #carlist {
 	margin-left: 0px;
-	padding: 0;
 	border-collapse: collapse;
 }
 
 #carlist th {
+	min-width: 26px;
+}
+
+#carlist th span {
 	font-family: Helvetica, sans-serif;
 	font-size: 140%;
+	display: inline-block;
+	min-width: 100px;
 }
 
 #carlist td {
@@ -417,9 +425,9 @@ a.viewlink {
 	color: blue;
 }
 
-.cardisplay { display: inline-block; }
+.cardisplay { display: inline-block; padding-left: 5px; padding-right: 5px; }
 .cardisplay span { display: block; }
-.cardisplay .code { font-weight: bold; font-size: 1.2em; }
+.cardisplay .code { font-weight: bold; font-size: 1.1em; }
 .cardisplay .desc { font-family: "Trebuchet MS", Helvetica, sans-serif; color: gray; }
 
 .ui-button-icon-only {
@@ -439,7 +447,42 @@ a.viewlink {
 	color: gray;
 }
 
+
+#registereventform ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+#registereventform li {
+	padding: 1px;
+}
+
+#registereventform label {
+	display: block;
+	text-align: left;
+}
+
 .unregbutton {
 	vertical-align: top;
 }
+
+
+.eventdetails {
+	width 200px;
+}
+
+.eventdetails, .regblock {
+	vertical-align: top;
+	margin-left: 20px;
+}
+
+.currentcars {
+	margin-bottom: 10px;
+}
+
+.eventselector select {
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
+}
+
 

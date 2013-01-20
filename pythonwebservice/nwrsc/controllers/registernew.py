@@ -110,13 +110,12 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 		c.title = 'Scorekeeper Registration'
 		c.stylesheets = ['/css/register.css', '/css/forms.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css']
-		c.javascript = ['/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/jquery.validate.min.js', '/js/register.js']
+		c.javascript = ['/js/register.js']
 
 		c.activeSeries = self._activeSeries()
 		if self.database is None:
 			return
 
-		c.javascript.append(url_for(action='scripts'))
 		self.user = UserSession(session.setdefault(('register', self.srcip), {}), self.database) 
 
 		c.settings = self.settings
@@ -134,7 +133,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 				event.tdclass = 'closed'
 			c.eventmap[event.id] = event
 
-		if action not in ('view', 'scripts') and self.settings.locked:
+		if action not in ('view') and self.settings.locked:
 			# Delete any saved session data for this person
 			raise BeforePage(render_mako('/register/locked.mako'))
 
@@ -160,13 +159,6 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		self.user.clear()
 		redirect(url_for(action=''))
 
-	def scripts(self):
-		response.headers['Cache-Control'] = 'max-age=360' 
-		response.headers.pop('Pragma', None)
-		c.fields = self.session.query(DriverField).all()
-		return render_mako('/forms/careditor.mako') + render_mako('/forms/drivereditor.mako')
-
-
 	def index(self):
 		""" First load of page gets all data along with it so no need for lots of ajax requests """
 		if self.database is None:
@@ -191,6 +183,22 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 
 
+	def registercars(self):
+		try:
+			carid = int(request.POST.pop('carid', 0))
+			for eventid in map(int, request.POST):
+				event = self.session.query(Event).get(eventid)
+				if event.totlimit and event.count >= event.totlimit:
+					self.user.setPreviousError("Sorry, prereg reached its limit of %d since your last page load" % (event.totlimit))
+				else:
+					reg = Registration(eventid, carid)
+					self.session.add(reg)
+			self.session.commit()
+		except Exception, e:
+			self.user.setPreviousError("Possible stale browser state, try reloading page")
+			raise e
+
+		 
 	def registercar(self):
 		try:
 			carid = int(request.POST.get('carid', 0))
@@ -300,8 +308,13 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 	def _loadCars(self):
 		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
 		registration = self.session.query(Registration).join('car').distinct().filter(Car.driverid==c.driverid).all()
+		openevents = [ev.id for ev in c.eventmap.values() if ev.opened and not ev.closed]
 		for car in c.cars:
 			car.regevents = sorted([(c.eventmap[reg.eventid], reg.id) for reg in registration if reg.carid == car.id], key = lambda x: x[0].date)
+			car.canregevents = list(openevents)
+			for event, regid in car.regevents:
+				try: car.canregevents.remove(event.id)
+				except: pass
 
 	def _loadDriver(self):
 		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()

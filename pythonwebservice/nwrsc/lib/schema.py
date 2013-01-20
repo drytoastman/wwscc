@@ -117,7 +117,6 @@ class EventSchema(Schema):
 	totlimit = Int(min=0)
 	paypal = String()
 	cost = Int()
-	snail = String()
 	notes = String()
 	
 

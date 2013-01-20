@@ -34,6 +34,7 @@ compile([
 		'external/jquery.validate.min.js',
 		'internal/careditor.js',
 		'internal/drivereditor.js',
+		'internal/regeditor.js',
 		'internal/register.js'
 		], 'register.js')
 

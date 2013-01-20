@@ -17,8 +17,8 @@ class RegisteroldController(BaseController):
 			return
 
 		c.title = 'Scorekeeper Registration'
-		c.stylesheets = ['/css/registerold.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css']
-		c.javascript = ['/js/registerold.js', '/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/jquery.validate.min.js']
+		c.stylesheets = ['/css/registerold.css']
+		c.javascript = ['/js/internal/registerold.js']
 		c.tabflags = {}
 		c.sponsorlink = self.settings.sponsorlink
 		c.seriesname = self.settings.seriesname

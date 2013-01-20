@@ -33,11 +33,21 @@ function disableBox(id)
 	$(id+" button").replaceWith("");
 }
 
+
+function registerCars()
+{
+	$.post(url_for('registercars'), $("#registereventform").serialize(), function() {
+		updateCars();
+		$('#registereventform input:checked').each(function() {
+			updateEvent($(this).prop('name'));
+		});
+	});
+}
+
 function registerCar(s, eventid)
 {
 	var carid = s.options[s.selectedIndex].value;
 	$(s).replaceWith("<div class='notifier'>registering...</div>");
-	disableBox("#event"+eventid);
 	$.post(url_for('registercar'), {eventid:eventid, carid:carid}, function() {
 		updateEvent(eventid);
 		updateCars();
@@ -57,11 +67,26 @@ function reRegisterCar(s, eventid, regid)
 
 function unregisterCar(s, eventid, regid)
 {
-	$(s).prev().replaceWith("<div class='notifier'>unregistering...</div>");
+	$(s).parent().replaceWith("<div class='notifier'>unregistering...</div>");
 	disableBox("#event"+eventid);
 	$.post(url_for('registercar'), {regid:regid, carid:-1}, function() {
 		updateEvent(eventid); 
 		updateCars();
 	});
 }
+
+function driveredited()
+{
+	$("#drivereditor").submit();
+}
+
+function copylogin(f, l, e, s)
+{
+	$("#loginForm [name=firstname]").val(f);
+	$("#loginForm [name=lastname]").val(l);
+	$("#loginForm [name=email]").val(e);
+	$("#loginForm [name=otherseries]").val(s);
+	$("#loginForm").submit();
+}
+
 

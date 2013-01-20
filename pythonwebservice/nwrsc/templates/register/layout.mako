@@ -1,6 +1,7 @@
 <%inherit file="base.mako" />
 <%namespace file="/forms/carform.mako" import="carform"/>
 <%namespace file="/forms/driverform.mako" import="driverform"/>
+<%namespace file="/forms/registerforms.mako" import="registerforms"/>
 <%namespace file="events.mako" import="eventdisplay"/>
 <%namespace file="cars.mako" import="carlist"/>
 <%namespace file="profile.mako" import="profile"/>
@@ -43,9 +44,9 @@ ${carlist()}
 			accordindex = ii + 1
 	%>
 			
-	<h3 class='${ev.closed and "eventclosed" or "eventopen"}'>
-	<span class='rightarrow'>&#9658;</span>
-	<span class='downarrow' style='display:none;'>&#9660;</span>
+	<h3 class='${(not ev.opened or ev.closed) and "eventclosed" or "eventopen"}'>
+	<span class='rightarrow' style='display:none'>&#9658;</span>
+	<span class='downarrow'>&#9660;</span>
 	<a>
 	<span class='eventday'>${ev.date.strftime('%a')}</span>
 	<span class='eventmonth'>${ev.date.strftime('%b')}</span>
@@ -54,7 +55,7 @@ ${carlist()}
 	</a>
 	</h3>
 
-	<div id='event${ev.id}' class='eventholder' style='display:none;'>
+	<div id='event${ev.id}' class='eventholder'>
 	${eventdisplay(ev)}
 	</div>
 %endfor
@@ -65,16 +66,17 @@ ${carlist()}
 
 ${driverform()}
 ${carform(True)}
-
+${registerforms()}
 
 <script type='text/javascript'>
 
 $(document).ready(function() {
 	$.ajaxSetup({ cache: false });
-	$("#tabs").tabs({selected: 2});
+	$("#tabs").tabs({active: 1});
 	$("input[type='button']").button();
 	setupCarDialog(true);
 	setupDriverDialog("Edit Profile");
+	setupRegistrationDialogs();
 
 	$('#eventsinner > h3').last().addClass('lastevent hidden');
 	$('#eventsinner > h3').click(function() {
@@ -86,8 +88,13 @@ $(document).ready(function() {
 		$(this).find(".downarrow").toggle();
 		$(this).find(".rightarrow").toggle();
 	});
+	$('#eventsinner > h3.eventclosed').click();
 });
 		
+function selectcarstab()
+{
+	$("#tabs").tabs('option', 'active', 1);
+}
 
 function caredited()
 {

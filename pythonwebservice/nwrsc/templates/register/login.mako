@@ -52,21 +52,5 @@ $(document).ready(function() {
 	$("button").button();
 	setupDriverDialog("New Driver");
 });
-
-function driveredited()
-{
-	$("#drivereditor").submit();
-}
-
-function copylogin(f, l, e, s)
-{
-	$("#loginForm [name=firstname]").val(f);
-	$("#loginForm [name=lastname]").val(l);
-	$("#loginForm [name=email]").val(e);
-	$("#loginForm [name=otherseries]").val(s);
-	$("#loginForm").submit();
-}
-
-
 </script>
 

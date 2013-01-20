@@ -12,11 +12,10 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 %endif
 </%def>
 
-
 <%def name="carlist()">
 
 <table id='carlist'>
-<tr><th></th><th></th><th>Car</th><th>Registered/Used In</th></tr>
+<tr><th></th><th></th><th><span>Car</span></th><th><span>Registered/Used In</span></th></tr>
 %for car in c.cars:
 	<tr>
 	<td><button class='edit' onclick="editcar(${c.driverid}, ${car.id});" ${disablecar(car)} >Edit</button></td>
@@ -30,6 +29,8 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 			<span class='regevent'>${event.name}</span>
 			</li>
 		%endfor
+		</ul>
+		<button class='regbutton' onclick='registerForEvent(${car.id}, ${car.canregevents});'>Register For Events</button>
 	</td>
 	</tr>
 %endfor
@@ -37,12 +38,17 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 
 <script type='text/javascript'>
 var cars = new Array();
+var cevents = new Array();
 %for car in c.cars:
 cars[${car.id}] = ${h.encodesqlobj(car)|n}
+%endfor
+%for event in c.eventmap.values():
+cevents[${event.id}] = ${h.encodesqlobj(event)|n}
 %endfor
 $("#carlist .delete").button({icons: { primary:'ui-icon-trash'}, text: false} );
 $("#carlist .edit").button({icons: { primary:'ui-icon-pencil'}, text: false} );
 $("#carlist .unregbutton").button({icons: { primary:'ui-icon-scissors'}, text: false} );
+$("#carlist .regbutton").button();
 </script>
 
 </%def>
