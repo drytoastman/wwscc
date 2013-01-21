@@ -1,101 +1,97 @@
+	
+(function ($) {
 
-function editdriverdirect(firstname, lastname, email)
-{
-	d = Object()
-	d.firstname = firstname
-	d.lastname = lastname
-	d.email = email
-	drivers[-2] = d
-	editdriver(-2)
-}
-
-function editdriver(did, fieldnames)
-{
-	if (did in drivers)
+	$.fn.editDriverDialog = function(driver, okcallback)
 	{
-		$('#drivereditor [name=firstname]').val(drivers[did].firstname);
-		$('#drivereditor [name=lastname]').val(drivers[did].lastname);
-		$('#drivereditor [name=email]').val(drivers[did].email);
-		$('#drivereditor [name=address]').val(drivers[did].address);
-		$('#drivereditor [name=city]').val(drivers[did].city);
-		$('#drivereditor [name=state]').val(drivers[did].state);
-		$('#drivereditor [name=zip]').val(drivers[did].zip);
-		$('#drivereditor [name=phone]').val(drivers[did].phone);
-		$('#drivereditor [name=brag]').val(drivers[did].brag);
-		$('#drivereditor [name=sponsor]').val(drivers[did].sponsor);
-		for (fname in fieldnames) {
-			$('#drivereditor [name='+fname+'}]').val(drivers[did][fname]);
+		$this = $(this);
+		var title = "Edit Driver";
+	
+		if (typeof driver == "object") {
+			$this.find('[name=firstname]').val(driver.firstname);
+			$this.find('[name=lastname]').val(driver.lastname);
+			$this.find('[name=email]').val(driver.email);
+			$this.find('[name=address]').val(driver.address);
+			$this.find('[name=city]').val(driver.city);
+			$this.find('[name=state]').val(driver.state);
+			$this.find('[name=zip]').val(driver.zip);
+			$this.find('[name=phone]').val(driver.phone);
+			$this.find('[name=brag]').val(driver.brag);
+			$this.find('[name=sponsor]').val(driver.sponsor);
+			$this.find("[data-extrafield=true]").each(function () {
+				var name = $(this).prop('name');
+				$(this).val(driver[name]);
+			});
+			$this.find('[name=alias]').val(driver.alias);
+			$this.find('#aliasspan').html(driver.alias);
+		} else {
+			$this.find('[name=firstname]').val("");
+			$this.find('[name=lastname]').val("");
+			$this.find('[name=alias]').val("");
+			$this.find('#aliasspan').html("");
+			$this.find('[name=email]').val("");
+			$this.find('[name=address]').val("");
+			$this.find('[name=city]').val("");
+			$this.find('[name=state]').val("");
+			$this.find('[name=zip]').val("");
+			$this.find('[name=phone]').val("");
+			$this.find('[name=brag]').val("");
+			$this.find('[name=sponsor]').val("");
+			$this.find("[data-extrafield=true]").each(function () {
+				$(this).val("");
+			});
+			title = "New Driver"
 		}
-		$('#drivereditor [name=alias]').val(drivers[did].alias);
-		$('#aliasspan').html(drivers[did].alias);
-	}
-	else
-	{
-		$('#drivereditor [name=firstname]').val("");
-		$('#drivereditor [name=lastname]').val("");
-		$('#drivereditor [name=alias]').val("");
-		$('#aliasspan').html("");
-		$('#drivereditor [name=email]').val("");
-		$('#drivereditor [name=address]').val("");
-		$('#drivereditor [name=city]').val("");
-		$('#drivereditor [name=state]').val("");
-		$('#drivereditor [name=zip]').val("");
-		$('#drivereditor [name=phone]').val("");
-		$('#drivereditor [name=brag]').val("");
-		$('#drivereditor [name=sponsor]').val("");
-		for (fname in fieldnames) {
-			$('#drivereditor [name='+fname+'}]').val(drivers[did][fname]);
+	
+		$this.find('[name=driverid]').val(driver.id);
+	
+	
+		alreadyinit = true;
+		if (false)
+		{
+		    $this.validate({
+				invalidHandler: function(e, validator) {
+					var errors = validator.numberOfInvalids();
+					if (errors) {
+						$("#driverhelp").css('color', '#F00');
+					} else {
+						$("#driverhelp").css('color', '#999');
+					}
+				},
+				errorPlacement: function(error, element) {
+				},
+				onkeyup: false,
+				messages: {}
+			});
+		
+		    $this.find('[name=firstname]').rules("add", {required:true, minlength:2});
+		    $this.find('[name=lastname]').rules("add", {required:true, minlength:2});
+		    $this.find('[name=email]').rules("add", {required:true, minlength:3});
 		}
-	}
-
-	$('#drivereditor [name=driverid]').val(did);
-	$('#drivereditor').dialog('open');
-}
-
-function setupDriverDialog(title)
-{
-    $('#drivereditor').validate({
-		invalidHandler: function(e, validator) {
-			var errors = validator.numberOfInvalids();
-			if (errors) {
-				$("#driverhelp").css('color', '#F00');
-			} else {
-				$("#driverhelp").css('color', '#999');
-			}
-		},
-		errorPlacement: function(error, element) {
-		},
-		onkeyup: false,
-		messages: {}
-	});
-
-    $('#drivereditor [name=firstname]').rules("add", {required:true, minlength:2});
-    $('#drivereditor [name=lastname]').rules("add", {required:true, minlength:2});
-    $('#drivereditor [name=email]').rules("add", {required:true, minlength:3});
-
-
-	$("#drivereditor").dialog({
-		autoOpen: false,
-		width: "auto",
-		position: [20, 100],
-		modal: true,
-		title: title,
-		buttons: {
-			'Ok': function() {
-				if ($("#drivereditor").valid()) {
+	
+		$this.dialog({
+			width: "auto",
+			position: [20, 100],
+			modal: true,
+			title: title,
+			buttons: {
+				'Ok': function() {
+					if ($(this).valid()) {
+						$(this).dialog('close');
+						okcallback();
+					}
+				},
+				Cancel: function() {
 					$(this).dialog('close');
-					driveredited();
+					$(this).validate().resetForm();
+					$(this).find("#driverhelp").css('color', '#999');
 				}
 			},
-			Cancel: function() {
-				$(this).dialog('close');
-				$(this).validate().resetForm();
-				$("#driverhelp").css('color', '#999');
+			close: function() {
+				$(this).find("#drivererror").hide();
 			}
-		},
-		close: function() {
-			$("#drivererror").hide();
-		}
-	});
-};
+		});
+	};
 
+})(jQuery);
+
+	

@@ -25,7 +25,7 @@
 <div id='profilewrapper'>
 ${profile()}
 </div>
-<input id='editprofile' type='button' value='Edit' onclick='editdriver(${c.driver.id})'/>
+<input  type='button' value='Edit' class='editprofile' data-driverid='${c.driver.id}'/> 
 </div>
 
 
@@ -55,7 +55,7 @@ ${carlist()}
 	</a>
 	</h3>
 
-	<div id='event${ev.id}' class='eventholder'>
+	<div id='event${ev.id}' data-eventid='${ev.id}' class='eventholder ${(not ev.opened or ev.closed) and "eventclosed" or "eventopen"}'>
 	${eventdisplay(ev)}
 	</div>
 %endfor
@@ -75,8 +75,6 @@ $(document).ready(function() {
 	$("#tabs").tabs({active: 1});
 	$("input[type='button']").button();
 	setupCarDialog(true);
-	setupDriverDialog("Edit Profile");
-	//setupRegistrationDialogs();
 
 	$('#eventsinner > h3').last().addClass('lastevent hidden');
 	$('#eventsinner > h3').click(function() {
@@ -91,36 +89,6 @@ $(document).ready(function() {
 	$('#eventsinner > h3.eventclosed').click();
 });
 		
-function selectcarstab()
-{
-	$("#tabs").tabs('option', 'active', 1);
-}
-
-function caredited()
-{
-	$.post('${h.url_for(action='editcar')}', $("#careditor").serialize(), function() {
-		updateCars();
-		%for ev in c.eventmap.values():
-		%if not ev.closed:
-			updateEvent(${ev.id});
-		%endif
-		%endfor
-	});
-}
-
-function deletecar(carid)
-{
-	if (!confirm("Are you sure you wish to delete this car?"))
-		return;
-	$.post('${h.url_for(action='deletecar')}', {carid:carid}, function() {
-		updateCars();
-		%for ev in c.eventmap.values():
-		%if not ev.closed:
-			updateEvent(${ev.id});
-		%endif
-		%endfor
-	});
-}
 
 </script>
 

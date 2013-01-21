@@ -162,7 +162,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 	def index(self):
 		""" First load of page gets all data along with it so no need for lots of ajax requests """
 		if self.database is None:
-			return render_mako('/register/blank.mako')
+			return self.databaseSelector(archived=False)
 
 		self._loadDriver()
 		self._loadCars()
@@ -185,6 +185,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 	def registercars(self):
 		try:
+			print request.POST
 			carid = int(request.POST.pop('carid', 0))
 			for eventid in map(int, request.POST):
 				event = self.session.query(Event).get(eventid)
@@ -286,13 +287,10 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		return render_mako_def('/register/events.mako', 'eventdisplay', ev=event)
 
 		 
-	def eventlist(self):
-		return render_mako('/register/eventlist.mako')
-		
 	def view(self):
 		id = request.GET.get('event', None)
 		if id is None:
-			return render_mako('/register/genericview.mako')
+			return render_mako('/register/eventlist.mako')
 			
 		c.classdata = ClassData(self.session)
 		c.event = self.session.query(Event).get(id)

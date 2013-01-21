@@ -1,10 +1,10 @@
-<%inherit file="base.mako" />
+<%inherit file="/base.mako" />
 <%namespace file="/forms/driverform.mako" import="driverform"/>
 
 <div class='helpbox'>
 If you have a profile in this series, please login.
 If you have a profile in another active series, use that information and you will be given the option of copying the profile.
-Otherwise, create a new profile.  If you are just looking for entry lists, <a href='${h.url_for(action="eventlist")}'>click here</a>.
+Otherwise, create a new profile.  If you are just looking for entry lists, <a href='${h.url_for(action="view")}'>click here</a>.
 </div>
 
 <table id='loginrow'>

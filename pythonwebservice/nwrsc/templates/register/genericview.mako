@@ -9,6 +9,3 @@
 </div>
 </%def>
 
-<%inherit file="/base.mako" />
-${viewlist()}
-

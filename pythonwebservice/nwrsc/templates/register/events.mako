@@ -98,7 +98,7 @@ ${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year
 	%for reg in ev.regentries:
 		<div>
 		%if not ev.closed:
-		<button class='unregbutton' onclick='unregisterCar(this, ${ev.id}, ${reg.id});'>Unregister</button>
+		<button class='unregbutton' data-eventid='${ev.id}' data-regid='${reg.id}'>Unregister</button>
 		%endif
 		${carDisplay(reg.car)}
 		</div>
@@ -112,7 +112,7 @@ ${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year
 		%elif len(ev.regentries) >= ev.perlimit:
 			<span class='limit'>You have reached this event's prereg limit of ${ev.perlimit} car(s).</span>
 		%elif len(c.cars) == 0:
-			<span class='notifier'>You need to <a onclick="selectcarstab(); return false;">Create New Car</a> in the Cars Tab</span>
+			<span class='notifier'>You need to <a class='cartablink'>Create New Car</a> in the Cars Tab</span>
 		%else:
 			${carSelection(ev, c.cars)}
 		%endif
@@ -128,10 +128,6 @@ ${"%s %s #%s - %s %s %s %s" % (car.classcode, h.ixstr(car), car.number, car.year
 	</td>
 	</tr>
 	</table>
-
-	<script type='text/javascript'>
-	$(".unregbutton").button({icons: { primary:'ui-icon-scissors'}, text: false} );
-	</script>
 
 </%def>
 

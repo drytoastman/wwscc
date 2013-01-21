@@ -1,25 +1,52 @@
 
 (function( $ ){
 
-  var methods = {
+	var methods = {
 
-	loadEvent: function(eventid) {
-		this.load(url_for("getevent"), {eventid:eventid});
-	},
+		loadEvent: function(eventid) {  // need to use .get as load will try and use POST with args
+			var me = this;
+			$.get(url_for('getevent'), {eventid:eventid}, function(data) { me.html(data); });
+		},
 
-	loadCars: function() {
-		this.load(url_for('getcars'));
-	}
+		loadCars: function() {
+			this.load(url_for('getcars'));
+		},
 
-  };
+		loadProfile: function() {
+			this.load(url_for('getprofile'));
+		},
 
-  $.fn.nwr = function( method ) {
-    if ( methods[method] ) {
-      return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
-    } else {
-      $.error( 'Method ' +  method + ' does not exist on nwr' );
-    }    
-  };
+		unregButton: function(unregcallback) {
+			this.find(".unregbutton").button({icons: { primary:'ui-icon-scissors'}, text: false} ).click(function () {
+				$this = $(this);
+				var regid = $this.data('regid');
+				var eventid = $this.data('eventid');
+
+				$this.parent().replaceWith("<div class='notifier'>unregistering...</div>");
+				$.nwr.unregisterCar(regid, function() {
+					$('#carswrapper').nwr('loadCars');
+					$('#event'+eventid).nwr('loadEvent', eventid);
+				});
+			});
+		}
+
+ 	};
+
+
+	$.fn.nwr = function( method ) {
+		if ( methods[method] ) {
+			return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
+		} else {
+			$.error( 'Method ' +  method + ' does not exist on nwr' );
+		}    
+	};
+
+	
+	$.nwr = {
+		unregisterCar: function(regid, callback) { $.post(url_for('registercar'), {regid:regid, carid:-1}, callback); }, 
+		updateDriver: function(args, callback) { $.post(url_for('editdriver'), args, callback); }
+	};
+
 
 })( jQuery );
 
@@ -29,33 +56,39 @@ function url_for(action)
 	return window.location.href.substring(0, window.location.href.lastIndexOf('/')+1) + action
 }
 
-function updateEvent(eventid)
-{
-	$.getJSON(url_for("getevent"), {eventid:eventid}, function(json) {
-		$("#event"+eventid).html(json.data);
+
+
+// specific to template 
+function updateProfile() { $('#profilewrapper').nwr('loadProfile'); }
+function updateCars() { $("#carswrapper").nwr('loadCars'); }
+function updateEvent(eventid) { $('#event'+eventid).nwr('loadEvent', eventid); }
+function updateOpenEvent() {
+	$('.eventholder.eventopen').each(function () {
+		updateEvent($(this).data('eventid'));
 	});
 }
 
-function updateCars()
+function selectcarstab()
 {
-	$.getJSON(url_for('getcars'), function(json) { 
-		$("#carswrapper").html(json.data);
+	$("#tabs").tabs('option', 'active', 1);
+}
+
+function caredited()
+{
+	$.post(url_for(action='editcar'), $("#careditor").serialize(), function() {
+		updateCars();
+		updateOpenEvent();
 	});
 }
 
-function driveredited()
+function deletecar(carid)
 {
-	$.post(url_for('editdriver'), $("#drivereditor").serialize(), function() {
-		$.getJSON(url_for('getprofile'), function(json) {
-			$("#profilewrapper").html(json.data)
-		});
+	if (!confirm("Are you sure you wish to delete this car?"))
+		return;
+	$.post(url_for(action='deletecar'), {carid:carid}, function() {
+		updateCars();
+		updateOpenEvent();
 	});
-}
-
-function disableBox(id)
-{
-	$(id+" select").attr("disabled", "disabled");
-	$(id+" button").replaceWith("");
 }
 
 
@@ -83,25 +116,10 @@ function reRegisterCar(s, eventid, regid)
 {
 	var carid = s.options[s.selectedIndex].value;
 	$(s).replaceWith("<div class='notifier'>updating registration ...</div>");
-	disableBox("#event"+eventid);
 	$.post(url_for('registercar'), {regid:regid, carid:carid}, function() {
 		updateEvent(eventid);
 		updateCars();
 	});
-}
-
-function unregisterCar(domelem, eventid, regid)
-{
-	$(domelem).parent().replaceWith("<div class='notifier'>unregistering...</div>");
-	$.post(url_for('registercar'), {regid:regid, carid:-1}, function() {
-		$('#carswrapper').nwr('loadCars');
-		$('#event'+eventid).nwr('loadEvent', eventid);
-	});
-}
-
-function driveredited()
-{
-	$("#drivereditor").submit();
 }
 
 function copylogin(f, l, e, s)
@@ -113,12 +131,64 @@ function copylogin(f, l, e, s)
 	$("#loginForm").submit();
 }
 
-function finishregedit() 
+function unregButtons(jqe)
 {
-	$('#carswrapper').nwr('loadCars');
-	$('#registereventform input:checked').each(function() { 
-		var eventid = $(this).prop('name');
-		$('#event'+eventid).nwr('loadEvent', eventid);
+	jqe.find(".unregbutton").button({icons: { primary:'ui-icon-scissors'}, text: false} ).click(function () {
+		$this = $(this);
+		var regid = $this.data('regid');
+		var eventid = $this.data('eventid');
+
+		$this.parent().replaceWith("<div class='notifier'>unregistering...</div>");
+		$.nwr.unregisterCar(regid, function() {
+			updateCars();
+			updateEvent(eventid);
+		});
 	});
 }
 
+function carTabSetup()
+{
+	$("#carlist .delete").button({icons: { primary:'ui-icon-trash'}, text: false} ).click(function() {
+	    deletecar($(this).data('carid'));
+	});
+	
+	$("#carlist .edit").button({icons: { primary:'ui-icon-pencil'}, text: false} ).click(function() {
+	    editcar($(this).data('driverid'), $(this).data('carid')); //${c.driverid}, ${car.id});
+	});
+	
+	$("#carlist .regbutton").button().click( function() {
+		var car = cars[$(this).data('carid')]; // pull from global that we set in template
+
+	    $("#registereventform").registerForEventDialog(car, eventnames, function() {
+			updateCars();
+	        $('#registereventform input:checked').each(function() {
+	            var eventid = $(this).prop('name');
+				updateEvent(eventid);
+	        });
+	    });
+	});
+	
+	unregButtons($('#carlist'));
+}
+
+function eventTableSetup(jqe)
+{
+	unregButtons(jqe)
+}
+
+
+$(document).ready(function() {
+	$(".editprofile").button().click( function() {
+		var driverid = $(this).data('driverid');
+		$('#drivereditor').editDriverDialog(drivers[driverid], function() {
+			$.nwr.updateDriver($("#drivereditor").serialize(), updateProfile);
+		});
+	});
+
+	unregButtons($('#eventsinner'));
+
+	$( document ).ajaxError(function(event, jqxhr, settings, exception) {
+		$( "div.log" ).text("ajax error " + exception);
+	});
+
+});

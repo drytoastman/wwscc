@@ -11,6 +11,7 @@ from webhelpers.html.tags import stylesheet_link, javascript_link
 from routes import url_for, redirect_to
 from simplejson import dumps, JSONEncoder
 import operator
+import re
 
 
 attrgetter = operator.attrgetter
@@ -32,6 +33,11 @@ def hide(val, hidenum):
 			ret += '*'
 
 	return ret
+
+compresswhitespace = re.compile(r"^\s+", re.MULTILINE);
+
+def oneline(text):
+	return compresswhitespace.sub(" ", text)
 
 def t3(val, sub = None, sign = False):
 	if val is None or val == 0:

@@ -1,22 +1,24 @@
 
 (function ($) {
 
-	$.fn.registerForEventDialog = function(carid, eventids, okcallback)
+	$.fn.registerForEventDialog = function(car, events, okcallback)
 	{
 		$this = $(this);
 
 		var ul = $this.find('ul').empty();
-		if (eventids.length == 0)
+
+		if (car.canregevents.length == 0)
 		{
 			ul.append("<div>No events to register for</div>");
 		}
 		else
 		{
-			for (ii = 0; ii < eventids.length; ii++)
+			for (ii = 0; ii < car.canregevents.length; ii++)
 			{
-				var cevent = cevents[eventids[ii]];
-				var id = "eventid-"+cevent.id;
-				ul.append("<li><input type='checkbox' id='"+id+"' name='"+cevent.id+"' /><label for='"+id+"'>"+cevent.name+"</label></li>");
+				var id = "eventid-"+car.canregevents[ii];
+				var inputname = car.canregevents[ii];
+				var name = events[car.canregevents[ii]];
+				ul.append("<li><input type='checkbox' id='"+id+"' name='"+inputname+"' /><label for='"+id+"'>"+name+"</label></li>");
 	
 			}
 		}
@@ -30,7 +32,7 @@
 			}
 		}); 
 
-		$this.find('[name=carid]').val(carid);
+		$this.find('[name=carid]').val(car.id);
 	
 		$this.dialog({
 			width: "auto",

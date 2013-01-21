@@ -29,6 +29,10 @@ Other Series
 %endif
 </div> <!-- header -->
 
+
+<div class='log'>
+</div>
+
 <!--<div id='hrule'></div>-->
 
 %if c.previouserror:

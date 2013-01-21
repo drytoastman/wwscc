@@ -1,9 +1,9 @@
-<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>
-<html xmlns='http://www.w3.org/1999/xhtml'>
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <title>${c.title}</title>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-<meta http-equiv="X-UA-Compatible" content="IE=9; IE=8;" />
+<!-- <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8;" /> -->
 %for style in c.stylesheets:
 <link href="${style}" rel="stylesheet" type="text/css" />
 %endfor

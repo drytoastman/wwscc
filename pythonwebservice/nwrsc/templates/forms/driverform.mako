@@ -1,4 +1,4 @@
-<%def name="driverform(action='', method='post', driver=None, allowalias=False)">
+<%def name="driverform(action='blank', method='post', driver=None, allowalias=False)">
 
 <%
 	from nwrsc.model import Driver
@@ -6,7 +6,7 @@
 		driver = Driver()
 %>
 
-<form id='drivereditor' action='${action}' method='${method}'>
+<form id='drivereditor' action='${action}' method='${method}' class='ui-helper-hidden'>
 <div id='driverhelp'>First Name, Last Name and Unique/Email require at least 2 characters each</div>
 <input name='driverid' type='hidden' value='-1'/>
 <table> <tbody>
@@ -66,7 +66,7 @@
 %for field in c.fields:
 <tr>
 <th>${field.title}</th>
-<td colspan='6'><input name='${field.name}' type='text' value='${driver.getExtra(field)}'/></td>
+<td colspan='6'><input data-extrafield='true' name='${field.name}' type='text' value='${driver.getExtra(field)}'/></td>
 </tr>
 %endfor
 
