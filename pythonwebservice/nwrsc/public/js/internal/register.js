@@ -1,4 +1,29 @@
 
+(function( $ ){
+
+  var methods = {
+
+	loadEvent: function(eventid) {
+		this.load(url_for("getevent"), {eventid:eventid});
+	},
+
+	loadCars: function() {
+		this.load(url_for('getcars'));
+	}
+
+  };
+
+  $.fn.nwr = function( method ) {
+    if ( methods[method] ) {
+      return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
+    } else {
+      $.error( 'Method ' +  method + ' does not exist on nwr' );
+    }    
+  };
+
+})( jQuery );
+
+
 function url_for(action)
 {
 	return window.location.href.substring(0, window.location.href.lastIndexOf('/')+1) + action
@@ -65,13 +90,12 @@ function reRegisterCar(s, eventid, regid)
 	});
 }
 
-function unregisterCar(s, eventid, regid)
+function unregisterCar(domelem, eventid, regid)
 {
-	$(s).parent().replaceWith("<div class='notifier'>unregistering...</div>");
-	disableBox("#event"+eventid);
+	$(domelem).parent().replaceWith("<div class='notifier'>unregistering...</div>");
 	$.post(url_for('registercar'), {regid:regid, carid:-1}, function() {
-		updateEvent(eventid); 
-		updateCars();
+		$('#carswrapper').nwr('loadCars');
+		$('#event'+eventid).nwr('loadEvent', eventid);
 	});
 }
 
@@ -89,4 +113,12 @@ function copylogin(f, l, e, s)
 	$("#loginForm").submit();
 }
 
+function finishregedit() 
+{
+	$('#carswrapper').nwr('loadCars');
+	$('#registereventform input:checked').each(function() { 
+		var eventid = $(this).prop('name');
+		$('#event'+eventid).nwr('loadEvent', eventid);
+	});
+}
 

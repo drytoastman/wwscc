@@ -76,7 +76,7 @@ $(document).ready(function() {
 	$("input[type='button']").button();
 	setupCarDialog(true);
 	setupDriverDialog("Edit Profile");
-	setupRegistrationDialogs();
+	//setupRegistrationDialogs();
 
 	$('#eventsinner > h3').last().addClass('lastevent hidden');
 	$('#eventsinner > h3').click(function() {

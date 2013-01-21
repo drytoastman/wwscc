@@ -5,7 +5,7 @@ import operator
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako, render_mako_def
 from pylons.controllers.util import redirect, url_for
-from pylons.decorators import jsonify, validate
+from pylons.decorators import validate
 from sqlalchemy import create_engine
 
 from nwrsc.controllers.lib.base import BaseController, BeforePage
@@ -266,27 +266,24 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		redirect(url_for(action=''))
 
 
-	@jsonify
 	def getprofile(self):
 		self._loadDriver()
-		return {'data': str(render_mako_def('/register/profile.mako', 'profile'))}
+		return render_mako_def('/register/profile.mako', 'profile')
 
-	@jsonify
 	def getcars(self):
 		self._loadCars()
-		return {'data': str(render_mako_def('/register/cars.mako', 'carlist'))}
+		return render_mako_def('/register/cars.mako', 'carlist')
 
-	@jsonify
 	def getevent(self):
 		eventid = int(request.GET.get('eventid', 0))
 		event = c.eventmap.get(eventid, None)
 		if event is None:
-			return {'data': "Event does not exist" }
+			return "Event does not exist"
 
 		event.regentries = self.session.query(Registration).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==c.driverid).all()
 		event.payments = self.session.query(Payment).filter(Payment.eventid==event.id).filter(Payment.driverid==c.driverid).all()
 		self._loadCars()
-		return {'data': str(render_mako_def('/register/events.mako', 'eventdisplay', ev=event))}
+		return render_mako_def('/register/events.mako', 'eventdisplay', ev=event)
 
 		 
 	def eventlist(self):

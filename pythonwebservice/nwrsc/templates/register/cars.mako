@@ -25,12 +25,12 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 		<ul>
 		%for (event, regid) in car.regevents:
 			<li>
-			<button class='unregbutton' onclick='unregisterCar(this, ${event.id}, ${regid});' ${disableevent(event)}>Unregister</button>
+			<button class='unregbutton' data-eventid="${event.id}" data-regid=${regid}' ${disableevent(event)}>Unregister</button>
 			<span class='regevent'>${event.name}</span>
 			</li>
 		%endfor
 		</ul>
-		<button class='regbutton' onclick='registerForEvent(${car.id}, ${car.canregevents});'>Register For Events</button>
+		<button class='regbutton' onclick='$("#registereventform").registerForEventDialog(${car.id}, ${car.canregevents}, finishregedit);'>Register For Events</button>
 	</td>
 	</tr>
 %endfor
@@ -47,8 +47,21 @@ cevents[${event.id}] = ${h.encodesqlobj(event)|n}
 %endfor
 $("#carlist .delete").button({icons: { primary:'ui-icon-trash'}, text: false} );
 $("#carlist .edit").button({icons: { primary:'ui-icon-pencil'}, text: false} );
-$("#carlist .unregbutton").button({icons: { primary:'ui-icon-scissors'}, text: false} );
-$("#carlist .regbutton").button();
+
+$("#carlist .regbutton").button().click() { function() {
+	$("#registereventform").registerForEventDialog($(this).data('carid'), $(this).data('openevents'), function() {
+		$('#carswrapper').nwr('loadCars');
+		$('#registereventform input:checked').each(function() { 
+			var eventid = $(this).prop('name');
+			$('#event'+eventid).nwr('loadEvent', eventid);
+		});
+	});
+}
+});
+
+$("#carlist .unregbutton").button({icons: { primary:'ui-icon-scissors'}, text: false} ).click(function () {
+	unregisterCar(this, $(this).data('event'), $(this).data('reg'));
+});
 </script>
 
 </%def>
