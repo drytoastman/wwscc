@@ -31,7 +31,7 @@ def concat(files, output):
 compile([
 		'external/jquery-1.9.0.js',
 		'external/jquery-ui-1.10.0.custom.js',
-		'external/jquery.validate.min.js',
+		'external/jquery.validate.1.10.js',
 		'internal/careditor.js',
 		'internal/drivereditor.js',
 		'internal/regeditor.js',

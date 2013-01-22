@@ -43,7 +43,7 @@
 			return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
 		} else {
 			$.error( 'Method ' +  method + ' does not exist on nwr' );
-		}    
+		}	
 	};
 
 	
@@ -64,7 +64,8 @@ function url_for(action)
 
 
 
-// specific to template 
+/*** specific to template  *******************************/
+
 function updateProfile() { $('#profilewrapper').nwr('loadProfile'); }
 function updateCars() { $("#carswrapper").nwr('loadCars'); }
 function updateEvent(eventid) { $('#event'+eventid).nwr('loadEvent', eventid); }
@@ -74,6 +75,15 @@ function updateAll() {
 		updateEvent($(this).data('eventid'));
 	});
 }
+
+function editCar(driverid, car) {
+	$('#careditor').CarEdit('doDialog', driverid, car, function() {
+		$.nwr.updateCar($("#careditor").serialize(), updateCars);  // don't update events, can't edit a car used anyhow
+	});
+}
+
+
+/*******************************************************/
 
 
 function selectcarstab()
@@ -110,14 +120,6 @@ function reRegisterCar(s, eventid, regid)
 	});
 }
 
-function copylogin(f, l, e, s)
-{
-	$("#loginForm [name=firstname]").val(f);
-	$("#loginForm [name=lastname]").val(l);
-	$("#loginForm [name=email]").val(e);
-	$("#loginForm [name=otherseries]").val(s);
-	$("#loginForm").submit();
-}
 
 function unregButtons(jqe)
 {
@@ -136,29 +138,26 @@ function unregButtons(jqe)
 
 function carTabSetup()
 {
-	$("#carlist .delete").button({icons: { primary:'ui-icon-trash'}, text: false} ).click(function() {
-	    deletecar($(this).data('carid'));
+	$("#carlist .deletecar").button({icons: { primary:'ui-icon-trash'}, text: false} ).click(function() {
+		deletecar($(this).data('carid'));
 	});
 	
-	$("#carlist .edit").button({icons: { primary:'ui-icon-pencil'}, text: false} ).click(function() {
-	    var driverid = $(this).data('driverid')
+	$("#carlist .editcar").button({icons: { primary:'ui-icon-pencil'}, text: false} ).click(function() {
+		var driverid = $(this).data('driverid')
 		var car = cars[$(this).data('carid')];
-
-		$('#careditor').CarEdit('doDialog', driverid, car, function() {
-			$.nwr.updateCar($("#careditor").serialize(), updateCars);  // don't update events, can't edit a car used anyhow
-		});
+		editCar(driverid, car);
 	});
 	
 	$("#carlist .regbutton").button().click( function() {
 		var car = cars[$(this).data('carid')]; // pull from global that we set in template
 
-	    $("#registereventform").registerForEventDialog(car, eventnames, function() {
+		$("#registereventform").registerForEventDialog(car, eventnames, function() {
 			updateCars();
-	        $('#registereventform input:checked').each(function() {
-	            var eventid = $(this).prop('name');
+			$('#registereventform input:checked').each(function() {
+				var eventid = $(this).prop('name');
 				updateEvent(eventid);
-	        });
-	    });
+			});
+		});
 	});
 	
 	unregButtons($('#carlist'));
@@ -183,5 +182,45 @@ $(document).ready(function() {
 	$( document ).ajaxError(function(event, jqxhr, settings, exception) {
 		$( "div.log" ).text("ajax error " + exception);
 	});
+
+	$('button.logout').button().click(function() { document.location.href=url_for('logout'); });
+ 	$('button.createcar').button().click(function() { editCar($(this).data('driverid'), {}); });
+
+	// old base
+	$('#serieslinks').css('display', 'none');
+	$('#seriestab').click(function() { $('#serieslinks').toggle('blind'); });
+
+	// old login page
+    $("#loginForm").validate();
+    $("#loginsubmit").button();
+
+	$("button.copylogin").button().click( function() {
+		var creds = $(this).data('creds');
+		$("#loginForm [name=firstname]").val(creds.firstname);
+		$("#loginForm [name=lastname]").val(creds.lastname);
+		$("#loginForm [name=email]").val(creds.email);
+		$("#loginForm [name=otherseries]").val(creds.series);
+		$("#loginForm").submit();
+	});
+
+	$("button.createdriver").button().click( function() {
+		editdriver(-1)
+	});
+
+	// old layout page
+	$.ajaxSetup({ cache: false });
+	$("#tabs").tabs({active: 1});
+
+	$('#eventsinner > h3').last().addClass('lastevent hidden');
+	$('#eventsinner > h3').click(function() {
+		if ($(this).next().toggle().css('display') != 'none') {
+			$(this).removeClass('hidden');
+		} else {
+			$(this).addClass('hidden');
+		}
+		$(this).find(".downarrow").toggle();
+		$(this).find(".rightarrow").toggle();
+	});
+	$('#eventsinner > h3.eventclosed').click();
 
 });

@@ -33,9 +33,13 @@ OR
 <td id='othercell'>
 <ul>
 %for name, creds in c.otherseries.iteritems():
-<li><button onclick="copylogin('${creds.firstname}', '${creds.lastname}', '${creds.email}', '${name}')">Copy Profile From ${name.upper()}</button></li>
+<li>
+	<button class='copylogin' data-creds='{"firstname":"${creds.firstname}", "lastname":"${creds.lastname}", "email":"${creds.email}", "series":"${name}"}'>
+		Copy Profile From ${name.upper()}
+	</button>
+</li>
 %endfor
-<li><button onclick='editdriver(-1)'>Create New Profile</button></li>
+<li><button class='createdriver'>Create New Profile</button></li>
 </ul>
 </td>
 
@@ -43,14 +47,4 @@ OR
 </table>
 
 ${driverform(action=h.url_for(action='newprofile'), method='post')}
-
-<script type='text/javascript'>
-var drivers = new Array();
-$(document).ready(function() {
-	$("#loginForm").validate(); 
-	$("#loginsubmit").button();
-	$("button").button();
-	setupDriverDialog("New Driver");
-});
-</script>
 

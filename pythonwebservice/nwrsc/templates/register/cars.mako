@@ -18,8 +18,8 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 <tr><th></th><th></th><th><span>Car</span></th><th><span>Registered/Used In</span></th></tr>
 %for car in c.cars:
 	<tr>
-	<td><button class='edit' data-driverid='${c.driverid}' data-carid='${car.id}' ${disablecar(car)} >Edit</button></td>
-	<td><button class='delete' data-carid='${car.id}' ${disablecar(car)}>Delete</button></td>
+	<td><button class='editcar' data-driverid='${c.driverid}' data-carid='${car.id}' ${disablecar(car)} >Edit</button></td>
+	<td><button class='deletecar' data-carid='${car.id}' ${disablecar(car)}>Delete</button></td>
 	<td class='car'>${carDisplay(car)}</td>
 	<td class='carevents'>
 		<ul>
@@ -36,6 +36,8 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 %endfor
 </table>
 
+<button class='createcar' data-driverid='${c.driverid}'>Create New Car</button>
+
 <script type='text/javascript'>
 var cars = {
 %for car in c.cars:
@@ -48,7 +50,7 @@ var eventnames = {
 %endfor
 }
 
-carTabSetup();
+carTabSetup(); 
 </script>
 
 </%def>

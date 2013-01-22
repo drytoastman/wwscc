@@ -45,10 +45,3 @@ ${next.body()}
 
 </div> <!-- content -->
 
-<script type='text/javascript'>
-$(document).ready(function() {
-	$('#serieslinks').css('display', 'none');
-	$('#seriestab').click(function() { $('#serieslinks').toggle('blind'); });
-});
-</script>
-

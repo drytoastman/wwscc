@@ -18,14 +18,13 @@
 		<li><a href="#cars"><span>Cars</span></a></li>
 		<li><a href="#eventsinner"><span>Events</span></a></li>
 	</ul>
-	<input id='logout' type='button' value='Logout' onclick='document.location.href="${h.url_for(action="logout")}"'/>
+	<button class='logout'>Logout</button>
 
 
 <div id='profile'>
 <div id='profilewrapper'>
 ${profile()}
 </div>
-<input  type='button' value='Edit' class='editprofile' data-driverid='${c.driver.id}'/> 
 </div>
 
 
@@ -33,7 +32,6 @@ ${profile()}
 <div id='carswrapper'>
 ${carlist()}
 </div>
-<input id='createcar' type='button' name='create' value='Create New Car' onclick='editcar(${c.driver.id}, {});'/>
 </div>
 
 
@@ -67,27 +65,4 @@ ${carlist()}
 ${driverform()}
 ${carform(True)}
 ${registerforms()}
-
-<script type='text/javascript'>
-
-$(document).ready(function() {
-	$.ajaxSetup({ cache: false });
-	$("#tabs").tabs({active: 1});
-	$("input[type='button']").button();
-
-	$('#eventsinner > h3').last().addClass('lastevent hidden');
-	$('#eventsinner > h3').click(function() {
-		if ($(this).next().toggle().css('display') != 'none') {
-			$(this).removeClass('hidden');
-		} else {
-			$(this).addClass('hidden');
-		}
-		$(this).find(".downarrow").toggle();
-		$(this).find(".rightarrow").toggle();
-	});
-	$('#eventsinner > h3.eventclosed').click();
-});
-		
-
-</script>
 

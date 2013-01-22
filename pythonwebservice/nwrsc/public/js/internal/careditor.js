@@ -74,7 +74,7 @@
 			var myform = this;
 
 			myform.find('[name=driverid]').val(driverid);
-			myform.find('[name=carid]').val(car.id || "");
+			myform.find('[name=carid]').val(car.id || -1);
 			myform.find('[name=year]').val(car.year || "");
 			myform.find('[name=make]').val(car.make || "");
 			myform.find('[name=model]').val(car.model || "");
@@ -95,7 +95,7 @@
 				myform.validate({
 					rules: {
 						indexcode: {
-							required: function(element) { return $("[name=classcode] option:selected").data('indexed'); }
+							required: function(element) { return myform.find("[name=classcode] option:selected").data('indexed'); }
 						},
 						number: {
 							required: true,

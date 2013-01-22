@@ -1,10 +1,5 @@
 <%def name="profile()">
 
-<script type='text/javascript'>
-var drivers = new Array();
-drivers[${c.driver.id}] = ${h.encodesqlobj(c.driver)|n}
-</script>
-
 <span class='name'>
 ${c.driver.firstname} ${c.driver.lastname}
 %if c.driver.alias:
@@ -19,5 +14,12 @@ ${c.driver.firstname} ${c.driver.lastname}
 %for field in c.fields:
 <span class='e-${field.name}'>${field.name}: ${c.driver.getExtra(field.name)}</span>
 %endfor
+
+<input  type='button' value='Edit' class='editprofile' data-driverid='${c.driver.id}'/> 
+
+<script type='text/javascript'>
+var drivers = new Array();
+drivers[${c.driver.id}] = ${h.encodesqlobj(c.driver)|n}
+</script>
 
 </%def>

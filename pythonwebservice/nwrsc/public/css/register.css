@@ -413,7 +413,7 @@ h3.lastevent.hidden {
 	border-bottom: 1px solid #DDD;
 }
 
-#logout {
+.logout {
 	position: relative;
 	top: -35px;
 	margin-right: 10px;
