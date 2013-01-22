@@ -1,6 +1,6 @@
 <%def name="carform(numberhidden)">
 
-<form id='careditor' method='post'>
+<form id='careditor' method='post' class='ui-helper-hidden'>
 <div class='carerror ui-state-error-text'></div>
 <input name='driverid' type='hidden'/>
 <input name='carid' type='hidden'/>
@@ -40,11 +40,11 @@ for code in sorted(c.classdata.classlist):
    <th>Number</th><td>
 	%if numberhidden:
 		<input name='number' type='hidden'/>
-		<span id='numberdisplay'></span>
+		<span class='numberdisplay'></span>
 	%else:
 	   <input name='number' type='text' size='3' />
 	%endif
-   <button id="numberselect">Available</button>
+   <button class="numberselect">Available</button>
    </td>
 </tr>
 </tbody>

@@ -16,6 +16,11 @@
 			this.load(url_for('getprofile'));
 		},
 
+		loadNumbers: function(classcode, driverid, callback) {
+			this.load(url_for('carnumbers'), {code:classcode, driverid:driverid}, callback);
+		},
+
+
 		unregButton: function(unregcallback) {
 			this.find(".unregbutton").button({icons: { primary:'ui-icon-scissors'}, text: false} ).click(function () {
 				$this = $(this);
@@ -44,7 +49,8 @@
 	
 	$.nwr = {
 		unregisterCar: function(regid, callback) { $.post(url_for('registercar'), {regid:regid, carid:-1}, callback); }, 
-		updateDriver: function(args, callback) { $.post(url_for('editdriver'), args, callback); }
+		updateDriver: function(args, callback) { $.post(url_for('editdriver'), args, callback); },
+		updateCar: function(args, callback) { $.post(url_for('editcar'), args, callback); }
 	};
 
 
@@ -62,45 +68,27 @@ function url_for(action)
 function updateProfile() { $('#profilewrapper').nwr('loadProfile'); }
 function updateCars() { $("#carswrapper").nwr('loadCars'); }
 function updateEvent(eventid) { $('#event'+eventid).nwr('loadEvent', eventid); }
-function updateOpenEvent() {
+function updateAll() {
+	updateCars();
 	$('.eventholder.eventopen').each(function () {
 		updateEvent($(this).data('eventid'));
 	});
 }
+
 
 function selectcarstab()
 {
 	$("#tabs").tabs('option', 'active', 1);
 }
 
-function caredited()
-{
-	$.post(url_for(action='editcar'), $("#careditor").serialize(), function() {
-		updateCars();
-		updateOpenEvent();
-	});
-}
 
 function deletecar(carid)
 {
 	if (!confirm("Are you sure you wish to delete this car?"))
 		return;
-	$.post(url_for(action='deletecar'), {carid:carid}, function() {
-		updateCars();
-		updateOpenEvent();
-	});
+	$.post(url_for(action='deletecar'), {carid:carid}, updateCars); // can only delete something not used in events 
 }
 
-
-function registerCars()
-{
-	$.post(url_for('registercars'), $("#registereventform").serialize(), function() {
-		updateCars();
-		$('#registereventform input:checked').each(function() {
-			updateEvent($(this).prop('name'));
-		});
-	});
-}
 
 function registerCar(s, eventid)
 {
@@ -153,7 +141,12 @@ function carTabSetup()
 	});
 	
 	$("#carlist .edit").button({icons: { primary:'ui-icon-pencil'}, text: false} ).click(function() {
-	    editcar($(this).data('driverid'), $(this).data('carid')); //${c.driverid}, ${car.id});
+	    var driverid = $(this).data('driverid')
+		var car = cars[$(this).data('carid')];
+
+		$('#careditor').CarEdit('doDialog', driverid, car, function() {
+			$.nwr.updateCar($("#careditor").serialize(), updateCars);  // don't update events, can't edit a car used anyhow
+		});
 	});
 	
 	$("#carlist .regbutton").button().click( function() {
@@ -180,7 +173,7 @@ function eventTableSetup(jqe)
 $(document).ready(function() {
 	$(".editprofile").button().click( function() {
 		var driverid = $(this).data('driverid');
-		$('#drivereditor').editDriverDialog(drivers[driverid], function() {
+		$('#drivereditor').DriverEdit("doDialog", drivers[driverid], function() {
 			$.nwr.updateDriver($("#drivereditor").serialize(), updateProfile);
 		});
 	});

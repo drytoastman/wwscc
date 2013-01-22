@@ -33,7 +33,7 @@ ${profile()}
 <div id='carswrapper'>
 ${carlist()}
 </div>
-<input id='createcar' type='button' name='create' value='Create New Car' onclick='editcar(${c.driver.id}, -1);'/>
+<input id='createcar' type='button' name='create' value='Create New Car' onclick='editcar(${c.driver.id}, {});'/>
 </div>
 
 
@@ -74,7 +74,6 @@ $(document).ready(function() {
 	$.ajaxSetup({ cache: false });
 	$("#tabs").tabs({active: 1});
 	$("input[type='button']").button();
-	setupCarDialog(true);
 
 	$('#eventsinner > h3').last().addClass('lastevent hidden');
 	$('#eventsinner > h3').click(function() {

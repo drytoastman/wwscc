@@ -3,7 +3,7 @@
 %if num in c.used:
 	<li>${num}</li>
 %else:
-	<li><a href='#' onclick='setnum(${num});'>${num}</a></li>
+	<li><a href='#' data-carnum='${num}'>${num}</a></li>
 %endif
 %endfor
 </ul>
