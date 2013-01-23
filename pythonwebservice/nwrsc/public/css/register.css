@@ -19,6 +19,22 @@ body {
 	border-bottom: 1px solid #DDD;
 }
 
+#serieslinks ul {
+	list-style: none;
+}
+
+#seriestab {
+	border-top: 0px;
+	border-left: 1px solid #DDD;
+	border-bottom: 1px solid #DDD;
+	border-right: 1px solid #DDD;
+	border-radius: 0px 0px 6px 6px;
+	padding: 5px 13px 8px 13px;
+	margin-right: 10px;
+	text-align: center;
+	float: right;
+}
+
 
 #loginrow {
 	margin-left: 20px;
@@ -85,12 +101,8 @@ body {
 	font-size: 1.5em;
 }
 
-#errormsg {
-	margin-top: 20px;
-}
-
-#errormsg span {
-	margin-left: 20px;
+.errorlog {
+	color: #F00;
 }
 
 h2 {
@@ -303,7 +315,6 @@ table.carlist th {
 .viewlist ul {
 	list-style: none; 
 	padding: 0px;
-	Xfont-size: 1.0em; 
 	margin-left: 10px;
 }
 
@@ -357,18 +368,6 @@ table.eventdetails a {
 #seriesimg, #sponsorimg {
 	display: inline-block;
 	vertical-align: middle;
-}
-
-#seriestab {
-	border-top: 0px;
-	border-left: 1px solid #DDD;
-	border-bottom: 1px solid #DDD;
-	border-right: 1px solid #DDD;
-	border-radius: 0px 0px 6px 6px;
-	padding: 5px 13px 8px 13px;
-	margin-right: 10px;
-	display: inline-block;
-	float: right;
 }
 
 #tabs {
@@ -447,21 +446,36 @@ a.viewlink {
 	color: gray;
 }
 
+table.eventdetails {
+	width: 400px;
+}
 
-#registereventform ul {
+table.eventdetails, div.carcontainer {
+	margin-top: 0px;
+	margin-left: 10px;
+	border-radius: 4px;
+	border: 1px solid gray;
+	background: #F2F2FF;
+	padding: 5px;
+	width: 46%;
+	display: inline-block;
+}
+
+#registereventform ul, #registercarform ul, .carcontainer ul {
 	list-style: none;
 	padding: 0;
 	margin: 0;
 }
 
-#registereventform li {
+#registereventform li, #registercarform li, .carcontainer ul {
 	padding: 1px;
 }
 
-#registereventform label {
+#registereventform label, #registercarform label {
 	display: block;
 	text-align: left;
 }
+
 
 .unregbutton {
 	vertical-align: top;

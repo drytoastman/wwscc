@@ -1,4 +1,4 @@
-<%inherit file="/base.mako" />
+<%inherit file="base.mako" />
 <%namespace file="/forms/driverform.mako" import="driverform"/>
 
 <div class='helpbox'>

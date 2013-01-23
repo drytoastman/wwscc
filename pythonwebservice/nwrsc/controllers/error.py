@@ -9,9 +9,6 @@ from webhelpers.html.builder import literal
 
 from nwrsc.controllers.lib.base import BaseController
 
-import logging
-log = logging.getLogger(__name__)
-
 class ErrorController(BaseController):
 	"""Generates error documents as and when they are required.
 
@@ -49,7 +46,6 @@ class ErrorController(BaseController):
 		"""Render the error document"""
 		req = request.environ.get('pylons.original_request')
 		resp = request.environ.get('pylons.original_response')
-		log.info("Processing error for %s - %s" % (req.url, resp.status))
 		content = literal(resp.body) or cgi.escape(request.GET.get('message', ''))
 		page = self.error_template % \
 			dict(prefix=request.environ.get('SCRIPT_NAME', ''),

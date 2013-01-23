@@ -28,9 +28,13 @@ class ObjectEditor(object):
 	@validate(schema=DriverSchema())
 	def editdriver(self):
 		try:
-			driverid = self.form_result['driverid']
-			log.debug('request to edit driver %s' % driverid)
-			self._extractDriver(self.session.query(Driver).get(driverid))
+			driverid = int(self.form_result['driverid'])
+			if driverid <= 0:
+				log.debug('request to edit new driver')
+				self.session.add(self._extractDriver(Driver()))
+			else:
+				log.debug('request to edit driver %s' % driverid)
+				self._extractDriver(self.session.query(Driver).get(driverid))
 			self.session.commit()
 		except Exception, e:
 			log.info('edit driver failed: %s' % e)

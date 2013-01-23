@@ -3,7 +3,13 @@
 import subprocess
 import sys
 import shutil
+import os
 
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+def fullpath(inpath):
+	return os.path.join(ROOT, inpath)
+	
 def compile(files, output):
 	prog = ["java", "-jar", "compiler.jar"]
 
@@ -22,16 +28,18 @@ def compile(files, output):
 
 
 def concat(files, output):
-	dest = open(output, 'w')
+	dest = open(fullpath(output), 'w')
 	for f in files:
-	    shutil.copyfileobj(open(f, 'r'), dest)
+	    shutil.copyfileobj(open(fullpath(f), 'r'), dest)
 	dest.close()
+
 
 
 compile([
 		'external/jquery-1.9.0.js',
 		'external/jquery-ui-1.10.0.custom.js',
 		'external/jquery.validate.1.10.js',
+		'internal/nwr.js',
 		'internal/careditor.js',
 		'internal/drivereditor.js',
 		'internal/regeditor.js',

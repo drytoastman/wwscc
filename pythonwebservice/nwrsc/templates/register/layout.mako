@@ -42,7 +42,7 @@ ${carlist()}
 			accordindex = ii + 1
 	%>
 			
-	<h3 class='${(not ev.opened or ev.closed) and "eventclosed" or "eventopen"}'>
+	<h3 class='${not ev.isOpen and "eventclosed" or "eventopen"}'>
 	<span class='rightarrow' style='display:none'>&#9658;</span>
 	<span class='downarrow'>&#9660;</span>
 	<a>
@@ -53,7 +53,7 @@ ${carlist()}
 	</a>
 	</h3>
 
-	<div id='event${ev.id}' data-eventid='${ev.id}' class='eventholder ${(not ev.opened or ev.closed) and "eventclosed" or "eventopen"}'>
+	<div id='event${ev.id}' data-eventid='${ev.id}' class='eventholder ${not ev.isOpen and "eventclosed" or "eventopen"}'>
 	${eventdisplay(ev)}
 	</div>
 %endfor

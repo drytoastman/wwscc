@@ -4,9 +4,9 @@ import operator
 
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako, render_mako_def
-from pylons.controllers.util import redirect, url_for
+from pylons.controllers.util import redirect, url_for, abort
 from pylons.decorators import validate
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 
 from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.controllers.lib.paypal import PayPalIPN
@@ -128,9 +128,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		for event in self.session.query(Event):
 			event.closed = now > event.regclosed 
 			event.opened = now > event.regopened
-			event.tdclass = ''
-			if event.closed or not event.opened:
-				event.tdclass = 'closed'
+			event.isOpen = not event.closed and event.opened
 			c.eventmap[event.id] = event
 
 		if action not in ('view') and self.settings.locked:
@@ -183,41 +181,55 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 
 
-	def registercars(self):
+	def _checkLimitState(self, event, driverid):
+		if event.totlimit and event.count >= event.totlimit:
+			response.status = "400 Event limit of %d reached" % (event.totlimit)
+			return False
+		entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
+		if entries.count() >= event.perlimit:
+			response.status = "400 Entrant limit of %d reached" % (event.perlimit)
+			return False
+		return True
+		
+		
+	def registerCarsForEvent(self):
 		try:
-			print request.POST
-			carid = int(request.POST.pop('carid', 0))
-			for eventid in map(int, request.POST):
-				event = self.session.query(Event).get(eventid)
-				if event.totlimit and event.count >= event.totlimit:
-					self.user.setPreviousError("Sorry, prereg reached its limit of %d since your last page load" % (event.totlimit))
-				else:
-					reg = Registration(eventid, carid)
-					self.session.add(reg)
+			eventid = int(request.POST.pop('eventid', 0))
+			event = self.session.query(Event).get(eventid)
+			for carid in map(int, request.POST):
+				car = self.session.query(Car).get(carid)
+				if not self._checkLimitState(event, car.driverid):
+					return
+				reg = Registration(eventid, carid)
+				self.session.add(reg)
 			self.session.commit()
 		except Exception, e:
-			self.user.setPreviousError("Possible stale browser state, try reloading page")
-			raise e
+			response.status = '400 Possible stale browser state, try reloading page'
+			log.error("registerevents", exc_info=1)
 
 		 
-	def registercar(self):
+	def registerEventsForCar(self):
 		try:
-			carid = int(request.POST.get('carid', 0))
-			regid = int(request.POST.get('regid', 0))
-			eventid = int(request.POST.get('eventid', 0))
-			reg = self.session.query(Registration).filter(Registration.id==regid).first()
-	
-			if carid < 0: # delete car
-				self.session.delete(reg)
-			elif regid > 0: # modify car
-				reg.carid = carid
-			else: # add car
+			carid = int(request.POST.pop('carid', 0))
+			car = self.session.query(Car).get(carid)
+
+			for eventid in map(int, request.POST):
 				event = self.session.query(Event).get(eventid)
-				if event.totlimit and event.count >= event.totlimit:
-					self.user.setPreviousError("Sorry, prereg reached its limit of %d since your last page load" % (event.totlimit))
-				else:
-					reg = Registration(eventid, carid)
-					self.session.add(reg)
+				if not self._checkLimitState(event, car.driverid):
+					return
+				reg = Registration(eventid, carid)
+				self.session.add(reg)
+
+			self.session.commit()
+		except Exception, e:
+			response.status = '400 Possible stale browser state, try reloading page'
+			log.error("registercars", exc_info=1)
+
+		 
+	def unRegisterCar(self):
+		try:
+			regid = int(request.POST.get('regid', 0))
+			self.session.delete(self.session.query(Registration).get(regid))
 			self.session.commit()
 		except Exception, e:
 			self.user.setPreviousError("Possible stale browser state, try reloading page")

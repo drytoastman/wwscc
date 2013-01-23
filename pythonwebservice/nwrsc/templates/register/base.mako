@@ -3,11 +3,13 @@
 <div id='content'>
 
 <div id='serieslinks'>
+<ul>
 %for s in sorted(c.activeSeries):
 %if s != c.database:
-	<a href='${h.url_for(database=s, action='')}'>${s.upper()}</a> 
+	<li><a href='${h.url_for(database=s, action='')}'>${s.upper()}</a></li>
 %endif
 %endfor
+</ul>
 </div>
 
 <div id='seriestab' class='ui-widget ui-state-default'>
@@ -30,7 +32,7 @@ Other Series
 </div> <!-- header -->
 
 
-<div class='log'>
+<div class='errorlog'>
 </div>
 
 <!--<div id='hrule'></div>-->

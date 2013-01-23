@@ -7,7 +7,7 @@ disabled='disabled' title='Cars registered or in use cannot be edited or deleted
 </%def>
 
 <%def name="disableevent(event)" filter="oneline">
-%if not event.opened or event.closed:
+%if not event.isOpen:
 disabled='disabled' title='Event registration is not open or car has runs so this assignment cannot be changed' \
 %endif
 </%def>
