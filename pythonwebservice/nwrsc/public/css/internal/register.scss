@@ -1,3 +1,5 @@
+$basefont: "Trebuchet MS", Helvetica, sans-serif;
+
 @import "external/jqueryui.scss";
 @import "forms.scss";
 
@@ -9,7 +11,7 @@ body {
 
 #serieslinks {
   a {
-    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    font-family: $basefont;
     padding: 0px 6px;
     font-weight: bold;
     text-decoration: none;
@@ -108,8 +110,9 @@ h2 {
 }
 
 .ui-widget {
-  font-size: 11px !important;
+  font-size: 13px !important;
   font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
   input {
     font-size: 11px !important;
     font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;

@@ -54,7 +54,7 @@
 			numberForm.html('loading ...').dialog({
 				height: 400,
 				width: 480,
-				position: [20, 100],
+				//position: [20, 100],
 				modal: true,
 				title: 'Available Numbers',
 				close: function() {}
@@ -130,7 +130,7 @@
 				width: "auto",
 				modal: true,
 				title: 'Car Editor',
-				position: [20, 100],
+				//position: [20, 100],
 				buttons: {
 					'Ok': function() {
 						if (myform.valid()) {

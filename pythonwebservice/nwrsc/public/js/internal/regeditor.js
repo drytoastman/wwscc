@@ -60,7 +60,7 @@
 				width: "auto",
 				modal: true,
 				title: 'Register Car for Event',
-				position: [20, 100],
+				//position: [20, 100],
 				buttons: {
 					'Ok': function() {
 						$(this).dialog('close');
@@ -90,7 +90,7 @@
 				width: "auto",
 				modal: true,
 				title: 'Register Cars for ' + eventname,
-				position: [20, 100],
+				//position: [20, 100],
 				buttons: {
 					'Ok': function() {
 						me.dialog('close');

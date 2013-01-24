@@ -14,17 +14,6 @@ function updateAll() {
 	});
 }
 
-
-function XXXXregisterCar(s, eventid)
-{
-	var carid = s.options[s.selectedIndex].value;
-	$(s).replaceWith("<div class='notifier'>registering...</div>");
-	$.post($.nwr.url_for('registercar'), {eventid:eventid, carid:carid}, function() {
-		updateEvent(eventid);
-		updateCars();
-	});
-}
-
 function unregButtons(jqe)
 {
 	jqe.find(".unregbutton").button({icons: { primary:'ui-icon-scissors'}, text: false} ).click(function () {
