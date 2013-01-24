@@ -69,6 +69,22 @@ function carTabSetup()
 	unregButtons($('#carlist'));
 }
 
+function eventCollapsable()
+{
+	$('#eventsinner > h3').last().addClass('lastevent collapsed');
+	$('#eventsinner > h3').click(function() {
+		if ($(this).next().toggle().css('display') != 'none') {
+			$(this).removeClass('collapsed');
+		} else {
+			$(this).addClass('collapsed');
+		}
+		$(this).find(".downarrow").toggle();
+		$(this).find(".rightarrow").toggle();
+	});
+	$('#eventsinner > h3.eventclosed').click();
+}
+
+
 function eventPaneSetup(jqe)
 {
 	jqe.find('.regcarsbutton').button().click( function() {
@@ -134,16 +150,5 @@ $(document).ready(function() {
 
 	$(".cartablink").click(function() { $("#tabs").tabs('option', 'active', 1); });
 
-	$('#eventsinner > h3').last().addClass('lastevent hidden');
-	$('#eventsinner > h3').click(function() {
-		if ($(this).next().toggle().css('display') != 'none') {
-			$(this).removeClass('hidden');
-		} else {
-			$(this).addClass('hidden');
-		}
-		$(this).find(".downarrow").toggle();
-		$(this).find(".rightarrow").toggle();
-	});
-	$('#eventsinner > h3.eventclosed').click();
-
+	eventCollapsable();
 });

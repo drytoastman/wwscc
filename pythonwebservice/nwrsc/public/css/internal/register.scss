@@ -367,7 +367,7 @@ h3 {
   &.eventopen a {
     color: blue;
   }
-  &.lastevent.hidden {
+  &.lastevent.collapsed {
     border-bottom: 1px solid #dddddd;
     border-radius: 0.5em 0.5em 0.5em 0.5em !important;
   }
