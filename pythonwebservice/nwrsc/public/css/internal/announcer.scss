@@ -1,0 +1,90 @@
+.layout {
+  td {
+    vertical-align: top;
+  }
+  table {
+    width: 100%;
+    padding: 5px;
+  }
+}
+
+table {
+  border-collapse: collapse;
+  &.runorder th, &.res th, &.stats th, &.toptimes th, &.runorder td, &.res td, &.stats td, &.toptimes td {
+    border: 1px black solid;
+    padding: 3px;
+  }
+}
+
+.ui-tabs-nav {
+  font-size: 0.7em;
+}
+
+.ui-tabs .ui-tabs-panel {
+  padding-top: 5px;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+span.header {
+  font-size: 0.8em;
+  font-weight: bold;
+  background: #79b7e7;
+  display: block;
+  border: 1px solid black;
+  padding: 2px;
+  text-align: center;
+}
+
+tr {
+  &.header th {
+    font-size: 0.8em;
+    font-weight: bold;
+    background: #79b7e7;
+  }
+  &.titles th {
+    font-size: 0.7em;
+    font-weight: bold;
+    background: #c5dbec;
+  }
+  &.highlight td {
+    font-size: 0.9em !important;
+    font-weight: bold;
+    background: #DDD;
+  }
+  &.improvedon td {
+    font-weight: bold;
+    background: #EEF;
+    color: #99E;
+  }
+  &.couldhave td {
+    font-size: 0.9em !important;
+    font-weight: bold;
+    background: #EDD;
+    color: #E77;
+  }
+}
+
+table {
+  &.runorder td, &.res td, &.toptimes td {
+    font-size: 0.8em;
+  }
+  &.stats td {
+    background: #EEE;
+    font-size: 0.6em;
+    + td {
+      font-size: 12px;
+      font-family: monospace;
+      background: #FFF;
+    }
+  }
+}
+
+#runorder {
+  margin-bottom: 10px;
+  padding: 4px;
+}
+
+#classtable td, #champtable td {
+  white-space: nowrap;
+}

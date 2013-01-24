@@ -1,84 +1,67 @@
-.layout td { vertical-align: top; }
-.layout table { width: 100%; padding: 5px; }
+.layout td {
+  vertical-align: top; }
+.layout table {
+  width: 100%;
+  padding: 5px; }
 
-table { border-collapse: collapse; }
-table.runorder th, table.res th, table.stats th, table.toptimes th, table.runorder td, table.res td, table.stats td, table.toptimes td
-{ 
-	border: 1px black solid; padding: 3px; 
-}
+table {
+  border-collapse: collapse; }
+  table.runorder th, table.res th, table.stats th, table.toptimes th, table.runorder td, table.res td, table.stats td, table.toptimes td {
+    border: 1px black solid;
+    padding: 3px; }
 
-.ui-tabs-nav { 
-	font-size: 0.7em;
-}
+.ui-tabs-nav {
+  font-size: 0.7em; }
 
 .ui-tabs .ui-tabs-panel {
-	padding-top: 5px;
-	padding-left: 2px;
-	padding-right: 2px;
-}
+  padding-top: 5px;
+  padding-left: 2px;
+  padding-right: 2px; }
 
 span.header {
-	font-size: 0.8em;
-	font-weight: bold;
-	background: #79b7e7; 
-	display: block;
-	border: 1px solid black;
-	padding: 2px; 
-	text-align: center;
-}
+  font-size: 0.8em;
+  font-weight: bold;
+  background: #79b7e7;
+  display: block;
+  border: 1px solid black;
+  padding: 2px;
+  text-align: center; }
 
 tr.header th {
-	font-size: 0.8em;
-	font-weight: bold;
-	background: #79b7e7; 
-}
-
-tr.titles th { 
-	font-size: 0.7em;
-	font-weight: bold;
-	background: #c5dbec; 
-}
-
+  font-size: 0.8em;
+  font-weight: bold;
+  background: #79b7e7; }
+tr.titles th {
+  font-size: 0.7em;
+  font-weight: bold;
+  background: #c5dbec; }
 tr.highlight td {
-	font-size: 0.90em !important;
-	font-weight: bold;
-	background: #DDD; 
-}
-
+  font-size: 0.9em !important;
+  font-weight: bold;
+  background: #DDD; }
 tr.improvedon td {
-	font-weight: bold;
-	background: #EEF; 
-	color: #99E;
-}
-
+  font-weight: bold;
+  background: #EEF;
+  color: #99E; }
 tr.couldhave td {
-	font-size: 0.90em !important;
-	font-weight: bold;
-	background: #EDD; 
-	color: #E77;
-}
+  font-size: 0.9em !important;
+  font-weight: bold;
+  background: #EDD;
+  color: #E77; }
 
 table.runorder td, table.res td, table.toptimes td {
-	font-size: 0.8em;
-}
-
+  font-size: 0.8em; }
 table.stats td {
-	background: #EEE;
-	font-size: 0.6em;
-}
-
-table.stats td+td {
-	font-size: 12px;
-	font-family: monospace;
-	background: #FFF;
-}
+  background: #EEE;
+  font-size: 0.6em; }
+  table.stats td + td {
+    font-size: 12px;
+    font-family: monospace;
+    background: #FFF; }
 
 #runorder {
-	margin-bottom: 10px;
-	padding: 4px;
-}
+  margin-bottom: 10px;
+  padding: 4px; }
 
 #classtable td, #champtable td {
-	white-space:nowrap;
-}
-
+  white-space: nowrap; }

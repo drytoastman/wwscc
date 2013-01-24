@@ -109,7 +109,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 			return
 
 		c.title = 'Scorekeeper Registration'
-		c.stylesheets = ['/css/register.css', '/css/forms.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css']
+		c.stylesheets = ['/css/register.css']
 		c.javascript = ['/js/register.js']
 
 		c.activeSeries = self._activeSeries()

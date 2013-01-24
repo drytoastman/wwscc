@@ -1,6 +1,6 @@
 <%def name="carform(numberhidden)">
 
-<form id='careditor' method='post' class='ui-helper-hidden'>
+<form id='careditor' method='post' class='hidden'>
 <div class='carerror ui-state-error-text'></div>
 <input name='driverid' type='hidden'/>
 <input name='carid' type='hidden'/>

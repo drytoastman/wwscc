@@ -1,0 +1,492 @@
+@import "external/jqueryui.scss";
+@import "forms.scss";
+
+body {
+  margin: 0;
+  padding: 0;
+  padding-left: 2px;
+}
+
+#serieslinks {
+  a {
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    padding: 0px 6px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #44F;
+  }
+  overflow: hidden;
+  border-bottom: 1px solid #dddddd;
+  ul {
+    list-style: none;
+  }
+}
+
+#seriestab {
+  border-top: 0px;
+  border-left: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+  border-right: 1px solid #dddddd;
+  border-radius: 0px 0px 6px 6px;
+  padding: 5px 13px 8px 13px;
+  margin-right: 10px;
+  text-align: center;
+  float: right;
+}
+
+#loginrow {
+  margin-left: 20px;
+  margin-top: 20px;
+}
+
+#orcell {
+  font-weight: bold;
+  font-size: 1.4em;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+#othercell {
+  ul {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+  }
+  li {
+    padding: 3px;
+    button {
+      width: 100%;
+      text-align: left;
+    }
+  }
+}
+
+#logintable th {
+  text-align: right;
+}
+
+#submit {
+  margin-top: 5px;
+  text-align: right;
+}
+
+#header {
+  padding: 4px;
+  a {
+    line-height: 0px;
+  }
+  img {
+    max-height: 60px;
+  }
+}
+
+#sponsorimg {
+  margin-left: 40px;
+  max-height: 60px;
+  img, a {
+    outline: none;
+    border: 0px;
+  }
+}
+
+#seriesname {
+  padding-top: 10px;
+  margin-left: 20px;
+  margin-bottom: 3px;
+  font-size: 1.5em;
+}
+
+.errorlog {
+  color: #F00;
+}
+
+h2 {
+  margin-top: 5px;
+  color: #444;
+  font-family: Helvetica, sans-serif;
+  font-size: 1.4em;
+}
+
+.ui-widget {
+  font-size: 11px !important;
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  input {
+    font-size: 11px !important;
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  }
+}
+
+.ui-widget-overlay {
+  background: #222222 !important;
+}
+
+h3 {
+  &.ui-accordion-header a {
+    color: #0073EA;
+  }
+  &.eventclosed span {
+    color: #999;
+  }
+}
+
+#colcontainer {
+  margin-top: 10px;
+}
+
+#events, #rightcol {
+  vertical-align: top;
+  background: #f6f9f9;
+  border: 1px solid #b8b8b8;
+  -moz-border-radius: 9px;
+  -khtml-border-radius: 9px;
+  -webkit-border-radius: 9px;
+  border-radius: 9px;
+  padding: 10px;
+  height: 100%;
+}
+
+#events {
+  background: #f6f6ff;
+  Xwidth: 400px;
+}
+
+#rightcol {
+  background: #f6f9f9;
+}
+
+.eventday, .eventmonth {
+  display: inline-block;
+  width: 27px;
+  margin-right: 2px;
+}
+
+.eventdate {
+  display: inline-block;
+  width: 23px;
+  margin-right: 2px;
+}
+
+.helpbox {
+  margin-top: 20px;
+  margin-left: 10px;
+  text-align: justify;
+  font-size: 0.9em;
+  color: #666;
+  width: 600px;
+}
+
+.carspaceholder {
+  height: 25px;
+}
+
+.eselector {
+  display: inline !important;
+  width: 280px;
+  margin-top: 0px;
+  margin-bottom: 4px;
+  vertical-align: top;
+}
+
+.notifier {
+  font-weight: bold;
+  height: 23px;
+  a {
+    color: blue !important;
+    cursor: pointer;
+  }
+}
+
+.erule {
+  margin-bottom: 8px;
+  border-bottom: 1px solid #aaaaaa;
+}
+
+span.limit {
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+#profile {
+  font-family: Helvetica, sans-serif;
+  font-size: 1.2em;
+  span {
+    display: block;
+    &.name, &.email {
+      font-weight: bold;
+    }
+  }
+  .ui-button {
+    margin-top: 10px;
+  }
+}
+
+#carlist {
+  margin-left: 0px;
+  border-collapse: collapse;
+  th {
+    min-width: 26px;
+    span {
+      font-family: Helvetica, sans-serif;
+      font-size: 140%;
+      display: inline-block;
+      min-width: 100px;
+    }
+  }
+  td {
+    font-family: Helvetica, sans-serif;
+    vertical-align: top;
+    padding: 5px;
+    border-top: 1px solid #dddddd;
+  }
+  tr:first-child td {
+    border-top: 0px;
+  }
+}
+
+#createcar {
+  margin-top: 5px;
+}
+
+/* view entries */
+
+table.carlist {
+  border: solid 1px #555555;
+  border-collapse: collapse;
+  empty-cells: show;
+  font-family: arial;
+  td, th {
+    border: solid 1px #555555;
+    padding: 3px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  td {
+    &.number, &.counter {
+      text-align: center;
+    }
+  }
+  th {
+    background: rgb(30, 115, 234);
+    color: white;
+    font-weight: bold;
+  }
+}
+
+.viewbutton {
+  margin-left: 15px;
+  span {
+    padding: 0px 10px 0px 10px !important;
+  }
+}
+
+#lockedmessage {
+  margin-top: 10px;
+}
+
+.viewlist {
+  margin-top: 0px;
+  margin-left: 40px;
+  h3 {
+    color: #333;
+  }
+  ul {
+    list-style: none;
+    padding: 0px;
+    margin-left: 10px;
+  }
+  li {
+    padding: 0px;
+  }
+}
+
+.viewheader {
+  margin-top: 20px;
+  margin-left: 10px;
+  font-weight: bold;
+  color: #444;
+  font-family: Helvetica, sans-serif;
+}
+
+.viewtable {
+  margin-left: 20px;
+  td, th {
+    Xfont-size: 0.85em;
+    color: #666;
+    text-align: left;
+  }
+  td:last-child {
+    text-align: right;
+  }
+}
+
+table.eventdetails {
+  th {
+    vertical-align: top;
+    text-align: right;
+    &:after {
+      content: ":";
+    }
+  }
+  a {
+    vertical-align: middle;
+  }
+}
+
+#seriesimg, #sponsorimg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#tabs {
+  padding: 0px;
+  background: none;
+  border-width: 0px;
+  .ui-tabs-nav {
+    padding-left: 0px;
+    background: transparent;
+    border-width: 0px 0px 1px 0px;
+    border-radius: 0px;
+  }
+}
+
+#eventsinner h3 {
+  border-top: 1px solid #dddddd;
+  border-left: 1px solid #dddddd;
+  border-right: 1px solid #dddddd;
+  border-radius: 0.5em 0.5em 0em 0em;
+  margin: 0px;
+  margin-top: -1px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+h3 {
+  &.eventopen a {
+    color: blue;
+  }
+  &.lastevent.hidden {
+    border-bottom: 1px solid #dddddd;
+    border-radius: 0.5em 0.5em 0.5em 0.5em !important;
+  }
+}
+
+.eventholder {
+  background: #FFF;
+  padding-left: 15px;
+  padding-bottom: 10px;
+  border-radius: 0em 0em 0.5em 0.5em;
+  border-left: 1px solid #dddddd;
+  border-right: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+}
+
+.logout {
+  position: relative;
+  top: -35px;
+  margin-right: 10px;
+  float: right;
+}
+
+a.viewlink {
+  font-weight: bold;
+  color: blue;
+}
+
+.cardisplay {
+  display: inline-block;
+  padding-left: 5px;
+  padding-right: 5px;
+  span {
+    display: block;
+  }
+  .code {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+  .desc {
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    color: gray;
+  }
+}
+
+.ui-button-icon-only {
+  width: 25px !important;
+  height: 25px !important;
+}
+
+.carevents {
+  padding-left: 20px !important;
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    color: gray;
+  }
+}
+
+table.eventdetails {
+  width: 400px;
+  margin-top: 0px;
+  margin-left: 10px;
+  border-radius: 4px;
+  border: 1px solid gray;
+  background: #F2F2FF;
+  padding: 5px;
+  width: 46%;
+  display: inline-block;
+}
+
+div.carcontainer {
+  margin-top: 0px;
+  margin-left: 10px;
+  border-radius: 4px;
+  border: 1px solid gray;
+  background: #F2F2FF;
+  padding: 5px;
+  width: 46%;
+  display: inline-block;
+}
+
+#registereventform ul, #registercarform ul, .carcontainer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#registereventform li, #registercarform li, .carcontainer ul {
+  padding: 1px;
+}
+
+#registereventform label, #registercarform label {
+  display: block;
+  text-align: left;
+}
+
+.unregbutton {
+  vertical-align: top;
+}
+
+.eventdetails {
+  width: 200px;
+  vertical-align: top;
+  margin-left: 20px;
+}
+
+.regblock {
+  vertical-align: top;
+  margin-left: 20px;
+}
+
+.currentcars {
+  margin-bottom: 10px;
+}
+
+.eventselector select {
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+}
+
+.hidden {
+	display: none;
+}
+

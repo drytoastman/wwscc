@@ -1,0 +1,172 @@
+ol li {
+  padding-bottom: 5px;
+  li {
+    padding-bottom: 0px;
+  }
+}
+
+label {
+  text-align: right;
+  margin-right: 10px;
+}
+
+.body {
+  margin-left: 20px;
+  font-size: 0.9em !important;
+  color: #337;
+}
+
+.sf-menu li {
+  font-size: 0.9em;
+  li {
+    font-size: 0.8em;
+  }
+}
+
+table {
+  &.input th {
+    text-align: right;
+    padding-right: 10px;
+  }
+  &.form {
+    th, td {
+      padding: 2px 2px 4px 2px;
+    }
+    th {
+      text-align: right;
+    }
+  }
+}
+
+button.small {
+  font-size: 0.7em !important;
+}
+
+div.error, .error-message {
+  color: #FF0000;
+  font-weight: bold;
+}
+
+li {
+  font-size: 100%;
+  li {
+    font-size: 90%;
+  }
+}
+
+.labelcol {
+  text-align: right;
+  font-weight: bold;
+}
+
+.fieldcol! {}
+
+.fielderror {
+  color: red;
+  font-weight: bold;
+}
+
+.even td, .odd td {
+  border-bottom: 1px solid #dddddd;
+}
+
+.even:hover, .odd:hover {
+  background: #ddd;
+}
+
+.dataTables_wrapper {
+  display: inline-block;
+}
+
+.dataTable input {
+  font-size: 0.6em !important;
+}
+
+#lastrow {
+  border-bottom: none;
+}
+
+#templatelist {
+  li {
+    margin-left: 0px;
+  }
+  a {
+    text-decoration: none;
+  }
+}
+
+#titlebutton a {
+  color: black;
+  &:hover {
+    border: 1px solid #dddddd;
+  }
+}
+
+/* superfish */
+
+/*** ESSENTIAL STYLES ***/
+
+.sf-menu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  * {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  line-height: 1.0;
+  float: left;
+  ul {
+    position: absolute;
+    top: -999em;
+    width: 10em;
+    /* left offset of submenus need to match (see below) */
+    li {
+      width: 100%;
+    }
+  }
+  li {
+    &:hover {
+      visibility: inherit;
+      /* fixes IE7 'sticky bug' */
+    }
+    float: left;
+    position: relative;
+  }
+  a {
+    display: block;
+    position: relative;
+  }
+  li {
+    &:hover ul, &.sfHover ul {
+      left: 0;
+      top: 2.5em;
+      /* match top ul list item height */
+      z-index: 99;
+    }
+  }
+}
+
+ul.sf-menu li {
+  &:hover li ul, &.sfHover li ul {
+    top: -999em;
+  }
+  li {
+    &:hover ul, &.sfHover ul {
+      left: 10em;
+      /* match ul width */
+      top: 0;
+    }
+    &:hover li ul, &.sfHover li ul {
+      top: -999em;
+    }
+    li {
+      &:hover ul, &.sfHover ul {
+        left: 10em;
+        /* match ul width */
+        top: 0;
+      }
+    }
+  }
+}
