@@ -46,3 +46,18 @@ compile([
 		'internal/register.js'
 		], 'register.js')
 
+compile([
+		'external/jquery-1.9.0.js',
+		'external/jquery-ui-1.10.0.custom.js',
+		'external/jquery.validate.1.10.js',
+		'external/superfish-1.5.0.js',
+		'external/migrate.js',
+		'external/anytime.js',
+		'external/jquery.dataTables.min.js',
+		'internal/nwr.js',
+		'internal/careditor.js',
+		'internal/drivereditor.js',
+		'internal/regeditor.js',
+		'internal/admin.js'
+		], 'admin.js')
+

@@ -53,7 +53,7 @@ function carTabSetup()
 	$("#carlist .regbutton").button().click( function() {
 		var car = cars[$(this).data('carid')]; // pull from global that we set in template
 
-		$("#registereventform").RegEdit('registerForEvent', car, eventnames, function() {
+		$("#registereventform").RegEdit('registerForEvent', car, function() {
 			updateCars();
 			$('#registereventform input:checked').each(function() {
 				var eventid = $(this).prop('name');
@@ -89,9 +89,9 @@ function eventPaneSetup(jqe)
 {
 	jqe.find('.regcarsbutton').button().click( function() {
 		var eventid = $(this).data('eventid');
-		var eventname = eventnames[eventid];
+		var eventname = seriesevents[eventid].name;
 
-		$("#registercarform").RegEdit('registerCars', eventid, eventname, cars, function() {
+		$("#registercarform").RegEdit('registerCars', eventid, eventname, cars, 2, "Max cars per entrant met", function() {
 			updateCars();
 			updateEvent(eventid);
 		});
@@ -112,18 +112,14 @@ $(document).ready(function() {
 	eventPaneSetup($('#eventsinner'));
 
 	$( document ).ajaxError(function(event, jqxhr, settings, exception) {
-		alert(exception);
-		/*
-		$( "div.errorlog" ).text(exception);
-		setTimeout(function() { $("div.errorlog").text(""); }, 5000);
-		*/
+		alert("Request Error: " + exception);
 	});
 
 	$('button.logout').button().click(function() { document.location.href=$.nwr.url_for('logout'); });
 
 	// old base
-	$('#serieslinks').css('display', 'none');
-	$('#seriestab').click(function() { $('#serieslinks').toggle('blind'); });
+	$('.tablist ul').css('display', 'none');
+	$('.tablist .tab').click(function() { $(this).parent().find('ul').toggle('blind'); });
 
 	// old login page
     $("#loginForm").validate();
@@ -152,3 +148,4 @@ $(document).ready(function() {
 
 	eventCollapsable();
 });
+

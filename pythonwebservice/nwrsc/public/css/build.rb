@@ -2,9 +2,8 @@
 
 require 'sass'
 
-
-options = {}
-#options = {:style => :compressed}
+#options = {}
+options = {:style => :compressed}
 
 Sass.compile_file("internal/register.scss", "register.css", options)
 Sass.compile_file("internal/registerold.scss", "registerold.css", options)

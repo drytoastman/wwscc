@@ -1,72 +1,70 @@
 
 (function ($) {
 
+	function CounterWatch(max, callback) {
+		this.max = max;
+		this.callback = callback;
+		this.count = 0;
+		this.change = function(incr) {
+			if (incr) { this.count++; }
+			else { this.count--; }
+			this.callback(this.count>= this.max);
+		}
+	}
+
+
 	var methods = {
 
-		checkbutton: function() {
+		checkbutton: function(watcher) {
 			// expects a checkbox input as this
-			$this = $(this);
+			var me = $(this);
+			me.data('watcher', watcher); // reset the watcher each time they call
 
-			if (!this.data('cbuttoninit'))
+			// init button with click behaviour only once
+			if (!me.data('cbuttoninit'))
 			{
-				$this.data('cbuttoninit', true);
-				$this.button({ icons: {primary:'ui-icon-radio-on'}}).click(function() {
+				me.data('cbuttoninit', true);
+				me.button({ icons: {primary:'ui-icon-radio-on'}}).click(function() {
 					var me = $(this);
-					if (me.is( ":checked" )) {
+					var checked = me.is(":checked");
+					if (checked) {
 						me.button('option', { icons: {primary:'ui-icon-check'} });
 					} else {
 						me.button('option', { icons: {primary:'ui-icon-radio-on'} });
 					}
+
+					var w = me.data('watcher');
+					if (w) { w.change(checked); }
 				});
 			}
 
-			$this.attr('checked', false).button('option', { icons: { primary:'ui-icon-radio-on'} }).button('refresh');
+			// uncheck control and make sure button is matched up
+			me.attr('checked', false).button('option', { icons: { primary:'ui-icon-radio-on'}, disabled: false }).button('refresh');
 		},
 
 
-		registerForEvent: function(car, events, okcallback) {
+		registerForEvent: function(car, okcallback) {
 
-			$this = $(this);
+			var me = $(this);
+			me.find('ul.selectableevents li').each(function() {
+				var li = $(this);
+				var eventid = li.data('eventid');
+				li.toggle($.inArray(eventid, car.canregevents) >= 0);
+			});
 	
-			var ul = $this.find('ul.selectableevents').empty();
-	
-			if (car.canregevents.length == 0)
-			{
-				ul.append("<div>No events to register for</div>");
-			}
-			else
-			{
-				for (ii = 0; ii < car.canregevents.length; ii++)
-				{
-					var id = "eventid-"+car.canregevents[ii];
-					var inputname = car.canregevents[ii];
-					var name = events[car.canregevents[ii]];
-					ul.append("<li><input type='checkbox' id='"+id+"' name='"+inputname+"' /><label for='"+id+"'>"+name+"</label></li>");
-				}
-			}
+			me.find('ul.selectableevents input').RegEdit('checkbutton');
+			me.find('[name=carid]').val(car.id);
 		
-			$this.find('input').button({ icons: {primary:'ui-icon-radio-on'}}).click(function() {
-				var me = $(this);
-				if (me.is( ":checked" )) {
-					me.button('option', { icons: {primary:'ui-icon-check'} });
-				} else {
-					me.button('option', { icons: {primary:'ui-icon-radio-on'} });
-				}
-			}); 
-	
-			$this.find('[name=carid]').val(car.id);
-		
-			$this.dialog({
+			me.dialog({
 				width: "auto",
 				modal: true,
-				title: 'Register Car for Event',
-				//position: [20, 100],
+				title: 'Register Car for Events',
 				buttons: {
 					'Ok': function() {
-						$(this).dialog('close');
-						$.post($.nwr.url_for('registerEventsForCar'), $(this).serialize(), okcallback); 
+						me.dialog('close');
+						$.post($.nwr.url_for('registerEventsForCar'), me.serialize(), okcallback); 
 					},
-					Cancel: function() { $(this).dialog('close'); }
+					Cancel: function() { me.dialog('close'); }
 				},
 				close: function() {
 				}
@@ -74,23 +72,29 @@
 		},
 
 
-		registerCars: function(eventid, eventname, cars, okcallback) {
+		registerCars: function(eventid, eventname, cars, limit, limitreason, okcallback) {
 
 			var me = $(this);
 			me.find('ul.selectablecars li').each(function() {
-				var $li = $(this);
-				var carid = $li.data('carid');
-				$li.toggle($.inArray(eventid, cars[carid].canregevents) >= 0);
+				var li = $(this);
+				var carid = li.data('carid');
+				li.toggle($.inArray(eventid, cars[carid].canregevents) >= 0);
 			});
 
-			me.find('ul.selectablecars input').RegEdit('checkbutton');
+
+			var watcher = new CounterWatch(limit, function(dodisable) {
+				me.find('ul.selectablecars input:unchecked').button({ disabled: dodisable });
+				me.find('.statuslabel').html( dodisable && limitreason || ""); 
+			});
+
+			me.find('ul.selectablecars input').RegEdit('checkbutton', watcher);
+			me.find('.statuslabel').html("");
 			me.find('[name=eventid]').val(eventid);
 		
 			me.dialog({
 				width: "auto",
 				modal: true,
 				title: 'Register Cars for ' + eventname,
-				//position: [20, 100],
 				buttons: {
 					'Ok': function() {
 						me.dialog('close');
@@ -104,6 +108,7 @@
 		}
 
 	};
+
 
 	$.fn.RegEdit = function( method ) {
 		if ( methods[method] ) {

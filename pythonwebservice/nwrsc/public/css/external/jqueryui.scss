@@ -475,7 +475,7 @@ input.ui-button::-moz-focus-inner, button.ui-button::-moz-focus-inner {
   position: absolute;
   top: 0;
   left: 0;
-  padding: .2em;
+  Xpadding: .2em;
   outline: 0;
   .ui-dialog-titlebar {
     padding: 0.4em 1em;
@@ -494,7 +494,7 @@ input.ui-button::-moz-focus-inner, button.ui-button::-moz-focus-inner {
     right: .3em;
     top: 50%;
     width: 21px;
-    margin: -10px 0 0 0;
+    margin: -13px 0 0 0;
     padding: 1px;
     height: 20px;
   }
@@ -736,13 +736,13 @@ body .ui-tooltip {
 
 .ui-widget {
   font-family: Lucida Grande, Lucida Sans, Arial, sans-serif;
-  font-size: 1.1em;
+  xfont-size: 1.1em;
   .ui-widget {
-    font-size: 1em;
+    xfont-size: 1em;
   }
   input, select, textarea, button {
     font-family: Lucida Grande, Lucida Sans, Arial, sans-serif;
-    font-size: 1em;
+    xfont-size: 1em;
   }
 }
 
@@ -1616,7 +1616,8 @@ body .ui-tooltip {
 /* Overlays */
 
 .ui-widget-overlay {
-  background: #eeeeee url(images/ui-bg_diagonals-thick_90_eeeeee_40x40.png) 50% 50% repeat;
+  background: #222222;
+  //background: #eeeeee url(images/ui-bg_diagonals-thick_90_eeeeee_40x40.png) 50% 50% repeat;
   opacity: .8;
   filter: Alpha(Opacity = 80);
 }

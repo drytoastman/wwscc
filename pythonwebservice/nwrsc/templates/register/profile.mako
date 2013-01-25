@@ -18,8 +18,7 @@ ${c.driver.firstname} ${c.driver.lastname}
 <input  type='button' value='Edit' class='editprofile' data-driverid='${c.driver.id}'/> 
 
 <script type='text/javascript'>
-var drivers = new Array();
-drivers[${c.driver.id}] = ${h.encodesqlobj(c.driver)|n}
+var drivers = { ${c.driver.id}: ${h.encodesqlobj(c.driver)|n} }
 </script>
 
 </%def>

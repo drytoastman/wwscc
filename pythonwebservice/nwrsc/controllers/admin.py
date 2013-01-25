@@ -68,12 +68,8 @@ class AdminSession(object):
 class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting, PurgeCopy):
 
 	def __before__(self):
-		c.stylesheets = ['/css/admin.css', '/css/forms.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css', '/css/anytimec.css']
-		c.javascript = ['/js/admin.js', '/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/superfish.js', '/js/jquery.validate.min.js', '/js/anytimec.js', '/js/jquery.dataTables.min.js']
-		try:
-			c.javascript.append(url_for(action='scripts'))  # If we are far enough along to link to it
-		except:
-			pass
+		c.stylesheets = ['/css/admin.css']
+		c.javascript = ['/js/admin.js']
 
 		if self.database is not None:
 			c.events = self.session.query(Event).all()
@@ -87,11 +83,11 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		if self.eventid and self.eventid.isdigit():
 			c.event = self.session.query(Event).get(self.eventid)
 
-		if self.eventid and self.action not in ('login', 'scripts'):
+		if self.eventid and self.action not in ('login'):
 			self._checkauth(self.eventid, c.event)
 
 		if self.settings.locked:
-			if self.action not in ('login', 'scripts', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'newentrants', 'printhelp', 'forceunlock'):
+			if self.action not in ('login', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'newentrants', 'printhelp', 'forceunlock'):
 				c.seriesname = self.settings.seriesname
 				c.next = self.action
 				raise BeforePage(render_mako('/admin/locked.mako'))
@@ -145,12 +141,6 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		action = mysession.getClearAction()
 		redirect(url_for(action=action))
 			
-
-	def scripts(self):
-		response.headers['Cache-Control'] = 'max-age=360' 
-		response.headers.pop('Pragma', None)
-		c.fields = self.session.query(DriverField).all()
-		return render_mako('/forms/careditor.mako') + render_mako('/forms/drivereditor.mako')
 
 
 	def index(self):

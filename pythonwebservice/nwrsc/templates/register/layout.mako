@@ -1,16 +1,10 @@
 <%inherit file="base.mako" />
 <%namespace file="/forms/carform.mako" import="carform"/>
 <%namespace file="/forms/driverform.mako" import="driverform"/>
-<%namespace file="/forms/registerforms.mako" import="registerforms"/>
+<%namespace file="/forms/registerforms.mako" import="eventregisterform"/>
 <%namespace file="events.mako" import="eventdisplay"/>
 <%namespace file="cars.mako" import="carlist"/>
 <%namespace file="profile.mako" import="profile"/>
-<%
-	import datetime
-	accordindex = 0;
-	today = datetime.date.today();
- %>
-
 
 <div id='tabs'>
 	<ul>
@@ -36,11 +30,7 @@ ${carlist()}
 
 
 <div id='eventsinner'>
-%for ii, ev in enumerate(sorted(c.eventmap.values(), key=lambda obj: obj.date)):
-	<%
-		if ev.date < today:
-			accordindex = ii + 1
-	%>
+%for ev in c.events:
 			
 	<h3 class='${not ev.isOpen and "eventclosed" or "eventopen"}'>
 	<span class='rightarrow' style='display:none'>&#9658;</span>
@@ -56,6 +46,7 @@ ${carlist()}
 	<div id='event${ev.id}' data-eventid='${ev.id}' class='eventholder ${not ev.isOpen and "eventclosed" or "eventopen"}'>
 	${eventdisplay(ev)}
 	</div>
+
 %endfor
 </div>
 
@@ -64,5 +55,5 @@ ${carlist()}
 
 ${driverform()}
 ${carform(True)}
-${registerforms()}
+${eventregisterform()}
 

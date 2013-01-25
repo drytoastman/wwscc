@@ -1,4 +1,5 @@
 <%namespace file="displays.mako" import="carDisplay"/>
+<%namespace file="/forms/registerforms.mako" import="carregisterform"/>
 
 <%def name="disablecar(car)" filter="oneline">
 %if len(car.regevents) > 0:
@@ -38,15 +39,18 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 
 <button class='createcar' data-driverid='${c.driverid}'>Create New Car</button>
 
+<%doc> registration forms are recreated  when a new car is created, edited or deleted </%doc>
+${carregisterform()}
+
 <script type='text/javascript'>
 var cars = {
 %for car in c.cars:
 ${car.id}: ${h.encodesqlobj(car)|n},
 %endfor
 }
-var eventnames = {
-%for event in c.eventmap.values():
- ${event.id}: "${event.name}",
+var seriesevents = {
+%for event in c.events:
+ ${event.id}: { id: ${event.id}, name: "${event.name}", totlimit: ${event.totlimit or 9999}, perlimit: ${event.perlimit or 9999}, count: ${event.count} },
 %endfor
 }
 

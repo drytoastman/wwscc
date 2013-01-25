@@ -2,7 +2,21 @@
 
 <div id='content'>
 
-<div id='serieslinks'>
+
+<div class='tabcontainer'>
+<div id='entrylist' class='tablist'>
+<ul>
+%for ev in c.events:
+<li><a href='${h.url_for(action='view', event=ev.id)}'>${ev.name}</a></li>
+%endfor
+</ul>
+
+<div class='tab'>
+Entry Lists
+</div>
+</div>
+
+<div id='serieslinks' class='tablist'>
 <ul>
 %for s in sorted(c.activeSeries):
 %if s != c.database:
@@ -10,11 +24,15 @@
 %endif
 %endfor
 </ul>
-</div>
 
-<div id='seriestab' class='ui-widget ui-state-default'>
+<div class='tab'>
 Other Series
 </div>
+</div>
+
+</div> <!-- tabcontainer -->
+
+
 
 <div id='header'>
 

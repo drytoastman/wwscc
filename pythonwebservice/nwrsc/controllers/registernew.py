@@ -131,6 +131,8 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 			event.isOpen = not event.closed and event.opened
 			c.eventmap[event.id] = event
 
+		c.events = sorted(c.eventmap.values(), key=lambda obj: obj.date)
+
 		if action not in ('view') and self.settings.locked:
 			# Delete any saved session data for this person
 			raise BeforePage(render_mako('/register/locked.mako'))
@@ -170,7 +172,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 			c.otherseries = self.user.activeSeries()
 			return render_mako('/register/login.mako')
 
-		for e in c.eventmap.values():
+		for e in c.events:
 			e.regentries = self.session.query(Registration).join('car') \
 						.filter(Registration.eventid==e.id).filter(Car.driverid==c.driverid).all()
 			e.payments = self.session.query(Payment) \
@@ -314,10 +316,17 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 	def _loadCars(self):
 		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		registration = self.session.query(Registration).join('car').distinct().filter(Car.driverid==c.driverid).all()
-		openevents = [ev.id for ev in c.eventmap.values() if ev.opened and not ev.closed]
+		registration = self.session.query(Registration).join('car').distinct().filter(Car.driverid==c.driverid)
+
+		openevents = list()
+		for event in c.events:
+			if not event.isOpen: continue
+			if event.totlimit and event.count >= event.totlimit: continue
+			if registration.filter(Registration.eventid==event.id).count() >= event.perlimit: continue
+			openevents.append(event.id)
+
 		for car in c.cars:
-			car.regevents = sorted([(c.eventmap[reg.eventid], reg.id) for reg in registration if reg.carid == car.id], key = lambda x: x[0].date)
+			car.regevents = sorted([(c.eventmap[reg.eventid], reg.id) for reg in registration.all() if reg.carid == car.id], key = lambda x: x[0].date)
 			car.canregevents = list(openevents)
 			for event, regid in car.regevents:
 				try: car.canregevents.remove(event.id)
