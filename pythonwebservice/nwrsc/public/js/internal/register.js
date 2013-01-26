@@ -35,6 +35,16 @@ function editCar(driverid, car) {
 	});
 }
 
+function profileTabSetup()
+{
+	$(".editprofile").button().click( function() {
+		var driverid = $(this).data('driverid');
+		$('#drivereditor').DriverEdit("doDialog", drivers[driverid], function() {
+			$.nwr.updateDriver($("#drivereditor").serialize(), updateProfile);
+		});
+	});
+}
+
 function carTabSetup()
 {
 	$("#carlist .deletecar").button({icons: { primary:'ui-icon-trash'}, text: false} ).click(function() {
@@ -100,28 +110,8 @@ function eventPaneSetup(jqe)
 	unregButtons(jqe);
 }
 
-
-$(document).ready(function() {
-	$(".editprofile").button().click( function() {
-		var driverid = $(this).data('driverid');
-		$('#drivereditor').DriverEdit("doDialog", drivers[driverid], function() {
-			$.nwr.updateDriver($("#drivereditor").serialize(), updateProfile);
-		});
-	});
-
-	eventPaneSetup($('#eventsinner'));
-
-	$( document ).ajaxError(function(event, jqxhr, settings, exception) {
-		alert("Request Error: " + exception);
-	});
-
-	$('button.logout').button().click(function() { document.location.href=$.nwr.url_for('logout'); });
-
-	// old base
-	$('.tablist ul').css('display', 'none');
-	$('.tablist .tab').click(function() { $(this).parent().find('ul').toggle('blind'); });
-
-	// old login page
+function loginPage()
+{
     $("#loginForm").validate();
     $("#loginsubmit").button();
 
@@ -139,13 +129,29 @@ $(document).ready(function() {
 			$("#drivereditor").submit();
 		});
 	});
+}
 
-	// old layout page
+
+$(document).ready(function() {
+
+	loginPage();
+	eventPaneSetup($('#eventsinner'));
+	eventCollapsable();
+
 	$.ajaxSetup({ cache: false });
-	$("#tabs").tabs({active: 1});
+	$( document ).ajaxError(function(event, jqxhr, settings, exception) {
+		alert("Request Error: " + exception);
+	});
 
+	$('button.logout').button().click(function() { document.location.href=$.nwr.url_for('logout'); });
+
+	// top tabs
+	$('.tablist ul').css('display', 'none');
+	$('.tablist .tab').click(function() { $(this).parent().find('ul').toggle('blind'); });
+
+	// layout page
+	$("#tabs").tabs({active: 1});
 	$(".cartablink").click(function() { $("#tabs").tabs('option', 'active', 1); });
 
-	eventCollapsable();
 });
 
