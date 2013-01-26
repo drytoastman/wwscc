@@ -43,7 +43,6 @@ body {
   }
 
   .tab {
-	xfloat: right;
     border-top: 0px;
     border-left: $grayborder;
     border-bottom: $grayborder; 
@@ -122,21 +121,6 @@ body {
   color: #F00;
 }
 
-/*
-h2 {
-  margin-top: 5px;
-  color: #444;
-  font-family: Helvetica, sans-serif;
-  font-size: 1.4em;
-}
-
-.ui-widget {
-  font-size: 13px !important;
-  font-family: "Trebuchet MS", Helvetica, sans-serif;
-}
-
-*/
-
 
 h3 {
   &.eventclosed span {
@@ -144,30 +128,6 @@ h3 {
   }
 }
 
-#colcontainer {
-  margin-top: 10px;
-}
-
-#events, #rightcol {
-  vertical-align: top;
-  background: #f6f9f9;
-  border: 1px solid #b8b8b8;
-  -moz-border-radius: 9px;
-  -khtml-border-radius: 9px;
-  -webkit-border-radius: 9px;
-  border-radius: 9px;
-  padding: 10px;
-  height: 100%;
-}
-
-#events {
-  background: #f6f6ff;
-  Xwidth: 400px;
-}
-
-#rightcol {
-  background: #f6f9f9;
-}
 
 .eventday, .eventmonth {
   display: inline-block;
@@ -182,47 +142,25 @@ h3 {
 }
 
 .helpbox {
-  margin-top: 20px;
-  margin-left: 10px;
+  margin: 0;
+  padding: 0;
   text-align: justify;
   font-size: 0.9em;
   color: #666;
-  xwidth: 600px;
   display: inline-block;
-	summary { // no support in browsers yet
-		display: none;
-	}
+  ul {
+	list-style: none;
+  }
 }
 
-.carspaceholder {
-  height: 25px;
-}
 
-.eselector {
-  display: inline !important;
-  width: 280px;
-  margin-top: 0px;
-  margin-bottom: 4px;
-  vertical-align: top;
-}
-
-.notifier {
+.strong {
   font-weight: bold;
   height: 23px;
   a {
     color: blue !important;
     cursor: pointer;
   }
-}
-
-.erule {
-  margin-bottom: 8px;
-  border-bottom: 1px solid #aaaaaa;
-}
-
-span.limit {
-  font-size: 0.85em;
-  white-space: nowrap;
 }
 
 #profile {
@@ -258,9 +196,6 @@ span.limit {
   }
 }
 
-#createcar {
-  margin-top: 5px;
-}
 
 /* view entries */
 
@@ -387,6 +322,7 @@ h3 {
   background: #FFF;
   padding-left: 15px;
   padding-bottom: 10px;
+  padding-right: 10px;
   border-radius: 0em 0em 0.5em 0.5em;
   border-left: 1px solid #dddddd;
   border-right: 1px solid #dddddd;
@@ -436,27 +372,24 @@ a.viewlink {
   }
 }
 
-table.eventdetails {
-  width: 400px;
-  margin-top: 0px;
-  margin-left: 10px;
-  border-radius: 4px;
-  border: 1px solid gray;
-  background: #F2F2FF;
+div.detailscontainer, div.carcontainer {
+  border-radius: 5px;
+  border: $grayborder;
+  background: #F6F6FF;
   padding: 5px;
-  width: 46%;
-  display: inline-block;
-}
+  margin: 0;
 
-div.carcontainer {
-  margin-top: 0px;
-  margin-left: 10px;
-  border-radius: 4px;
-  border: 1px solid gray;
-  background: #F2F2FF;
-  padding: 5px;
-  width: 46%;
-  display: inline-block;
+  @media screen and (min-width: 601px) {
+    display: inline-block;
+    width: 47%;
+	vertical-align: top;
+  }
+  @media screen and (max-width: 600px) {
+  	display: block;
+    width: 100%;
+    margin-bottom: 3px;
+	margin-right: 5px;
+  }
 }
 
 #registereventform ul, #registercarform ul, .carcontainer ul {
@@ -465,7 +398,7 @@ div.carcontainer {
   margin: 0;
 }
 
-#registereventform li, #registercarform li, .carcontainer ul {
+#registereventform li, #registercarform li, .carcontainer li {
   padding: 1px;
 }
 
@@ -476,12 +409,6 @@ div.carcontainer {
 
 .unregbutton {
   vertical-align: top;
-}
-
-.eventdetails {
-  width: 200px;
-  vertical-align: top;
-  margin-left: 20px;
 }
 
 .regblock {
@@ -509,6 +436,7 @@ button {
 	display: block;
 	text-align: center;
 	font-size: 1.1em;
-	color: red;
+	font-weight: bold;
+	color: #511;
 }
 

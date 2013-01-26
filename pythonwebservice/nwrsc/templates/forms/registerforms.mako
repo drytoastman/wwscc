@@ -25,7 +25,7 @@
 
 <form id='registercarform' method='post' class='hidden'>
 <input name='eventid' type='hidden'/>
-<span class='statuslabel'></span>
+<span class='statuslabel'>Default status</span>
 <ul class='selectablecars'>
 %for car in c.cars:
 	<li data-carid=${car.id}>

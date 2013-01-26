@@ -5,7 +5,7 @@
 
         loadEvent: function(eventid, callback) {  // need to use .get as load will try and use POST with args
             var me = this;
-            $.get($.nwr.url_for('getevent'), {eventid:eventid}, function(data) { me.html(data); callback.call(me); });
+            $.get($.nwr.url_for('getevent', eventid), function(data) { me.html(data); callback.call(me); });
 			return me;
         },
 
@@ -40,7 +40,11 @@
         updateDriver: function(args, callback) { $.post($.nwr.url_for('editdriver'), args, callback); },
         updateCar: function(args, callback) { $.post($.nwr.url_for('editcar'), args, callback); },
 
-        url_for: function(action) { return window.location.href.substring(0, window.location.href.lastIndexOf('/')+1) + action }
+        url_for: function(action, other) { 
+			base = window.location.href.substring(0, window.location.href.lastIndexOf('/')+1);
+			if (other) { return base + action + '/' + other; }
+			return base + action;
+		 }
     };
 
 

@@ -1,14 +1,14 @@
 
 (function ($) {
 
-	function CounterWatch(max, callback) {
-		this.max = max;
+	// attached to buttons and keeps counter of number selected/unselected
+	function CounterWatch(callback) {
 		this.callback = callback;
 		this.count = 0;
 		this.change = function(incr) {
 			if (incr) { this.count++; }
 			else { this.count--; }
-			this.callback(this.count>= this.max);
+			this.callback(this.count);
 		}
 	}
 
@@ -72,29 +72,33 @@
 		},
 
 
-		registerCars: function(eventid, eventname, cars, limit, limitreason, okcallback) {
+		registerCars: function(theevent, cars, limit, okcallback) {
 
 			var me = $(this);
 			me.find('ul.selectablecars li').each(function() {
 				var li = $(this);
 				var carid = li.data('carid');
-				li.toggle($.inArray(eventid, cars[carid].canregevents) >= 0);
+				li.toggle($.inArray(theevent.id, cars[carid].canregevents) >= 0);
 			});
 
-
-			var watcher = new CounterWatch(limit, function(dodisable) {
+			var watcher = new CounterWatch(function(count) {
+				var dodisable = (count >= limit);
 				me.find('ul.selectablecars input:unchecked').button({ disabled: dodisable });
-				me.find('.statuslabel').html( dodisable && limitreason || ""); 
+				me.find('.statuslabel').html( dodisable && "Entry Limit Reached" || ""); 
 			});
 
 			me.find('ul.selectablecars input').RegEdit('checkbutton', watcher);
-			me.find('.statuslabel').html("");
-			me.find('[name=eventid]').val(eventid);
+			me.find('[name=eventid]').val(theevent.id);
+			me.find('.statuslabel').html('You need to "Create New Car" in the Cars Tab')
+			for (carid in cars) {  // len(keys) != 0
+				me.find('.statuslabel').html("");
+				break;
+			}
 		
 			me.dialog({
 				width: "auto",
 				modal: true,
-				title: 'Register Cars for ' + eventname,
+				title: 'Register Cars for ' + theevent.name,
 				buttons: {
 					'Ok': function() {
 						me.dialog('close');

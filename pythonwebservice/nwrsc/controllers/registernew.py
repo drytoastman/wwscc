@@ -290,7 +290,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		return render_mako_def('/register/cars.mako', 'carlist')
 
 	def getevent(self):
-		eventid = int(request.GET.get('eventid', 0))
+		eventid = int(self.routingargs.get('other', 0))
 		event = c.eventmap.get(eventid, None)
 		if event is None:
 			return "Event does not exist"
@@ -302,9 +302,9 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 
 		 
 	def view(self):
-		id = request.GET.get('event', None)
+		id = int(self.routingargs.get('other', 0))
 		if id is None:
-			return render_mako('/register/eventlist.mako')
+			redirect(url_for(action=''))
 			
 		c.classdata = ClassData(self.session)
 		c.event = self.session.query(Event).get(id)

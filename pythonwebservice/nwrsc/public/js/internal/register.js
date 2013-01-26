@@ -1,7 +1,12 @@
 
 
 function updateProfile() { $('#profilewrapper').nwr('loadProfile'); }
-function updateCars() { $("#carswrapper").nwr('loadCars'); }
+function updateCars() {
+	if ($('#registercarform').is(':data(uiDialog)')) {
+		$('#registercarform').dialog('destroy').remove(); // make sure we loose that link
+	}
+	$("#carswrapper").nwr('loadCars');
+}
 function updateEvent(eventid) {
 	$('#event'+eventid).nwr('loadEvent', eventid, function() {
 		eventPaneSetup($(this));
@@ -21,7 +26,7 @@ function unregButtons(jqe)
 		var regid = $this.data('regid');
 		var eventid = $this.data('eventid');
 
-		$this.parent().replaceWith("<div class='notifier'>unregistering...</div>");
+		$this.parent().replaceWith("<div class='strong'>unregistering...</div>");
 		$.nwr.unRegisterCar(regid, function() {
 			updateCars();
 			updateEvent(eventid);
@@ -62,12 +67,10 @@ function carTabSetup()
 	
 	$("#carlist .regbutton").button().click( function() {
 		var car = cars[$(this).data('carid')]; // pull from global that we set in template
-
 		$("#registereventform").RegEdit('registerForEvent', car, function() {
 			updateCars();
 			$('#registereventform input:checked').each(function() {
-				var eventid = $(this).prop('name');
-				updateEvent(eventid);
+				updateEvent($(this).prop('name')); // the input name= contains the eventid
 			});
 		});
 	});
@@ -99,9 +102,13 @@ function eventPaneSetup(jqe)
 {
 	jqe.find('.regcarsbutton').button().click( function() {
 		var eventid = $(this).data('eventid');
-		var eventname = seriesevents[eventid].name;
+		var theevent = seriesevents[eventid];
+		var regcars = 0;
+		$.each(cars, function(i, car) { if ($.inArray(theevent.id, car.canregevents) < 0) { regcars++; } } );
 
-		$("#registercarform").RegEdit('registerCars', eventid, eventname, cars, 2, "Max cars per entrant met", function() {
+		var limit = Math.min( theevent.totlimit - theevent.count, theevent.perlimit - regcars );
+
+		$("#registercarform").RegEdit('registerCars', theevent, cars, limit, function() {
 			updateCars();
 			updateEvent(eventid);
 		});

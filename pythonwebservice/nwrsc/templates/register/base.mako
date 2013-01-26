@@ -7,7 +7,7 @@
 <div id='entrylist' class='tablist'>
 <ul>
 %for ev in c.events:
-<li><a href='${h.url_for(action='view', event=ev.id)}'>${ev.name}</a></li>
+<li><a href='${h.url_for(action='view', other=ev.id)}'>${ev.name}</a></li>
 %endfor
 </ul>
 
