@@ -41,13 +41,13 @@
 </table>
 </form>
 
-<script type='text/javascript'>
-$(document).ready(function(){ 
+
+<script>
+$(document).ready(function(){
 	$('input').button();
-	$('#xregtable').dataTable({
-		"bJQueryUI" : true,
-		"bPaginate": false
-	});
+    $('#xregtable').dataTable({
+        "bJQueryUI" : true,
+        "bPaginate": false
+   });
 });
 </script>
-

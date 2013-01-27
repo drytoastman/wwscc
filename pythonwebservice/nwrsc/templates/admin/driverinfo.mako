@@ -55,6 +55,5 @@ ${car.classcode} ${h.ixstr(car)} #${car.number} ${car.year} ${car.make} ${car.mo
 %endfor
 
 <script>
-$("button").button();
+$('button').button();
 </script>
-

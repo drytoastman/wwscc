@@ -51,7 +51,6 @@
 		
 			$this.dialog({
 				width: "auto",
-				position: [20, 100],
 				modal: true,
 				title: title,
 				buttons: {

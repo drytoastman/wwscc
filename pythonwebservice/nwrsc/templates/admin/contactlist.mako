@@ -1,36 +1,5 @@
 <%inherit file="base.mako" />
 
-<script type="text/javascript"> 
-function downloadfull()
-{
-	rows = datatable._('tr', {"filter":"applied"});
-	ids = Array();
-	for (var ii = 0; ii < rows.length; ii++) {
-		ids.push(rows[ii][0]);
-	}
-	$("input[name=ids]").attr('value', ids);
-}
-
-function copyemail()
-{
-	rows = datatable._('tr', {"filter":"applied"});
-	email = Array();
-	for (var ii = 0; ii < rows.length; ii++) {
-		if (rows[ii][3].indexOf("@") > 1)  // dumb but still useful filter
-			email.push(rows[ii][3]);
-	}
-	prompt("Copy the follow string to your clipboard", email);
-	return false;
-}
-
-var datatable;
-$(document).ready(function(){ 
-	datatable = $('#contacttable').dataTable({
-		"bJQueryUI" : true,
-	});
-});
-</script>
-
 <h2>Contact List for ${c.title}</h2>
 
 <p>
@@ -63,3 +32,8 @@ Use the search box to limit the visible drivers in the table.  This also limits 
 </tbody>
 </table>
 
+<script>
+$(document).ready(function(){
+	$('#contacttable').dataTable({ "bJQueryUI" : true });
+});
+</script>

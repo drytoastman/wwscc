@@ -1,9 +1,10 @@
 <%inherit file="base.mako" />
+<%  from nwrsc.model import Class %>
 
 <% def singleline(text): return text.replace('\n', '') %>
 
 <%def name="dorow(ii, cls)" filter="singleline">
-<tr>
+<tr data-counter="${ii}">
 <td>
 	<input type="text" name="clslist-${ii}.code" value="${cls.code}" size="6" />
 </td>
@@ -61,7 +62,7 @@ th.limitcol, td.limitcol { padding-left: 6px; }
 <p>
 Each class has a short code and a full string description.  The description is optional.  The settings available are:
 
-<table id='doctable'>
+<table class='doctable'>
 <tr><th>Event Trophy</th><td>This class is eligible for trophies at each event and will have a 'T' added in the results</td></tr>
 <tr><th>Champ Trophy</th><td>This class is eligible for championship points and will appear in the championship report</td></tr>
 <tr><th>Cars Indexed</th><td>Cars in this class will have an index applied based on the index of the car entry</td></tr>
@@ -76,8 +77,8 @@ Each class has a short code and a full string description.  The description is o
 <p></p>
 
 
-<form action="${c.action}" method="post">
-<table id='classtable'>
+<form action="${c.action}" method="post" id='classlistform'>
+<table class='classtable'>
 <tr>
 <th>Code</th>
 <th>Description</th>
@@ -94,19 +95,21 @@ Each class has a short code and a full string description.  The description is o
 ${dorow(ii, cls)}
 %endfor
 
+
 </table>
-<button id='addbutton'>Add</button>
+<button class='addbutton'>Add</button>
 <input type='submit' value="Save">
 </form>
 
-<%  from nwrsc.model import Class %>
+<table class='ui-helper-hidden' id='classlisttemplate'>
+${dorow('xxxxx', Class())}
+</table>
+
 <script>
-var rowstr = '${dorow('xxxxx', Class())}\n';
-var ii = ${ii};
-$('#addbutton').click(function() {
-	$("#classtable > tbody").append(rowstr.replace(/xxxxx/g, ++ii));
-	$('#classtable button').button();
-	return false;
+$(document).ready(function(){
+	$('#classlistform .addbutton').click(function() {
+        newCountedRow('#classlistform', '#classlisttemplate');
+        return false;
+    });
 });
 </script>
-

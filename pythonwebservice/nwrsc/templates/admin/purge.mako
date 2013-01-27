@@ -21,8 +21,8 @@ extended to include any activity in those series.  If no series are selected, no
 </p>
 
 <p>
-For any class that you select, <span class='ui-state-error-text'>all of the car
-entries are removed</span> EXCEPT for those active in the current series.  This
+For any class that you select, <span class='ui-state-error'>all of the car
+entries are removed</span>, EXCEPT for those active in the current series.  This
 is intended for major cleaning such as time only classes, generally at the
 beginning of the year.
 </p>

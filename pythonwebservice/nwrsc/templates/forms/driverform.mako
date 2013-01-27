@@ -6,7 +6,7 @@
 		driver = Driver()
 %>
 
-<form id='drivereditor' action='${action}' method='${method}' class='hidden'>
+<form id='drivereditor' action='${action}' method='${method}' class='ui-helper-hidden'>
 <div class='driverhelp'>First Name, Last Name and Unique/Email require at least 2 characters each</div>
 <input name='driverid' type='hidden' value='-1'/>
 <table> <tbody>

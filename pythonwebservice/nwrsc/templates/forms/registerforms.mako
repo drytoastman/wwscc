@@ -1,7 +1,7 @@
 
 <%def name="eventregisterform()">
 
-<form id='registereventform' method='post' class='hidden'>
+<form id='registereventform' method='post' class='ui-helper-hidden'>
 <input name='carid' type='hidden'/>
 <span class='statuslabel'></span>
 <ul class='selectableevents'>
@@ -23,7 +23,7 @@
 
 <%def name="carregisterform()">
 
-<form id='registercarform' method='post' class='hidden'>
+<form id='registercarform' method='post' class='ui-helper-hidden'>
 <input name='eventid' type='hidden'/>
 <span class='statuslabel'>Default status</span>
 <ul class='selectablecars'>

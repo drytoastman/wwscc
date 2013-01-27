@@ -104,18 +104,15 @@
 
 </form>
 
+<style type='text/css'>
+	span.title { display: inline-block;  width: 200px; height: 20px; text-align:right; margin-right: 4px; font-weight: bold; }
+	span.imageinfo { display: inline-block; width: 80px; }
+	form a, form img { vertical-align: middle; }
+	input.file { font-size: 0.7em; }
+</style>
 
-<script type='text/javascript'>
-$(window).load(function(){
-	// wait until image loads before updating text info
-	$(".imageinfo").each(function() {
-		var img = $(this).siblings('img');
-		if (img.width() > 0) {
-			$(this).text(img.width() + "w x " + img.height() + "h");
-		}
-	});
-});
 
+<script>
 $(document).ready(function(){
 	// ppoint row hiding
 	$("#ppointrow").toggle(${int(c.settings.usepospoints)}==1);
@@ -130,16 +127,9 @@ $(document).ready(function(){
 		$(this).siblings('img').hide();
 	});
 
-	// make anchors into buttons
+    // make anchors into buttons
 	$('form a[target=_blank]').button().css("font-size", "0.7em");
+
 });
 </script>
-
-<style type='text/css'>
-	span.title { display: inline-block;  width: 200px; height: 20px; text-align:right; margin-right: 4px; font-weight: bold; }
-	span.imageinfo { display: inline-block; width: 80px; }
-	form a, form img { vertical-align: middle; }
-	input.file { font-size: 0.7em; }
-</style>
-
 

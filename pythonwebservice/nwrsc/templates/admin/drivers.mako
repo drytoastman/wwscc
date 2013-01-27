@@ -4,11 +4,11 @@
 
 <h2>Driver Editor</h2>
 
-<p>
-Select a single driver from the list to edit their information or merge cars.<br/>
-Select multiple drivers from the list to merge the drivers together.<br/>
-Enter text above the driver list to filter the visible list.<br/>
-</p>
+<ul>
+<li>Select a single driver from the list to edit their information or merge cars
+<li>Select multiple drivers from the list to merge the drivers together
+<li>Enter text above the driver list to filter the visible list
+</ul>
 
 <style>
 .ui-dialog { font-size: 0.75em !important; }
@@ -38,129 +38,12 @@ ${driverform(allowalias=True)}
 ${carform(False)}
 
 <script>
-var saveids = Array();
-var cars = Array();
-var drivers = Array();
-
-
-function buildselect(json)
-{
-	var select = $('#driverlist');
-	if (select.prop) {
-		var options = select.prop('options');
-	} else {
-		var options = select.attr('options');
-	}
-
-	$('option', select).remove();
-
-	for (idx in json.data)
-	{
-		var dr = json.data[idx]
-		options[idx] = new Option(dr[1] + " " + dr[2], dr[0]);
-	}
-
-	if (saveids.length > 0) {
-		select.val(saveids);
-		select.change();
-	} else {
-		$("#driverinfo").html("");
-	}
-
-	filterlist();
-}
-
-
-function filterlist()
-{
-	var v = $('#driverregex').val().toLowerCase();
-
-	$("#driverlist option").each( function()
-	{
-		if ((v == '') || ($(this).text().toLowerCase().indexOf(v) >= 0)) {
-			$(this).show();
-		} else {
-			$(this).hide();
-		}
-	});
-}
-
-
-function deletedriver(did)
-{
-	$.post('${h.url_for(action='deletedriver')}', { driverid: did }, function() {
-		// Note ids to save and then rebuild driverlist and reselect, slow but always a sure sync with database
-		saveids = $('#driverlist').val();
-		for (var idx in saveids)
-		{
-			if (saveids[idx] == did)
-			{
-				saveids.splice(idx, 1);
-				break;
-			}
-		}
-		$.getJSON('${h.url_for(action='getdrivers')}', {}, buildselect);
-	});
-}
-
-function deletecar(cid)
-{
-	$.post('${h.url_for(action='deletecar')}', { carid: cid }, function() {
-		$("#driverlist").change(); // force reload of driver info
-	});
-}
-
-function mergedriver(did, allids)
-{
-	$.post('${h.url_for(action='mergedriver')}', { driverid: did, allids: allids.join(',') }, function() {
-		saveids = [""+did];
-		$.getJSON('${h.url_for(action='getdrivers')}', {}, buildselect);
-	});
-}
-
-function driveredited()
-{
-	$.post('${h.url_for(action='editdriver')}', $("#drivereditor").serialize(), function() {
-		$("#driverlist").change(); // force reload of driver info
-	});
-}
-
-function caredited()
-{
-	$.post('${h.url_for(action='editcar')}', $("#careditor").serialize(), function() {
-		$("#driverlist").change(); // force reload of driver info
-	});
-}
-
-function titlecasedriver(did)
-{
-	$.post('${h.url_for(action='titlecasedriver')}', { driverid: did }, function() {
-		$('option', $('#driverlist')).remove(); // fix for IE bug
-		saveids = [""+did];
-		$.getJSON('${h.url_for(action='getdrivers')}', {}, buildselect);
-	});
-}
-
-function titlecasecar(cid)
-{
-	$.post('${h.url_for(action='titlecasecar')}', { carid: cid }, function() {
-		$("#driverlist").change(); // force reload of driver info
-	});
-}
-
-
-$('#driverlist').change(function () {
-		var ids = Array();
-		$("#driverlist option:selected").each(function () { ids.push($(this).attr('value')); });
-		$.getJSON('${h.url_for(action='getitems')}', { driverids: ids.join(',') }, function(json) {$("#driverinfo").html(json.data)} );
- });
-
-
-$(document).ready(function() { 
-	$.ajaxSetup({ cache: false });
-	$.getJSON('${h.url_for(action='getdrivers')}', {}, buildselect);
-	setupCarDialog();
-	setupDriverDialog('Edit Driver');
+$(document).ready(function(){
+	$.getJSON($.nwr.url_for('getdrivers'), {}, buildselect);
+    $('#driverlist').change(function () {
+        var ids = Array();
+        $("#driverlist option:selected").each(function () { ids.push($(this).attr('value')); });
+        $.getJSON($.nwr.url_for('getitems'), { driverids: ids.join(',') }, function(json) {$("#driverinfo").html(json.data)} );
+     });
 });
-		
 </script>
