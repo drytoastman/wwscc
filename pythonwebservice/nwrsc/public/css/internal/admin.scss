@@ -1,31 +1,13 @@
 @import "external/anytimec.scss";
 @import "external/jqueryui.scss";
 @import "forms.scss";
-
-ol li {
-  padding-bottom: 5px;
-  li {
-    padding-bottom: 0px;
-  }
-}
-
-label {
-  text-align: right;
-  margin-right: 10px;
-}
+@import "superfish.scss";
 
 .body {
-  margin-left: 20px;
-  font-size: 0.9em !important;
-  color: #337;
+  margin-left: 15px;
+  color: #337
 }
 
-.sf-menu li {
-  font-size: 0.9em;
-  li {
-    font-size: 0.8em;
-  }
-}
 
 table {
   &.input th {
@@ -42,176 +24,81 @@ table {
   }
 }
 
+
+table.editor {
+  border-collapse: collapse;
+  td {
+    border: 1px solid #999999;
+    height: 20px;
+  }
+  th {
+    border: 1px solid #999999;
+    height: 20px;
+    text-align: right;
+    padding-right: 5px;
+    width: 100px;
+    + td {
+      width: 600px;
+    }
+  }
+}
+
+button {
+  &.editor {
+    font-size: 11px !important;
+    margin-bottom: 3px;
+  }
+  &.ceditor {
+    font-size: 9px !important;
+    margin-bottom: 3px;
+    margin-top: 2px;
+  }
+}
+
+div.editor {
+  margin-left: 10px;
+  margin-bottom: 15px;
+  width: 650px;
+}
+
+#driverregex {
+  display: block;
+  margin-bottom: 10px;
+  width: 97%;
+}
+
+#driverlist {
+  width: 100;
+}
+
+
 button.small {
   font-size: 0.7em !important;
 }
 
-div.error, .error-message {
-  color: #FF0000;
-  font-weight: bold;
-}
-
-li {
-  font-size: 100%;
-  li {
-    font-size: 90%;
-  }
-}
-
-.labelcol {
-  text-align: right;
-  font-weight: bold;
-}
-
-.fieldcol! {}
-
-.fielderror {
-  color: red;
-  font-weight: bold;
-}
-
-.even td, .odd td {
-  border-bottom: 1px solid #dddddd;
-}
-
-.even:hover, .odd:hover {
-  background: #ddd;
-}
 
 .dataTables_wrapper {
-  display: inline-block;
+	display: inline-block;
+
+	tr.even td, .odd td {
+	  border-bottom: 1px solid #dddddd;
+	}
+	
+	tr.even:hover, tr.odd:hover {
+	  background: #ddd;
+	}
+
+	label {
+		text-align: right;
+		margin-right: 10px;
+	}
 }
 
-.dataTable input {
-  font-size: 0.6em !important;
-}
-
-#lastrow {
-  border-bottom: none;
-}
-
-#templatelist {
-  li {
-    margin-left: 0px;
-  }
-  a {
-    text-decoration: none;
-  }
-}
 
 #titlebutton a {
   color: black;
   &:hover {
-    border: 1px solid #dddddd;
+  	background: $widgetHeaderBackground;
   }
 }
-
-/* superfish */
-
-/*** ESSENTIAL STYLES ***/
-
-.sf-menu {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  * {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  line-height: 1.0;
-  ul {
-    position: absolute;
-    top: -999em;
-    width: 10em;
-    /* left offset of submenus need to match (see below) */
-    li {
-      width: 100%;
-    }
-  }
-  li {
-    &:hover {
-      visibility: inherit;
-      /* fixes IE7 'sticky bug' */
-    }
-    float: left;
-    position: relative;
-  }
-  a {
-    display: block;
-    position: relative;
-  }
-  li {
-    &:hover ul, &.sfHover ul {
-      left: 0;
-      top: 2.5em;
-      /* match top ul list item height */
-      z-index: 99;
-    }
-  }
-}
-
-ul.sf-menu li {
-  &:hover li ul, &.sfHover li ul {
-    top: -999em;
-  }
-  li {
-    &:hover ul, &.sfHover ul {
-      left: 10em;
-      /* match ul width */
-      top: 0;
-    }
-    &:hover li ul, &.sfHover li ul {
-      top: -999em;
-    }
-    li {
-      &:hover ul, &.sfHover ul {
-        left: 10em;
-        /* match ul width */
-        top: 0;
-      }
-    }
-  }
-}
-
-/*** DEMO SKIN ***/
-
-.sf-menu {
-  float: left;
-  margin-bottom: 1em;
-  font-family: $widgetFontFamily;
-  font-weight: bold;
-  background: $widgetStateDefaultBackground;
-
-  ul {
-    //box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
-  }
-  a {
-    border-left: 1px solid white;
-    border-right: 1px solid white;
-    border-top: 1px solid #cfdeff;
-    padding: 0.75em 1em;
-    text-decoration: none;
-    color: $widgetStateDefaultColor;
-    &:visited {
-      color: $widgetStateDefaultColor;
-    }
-  }
-  li {
-    background: $widgetHeaderBackground;
-	
-    &:hover, &.sfHover {
-      background: $widgetStateHoverBackground;
-      outline: 0;
-    }
-  }
-  a {
-    &:focus, &:hover, &:active {
-      background: $widgetStateActiveBackground;
-	  color: $widgetStateActiveColor;
-      outline: 0;
-    }
-  }
-}
-
 

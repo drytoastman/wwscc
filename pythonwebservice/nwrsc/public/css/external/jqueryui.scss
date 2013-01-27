@@ -735,15 +735,19 @@ body .ui-tooltip {
 ----------------------------------*/
 
 $widgetFontFamily: Lucida Grande, Lucida Sans, Arial, sans-serif;
+$widgetFontSize: 12px;
 
 .ui-widget {
   font-family: $widgetFontFamily;
+  font-size: $widgetFontSize;
   input, select, textarea, button {
     font-family: $widgetFontFamily;
+    font-size: $widgetFontSize;
   }
 }
 
-$widgetContentBackground: #f2f5f7 url(images/ui-bg_highlight-hard_100_f2f5f7_1x100.png) 50% top repeat-x;
+$widgetContentBackground: #f2f5f7;
+// url(images/ui-bg_highlight-hard_100_f2f5f7_1x100.png) 50% top repeat-x;
 $widgetContentBorder: 1px solid #dddddd;
 $widgetContentColor: #362b36;
 
@@ -756,7 +760,8 @@ $widgetContentColor: #362b36;
   }
 }
 
-$widgetHeaderBackground: #deedf7 url(images/ui-bg_highlight-soft_100_deedf7_1x100.png) 50% 50% repeat-x;
+$widgetHeaderBackground: #deedf7;
+// url(images/ui-bg_highlight-soft_100_deedf7_1x100.png) 50% 50% repeat-x;
 $widgetHeaderBorder: 1px solid #aed0ea;
 $widgetHeaderColor: #222222;
 
@@ -775,7 +780,8 @@ $widgetHeaderColor: #222222;
 
 $widgetStateDefaultColor: #2779aa;
 $widgetStateDefaultBorder: 1px solid #aed0ea;
-$widgetStateDefaultBackground: #d7ebf9 url(images/ui-bg_glass_80_d7ebf9_1x400.png) 50% 50% repeat-x;;
+$widgetStateDefaultBackground: #d7ebf9; 
+// url(images/ui-bg_glass_80_d7ebf9_1x400.png) 50% 50% repeat-x;;
 
 .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
   border: $widgetStateDefaultBorder;
@@ -795,7 +801,8 @@ $widgetStateDefaultBackground: #d7ebf9 url(images/ui-bg_glass_80_d7ebf9_1x400.pn
 
 $widgetStateHoverColor: #0070a3;
 $widgetStateHoverBorder: 1px solid #74b2e2;
-$widgetStateHoverBackground: #e4f1fb url(images/ui-bg_glass_100_e4f1fb_1x400.png) 50% 50% repeat-x;
+$widgetStateHoverBackground: #e4f1fb;
+// url(images/ui-bg_glass_100_e4f1fb_1x400.png) 50% 50% repeat-x;
 
 .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
   border: $widgetStateHoverBorder;
@@ -815,7 +822,8 @@ $widgetStateHoverBackground: #e4f1fb url(images/ui-bg_glass_100_e4f1fb_1x400.png
 
 $widgetStateActiveColor: #ffffff;
 $widgetStateActiveBorder: 1px solid #2694e8;
-$widgetStateActiveBackground: #3baae3 url(images/ui-bg_glass_50_3baae3_1x400.png) 50% 50% repeat-x;
+$widgetStateActiveBackground: #3baae3;
+// url(images/ui-bg_glass_50_3baae3_1x400.png) 50% 50% repeat-x;
 
 .ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active {
   border: $widgetStateActiveBorder;
@@ -836,24 +844,35 @@ $widgetStateActiveBackground: #3baae3 url(images/ui-bg_glass_50_3baae3_1x400.png
 /* Interaction Cues
 ----------------------------------*/
 
+
+$widgetHighlightBorder: 1px solid #f9dd34;
+$widgetHighlightBackground:  #ffef8f;
+// url(images/ui-bg_highlight-soft_25_ffef8f_1x100.png) 50% top repeat-x;
+$widgetHighlighColor: #363636;
+
 .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight {
-  border: 1px solid #f9dd34;
-  background: #ffef8f url(images/ui-bg_highlight-soft_25_ffef8f_1x100.png) 50% top repeat-x;
-  color: #363636;
+  border: $widgetHighlightBorder;
+  background: $widgetHighlightBackground;
+  color: $widgetHighlighColor;
 }
 
 .ui-state-highlight a, .ui-widget-content .ui-state-highlight a, .ui-widget-header .ui-state-highlight a {
-  color: #363636;
+  color: $widgetHighlighColor;
 }
 
+$widgetErrorBorder: 1px solid #cd0a0a;
+$widgetErrorBackground: #cd0a0a;
+// url(images/ui-bg_flat_15_cd0a0a_40x100.png) 50% 50% repeat-x;
+$widgetErrorColor: #ffffff;
+
 .ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {
-  border: 1px solid #cd0a0a;
-  background: #cd0a0a url(images/ui-bg_flat_15_cd0a0a_40x100.png) 50% 50% repeat-x;
-  color: #ffffff;
+  border: $widgetErrorBorder;
+  background: $widgetErrorBackground;
+  color: $widgetErrorColor;
 }
 
 .ui-state-error a, .ui-widget-content .ui-state-error a, .ui-widget-header .ui-state-error a, .ui-state-error-text, .ui-widget-content .ui-state-error-text, .ui-widget-header .ui-state-error-text {
-  color: #ffffff;
+  color: $widgetErrorColor;
 }
 
 .ui-priority-primary, .ui-widget-content .ui-priority-primary, .ui-widget-header .ui-priority-primary {
@@ -882,35 +901,43 @@ $widgetStateActiveBackground: #3baae3 url(images/ui-bg_glass_50_3baae3_1x400.png
 
 /* states and images */
 
+$widgetIcon:          url(images/ui-icons_72a7cf_256x240.png);
+$widgetIconDefault:   url(images/ui-icons_3d80b3_256x240.png);
+$widgetIconHover:     url(images/ui-icons_2694e8_256x240.png);
+$widgetIconActive:    url(images/ui-icons_ffffff_256x240.png);
+$widgetIconHighlight: url(images/ui-icons_2e83ff_256x240.png);
+$widgetIconError:     url(images/ui-icons_ffffff_256x240.png);
+
+
 .ui-icon {
   width: 16px;
   height: 16px;
   background-position: 16px 16px;
-  background-image: url(images/ui-icons_72a7cf_256x240.png);
+  background-image: $widgetIcon; 
 }
 
 .ui-widget-content .ui-icon, .ui-widget-header .ui-icon {
-  background-image: url(images/ui-icons_72a7cf_256x240.png);
+  background-image: $widgetIcon;
 }
 
 .ui-state-default .ui-icon {
-  background-image: url(images/ui-icons_3d80b3_256x240.png);
+  background-image: $widgetIconDefault;
 }
 
 .ui-state-hover .ui-icon, .ui-state-focus .ui-icon {
-  background-image: url(images/ui-icons_2694e8_256x240.png);
+  background-image: $widgetIconHover;
 }
 
 .ui-state-active .ui-icon {
-  background-image: url(images/ui-icons_ffffff_256x240.png);
+  background-image: $widgetIconActive
 }
 
 .ui-state-highlight .ui-icon {
-  background-image: url(images/ui-icons_2e83ff_256x240.png);
+  background-image: $widgetIconHighlight
 }
 
 .ui-state-error .ui-icon, .ui-state-error-text .ui-icon {
-  background-image: url(images/ui-icons_ffffff_256x240.png);
+  background-image: $widgetIconError;
 }
 
 /* positioning */
@@ -1614,27 +1641,31 @@ $widgetStateActiveBackground: #3baae3 url(images/ui-bg_glass_50_3baae3_1x400.png
 
 /* Corner radius */
 
+$widgetCornerRadius: 6px;
+
 .ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl {
-  border-top-left-radius: 6px;
+  border-top-left-radius: $widgetCornerRadius;
 }
 
 .ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-tr {
-  border-top-right-radius: 6px;
+  border-top-right-radius: $widgetCornerRadius;
 }
 
 .ui-corner-all, .ui-corner-bottom, .ui-corner-left, .ui-corner-bl {
-  border-bottom-left-radius: 6px;
+  border-bottom-left-radius: $widgetCornerRadius;
 }
 
 .ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br {
-  border-bottom-right-radius: 6px;
+  border-bottom-right-radius: $widgetCornerRadius
 }
 
 /* Overlays */
 
+$widgetOverlay: #222222;
+// url(images/ui-bg_diagonals-thick_90_eeeeee_40x40.png) 50% 50% repeat;
+
 .ui-widget-overlay {
-  background: #222222;
-  //background: #eeeeee url(images/ui-bg_diagonals-thick_90_eeeeee_40x40.png) 50% 50% repeat;
+  background: $widgetOverlay;
   opacity: .8;
   filter: Alpha(Opacity = 80);
 }
@@ -1647,3 +1678,4 @@ $widgetStateActiveBackground: #3baae3 url(images/ui-bg_glass_50_3baae3_1x400.png
   filter: Alpha(Opacity = 30);
   border-radius: 8px;
 }
+

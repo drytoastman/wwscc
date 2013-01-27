@@ -43,7 +43,7 @@ body {
   }
 
   .tab {
-    border-top: 0px;
+    border-top: 0;
     border-left: $grayborder;
     border-bottom: $grayborder; 
     border-right: $grayborder;
@@ -52,6 +52,11 @@ body {
     text-align: center;
 	@extend .ui-widget;
 	@extend .ui-state-default;
+
+	 &:hover {
+		@extend .ui-state-hover;
+		border-top: 0;
+	 }
   }
 }
 
@@ -373,16 +378,17 @@ a.viewlink {
 }
 
 div.detailscontainer, div.carcontainer {
-  border-radius: 5px;
+  border-radius: 2px;
   border: $grayborder;
-  background: #F6F6FF;
+  background: #F8F8F8;
   padding: 5px;
   margin: 0;
 
   @media screen and (min-width: 601px) {
-    display: inline-block;
-    width: 47%;
+    display: table-cell;
 	vertical-align: top;
+    width: 40%;
+	padding: 8px;
   }
   @media screen and (max-width: 600px) {
   	display: block;

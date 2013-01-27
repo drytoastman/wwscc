@@ -1,6 +1,6 @@
 /** Driver form */
 
-#driverhelp {
+.driverhelp {
   margin: auto;
   text-align: center;
   color: #999;
@@ -23,11 +23,11 @@
   }
 }
 
-#namerow th, #emailrow th {
+tr.namerow th, tr.emailrow th {
   font-weight: bold;
 }
 
-#aliasrow {
+tr.aliasrow {
   th {
     padding-top: 3px;
     padding-bottom: 20px;
@@ -40,7 +40,7 @@
 }
 
 .error {
-  border: 1px solid red;
+	color: red;
 }
 
 /** Car form */
@@ -67,7 +67,7 @@ ul.numbers {
   }
 }
 
-#numberdisplay {
+.numberdisplay {
   vertical-align: middle;
   margin-left: 5px;
   margin-right: 15px;
@@ -76,7 +76,7 @@ ul.numbers {
   color: #229;
 }
 
-#carerror {
+.carerror {
   margin: auto;
   text-align: center;
   label {
@@ -84,3 +84,4 @@ ul.numbers {
     display: block;
   }
 }
+

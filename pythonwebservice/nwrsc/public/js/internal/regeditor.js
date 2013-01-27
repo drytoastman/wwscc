@@ -40,6 +40,7 @@
 
 			// uncheck control and make sure button is matched up
 			me.attr('checked', false).button('option', { icons: { primary:'ui-icon-radio-on'}, disabled: false }).button('refresh');
+			return me;
 		},
 
 
@@ -59,6 +60,7 @@
 				width: "auto",
 				modal: true,
 				title: 'Register Car for Events',
+				open: function() { me.find('input').blur(); },
 				buttons: {
 					'Ok': function() {
 						me.dialog('close');
@@ -69,6 +71,8 @@
 				close: function() {
 				}
 			});
+
+			return me;
 		},
 
 
@@ -99,6 +103,7 @@
 				width: "auto",
 				modal: true,
 				title: 'Register Cars for ' + theevent.name,
+				open: function() { me.find('input').blur(); },
 				buttons: {
 					'Ok': function() {
 						me.dialog('close');
@@ -109,6 +114,8 @@
 				close: function() {
 				}
 			});
+
+			return me;
 		}
 
 	};

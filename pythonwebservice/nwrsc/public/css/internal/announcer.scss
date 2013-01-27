@@ -10,16 +10,25 @@
   }
 }
 
+#entranttabs, #toptimetabs {
+  padding: 0px;
+  background: none;
+  border-width: 0px;
+  .ui-tabs-nav {
+    padding-left: 0px;
+    background: transparent;
+    border-width: 0px 0px 1px 0px;
+    border-radius: 0px;
+  }
+}
+
+
 table {
   border-collapse: collapse;
   &.runorder th, &.res th, &.stats th, &.toptimes th, &.runorder td, &.res td, &.stats td, &.toptimes td {
     border: 1px black solid;
     padding: 3px;
   }
-}
-
-.ui-tabs-nav {
-  font-size: 0.7em;
 }
 
 .ui-tabs .ui-tabs-panel {
@@ -33,7 +42,6 @@ table {
 }
 
 span.header {
-  font-size: 0.8em;
   font-weight: bold;
   background: #79b7e7;
   display: block;
@@ -44,27 +52,26 @@ span.header {
 
 tr {
   &.header th {
-    font-size: 0.8em;
     font-weight: bold;
     background: #79b7e7;
   }
   &.titles th {
-    font-size: 0.7em;
     font-weight: bold;
     background: #c5dbec;
   }
   &.highlight td {
-    font-size: 0.9em !important;
+    font-size: 110%;
     font-weight: bold;
     background: #DDD;
   }
   &.improvedon td {
+    font-size: 110%;
     font-weight: bold;
     background: #EEF;
     color: #99E;
   }
   &.couldhave td {
-    font-size: 0.9em !important;
+    font-size: 110%;
     font-weight: bold;
     background: #EDD;
     color: #E77;
@@ -72,14 +79,9 @@ tr {
 }
 
 table {
-  &.runorder td, &.res td, &.toptimes td {
-    font-size: 0.8em;
-  }
   &.stats td {
     background: #EEE;
-    font-size: 0.6em;
     + td {
-      font-size: 12px;
       font-family: monospace;
       background: #FFF;
     }
