@@ -145,7 +145,7 @@ class MobileController(BaseController):
 	def _runlist(self, carid):
 		self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
 		if self.announcer is None:
-			raise BeforePage('')
+			raise BeforePage('no announcer data')
 
 		query = self.session.query(Run).filter(Run.carid==carid).filter(Run.eventid==self.eventid)
 		query = query.filter(Run.course==self.announcer.lastcourse).filter(Run.course==self.announcer.lastcourse).order_by(Run.run)
@@ -174,7 +174,7 @@ class MobileController(BaseController):
 			self.driver.lastname = ""
 		self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
 		if self.announcer is None:
-			raise BeforePage('')
+			raise BeforePage('no announcer data')
 
 		ret = []
 		classdata = ClassData(self.session)
@@ -203,7 +203,7 @@ class MobileController(BaseController):
 		self.cls = self.session.query(Class).filter(Class.code==self.car.classcode).first()
 		self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
 		if self.announcer is None:
-			raise BeforePage('')
+			raise BeforePage('no announcer data')
 
 		ret = []
 		pos = 1

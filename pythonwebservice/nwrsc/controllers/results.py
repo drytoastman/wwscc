@@ -218,7 +218,7 @@ class ResultsController(BaseController):
 
 
 	def bracket(self):
-		c.javascript.append('/js/jquery-1.7.1.min.js');
+		c.javascript.append('/js/external/jquery-1.9.0.js');
 		challenge = self.session.query(Challenge).get(int(request.GET.get('id', 0)))
 		b = Bracket(challenge.depth)  # Just getting the coords, no drawing takes place
 		b.getImage()

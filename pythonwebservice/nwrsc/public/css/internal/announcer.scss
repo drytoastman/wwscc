@@ -1,3 +1,5 @@
+@import "external/jqueryui.scss";
+
 .layout {
   td {
     vertical-align: top;
@@ -24,6 +26,10 @@ table {
   padding-top: 5px;
   padding-left: 2px;
   padding-right: 2px;
+}
+
+.ui-widget-content {
+  background: white;
 }
 
 span.header {

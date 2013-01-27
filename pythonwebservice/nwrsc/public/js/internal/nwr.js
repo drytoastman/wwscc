@@ -44,6 +44,12 @@
 			base = window.location.href.substring(0, window.location.href.lastIndexOf('/')+1);
 			if (other) { return base + action + '/' + other; }
 			return base + action;
+		 },
+
+        event_url_for: function(action, other) { 
+			base = window.location.href;
+			if (other) { return base + '/' + action + '/' + other; }
+			return base + '/' + action;
 		 }
     };
 

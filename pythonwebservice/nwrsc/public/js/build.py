@@ -61,3 +61,10 @@ compile([
 		'internal/admin.js'
 		], 'admin.js')
 
+compile([
+		'external/jquery-1.9.0.js',
+		'external/jquery-ui-1.10.0.custom.js',
+		'internal/nwr.js',
+		'internal/announcer.js',
+		], 'announcer.js')
+
