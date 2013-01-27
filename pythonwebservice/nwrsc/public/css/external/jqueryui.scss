@@ -734,84 +734,101 @@ body .ui-tooltip {
 /* Component containers
 ----------------------------------*/
 
+$widgetFontFamily: Lucida Grande, Lucida Sans, Arial, sans-serif;
+
 .ui-widget {
-  font-family: Lucida Grande, Lucida Sans, Arial, sans-serif;
-  xfont-size: 1.1em;
-  .ui-widget {
-    xfont-size: 1em;
-  }
+  font-family: $widgetFontFamily;
   input, select, textarea, button {
-    font-family: Lucida Grande, Lucida Sans, Arial, sans-serif;
-    xfont-size: 1em;
+    font-family: $widgetFontFamily;
   }
 }
+
+$widgetContentBackground: #f2f5f7 url(images/ui-bg_highlight-hard_100_f2f5f7_1x100.png) 50% top repeat-x;
+$widgetContentBorder: 1px solid #dddddd;
+$widgetContentColor: #362b36;
 
 .ui-widget-content {
-  border: 1px solid #dddddd;
-  background: #f2f5f7 url(images/ui-bg_highlight-hard_100_f2f5f7_1x100.png) 50% top repeat-x;
-  color: #362b36;
+  border: $widgetContentBorder;
+  background: $widgetContentBackground;
+  color: $widgetContentColor;
   a {
-    color: #362b36;
+    color: $widgetContentColor;
   }
 }
 
+$widgetHeaderBackground: #deedf7 url(images/ui-bg_highlight-soft_100_deedf7_1x100.png) 50% 50% repeat-x;
+$widgetHeaderBorder: 1px solid #aed0ea;
+$widgetHeaderColor: #222222;
+
 .ui-widget-header {
-  border: 1px solid #aed0ea;
-  background: #deedf7 url(images/ui-bg_highlight-soft_100_deedf7_1x100.png) 50% 50% repeat-x;
-  color: #222222;
+  border: $widgetHeaderBorder;
+  background: $widgetHeaderBackground;
+  color: $widgetHeaderColor;
   font-weight: bold;
   a {
-    color: #222222;
+    color: $widgetHeaderColor;
   }
 }
 
 /* Interaction states
 ----------------------------------*/
 
+$widgetStateDefaultColor: #2779aa;
+$widgetStateDefaultBorder: 1px solid #aed0ea;
+$widgetStateDefaultBackground: #d7ebf9 url(images/ui-bg_glass_80_d7ebf9_1x400.png) 50% 50% repeat-x;;
+
 .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
-  border: 1px solid #aed0ea;
-  background: #d7ebf9 url(images/ui-bg_glass_80_d7ebf9_1x400.png) 50% 50% repeat-x;
+  border: $widgetStateDefaultBorder;
+  background: $widgetStateDefaultBackground;
   font-weight: bold;
-  color: #2779aa;
+  color: $widgetStateDefaultColor;
 }
 
 .ui-state-default a {
-  color: #2779aa;
+  color: $widgetStateDefaultColor;
   text-decoration: none;
   &:link, &:visited {
-    color: #2779aa;
+    color: $widgetStateDefaultColor;
     text-decoration: none;
   }
 }
 
+$widgetStateHoverColor: #0070a3;
+$widgetStateHoverBorder: 1px solid #74b2e2;
+$widgetStateHoverBackground: #e4f1fb url(images/ui-bg_glass_100_e4f1fb_1x400.png) 50% 50% repeat-x;
+
 .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
-  border: 1px solid #74b2e2;
-  background: #e4f1fb url(images/ui-bg_glass_100_e4f1fb_1x400.png) 50% 50% repeat-x;
+  border: $widgetStateHoverBorder;
+  background: $widgetStateHoverBackground;
   font-weight: bold;
-  color: #0070a3;
+  color: $widgetStateHoverColor;
 }
 
 .ui-state-hover a {
-  color: #0070a3;
+  color: $widgetStateHoverColor;
   text-decoration: none;
   &:hover, &:link, &:visited {
-    color: #0070a3;
+    color: $widgetStateHoverColor;
     text-decoration: none;
   }
 }
 
+$widgetStateActiveColor: #ffffff;
+$widgetStateActiveBorder: 1px solid #2694e8;
+$widgetStateActiveBackground: #3baae3 url(images/ui-bg_glass_50_3baae3_1x400.png) 50% 50% repeat-x;
+
 .ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active {
-  border: 1px solid #2694e8;
-  background: #3baae3 url(images/ui-bg_glass_50_3baae3_1x400.png) 50% 50% repeat-x;
+  border: $widgetStateActiveBorder;
+  background: $widgetStateActiveBackground;
   font-weight: bold;
-  color: #ffffff;
+  color: $widgetStateActiveColor;
 }
 
 .ui-state-active a {
-  color: #ffffff;
+  color: $widgetStateActiveColor;
   text-decoration: none;
   &:link, &:visited {
-    color: #ffffff;
+    color: $widgetStateActiveColor;
     text-decoration: none;
   }
 }

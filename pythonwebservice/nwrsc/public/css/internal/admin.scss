@@ -120,7 +120,6 @@ li {
     list-style: none;
   }
   line-height: 1.0;
-  float: left;
   ul {
     position: absolute;
     top: -999em;
@@ -174,3 +173,45 @@ ul.sf-menu li {
     }
   }
 }
+
+/*** DEMO SKIN ***/
+
+.sf-menu {
+  float: left;
+  margin-bottom: 1em;
+  font-family: $widgetFontFamily;
+  font-weight: bold;
+  background: $widgetStateDefaultBackground;
+
+  ul {
+    //box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+  }
+  a {
+    border-left: 1px solid white;
+    border-right: 1px solid white;
+    border-top: 1px solid #cfdeff;
+    padding: 0.75em 1em;
+    text-decoration: none;
+    color: $widgetStateDefaultColor;
+    &:visited {
+      color: $widgetStateDefaultColor;
+    }
+  }
+  li {
+    background: $widgetHeaderBackground;
+	
+    &:hover, &.sfHover {
+      background: $widgetStateHoverBackground;
+      outline: 0;
+    }
+  }
+  a {
+    &:focus, &:hover, &:active {
+      background: $widgetStateActiveBackground;
+	  color: $widgetStateActiveColor;
+      outline: 0;
+    }
+  }
+}
+
+

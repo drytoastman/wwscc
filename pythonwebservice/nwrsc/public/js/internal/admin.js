@@ -182,9 +182,8 @@ $(document).ready(function(){
 		speed: 'fast',
 		autoArrows: false,
 		delay: 200
-	}).addClass('ui-widget-header ui-corner-all').width('100%');
+	}).width('100%');
 
-	$("ul.sf-menu a").button();
 	$(':submit').button();
 });
 		
