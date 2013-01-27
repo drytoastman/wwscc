@@ -1,4 +1,6 @@
 
+(function () {
+
 var matched, browser,
 oldInit = jQuery.fn.init,
 // Note this does NOT include the #9521 XSS fix from 1.7!
@@ -60,5 +62,7 @@ browser.safari = true;
 }
 
 jQuery.browser = browser;
+
+})();
 
 
