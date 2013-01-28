@@ -1,11 +1,12 @@
 import datetime
 import logging
+import operator
 
 from pylons import request, response, session, config, tmpl_context as c
 from pylons.templating import render_mako, render_mako_def
-from pylons.controllers.util import redirect, url_for
-from pylons.decorators import jsonify, validate
-from sqlalchemy import create_engine
+from pylons.controllers.util import redirect, url_for, abort
+from pylons.decorators import validate
+from sqlalchemy import create_engine, func
 
 from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.controllers.lib.paypal import PayPalIPN
@@ -108,24 +109,31 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 			return
 
 		c.title = 'Scorekeeper Registration'
-		c.stylesheets = ['/css/register.css', '/css/forms.css', '/css/custom-theme/jquery-ui-1.8.18.custom.css']
-		c.javascript = ['/js/jquery-1.7.1.min.js', '/js/jquery-ui-1.8.18.custom.min.js', '/js/jquery.validate.min.js']
+		c.stylesheets = ['/css/register.css']
+		c.javascript = ['/js/register.js']
 
 		c.activeSeries = self._activeSeries()
 		if self.database is None:
 			return
 
-		c.javascript.append(url_for(action='scripts'))
 		self.user = UserSession(session.setdefault(('register', self.srcip), {}), self.database) 
 
 		c.settings = self.settings
 		c.database = self.database
 		c.driverid = self.user.getDriverId()
 		c.previouserror = self.user.getPreviousError()
-		c.events = self.session.query(Event).all()
 		c.classdata = ClassData(self.session)
+		c.eventmap = dict()
+		now = datetime.datetime.now()
+		for event in self.session.query(Event):
+			event.closed = now > event.regclosed 
+			event.opened = now > event.regopened
+			event.isOpen = not event.closed and event.opened
+			c.eventmap[event.id] = event
 
-		if action not in ('view', 'scripts') and self.settings.locked:
+		c.events = sorted(c.eventmap.values(), key=lambda obj: obj.date)
+
+		if action not in ('view') and self.settings.locked:
 			# Delete any saved session data for this person
 			raise BeforePage(render_mako('/register/locked.mako'))
 
@@ -151,69 +159,79 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		self.user.clear()
 		redirect(url_for(action=''))
 
-	def scripts(self):
-		response.headers['Cache-Control'] = 'max-age=360' 
-		response.headers.pop('Pragma', None)
-		c.fields = self.session.query(DriverField).all()
-		return render_mako("/register/scripts.mako") + render_mako('/forms/careditor.mako') + render_mako('/forms/drivereditor.mako')
-
-
 	def index(self):
 		""" First load of page gets all data along with it so no need for lots of ajax requests """
 		if self.database is None:
-			return render_mako('/register/blank.mako')
+			return self.databaseSelector(archived=False)
 
-		now = datetime.datetime.now()
-		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
+		self._loadDriver()
+		self._loadCars()
 		if c.driver is None:
 			c.previouserror = "Invalid driver ID saved in session, that is pretty weird, login again"
 			self.user.clearSeries()
 			c.otherseries = self.user.activeSeries()
 			return render_mako('/register/login.mako')
 
-		c.fields = self.session.query(DriverField).all()
-		for field in c.fields:
-			setattr(c.driver, field.name, c.driver.getExtra(field.name))
-
 		for e in c.events:
 			e.regentries = self.session.query(Registration).join('car') \
 						.filter(Registration.eventid==e.id).filter(Car.driverid==c.driverid).all()
 			e.payments = self.session.query(Payment) \
 						.filter(Payment.eventid==e.id).filter(Payment.driverid==c.driverid).all()
-			e.closed = now > e.regclosed 
-			e.opened = now > e.regopened
-			e.tdclass = ''
-			if e.closed or not e.opened:
-				e.tdclass = 'closed'
 
-		c.inuse = []
-		c.notinuse = []
-		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]
-		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		for car in c.cars:
-			car.inuse = car.id in regids
+
 		return render_mako('/register/layout.mako')
 
 
 
-	def registercar(self):
+	def _checkLimitState(self, event, driverid):
+		if event.totlimit and event.count >= event.totlimit:
+			response.status = "400 Event limit of %d reached" % (event.totlimit)
+			return False
+		entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
+		if entries.count() >= event.perlimit:
+			response.status = "400 Entrant limit of %d reached" % (event.perlimit)
+			return False
+		return True
+		
+		
+	def registerCarsForEvent(self):
 		try:
-			carid = int(request.POST.get('carid', 0))
-			regid = int(request.POST.get('regid', 0))
-			eventid = int(request.POST.get('eventid', 0))
-			reg = self.session.query(Registration).filter(Registration.id==regid).first()
-	
-			if carid < 0: # delete car
-				self.session.delete(reg)
-			elif regid > 0: # modify car
-				reg.carid = carid
-			else: # add car
+			eventid = int(request.POST.pop('eventid', 0))
+			event = self.session.query(Event).get(eventid)
+			for carid in map(int, request.POST):
+				car = self.session.query(Car).get(carid)
+				if not self._checkLimitState(event, car.driverid):
+					return
+				reg = Registration(eventid, carid)
+				self.session.add(reg)
+			self.session.commit()
+		except Exception, e:
+			response.status = '400 Possible stale browser state, try reloading page'
+			log.error("registerevents", exc_info=1)
+
+		 
+	def registerEventsForCar(self):
+		try:
+			carid = int(request.POST.pop('carid', 0))
+			car = self.session.query(Car).get(carid)
+
+			for eventid in map(int, request.POST):
 				event = self.session.query(Event).get(eventid)
-				if event.totlimit and event.count >= event.totlimit:
-					self.user.setPreviousError("Sorry, prereg reached its limit of %d since your last page load" % (event.totlimit))
-				else:
-					reg = Registration(eventid, carid)
-					self.session.add(reg)
+				if not self._checkLimitState(event, car.driverid):
+					return
+				reg = Registration(eventid, carid)
+				self.session.add(reg)
+
+			self.session.commit()
+		except Exception, e:
+			response.status = '400 Possible stale browser state, try reloading page'
+			log.error("registercars", exc_info=1)
+
+		 
+	def unRegisterCar(self):
+		try:
+			regid = int(request.POST.get('regid', 0))
+			self.session.delete(self.session.query(Registration).get(regid))
 			self.session.commit()
 		except Exception, e:
 			self.user.setPreviousError("Possible stale browser state, try reloading page")
@@ -263,54 +281,30 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		redirect(url_for(action=''))
 
 
-	@jsonify
 	def getprofile(self):
-		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
-		c.fields = self.session.query(DriverField).all()
-		for field in c.fields:
-			setattr(c.driver, field.name, c.driver.getExtra(field.name))
+		self._loadDriver()
+		return render_mako_def('/register/profile.mako', 'profile')
 
-		return {'data': str(render_mako_def('/register/profile.mako', 'profile'))}
-
-	@jsonify
 	def getcars(self):
-		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
-		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]
-		for car in c.cars:
-			car.inuse = car.id in regids
-		return {'data': str(render_mako_def('/register/cars.mako', 'carlist'))}
+		self._loadCars()
+		return render_mako_def('/register/cars.mako', 'carlist')
 
-	@jsonify
 	def getevent(self):
-		eventid = int(request.GET.get('eventid', 0))
-		event = self.session.query(Event).get(eventid)
+		eventid = int(self.routingargs.get('other', 0))
+		event = c.eventmap.get(eventid, None)
 		if event is None:
-			return {'data': "Event does not exist" }
+			return "Event does not exist"
 
 		event.regentries = self.session.query(Registration).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==c.driverid).all()
 		event.payments = self.session.query(Payment).filter(Payment.eventid==event.id).filter(Payment.driverid==c.driverid).all()
-		now = datetime.datetime.now()
-		event.closed = now > event.regclosed 
-		event.opened = now > event.regopened
-		event.tdclass = ''
-		if event.closed or not event.opened:
-			event.tdclass = 'closed'
-
-		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		regids = [x[0] for x in self.session.query(Registration.carid).join('car').distinct().filter(Car.driverid==c.driverid)]
-		for car in c.cars:
-			car.inuse = car.id in regids
-		return {'data': str(render_mako_def('/register/events.mako', 'eventdisplay', ev=event))}
+		self._loadCars()
+		return render_mako_def('/register/events.mako', 'eventdisplay', ev=event)
 
 		 
-	def eventlist(self):
-		return render_mako('/register/eventlist.mako')
-		
 	def view(self):
-		id = request.GET.get('event', None)
+		id = int(self.routingargs.get('other', 0))
 		if id is None:
-			return render_mako('/register/genericview.mako')
+			redirect(url_for(action=''))
 			
 		c.classdata = ClassData(self.session)
 		c.event = self.session.query(Event).get(id)
@@ -319,4 +313,30 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		c.reglist = query.all()
 		return render_mako('/register/reglist.mako')
 
+
+	def _loadCars(self):
+		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
+		registration = self.session.query(Registration).join('car').distinct().filter(Car.driverid==c.driverid)
+
+		openevents = list()
+		for event in c.events:
+			if not event.isOpen: continue
+			if event.totlimit and event.count >= event.totlimit: continue
+			if registration.filter(Registration.eventid==event.id).count() >= event.perlimit: continue
+			openevents.append(event.id)
+
+		for car in c.cars:
+			car.regevents = sorted([(c.eventmap[reg.eventid], reg.id) for reg in registration.all() if reg.carid == car.id], key = lambda x: x[0].date)
+			car.canregevents = list(openevents)
+			for event, regid in car.regevents:
+				try: car.canregevents.remove(event.id)
+				except: pass
+
+	def _loadDriver(self):
+		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
+		if c.driver is None:
+			return
+		c.fields = self.session.query(DriverField).all()
+		for field in c.fields:
+			setattr(c.driver, field.name, c.driver.getExtra(field.name))
 

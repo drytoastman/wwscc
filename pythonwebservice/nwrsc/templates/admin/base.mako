@@ -48,23 +48,3 @@ Locked
 ${next.body()}
 </div>
 
-<script type="text/javascript"> 
-    $(document).ready(function(){ 
-        $("ul.sf-menu").supersubs({
-			minWidth:    10,
-            maxWidth:    100,
-            extraWidth:  5 
-		}).superfish({
-			disableHI: true,
-			animation:   {height:'show'}, 
-			speed: 'fast',
-			autoArrows: false,
-			delay: 200
-		}).addClass('ui-widget-header ui-corner-all').width('100%'); 
-		$("ul.sf-menu a").button();
-		$(':submit').button();
-		$('button').button();
-		$('button.deleterow').click(function () { $(this).closest('tr').remove(); return false; });
-    }); 
-</script>
-

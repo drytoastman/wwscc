@@ -1,9 +1,10 @@
 <%inherit file="base.mako" />
+<% from nwrsc.model import DriverField %>
 
 <% def singleline(text): return text.replace('\n', '') %>
 
 <%def name="dorow(ii, field)" filter="singleline">
-<tr>
+<tr data-counter="${ii}">
 <td><input type="text" name="fieldlist-${ii}.name" value="${field.name}" size="20" /></td>
 <td><input type="text" name="fieldlist-${ii}.title" value="${field.title}" size="20" /></td>
 <!-- <td><input type="text" name="fieldlist-${ii}.type" value="${field.type}" size="6" /></td> -->
@@ -26,8 +27,8 @@ Eventually there may be a field type and data validation but not yet.
 <p></p>
 
 
-<form action="${c.action}" method="post">
-<table id='fieldtable'>
+<form action="${c.action}" method="post" id="fieldlistform">
+<table class="fieldtable">
 <tr>
 <th>Name</th>
 <th>Title</th>
@@ -40,18 +41,19 @@ ${dorow(ii, field)}
 %endfor
 
 </table>
-<button id='addbutton'>Add</button>
+<button class='addbutton'>Add</button>
 <input type='submit' value="Save">
 </form>
 
-<% from nwrsc.model import DriverField %>
+<table class='ui-helper-hidden' id='fieldlisttemplate'>
+${dorow('xxxxx', DriverField())}
+</table>
+
 <script>
-var rowstr = '${dorow('xxxxx', DriverField())}\n';
-var ii = ${ii};
-$('#addbutton').click(function() {
-	$("#fieldtable > tbody").append(rowstr.replace(/xxxxx/g, ++ii));
-	$('#fieldtable button').button();
-	return false;
+$(document).ready(function(){
+	$('#fieldlistform .addbutton').click(function() {
+        newCountedRow('#fieldlistform', '#fieldlisttemplate');
+        return false;
+    });
 });
 </script>
-

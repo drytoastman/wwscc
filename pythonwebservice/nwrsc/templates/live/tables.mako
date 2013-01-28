@@ -1,6 +1,6 @@
 
 <%def name="classlist()">
-<table id='classtable' class='res'>
+<table class='res'>
 <tbody>
 <tr class='titles'>
 <th>#</th>
@@ -24,7 +24,7 @@
 
 <%def name="champlist()">
 %if c.cls.champtrophy:
-<table id='champtable' class='res'>
+<table class='res'>
 <tbody>
 <tr class='titles'>
 <th>#</th>

@@ -2,6 +2,7 @@
 *.o
 *.log*
 *.version
+.sass-cache
 wwjarsigner.key
 wwsccapps*.jar
 WWSCC*.exe

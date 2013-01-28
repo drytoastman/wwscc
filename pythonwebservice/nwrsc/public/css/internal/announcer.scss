@@ -1,0 +1,98 @@
+@import "external/jqueryui.scss";
+
+.layout {
+  td {
+    vertical-align: top;
+  }
+  table {
+    width: 100%;
+    padding: 5px;
+  }
+}
+
+#entranttabs, #toptimetabs {
+  padding: 0px;
+  background: none;
+  border-width: 0px;
+  .ui-tabs-nav {
+    padding-left: 0px;
+    background: transparent;
+    border-width: 0px 0px 1px 0px;
+    border-radius: 0px;
+  }
+}
+
+
+table {
+  border-collapse: collapse;
+  &.runorder th, &.res th, &.stats th, &.toptimes th, &.runorder td, &.res td, &.stats td, &.toptimes td {
+    border: 1px black solid;
+    padding: 3px;
+  }
+}
+
+.ui-tabs .ui-tabs-panel {
+  padding-top: 5px;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.ui-widget-content {
+  background: white;
+}
+
+span.header {
+  font-weight: bold;
+  background: #79b7e7;
+  display: block;
+  border: 1px solid black;
+  padding: 2px;
+  text-align: center;
+}
+
+tr {
+  &.header th {
+    font-weight: bold;
+    background: #79b7e7;
+  }
+  &.titles th {
+    font-weight: bold;
+    background: #c5dbec;
+  }
+  &.highlight td {
+    font-size: 110%;
+    font-weight: bold;
+    background: #DDD;
+  }
+  &.improvedon td {
+    font-size: 110%;
+    font-weight: bold;
+    background: #EEF;
+    color: #99E;
+  }
+  &.couldhave td {
+    font-size: 110%;
+    font-weight: bold;
+    background: #EDD;
+    color: #E77;
+  }
+}
+
+table {
+  &.stats td {
+    background: #EEE;
+    + td {
+      font-family: monospace;
+      background: #FFF;
+    }
+  }
+}
+
+#runorder {
+  margin-bottom: 10px;
+  padding: 4px;
+}
+
+#classtable td, #champtable td {
+  white-space: nowrap;
+}

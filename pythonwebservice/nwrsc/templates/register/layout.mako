@@ -1,29 +1,40 @@
 <%inherit file="base.mako" />
 <%namespace file="/forms/carform.mako" import="carform"/>
 <%namespace file="/forms/driverform.mako" import="driverform"/>
+<%namespace file="/forms/registerforms.mako" import="eventregisterform"/>
 <%namespace file="events.mako" import="eventdisplay"/>
 <%namespace file="cars.mako" import="carlist"/>
 <%namespace file="profile.mako" import="profile"/>
-<%
-	import datetime
-	accordindex = 0;
-	today = datetime.date.today();
- %>
+
+<div id='tabs'>
+	<ul>
+		<li><a href="#profile"><span>Profile</span></a></li>
+		<li><a href="#cars"><span>Cars</span></a></li>
+		<li><a href="#eventsinner"><span>Events</span></a></li>
+	</ul>
+	<button class='logout'>Logout</button>
 
 
-<table id='colcontainer'>
-<tr>
-<td id='events'>
-<h2>Events</h2>
+<div id='profile'>
+<div id='profilewrapper'>
+${profile()}
+</div>
+</div>
+
+
+<div id='cars'>
+<div id='carswrapper'>
+${carlist()}
+</div>
+</div>
+
+
 <div id='eventsinner'>
-
-%for ii, ev in enumerate(sorted(c.events, key=lambda obj: obj.date)):
-	<%
-		if ev.date < today:
-			accordindex = ii + 1
-	%>
+%for ev in c.events:
 			
-	<h3 class='${ev.closed and "eventclosed" or "eventopen"}'>
+	<h3 class='${not ev.isOpen and "eventclosed" or "eventopen"}'>
+	<span class='rightarrow' style='display:none'>&#9658;</span>
+	<span class='downarrow'>&#9660;</span>
 	<a>
 	<span class='eventday'>${ev.date.strftime('%a')}</span>
 	<span class='eventmonth'>${ev.date.strftime('%b')}</span>
@@ -32,79 +43,17 @@
 	</a>
 	</h3>
 
-	<div id='event${ev.id}' class='eventholder'>
+	<div id='event${ev.id}' data-eventid='${ev.id}' class='eventholder ${not ev.isOpen and "eventclosed" or "eventopen"}'>
 	${eventdisplay(ev)}
-
 	</div>
+
 %endfor
-
-</div>
-</td>
-
-
-<td id='rightcol'>
-
-<div id='profile'>
-<h2>Profile</h2>
-<div id='profilewrapper'>
-${profile()}
-</div>
-<input id='editprofile' type='button' value='Edit' onclick='editdriver(${c.driver.id})'/>
-<input id='logout' type='button' value='Logout' onclick='document.location.href="${h.url_for(action="logout")}"'/>
 </div>
 
 
-<div id='cars'>
-<h2>Cars</h2>
-<div id='carswrapper'>
-${carlist()}
-</div>
-<input id='createcar' type='button' name='create' value='Create New Car' onclick='editcar(${c.driver.id}, -1);'/>
-</div>
-
-</td> <!-- rightcol -->
-</tr>
-</table> <!-- colcontainer -->
+</div> <!-- tabs -->
 
 ${driverform()}
 ${carform(True)}
-
-
-<script type='text/javascript'>
-
-$(document).ready(function() {
-	$.ajaxSetup({ cache: false });
-	$("#eventsinner").accordion({ active: ${accordindex}});
-	$("input[type='button']").button();
-	setupCarDialog(true);
-	setupDriverDialog("Edit Profile");
-});
-		
-function caredited()
-{
-	$.post('${h.url_for(action='editcar')}', $("#careditor").serialize(), function() {
-		updateCars();
-		%for ev in c.events:
-		%if not ev.closed:
-			updateEvent(${ev.id});
-		%endif
-		%endfor
-	});
-}
-
-function deletecar(carid)
-{
-	if (!confirm("Are you sure you wish to delete this car?"))
-		return;
-	$.post('${h.url_for(action='deletecar')}', {carid:carid}, function() {
-		updateCars();
-		%for ev in c.events:
-		%if not ev.closed:
-			updateEvent(${ev.id});
-		%endif
-		%endfor
-	});
-}
-
-</script>
+${eventregisterform()}
 

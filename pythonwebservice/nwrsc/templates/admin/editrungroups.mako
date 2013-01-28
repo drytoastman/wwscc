@@ -32,29 +32,6 @@ div.grouping {
 }
 </style>
 
-<script type="text/javascript">
-$(function() {
-	$(".rungroup").sortable({
-		connectWith: '.rungroup',
-		update: function(event, ui) { ui.item.addClass("ui-state-highlight"); }
-	}).disableSelection();
-	$("#sendgroups").button();
-});
-
-function collectgroups(frm)
-{
-	for (var ii = 0; ii < 3; ii++)
-	{
-		var x = Array();
-		$("#group"+ii+" li").each(function() {
-			x.push(this.innerHTML);
-		});
-		frm['group'+ii].value = ""+x;
-	}
-}
-
-</script>
-
 <h3>RunGroup Editor</h3>
 
 <form method="post" action="${c.action}" onSubmit="collectgroups(this);">
@@ -79,3 +56,12 @@ function collectgroups(frm)
 </form>
 
 
+<script>
+$(document).ready(function(){
+	$(".rungroup").sortable({
+        connectWith: '.rungroup',
+        update: function(event, ui) { ui.item.addClass("ui-state-highlight"); }
+    }).disableSelection();
+	$("#sendgroups").button();
+});
+</script>

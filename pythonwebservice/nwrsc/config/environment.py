@@ -39,7 +39,7 @@ def load_environment(global_conf, app_conf):
         error_handler=handle_mako_error,
         module_directory=os.path.join(app_conf['cache_dir'], 'templates'),
         input_encoding='utf-8', output_encoding='utf-8',
-        imports=['from webhelpers.html import escape'],
+        imports=['from webhelpers.html import escape; from nwrsc.lib.helpers import oneline'],
         default_filters=['escape'])
     
     # CONFIGURATION OPTIONS HERE (note: all config options will override

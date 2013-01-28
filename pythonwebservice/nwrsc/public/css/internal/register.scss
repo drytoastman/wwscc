@@ -1,0 +1,453 @@
+$basefont: Lucida Grande, Lucida Sans, Arial, sans-serif;
+$grayborder: 1px solid #ddd;
+
+@import "external/jqueryui.scss";
+@import "forms.scss";
+
+body {
+  margin: 0;
+  padding: 0;
+  padding-left: 2px;
+  font-family: $basefont;
+  font-size: 13px;
+}
+
+.tabcontainer {
+  position: absolute;
+  right: 10px;
+  top: 0px;
+  z-index: 3;
+}
+
+.tablist {
+  overflow: hidden;
+  float: right;
+  background: white;
+
+  a {
+    padding: 0px 6px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #44F;
+  }
+
+  ul {
+    list-style: none;
+  	border: $grayborder;
+	margin: 0;
+	padding: 0;
+  }
+
+  li {
+	padding: 2px;
+  }
+
+  .tab {
+    border-top: 0;
+    border-left: $grayborder;
+    border-bottom: $grayborder; 
+    border-right: $grayborder;
+    border-radius: 0px 0px 6px 6px;
+    padding: 5px 13px 8px 13px;
+    text-align: center;
+	@extend .ui-widget;
+	@extend .ui-state-default;
+
+	 &:hover {
+		@extend .ui-state-hover;
+		border-top: 0;
+	 }
+  }
+}
+
+#loginrow {
+  margin-left: 20px;
+  margin-top: 20px;
+}
+
+#orcell {
+  font-weight: bold;
+  font-size: 1.4em;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+#othercell {
+  ul {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+  }
+  li {
+    padding: 3px;
+    button {
+      width: 100%;
+      text-align: left;
+    }
+  }
+}
+
+#logintable th {
+  text-align: right;
+}
+
+#submit {
+  margin-top: 5px;
+  text-align: right;
+}
+
+#header {
+  padding: 4px;
+  a {
+    line-height: 0px;
+  }
+  img {
+    max-height: 60px;
+  }
+}
+
+#sponsorimg {
+  margin-left: 40px;
+  max-height: 60px;
+  img, a {
+    outline: none;
+    border: 0px;
+  }
+}
+
+#seriesname {
+  padding-top: 10px;
+  margin-left: 20px;
+  margin-bottom: 3px;
+  font-size: 1.5em;
+}
+
+.errorlog {
+  color: #F00;
+}
+
+
+h3 {
+  &.eventclosed span {
+    color: #999;
+  }
+}
+
+
+.eventday, .eventmonth {
+  display: inline-block;
+  width: 27px;
+  margin-right: 2px;
+}
+
+.eventdate {
+  display: inline-block;
+  width: 23px;
+  margin-right: 2px;
+}
+
+.helpbox {
+  margin: 0;
+  padding: 0;
+  text-align: justify;
+  font-size: 0.9em;
+  color: #666;
+  display: inline-block;
+  ul {
+	list-style: none;
+  }
+}
+
+
+.strong {
+  font-weight: bold;
+  height: 23px;
+  a {
+    color: blue !important;
+    cursor: pointer;
+  }
+}
+
+#profile {
+  font-size: 1.2em;
+  span {
+    display: block;
+    &.name, &.email {
+      font-weight: bold;
+    }
+  }
+  .ui-button {
+    margin-top: 10px;
+  }
+}
+
+#carlist {
+  margin-left: 0px;
+  margin-bottom: 5px;
+  border-collapse: collapse;
+  th {
+    min-width: 26px;
+    border-bottom: 1px solid #dddddd;
+    span {
+      font-size: 140%;
+      display: inline-block;
+      min-width: 100px;
+    }
+  }
+  td {
+    vertical-align: top;
+    padding: 5px;
+    border-bottom: 1px solid #dddddd;
+  }
+}
+
+
+/* view entries */
+
+table.carlist {
+  border: solid 1px #555555;
+  border-collapse: collapse;
+  empty-cells: show;
+  td, th {
+    border: solid 1px #555555;
+    padding: 3px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  td {
+    &.number, &.counter {
+      text-align: center;
+    }
+  }
+  th {
+    background: rgb(30, 115, 234);
+    color: white;
+    font-weight: bold;
+  }
+}
+
+.viewbutton {
+  margin-left: 15px;
+  span {
+    padding: 0px 10px 0px 10px !important;
+  }
+}
+
+#lockedmessage {
+  margin-top: 10px;
+}
+
+.viewlist {
+  margin-top: 0px;
+  margin-left: 40px;
+  h3 {
+    color: #333;
+  }
+  ul {
+    list-style: none;
+    padding: 0px;
+    margin-left: 10px;
+  }
+  li {
+    padding: 0px;
+  }
+}
+
+.viewheader {
+  margin-top: 20px;
+  margin-left: 10px;
+  font-weight: bold;
+  color: #444;
+}
+
+.viewtable {
+  margin-left: 20px;
+  td, th {
+    Xfont-size: 0.85em;
+    color: #666;
+    text-align: left;
+  }
+  td:last-child {
+    text-align: right;
+  }
+}
+
+table.eventdetails {
+  th {
+    vertical-align: top;
+    text-align: right;
+    &:after {
+      content: ":";
+    }
+  }
+  a {
+    vertical-align: middle;
+  }
+}
+
+#seriesimg, #sponsorimg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#tabs {
+  padding: 0px;
+  background: none;
+  border-width: 0px;
+  .ui-tabs-nav {
+    padding-left: 0px;
+    background: transparent;
+    border-width: 0px 0px 1px 0px;
+    border-radius: 0px;
+  }
+}
+
+#eventsinner h3 {
+  border-top: 1px solid #dddddd;
+  border-left: 1px solid #dddddd;
+  border-right: 1px solid #dddddd;
+  border-radius: 0.5em 0.5em 0em 0em;
+  margin: 0px;
+  margin-top: -1px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+h3 {
+  &.eventopen a {
+    color: blue;
+  }
+  &.lastevent.collapsed {
+    border-bottom: 1px solid #dddddd;
+    border-radius: 0.5em 0.5em 0.5em 0.5em !important;
+  }
+}
+
+.logout {
+  position: relative;
+  top: -35px;
+  margin-right: 10px;
+  float: right;
+}
+
+a.viewlink {
+  font-weight: bold;
+  color: blue;
+}
+
+.cardisplay {
+  display: inline-block;
+  padding-left: 5px;
+  padding-right: 5px;
+  span {
+    display: block;
+  }
+  .code {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+  .desc {
+    color: gray;
+  }
+}
+
+.ui-button-icon-only {
+  width: 25px !important;
+  height: 25px !important;
+}
+
+.carevents {
+  padding-left: 20px !important;
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: gray;
+  }
+}
+
+
+div.eventholder {
+  background: #FFF;
+  padding: 3px;
+  margin: 0;
+  border-radius: 0em 0em 0.5em 0.5em;
+  border-left: 1px solid #dddddd;
+  border-right: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+  @extend .ui-helper-clearfix;
+}
+
+div.detailscontainer, div.carcontainer {
+  border-radius: 4px;
+  border: $grayborder;
+  background: #F6F6F6;
+  padding: 4px;
+  margin-left: 0.5%;
+  margin-right: 0.5%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box; 
+
+  @media screen and (min-width: 601px) {
+	vertical-align: top;
+	float: left;
+    width: 49%;
+  	min-height: 100px;
+  }
+  @media screen and (max-width: 600px) {
+  	display: block;
+    width: 100%;
+	margin-top: 2px;
+	margin-bottom: 2px;
+  }
+}
+
+#registereventform ul, #registercarform ul, .carcontainer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#registereventform li, #registercarform li, .carcontainer li {
+  padding: 1px;
+}
+
+#registereventform label, #registercarform label {
+  display: block;
+  text-align: left;
+}
+
+.unregbutton {
+  vertical-align: top;
+}
+
+.regblock {
+  vertical-align: top;
+  margin-left: 20px;
+}
+
+.currentcars {
+  margin-bottom: 10px;
+}
+
+.eventselector select {
+  //font-family: "Trebuchet MS", Helvetica, sans-serif;
+}
+
+.hidden {
+	display: none;
+}
+
+button {
+	margin: 1px;
+}
+
+.statuslabel {
+	display: block;
+	text-align: center;
+	font-size: 1.1em;
+	font-weight: bold;
+	color: #511;
+}
+

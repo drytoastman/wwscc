@@ -1,0 +1,104 @@
+@import "external/anytimec.scss";
+@import "external/jqueryui.scss";
+@import "forms.scss";
+@import "superfish.scss";
+
+.body {
+  margin-left: 15px;
+  color: #337
+}
+
+
+table {
+  &.input th {
+    text-align: right;
+    padding-right: 10px;
+  }
+  &.form {
+    th, td {
+      padding: 2px 2px 4px 2px;
+    }
+    th {
+      text-align: right;
+    }
+  }
+}
+
+
+table.editor {
+  border-collapse: collapse;
+  td {
+    border: 1px solid #999999;
+    height: 20px;
+  }
+  th {
+    border: 1px solid #999999;
+    height: 20px;
+    text-align: right;
+    padding-right: 5px;
+    width: 100px;
+    + td {
+      width: 600px;
+    }
+  }
+}
+
+button {
+  &.editor {
+    font-size: 11px !important;
+    margin-bottom: 3px;
+  }
+  &.ceditor {
+    font-size: 9px !important;
+    margin-bottom: 3px;
+    margin-top: 2px;
+  }
+}
+
+div.editor {
+  margin-left: 10px;
+  margin-bottom: 15px;
+  width: 650px;
+}
+
+#driverregex {
+  display: block;
+  margin-bottom: 10px;
+  width: 97%;
+}
+
+#driverlist {
+  width: 100;
+}
+
+
+button.small {
+  font-size: 0.7em !important;
+}
+
+
+.dataTables_wrapper {
+	display: inline-block;
+
+	tr.even td, .odd td {
+	  border-bottom: 1px solid #dddddd;
+	}
+	
+	tr.even:hover, tr.odd:hover {
+	  background: #ddd;
+	}
+
+	label {
+		text-align: right;
+		margin-right: 10px;
+	}
+}
+
+
+#titlebutton a {
+  color: black;
+  &:hover {
+  	background: $widgetHeaderBackground;
+  }
+}
+

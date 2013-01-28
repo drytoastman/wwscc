@@ -2,12 +2,26 @@ from pylons import request, tmpl_context as c
 from pylons.templating import render_mako
 from pylons.controllers.util import abort
 from pylons.decorators import jsonify
-from nwrsc.lib.titlecase import titlecase
 from nwrsc.model import *
 from sqlalchemy.sql import func
 
+import string
+import re
 import logging
 log = logging.getLogger(__name__)
+
+
+
+DIRECTIONS = re.compile(r'\s(Ne|Se|Sw|Nw)')
+
+def titlecase(text, key):
+	print text, key
+	if key == 'state' and len(text) < 3:
+		return text.upper()
+	if key == 'address':
+		return DIRECTIONS.sub(lambda pat: " " + pat.group(1).upper(), string.capwords(text))
+	return string.capwords(text)
+
 
 class EntrantEditor(object):
 
@@ -113,8 +127,9 @@ class EntrantEditor(object):
 				car.runcount = len(self.session.query(Run.eventid).distinct().filter(Run.carid==car.id).filter(Run.eventid<100).all())
 
 			# Preload the extra fields
-			for field in c.fields:
-				setattr(dr, field.name, dr.getExtra(field.name))
+			if dr is not None:
+				for field in c.fields:
+					setattr(dr, field.name, dr.getExtra(field.name))
 
 			c.items.append(self.DriverInfo(dr, cars))
 

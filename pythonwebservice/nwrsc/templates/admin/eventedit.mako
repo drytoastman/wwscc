@@ -1,7 +1,7 @@
 <%inherit file="base.mako" />
 <h2>Event Editor</h2>
 
-<form id="eventForm" action="${c.action}" method="post">
+<form id="eventform" action="${c.action}" method="post">
 <table class="form">
 
 <tr title='the event name, what else'>
@@ -16,17 +16,17 @@
 
 <tr title='date when the event occurs'>
 <th>Event Date</th>
-<td><input id='date' type='text' size='40' name='date' value="${c.event.date.strftime("%m/%d/%Y")}"></td>
+<td><input id='formdate' type='text' size='40' name='date' value="${c.event.date.strftime("%m/%d/%Y")}"></td>
 </tr>
 
 <tr title='when registration should open'>
 <th>Registration Opens</th>
-<td><input id='opens' type='text' size='40' name='regopened' value="${c.event.regopened.strftime("%m/%d/%Y %H:%M")}"></td>
+<td><input id='formregclosed' type='text' size='40' name='regopened' value="${c.event.regopened.strftime("%m/%d/%Y %H:%M")}"></td>
 </tr>
 
 <tr title='when registration should close'>
 <th>Registration Closes</th>
-<td><input id='closes' type='text' size='40' name='regclosed' value="${c.event.regclosed.strftime("%m/%d/%Y %H:%M")}"></td>
+<td><input id='formregopened' type='text' size='40' name='regclosed' value="${c.event.regclosed.strftime("%m/%d/%Y %H:%M")}"></td>
 </tr>
 
 <th>Location</th>
@@ -73,7 +73,7 @@
 <td><input type='text' size='4' name='runs' value="${c.event.runs}"></td>
 </tr>
 
-<tr class='advanced' title='the number of runs counted toward final results'>
+<tr title='the number of runs counted toward final results, applies to all classes'>
 <th>Counted Runs</th>
 <td><input type='text' size='4' name='countedruns' value="${c.event.countedruns}"></td>
 </tr>
@@ -113,21 +113,16 @@
 <td><input type='text' size='40' name='cost' value="${c.event.cost}"></td>
 </tr>
 
-<tr class='advanced' title='a mailing address to send payments to, use HTML to format'>
-<th>Mailing Address</th>
-<td><textarea cols='40' rows='6' name='snail'>${c.event.snail}</textarea></td>
-</tr>
-
-<tr class='advanced' title='notes to appears on the registration page, use HTML to format'>
+<tr title='notes to appears on the registration page, use HTML to format'>
 <th>Notes</th>
-<td><textarea cols='40' rows='6' name='notes'>${c.event.notes}</textarea></td>
+<td><textarea cols='40' rows='4' name='notes'>${c.event.notes}</textarea></td>
 </tr>
 
 <tr>
 <th></th>
 <td>
-<button id='showall' onclick='return showallevent();'>Show All Options</button>
-<button id='hideadv' class='advanced' onclick='return hideadvevent();'>Hide Extra Options</button>
+<button class='showall'>Show All Options</button>
+<button class='hideadv advanced'>Hide Extra Options</button>
 <input type='submit' value="${c.button}">
 </td>
 </tr>
@@ -136,22 +131,11 @@
 </form>
 
 <script>
-function showallevent() 
-{ 
-	$(".advanced").show(); 
-	$("#showall").hide(); 
-	return false;
-}
-
-function hideadvevent() 
-{ 
-	$(".advanced").hide(); 
-	$("#showall").show(); 
-	return false;
-}
-$("#date").AnyTime_picker( { format: "%m/%d/%Y" } );
-$("#opens").AnyTime_picker( { format: "%m/%d/%Y %H:%i" } );
-$("#closes").AnyTime_picker( { format: "%m/%d/%Y %H:%i" } );
-hideadvevent();
+$(document).ready(function(){
+	$("#formdate").AnyTime_picker( { format: "%m/%d/%Y" } );
+    $("#formregopened").AnyTime_picker( { format: "%m/%d/%Y %H:%i" } );
+    $("#formregclosed").AnyTime_picker( { format: "%m/%d/%Y %H:%i" } );
+    $("#eventform .showall").click(function() { $("#eventform .advanced").show(); $("#eventform .showall").hide(); return false; });
+    $("#eventform .hideadv").click(function() { $("#eventform .advanced").hide(); $("#eventform .showall").show(); return false; }).click();
+});
 </script>
-

@@ -1,0 +1,115 @@
+
+@import "external/jqueryui.scss";
+
+/*** ESSENTIAL STYLES ***/
+
+.sf-menu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  * {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  line-height: 1.0;
+  ul {
+    position: absolute;
+    top: -999em;
+    width: 10em;
+    /* left offset of submenus need to match (see below) */
+    li {
+      width: 100%;
+    }
+  }
+  li {
+    &:hover {
+      visibility: inherit;
+      /* fixes IE7 'sticky bug' */
+    }
+    float: left;
+    position: relative;
+  }
+  a {
+    display: block;
+    position: relative;
+  }
+  li {
+    &:hover ul, &.sfHover ul {
+      left: 0;
+      top: 2.5em;
+      /* match top ul list item height */
+      z-index: 99;
+    }
+  }
+}
+
+ul.sf-menu li {
+  &:hover li ul, &.sfHover li ul {
+    top: -999em;
+  }
+  li {
+    &:hover ul, &.sfHover ul {
+      left: 10em;
+      /* match ul width */
+      top: 0;
+    }
+    &:hover li ul, &.sfHover li ul {
+      top: -999em;
+    }
+    li {
+      &:hover ul, &.sfHover ul {
+        left: 10em;
+        /* match ul width */
+        top: 0;
+      }
+    }
+  }
+}
+
+/*** DEMO SKIN ***/
+
+.sf-menu {
+  float: left;
+  margin-bottom: 1em;
+  font-family: $widgetFontFamily;
+  font-weight: bold;
+  background: $widgetStateDefaultBackground;
+
+  ul {
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+  }
+  a {
+    border-left: 1px solid white;
+    border-right: 1px solid white;
+    border-top: 1px solid #cfdeff;
+    padding: 0.75em 1em;
+    text-decoration: none;
+    color: $widgetStateDefaultColor;
+    &:visited {
+      color: $widgetStateDefaultColor;
+    }
+  }
+  li {
+    background: $widgetHeaderBackground;
+    font-size: 0.9em;
+
+	li {
+		font-size: 0.8em;
+	}
+	
+    &:hover, &.sfHover {
+      background: $widgetStateHoverBackground;
+      outline: 0;
+    }
+  }
+  a {
+    &:focus, &:hover, &:active {
+      background: $widgetStateActiveBackground;
+	  color: $widgetStateActiveColor;
+      outline: 0;
+    }
+  }
+}
+
+

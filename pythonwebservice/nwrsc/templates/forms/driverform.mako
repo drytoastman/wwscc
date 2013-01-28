@@ -1,4 +1,4 @@
-<%def name="driverform(action='', method='post', driver=None, allowalias=False)">
+<%def name="driverform(action='blank', method='post', driver=None, allowalias=False)">
 
 <%
 	from nwrsc.model import Driver
@@ -6,30 +6,30 @@
 		driver = Driver()
 %>
 
-<form id='drivereditor' action='${action}' method='${method}'>
-<div id='driverhelp'>First Name, Last Name and Unique/Email require at least 2 characters each</div>
+<form id='drivereditor' action='${action}' method='${method}' class='ui-helper-hidden'>
+<div class='driverhelp'>First Name, Last Name and Unique/Email require at least 2 characters each</div>
 <input name='driverid' type='hidden' value='-1'/>
 <table> <tbody>
 
-<tr id='namerow'>
+<tr class='namerow'>
 <th>First Name</th>
 <td colspan='2'><input name='firstname' type='text' value='${driver.firstname}'/></td>
 <th>Last Name</th>
 <td colspan='3'><input name='lastname' type='text' value='${driver.lastname}'/></td>
 </tr>
 
-<tr id='emailrow'>
+<tr class='emailrow'>
 <th>Email/UniqueId</th>
 <td colspan='6'><input name='email' type='text' value='${driver.email}'/></td>
 </tr>
 
-<tr id='aliasrow'>
+<tr class='aliasrow'>
 <th>Public Alias</th>
 <td colspan='6'>
 %if allowalias:
 <input name="alias" type='text' value='${driver.alias}'>
 %else:
-<span id="aliasspan">${driver.alias}</span>
+<span class="aliasspan">${driver.alias}</span>
 %endif
 </td>
 </tr>
@@ -66,7 +66,7 @@
 %for field in c.fields:
 <tr>
 <th>${field.title}</th>
-<td colspan='6'><input name='${field.name}' type='text' value='${driver.getExtra(field)}'/></td>
+<td colspan='6'><input data-extrafield='true' name='${field.name}' type='text' value='${driver.getExtra(field)}'/></td>
 </tr>
 %endfor
 

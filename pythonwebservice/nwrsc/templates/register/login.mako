@@ -2,9 +2,10 @@
 <%namespace file="/forms/driverform.mako" import="driverform"/>
 
 <div class='helpbox'>
-If you have a profile in this series, please login.
-If you have a profile in another active series, use that information and you will be given the option of copying the profile.
-Otherwise, create a new profile.  If you are just looking for entry lists, <a href='${h.url_for(action="eventlist")}'>click here</a>.
+<ul>
+<li>If you have a profile in this series, please login.</li>
+<li>If you have a profile in another active series, use that information and you will be given the option of copying the profile.</li>
+<li>Otherwise, create a new profile.</li>
 </div>
 
 <table id='loginrow'>
@@ -33,9 +34,13 @@ OR
 <td id='othercell'>
 <ul>
 %for name, creds in c.otherseries.iteritems():
-<li><button onclick="copylogin('${creds.firstname}', '${creds.lastname}', '${creds.email}', '${name}')">Copy Profile From ${name.upper()}</button></li>
+<li>
+	<button class='copylogin' data-creds='{"firstname":"${creds.firstname}", "lastname":"${creds.lastname}", "email":"${creds.email}", "series":"${name}"}'>
+		Copy Profile From ${name.upper()}
+	</button>
+</li>
 %endfor
-<li><button onclick='editdriver(-1)'>Create New Profile</button></li>
+<li><button class='createdriver'>Create New Profile</button></li>
 </ul>
 </td>
 
@@ -43,30 +48,4 @@ OR
 </table>
 
 ${driverform(action=h.url_for(action='newprofile'), method='post')}
-
-<script type='text/javascript'>
-var drivers = new Array();
-$(document).ready(function() {
-	$("#loginForm").validate(); 
-	$("#loginsubmit").button();
-	$("button").button();
-	setupDriverDialog("New Driver");
-});
-
-function driveredited()
-{
-	$("#drivereditor").submit();
-}
-
-function copylogin(f, l, e, s)
-{
-	$("#loginForm [name=firstname]").val(f);
-	$("#loginForm [name=lastname]").val(l);
-	$("#loginForm [name=email]").val(e);
-	$("#loginForm [name=otherseries]").val(s);
-	$("#loginForm").submit();
-}
-
-
-</script>
 

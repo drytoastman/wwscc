@@ -1,99 +1,13 @@
-<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>
-<html xmlns='http://www.w3.org/1999/xhtml'>
+<!DOCTYPE html>
+<html>
 <head>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 <title>Scorekeeper Announcer Tool</title>
-<link href="/css/custom-theme/jquery-ui-1.8.18.custom.css" rel="stylesheet" type="text/css" />
 <link href="/css/announcer.css" rel="stylesheet" type="text/css" />
-<script type='text/javascript' src='/js/jquery-1.7.1.min.js'></script>
-<script type='text/javascript' src='/js/jquery-ui-1.8.18.custom.min.js'></script>
-
-<script type="text/javascript">
-
-function openClass(classcode)
-{
-	alert('open ' + classcode);
-}
-
-
-function moveresults(from, to)
-{
-	$(to).html($(from).html());
-	$(to).attr('updated', $(from).attr('updated'));
-}
-
-function processNext(json)
-{
-	if (json.updated > $('#nexte').attr('updated'))
-	{
-		$('#nexte').html(json.entrantresult);
-		$('#nexte').attr('updated', json.updated);
-	}
-}
-
-function processResults(json)
-{
-	if (json.updated > $('#firste').attr('updated'))
-	{
-		moveresults('#firste', '#seconde');
-		$('#firste').html(json.entrantresult);
-		$('#firste').attr('updated', json.updated);
-		$('#entranttabs').tabs('option', 'selected', 1);
-	}
-	else if (json.updated > $('#seconde').attr('updated'))
-	{
-		$('#seconde').html(json.entrantresult);
-		$('#seconde').attr('updated', json.updated);
-	}
-}
-
-function processTopTimes(json)
-{
-	$('#toprawcell').html(json.topraw);
-	$('#topnetcell').html(json.topnet);
-	for (var ii = 1; ii <= ${c.event.getSegmentCount()}; ii++)
-	{
-		$('#topseg'+ii+'cell').html(json['topseg'+ii]);
-	}
-}
-
-function processLast(json)
-{
-	if (json.data.length == 0)
-		return;
-
-	if (json.data[0].updated > lasttime)
-	{
-		lasttime = json.data[0].updated;
-		for (var ii = json.data.length - 1; ii >= 0; ii--)
-		{
-			$.getJSON('${h.url_for(action='results')}', json.data[ii],  processResults);
-		}
-		$('#runorder').load('${h.url_for(action='runorder')}?carid='+json.data[0].carid);
-		$.getJSON('${h.url_for(action='toptimes')}', json.data[0],  processTopTimes);
-		$.getJSON('${h.url_for(action='nexttofinish')}', json.data[0],  processNext);
-	}
-}
-
-function updateCheck()
-{
-	$.getJSON('${h.url_for(action='last')}', { time: lasttime }, processLast);
-}
-
-$(document).ready(function(){
-	$('#toptimetabs').tabs();
-	$('#entranttabs').tabs();
-	lasttime = 0;
-	updateCheck();
-	setInterval('updateCheck()', 2500);
-});
-
-
-</script>
+<script type='text/javascript' src='/js/announcer.js'></script>
 </head>
 
 <body>
-
 
 <table class='layout' id='mainlayout'><tr><td>
 

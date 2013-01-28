@@ -1,4 +1,4 @@
-<table class='toptimes'>
+<table class='toptimes res'>
 <tr class='titles'>
 <th>#</th>
 <th>Name</th>

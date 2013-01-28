@@ -1,9 +1,10 @@
 <%inherit file="base.mako" />
+<%  from nwrsc.model import Class %>
 
 <% def singleline(text): return text.replace('\n', '') %>
 
 <%def name="dorow(ii, cls)" filter="singleline">
-<tr>
+<tr data-counter="${ii}">
 <td>
 	<input type="text" name="clslist-${ii}.code" value="${cls.code}" size="6" />
 </td>
@@ -19,7 +20,7 @@
 <td title="Cars are individually indexed by index value">
 	<input type="checkbox" name="clslist-${ii}.carindexed" ${cls.carindexed and 'checked="checked"' or ''|n} />
 </td>
-<td title="Entire class is indexed by this index code">
+<td class='clsindexcol' title="Entire class is indexed by this index code">
 	<select name="clslist-${ii}.classindex">
 	%for code in sorted(c.indexlist):
 		<option value="${code}" ${cls.classindex==code and "selected" or ""}>${code}</option>
@@ -32,7 +33,7 @@
 <td class="flagcol" title="Require that the car flag is checked for the additional multiplier to be applied">
 	<input type="checkbox" name="clslist-${ii}.usecarflag" ${cls.usecarflag and 'checked="checked"' or ''|n} />
 </td>
-<td title="Limit number of counted runs for this class">
+<td class='limitcol' title="Limit number of counted runs for this class">
 	<input type="text" name="clslist-${ii}.countedruns" value="${cls.countedruns or 0}" size="3" />
 </td>
 <td>
@@ -48,10 +49,12 @@
 #classtable td { text-align: center; }
 #classtable { border-collapse: collapse; }
 #doctable th { white-space: nowrap; text-align: right; padding-right: 5px; }
-th.multcol, th.flagcol { border-top: 1px solid gray; }
-td.multcol, th.multcol { border-left: 1px solid gray; padding-left: 5px; }
-td.flagcol, th.flagcol { border-right: 1px solid gray; padding-right: 5px; }
-tr:last-child td.multcol, tr:last-child td.flagcol { border-bottom: 1px solid gray; }
+th.multcol, th.flagcol { border-top: 1px solid #CCC; }
+td.multcol, th.multcol { border-left: 1px solid #CCC; padding-left: 6px; }
+td.flagcol, th.flagcol { border-right: 1px solid #CCC; padding-right: 6px; }
+tr:last-child td.multcol, tr:last-child td.flagcol { border-bottom: 1px solid #CCC; padding-bottom: 4px; }
+th.clsindexcol, td.clsindexcol { padding-right: 6px; }
+th.limitcol, td.limitcol { padding-left: 6px; }
 </style>
 
 <h2>Class Editor</h2>
@@ -59,7 +62,7 @@ tr:last-child td.multcol, tr:last-child td.flagcol { border-bottom: 1px solid gr
 <p>
 Each class has a short code and a full string description.  The description is optional.  The settings available are:
 
-<table id='doctable'>
+<table class='doctable'>
 <tr><th>Event Trophy</th><td>This class is eligible for trophies at each event and will have a 'T' added in the results</td></tr>
 <tr><th>Champ Trophy</th><td>This class is eligible for championship points and will appear in the championship report</td></tr>
 <tr><th>Cars Indexed</th><td>Cars in this class will have an index applied based on the index of the car entry</td></tr>
@@ -74,8 +77,8 @@ Each class has a short code and a full string description.  The description is o
 <p></p>
 
 
-<form action="${c.action}" method="post">
-<table id='classtable'>
+<form action="${c.action}" method="post" id='classlistform'>
+<table class='classtable'>
 <tr>
 <th>Code</th>
 <th>Description</th>
@@ -92,19 +95,21 @@ Each class has a short code and a full string description.  The description is o
 ${dorow(ii, cls)}
 %endfor
 
+
 </table>
-<button id='addbutton'>Add</button>
+<button class='addbutton'>Add</button>
 <input type='submit' value="Save">
 </form>
 
-<%  from nwrsc.model import Class %>
+<table class='ui-helper-hidden' id='classlisttemplate'>
+${dorow('xxxxx', Class())}
+</table>
+
 <script>
-var rowstr = '${dorow('xxxxx', Class())}\n';
-var ii = ${ii};
-$('#addbutton').click(function() {
-	$("#classtable > tbody").append(rowstr.replace(/xxxxx/g, ++ii));
-	$('#classtable button').button();
-	return false;
+$(document).ready(function(){
+	$('#classlistform .addbutton').click(function() {
+        newCountedRow('#classlistform', '#classlisttemplate');
+        return false;
+    });
 });
 </script>
-

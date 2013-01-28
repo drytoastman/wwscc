@@ -9,8 +9,9 @@ available to Controllers. This module is available to both as 'h'.
 from pylons import tmpl_context as c
 from webhelpers.html.tags import stylesheet_link, javascript_link
 from routes import url_for, redirect_to
-from simplejson import dumps
+from simplejson import dumps, JSONEncoder
 import operator
+import re
 
 
 attrgetter = operator.attrgetter
@@ -33,6 +34,11 @@ def hide(val, hidenum):
 
 	return ret
 
+compresswhitespace = re.compile(r"^\s+", re.MULTILINE);
+
+def oneline(text):
+	return compresswhitespace.sub(" ", text)
+
 def t3(val, sub = None, sign = False):
 	if val is None or val == 0:
 		return ''
@@ -52,10 +58,11 @@ def ixstr(car):
 		return ret
 	return "(%s)" % ret
 
+
 def encodesqlobj(obj):
 	d = dict()
 	for k in obj.__dict__.copy():
 		if k.startswith("_"): continue
 		d[k] = getattr(obj, k)
-	return dumps(d, default=lambda x: x is None and "" or str(x))
+	return dumps(d, default=lambda x: None) 
 
