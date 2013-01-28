@@ -86,7 +86,7 @@ function eventCollapsable()
 {
 	$('#eventsinner > h3').last().addClass('lastevent collapsed');
 	$('#eventsinner > h3').click(function() {
-		if ($(this).next().toggle().css('display') != 'none') {
+		if ($(this).next().toggle('blind').css('display') != 'none') {
 			$(this).removeClass('collapsed');
 		} else {
 			$(this).addClass('collapsed');
@@ -97,6 +97,13 @@ function eventCollapsable()
 	$('#eventsinner > h3.eventclosed').click();
 }
 
+
+function matchHeight(jqe)
+{
+	var height = 0;
+	jqe.children().map(function() { height = Math.max($(this).height(), height); });
+	jqe.children().css('min-height', height);
+}
 
 function eventPaneSetup(jqe)
 {
