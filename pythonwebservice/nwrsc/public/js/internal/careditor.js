@@ -92,10 +92,11 @@
 				myform.find('.numberselect').button().click(function() { methods.chooseNumber.call(myform); return false; });
 				myform.find('[name=classcode]').change(function() { methods.classchange.call(myform); });
 
+				$.validator.setDefaults({ignore:[]});
 				myform.validate({
 					rules: {
 						indexcode: {
-							required: function(element) { return myform.find("[name=classcode] option:selected").data('indexed'); }
+							required: function(element) { return (myform.find("[name=classcode] option:selected").data('indexed') == true); }
 						},
 						number: {
 							required: true,
