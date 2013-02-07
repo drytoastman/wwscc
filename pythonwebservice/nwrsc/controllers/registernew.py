@@ -303,7 +303,7 @@ class RegisternewController(BaseController, PayPalIPN, ObjectEditor):
 		 
 	def view(self):
 		id = int(self.routingargs.get('other', 0))
-		if id is None:
+		if id == 0:
 			redirect(url_for(action=''))
 			
 		c.classdata = ClassData(self.session)
