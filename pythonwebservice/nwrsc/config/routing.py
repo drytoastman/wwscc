@@ -34,6 +34,8 @@ def make_map():
 	map.connect('/registerold/{database}/{action}', controller='registerold')
 	map.connect('/register/{database}/{action}', controller='register')
 	map.connect('/register/{database}/{action}/{other}', controller='register')
+	map.connect('/history', controller='history')
+	map.connect('/history/{action}', controller='history')
 
 	# Basic matching patterns
 	map.connect('/{controller}')

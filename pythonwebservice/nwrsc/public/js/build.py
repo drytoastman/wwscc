@@ -53,7 +53,7 @@ compile([
 		'external/superfish-1.5.0.js',
 		'external/migrate.js',
 		'external/anytime.js',
-		'external/jquery.dataTables.min.js',
+		'external/jquery.dataTables.1.9.4.js',
 		'internal/nwr.js',
 		'internal/careditor.js',
 		'internal/drivereditor.js',
