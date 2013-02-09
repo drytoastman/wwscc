@@ -76,6 +76,15 @@ class HistoryController(BaseController):
 			if 'col'+key in request.POST:
 				c.names.append(key)
 
+		# format some items into strings
+		for result in results.itervalues():
+			result.years = ' '.join(map(str, sorted(result.years)))
+			result.series = ','.join(sorted(result.series))
+			result.pcevents = ','.join(map(str, result.pcevents.values()))
+			result.istavg = "%0.1lf" % (result.istavg)
+			result.istqualify = result.istqualify and "yes" or "NO"
+			result.pcqualify = result.pcqualify and "yes" or "NO"
+
 		selection = request.POST['selection']
 		if selection == 'CSV':
 			return self.csv("cards", c.names, c.results)
@@ -137,12 +146,6 @@ class HistoryController(BaseController):
 		for result in results.itervalues():
 			result.istavg = result.isttotal * 1.0 / len(result.years)
 			result.istqualify = result.isttotal < isttotal and result.istavg < istavg
-	
-			# collapse items into strings
-			result.years = ' '.join(map(str, sorted(result.years)))
-			result.series = ','.join(sorted(result.series))
-			result.pcevents = ','.join(map(str, result.pcevents.values()))
-			result.istavg = "%0.1lf" % (result.istavg)
 
 		return results
 
