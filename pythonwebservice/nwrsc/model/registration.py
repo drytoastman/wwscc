@@ -28,6 +28,7 @@ class Registration(object):
 
 
 from cars import Car
-mapper(Registration, t_registered, properties = {'car':relation(Car, backref='registration')})
+from event import Event
+mapper(Registration, t_registered, properties = {'car':relation(Car, backref='registration'), 'event':relation(Event)})
 
 

@@ -4,7 +4,6 @@ from sqlalchemy.types import Integer, SmallInteger, String, Boolean, Date, DateT
 from sqlalchemy.sql import func
 
 from meta import metadata
-from registration import Registration
 
 import sys
 
@@ -50,6 +49,7 @@ class Event(object):
 
 	def _get_count(self):
 		""" property getter to get number of entrants for an event based on registration, NOT recorded runs """
+		from registration import Registration
 		return object_session(self).query(func.count(Registration.id)).filter(Registration.eventid==self.id).first()[0]
 	count = property(_get_count)
 
