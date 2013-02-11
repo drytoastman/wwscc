@@ -65,6 +65,12 @@ class MobileController(BaseController):
 		query = self.session.query(AnnouncerData.updated, AnnouncerData.carid)
 		query = query.filter(AnnouncerData.eventid==self.eventid)
 		query = query.order_by(AnnouncerData.updated.desc())
+
+		# This is where we would hold it on long polling
+		#if 'time' in request.GET:
+		#	query = query.filter(AnnouncerData.updated > datetime.fromtimestamp(int(request.GET['time'])))
+		#   if no result, pause for a bit
+
 		classes = request.GET.get('classcodes', 'Any').split(',')
 		ret = []
 		for clazz in classes:

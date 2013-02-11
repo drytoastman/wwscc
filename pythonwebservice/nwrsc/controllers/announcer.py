@@ -22,26 +22,6 @@ class AnnouncerController(MobileController):
 		else:
 			return self.databaseSelector()
 
-
-	@jsonify
-	def last(self):
-		"""
-			Get the timestamps of the last 2 updated run entries, announcer panel periodically calls this
-			to see if there is any real data to get
-		"""
-		query = self.session.query(AnnouncerData.updated, AnnouncerData.carid)
-		query = query.filter(AnnouncerData.eventid==self.eventid)
-		if 'time' in request.GET:
-			query = query.filter(AnnouncerData.updated > datetime.fromtimestamp(int(request.GET['time'])))
-		query = query.order_by(AnnouncerData.updated.desc())
-
-		data = []
-		for row in query.limit(2).all():
-			data.append({'updated':time.mktime(row[0].timetuple()), 'carid':row[1]})
-
-		return {'data': data}
-
-
 	def runorder(self):
 		"""
 			Returns the HTML to render the NextToFinish box

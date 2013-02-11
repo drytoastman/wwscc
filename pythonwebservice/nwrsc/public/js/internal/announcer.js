@@ -32,31 +32,28 @@ function processResults(json)
 
 function processTopTimes(json)
 {
-	$('#toprawcell').html(json.topraw);
-	$('#topnetcell').html(json.topnet);
-	/*
-	for (var ii = 1; ii <= ${c.event.getSegmentCount()}; ii++)
-	{
-		$('#topseg'+ii+'cell').html(json['topseg'+ii]);
+	var key;
+	for (key in json) {
+		if (key != "updated") {
+			$('#'+key+'cell').html(json[key]);
+		}
 	}
-	*/
 }
 
 function processLast(json)
 {
-	if (json.data.length == 0)
+	if (json.length == 0)
 		return;
 
-	if (json.data[0].updated > lasttime)
+	if (json[0].updated > lasttime)
 	{
-		lasttime = json.data[0].updated;
-		for (var ii = json.data.length - 1; ii >= 0; ii--)
-		{
-			$.getJSON($.nwr.event_url_for('results'), json.data[ii],  processResults);
-		}
-		$('#runorder').load($.nwr.event_url_for('runorder')+'?carid='+json.data[0].carid);
-		$.getJSON($.nwr.event_url_for('toptimes'), json.data[0],  processTopTimes);
-		$.getJSON($.nwr.event_url_for('nexttofinish'), json.data[0],  processNext);
+		data = json[0];
+		delete data['classcode'];
+		lasttime = data.updated;
+		$.getJSON($.nwr.event_url_for('results'), data,  processResults);
+		$('#runorder').load($.nwr.event_url_for('runorder')+'?carid='+data.carid);
+		$.getJSON($.nwr.event_url_for('toptimes'), data,  processTopTimes);
+		$.getJSON($.nwr.event_url_for('nexttofinish'), data,  processNext);
 	}
 }
 
