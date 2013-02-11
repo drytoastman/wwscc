@@ -2,7 +2,7 @@
 AppName=WWSCC Applications
 AppVersion=@VERSION@
 OutputDir=.
-OutputBaseFilename=@EXENAME@
+OutputBaseFilename=WWSCCSetup-@VERSION@
 AppPublisher=Brett Wilson
 DefaultDirName={pf}\nwrsc
 DefaultGroupName=WW Timing
@@ -26,6 +26,9 @@ Name: "{app}\java"; Permissions: users-modify
 Name: "{userdocs}\nwrsc\series"; Permissions: users-modify; Flags: uninsneveruninstall
 Name: "{userdocs}\nwrsc\archive"; Permissions: users-modify; Flags: uninsneveruninstall
 Name: "{userdocs}\nwrsc\backup"; Permissions: users-modify; Flags: uninsneveruninstall
+
+[InstallDelete]
+Type: files; Name: "{app}\java\wwsccapps*.jar";
 
 [Files]
 Source: "wwsccapps-@VERSION@.jar"; DestDir: "{app}\java"; Flags: ignoreversion; Components: java
