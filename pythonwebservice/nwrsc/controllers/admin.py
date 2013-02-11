@@ -1,10 +1,6 @@
 import logging
 import operator
 import re
-try:
-	from PIL import Image
-except:
-	import Image
 
 import cStringIO
 
@@ -249,6 +245,10 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 				Data.set(self.session, key, fileobj.value, fileobj.type)
 
 			if key.startswith('blank'):
+				try:
+					from PIL import Image
+				except:
+					import Image
 				output = cStringIO.StringIO()
 				Image.new('RGB', (4,4), (255,255,255)).save(output, "PNG")
 				Data.set(self.session, key[5:], output.getvalue(), 'image/png')
