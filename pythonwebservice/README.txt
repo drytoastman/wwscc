@@ -1,15 +1,19 @@
-Installation and Setup
+
+Development
 ======================
 
-Install ``nwrsc`` using easy_install::
+1. Run "python setup.py develop" to install all the dependencies and add a pointer to the nwrsc code
 
-    easy_install nwrsc-(VER).egg
+2. Change to the rundir directory, acts like a regular sitedir
 
-Make a config file as follows::
+3. Run "paster serve --reload development.ini" to run the web server
 
-	copy nwrsc/config/deployment.ini_tmpl and modify as needed
 
-Run with paster::
+Installing
+======================
 
-	paster serve myconfig.ini
+1. Run "python setup.py bdist" to create an egg for installing in dist/
+
+2. At the other location run "easy_install <eggname>" to install on another machine
+
 
