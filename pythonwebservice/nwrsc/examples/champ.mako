@@ -1,15 +1,22 @@
 <%inherit file="/base.mako" />
 <!-- Series info -->
-<div id='seriesimage'><img src="../../images/wwscctire.gif" alt='WWSCC' /></div>
+<div id='seriesimage'><img src="../../images/smlnwr.jpg"><img src="../../images/soloev.gif"></div>
 <div id='seriestitle'>${c.seriesname}</div>
 <hr />
 <!-- Results -->
 
 <table class='champ'>
 %for code, entrants in sorted(c.results.iteritems()):
-<% cls = c.classdata.classlist[code] %>
+<%
+cls = c.classdata.classlist[code]
+totalentrants = 0
+for e in entrants:
+	totalentrants += e.events
+avgentrants = float(totalentrants)/len(c.events)
+%>
 
-<tr><th class='classhead' colspan='${len(c.events)+4}'>${cls.code} - ${cls.descrip}</th></tr>
+<tr><th class='classhead' colspan='${len(c.events)+4}'>${cls.code} - ${cls.descrip} -
+			Number of Entries: ${totalentrants} - Average Per Event: ${"%.2lf"%avgentrants}</th></tr>
 <tr>
 <th>#</th>
 <th>Name</th>

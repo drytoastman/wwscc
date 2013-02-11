@@ -115,9 +115,12 @@ def drawCard(c, event, driver, car, image, **kwargs):
 	c.drawRightString(x, y, "Number:"); y += 21
 	c.drawRightString(x, y, "Class(Idx):"); y += 21
 
-	c.setFont('Helvetica-Bold', 14)
-	c.drawAlignedString(MIDDLE, 325, "%s - %s %d,%d" % (event.name, months[event.date.month], event.date.day, event.date.year), '-')
-
+	c.setFont('Helvetica-Bold', 13)
+	c.drawCentredString(MIDDLE, 337, "%s" % (event.name))
+	c.setFont('Helvetica-Bold', 11)
+	c.drawCentredString(MIDDLE, 325, "%s %d,%d" % (months[event.date.month], event.date.day, event.date.year))
+	c.setFont('Helvetica-Bold', 12)
+	c.drawAlignedString(MIDDLE, 313, "Sponsored by: %s" % (event.sponsor), ':')
 	if driver is None or car is None:
 		return
 
@@ -148,6 +151,6 @@ def drawCard(c, event, driver, car, image, **kwargs):
 	else:
 		c.drawString(x, y, car.classcode); y += 21
 
-	code39Right(c, 558, 320, str(car.id))
+	code39Right(c, 558, 314, str(car.id))
 
 

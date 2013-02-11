@@ -2,14 +2,20 @@
 <%namespace file="db:classresult.mako" import="resulttables"/>
 <%namespace file="db:toptimes.mako" import="toptimestable"/>
 <!-- Series info -->
-<div id='seriesimage'><img src="../../images/wwscctire.gif" alt='WWSCC' /></div>
+<div id='seriesimage'>
+<img src="../../images/smlnwr.jpg">
+<img src="../../images/soloev.gif">
+</div>
+<center>
+<B><FONT face="Tahoma" color="#008000" size="+3">Northwest Region SCCA</FONT></B>
+</center>
+
 <div id='seriestitle'>${c.seriesname}</div>
 
 <!-- Event info -->
-<div id='eventtitle'>${c.event.name} - ${c.event.date}</div>
-<div id='hosttitle'>Hosted By: <span class='host'>${c.event.host}</span></div>
+<div id='eventtitle'>${c.event.date} - ${c.event.name}</div>
+<div id='hosttitle'>Hosted At: <span class='host'>${c.event.location}</span></div>
 <div id='entrantcount'>(${c.entrantcount} Entrants)</div>
-<div class='info'>For Indexed Classes Times in Brackets [] Is Raw Time</div>
 
 <hr />
 <!-- Results -->
@@ -24,7 +30,7 @@ ${resulttables()}
 
 <br/>
 <br/>
+${toptimestable([c.toptimes.getList(allruns=False, raw=False, course=0), c.toptimes.getList(allruns=False, raw=True, course=0)])}
 
-${toptimestable([c.toptimes.getList(allruns=False, raw=True, course=0, settitle="Top Times")])}
 
 <!--#include virtual="/wresfooter.html" -->
