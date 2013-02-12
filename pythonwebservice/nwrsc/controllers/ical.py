@@ -39,6 +39,7 @@ class IcalController(BaseController):
 			event = icalendar.Event()
 			event.add('summary', "%s: %s" % (name, ','.join(codes)))
 			event.add('dtstart', date)
+			event['uid'] = 'SCOREKEEPER-CALENDAR-%s-%s' % (name.replace(' ',''), date)
 			toencode.append(event)
 		
 		return self._publishEvents(toencode)
