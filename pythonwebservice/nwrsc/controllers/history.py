@@ -9,7 +9,6 @@ from sqlalchemy import create_engine
 from collections import defaultdict
 import operator
 import string
-import pprint
 import re
 import logging
 import simplejson
@@ -35,12 +34,6 @@ class Result(object):
 		self.pcqualify = True
 
 
-def maxitem(d):
-	if len(d) == 0:
-		return 0
-	return max(d.itervalues())
-
-
 class HistoryController(BaseController):
 
 	def __before__(self):
@@ -58,15 +51,17 @@ class HistoryController(BaseController):
 			exclusionsonly, selection
 		"""
 
-		isttotal = int(request.POST['isttotal'])
-		istavg = int(request.POST['istavg'])
-		pcseries = map(string.lower, map(string.strip, request.POST['pcseries'].split(',')))
-		pcyearmax = int(request.POST['pcyearmax'])
-		pcsinceyear = int(request.POST['pcsinceyear'])
-		pcchamp = 'pcchamp' in request.POST
+		limits = {
+			'isttotal': int(request.POST['isttotal']),
+			'istavg': int(request.POST['istavg']),
+			'pcseries': map(string.lower, map(string.strip, request.POST['pcseries'].split(','))),
+			'pcyearmax': int(request.POST['pcyearmax']),
+			'pcsinceyear': int(request.POST['pcsinceyear']),
+			'pcchamp': 'pcchamp' in request.POST
+		}
 
-		results = self._getData(pcseries=pcseries, pcyearmax=pcyearmax, pcsinceyear=pcsinceyear, pcchamp=pcchamp, isttotal=isttotal, istavg=istavg)
-		c.results = results.itervalues()
+		self._getData(limits)
+		c.results = self.results.itervalues()
 		if 'exclusionsonly' in request.POST:
 			c.results = [x for x in c.results if not (x.istqualify and x.pcqualify)]
 		c.results = sorted(c.results, key=operator.attrgetter('last', 'first'))
@@ -77,7 +72,7 @@ class HistoryController(BaseController):
 				c.names.append(key)
 
 		# format some items into strings
-		for result in results.itervalues():
+		for result in c.results:
 			result.years = ' '.join(map(str, sorted(result.years)))
 			result.series = ','.join(sorted(result.series))
 			result.pcevents = ','.join(map(str, result.pcevents.values()))
@@ -92,7 +87,7 @@ class HistoryController(BaseController):
 		return render_mako('/history/tableoutput.mako')
 
 
-	def _getData(self, pcseries = ['nwr','pro'], pcyearmax = 4, pcsinceyear = 2008, pcchamp = True, isttotal = 10, istavg = 3):
+	def _getData(self, limits):
 		"""
 			punchcard
 				championship in NWR/PRO disqualifies
@@ -102,11 +97,9 @@ class HistoryController(BaseController):
 				total events in all series
 				average where #year == active years
 		"""
-
-		results = dict()
+		self.results = dict()
 
 		for db in self._databaseList():
-			x = time.time()
 			path = self.databasePath(db.name)
 			match = seriesyear.match(db.name)
 			if match is None:
@@ -120,33 +113,42 @@ class HistoryController(BaseController):
 			settings.load(self.session)
 
 			for row in self.session.execute("select d.firstname, d.lastname, count(distinct r.eventid) from runs as r, cars as c, drivers as d where r.carid=c.id and c.driverid=d.id and r.eventid < 100 group by d.id"):
-				first = row[0].lower().strip()
-				last = row[1].lower().strip()
 				count = int(row[2])
+				self._processData(limits, row[0].lower().strip(), row[1].lower().strip(), series, year, count, count > settings.useevents)
 
-				if (last, first) not in results:
-					results[last,first] = Result(last, first)
+		# pull in the screen scraped history
+		import sqlite3
+		conn = sqlite3.connect('archive/old.history')
+		for row in conn.execute('select first, last, series, year, attended, champ from history'):
+			self._processData(limits, row[0].lower().strip(), row[1].lower().strip(), row[2].strip(), int(row[3]), int(row[4]), bool(int(row[5])))
+		conn.close()
 
-				result = results[last,first]
-				result.series.add(series.lower())
-				result.years.add(year)
-				result.isttotal += count
-
-				if series.lower() in pcseries:
-					if count > settings.useevents:
-						result.pcchamp += 1
-						if pcchamp:
-							result.pcqualify = False
-					if year >= pcsinceyear:
-						result.pcevents[year] += count
-						if result.pcevents[year] > pcyearmax:
-							result.pcqualify = False
-
-
-		for result in results.itervalues():
+		for result in self.results.itervalues():
 			result.istavg = result.isttotal * 1.0 / len(result.years)
-			result.istqualify = result.isttotal < isttotal and result.istavg < istavg
+			result.istqualify = result.isttotal < limits['isttotal'] and result.istavg < limits['istavg']
 
-		return results
+
+
+	def _processData(self, limits, first, last, series, year, count, champ):
+			if (last, first) not in self.results:
+				self.results[last,first] = Result(last, first)
+
+			result = self.results[last,first]
+			result.series.add(series.lower())
+			result.years.add(year)
+			result.isttotal += count
+
+			if series.lower() in limits['pcseries']:
+				if champ:
+					result.pcchamp += 1
+					if limits['pcchamp']:
+						result.pcqualify = False
+				if year >= limits['pcsinceyear']:
+					result.pcevents[year] += count
+					if result.pcevents[year] > limits['pcyearmax']:
+						result.pcqualify = False
+
+		
+
 
 
