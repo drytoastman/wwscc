@@ -20,6 +20,10 @@ ${c.driver.firstname} ${c.driver.lastname}
 <span class='e-${field.name}'>${field.name}: ${c.driver.getExtra(field.name)}</span>
 %endfor
 
+<a class='registeredlink' href='${h.url_for("registerlink", first=c.driver.firstname, last=c.driver.lastname, email=c.driver.email)}'>
+<span class='ui-icon ui-icon-calculator'></span>Registered Cars iCal Link
+</a> 
+
 <input  type='button' value='Edit' class='editprofile' data-driverid='${c.driver.id}'/> 
 
 <script type='text/javascript'>

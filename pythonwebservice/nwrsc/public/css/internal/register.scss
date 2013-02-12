@@ -1,5 +1,6 @@
 $basefont: Lucida Grande, Lucida Sans, Arial, sans-serif;
 $grayborder: 1px solid #ddd;
+$linkblue: #44f;
 
 @import "external/jqueryui.scss";
 @import "forms.scss";
@@ -28,7 +29,7 @@ body {
     padding: 0px 6px;
     font-weight: bold;
     text-decoration: none;
-    color: #44F;
+    color: $linkblue;
   }
 
   ul {
@@ -163,7 +164,7 @@ h3 {
   font-weight: bold;
   height: 23px;
   a {
-    color: blue !important;
+    color: $linkblue !important;
     cursor: pointer;
   }
 }
@@ -179,6 +180,20 @@ h3 {
   .ui-button {
     margin-top: 10px;
   }
+
+  .registeredlink {
+	display: block;
+	font-weight: bold;
+	text-decoration: none;
+	color: $linkblue;
+	margin-top: 5px;
+	margin-bottom: 5px;
+    .ui-icon {
+		display: inline-block;
+		vertical-align: middle;
+	}
+  }
+
 }
 
 #carlist {
@@ -315,7 +330,7 @@ table.eventdetails {
 
 h3 {
   &.eventopen a {
-    color: blue;
+    color: $linkblue;
   }
   &.lastevent.collapsed {
     border-bottom: 1px solid #dddddd;
@@ -332,7 +347,7 @@ h3 {
 
 a.viewlink {
   font-weight: bold;
-  color: blue;
+  color: $linkblue;
 }
 
 .cardisplay {

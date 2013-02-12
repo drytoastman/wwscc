@@ -39,6 +39,7 @@ def make_map():
 
 	map.connect('/ical', controller='ical')
 	map.connect('/ical/{first}/{last}/{email}/registered', controller='ical', action='registered')
+	map.connect('registerlink', '/ical/{first}/{last}/{email}/registered')
 
 	# Basic matching patterns
 	map.connect('/{controller}')
