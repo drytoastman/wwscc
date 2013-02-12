@@ -38,7 +38,7 @@ def make_map():
 	map.connect('/history/{action}', controller='history')
 
 	map.connect('/ical', controller='ical')
-	map.connect('/ical/registered/{first}/{last}/{email}', controller='ical', action='registered')
+	map.connect('/ical/{first}/{last}/{email}/registered', controller='ical', action='registered')
 
 	# Basic matching patterns
 	map.connect('/{controller}')
