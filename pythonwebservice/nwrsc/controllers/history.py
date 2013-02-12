@@ -1,6 +1,6 @@
 
 from pylons.templating import render_mako
-from pylons import request, tmpl_context as c
+from pylons import request, config, tmpl_context as c
 
 from nwrsc.model import *
 from nwrsc.controllers.lib.base import BaseController
@@ -10,6 +10,7 @@ from collections import defaultdict
 import operator
 import string
 import re
+import os
 import logging
 import simplejson
 import datetime
@@ -118,10 +119,14 @@ class HistoryController(BaseController):
 
 		# pull in the screen scraped history
 		import sqlite3
-		conn = sqlite3.connect('archive/old.history')
-		for row in conn.execute('select first, last, series, year, attended, champ from history'):
-			self._processData(limits, row[0].lower().strip(), row[1].lower().strip(), row[2].strip(), int(row[3]), int(row[4]), bool(int(row[5])))
-		conn.close()
+		historyfile = os.path.join(config.get('archivedir', 'missing'), 'old.history')
+		try:
+			conn = sqlite3.connect(historyfile)
+			for row in conn.execute('select first, last, series, year, attended, champ from history'):
+				self._processData(limits, row[0].lower().strip(), row[1].lower().strip(), row[2].strip(), int(row[3]), int(row[4]), bool(int(row[5])))
+			conn.close()
+		except Exception, e:
+			raise Exception("unable to process history %s: %s" % (historyfile, e))
 
 		for result in self.results.itervalues():
 			result.istavg = result.isttotal * 1.0 / len(result.years)
