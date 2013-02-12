@@ -187,9 +187,12 @@ class BaseController(WSGIController):
 		engine = create_engine('sqlite:///%s' % self.databasePath(otherseries))
 		self.session.bind = engine
 		driver = self._verifyID(firstname, lastname, email)
-		self.session.expunge(driver) # so we can use in another session
+		if driver is not None:
+			self.session.expunge(driver) # so we can use in another session
 		self.session.bind = savedengine
-		return driver.copy()  # just copy it, don't know what magic sqla wants to reset ids and mappings
+		if driver is not None:
+			return driver.copy()  # just copy it, don't know what magic sqla wants to reset ids and mappings
+		return None
 
 
 	def __call__(self, environ, start_response):

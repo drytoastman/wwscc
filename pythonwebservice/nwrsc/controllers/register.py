@@ -245,9 +245,13 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 		if fr['otherseries']:
 			log.info("Copy user profile from %s to %s", fr['otherseries'], self.database)
 			driver = self._loadDriverFrom(fr['otherseries'], fr['firstname'], fr['lastname'], fr['email'])
-			self.session.add(driver)
-			self.session.commit()
-			self.user.setLoginInfo(driver)
+			if driver is not None:
+				self.session.add(driver)
+				self.session.commit()
+				self.user.setLoginInfo(driver)
+			else:
+				log.error("Failed to load driver from other series (%s)", fr)
+
 			redirect(url_for(action=''))
 
 		# Try and login to all matching series, may or may not be this one
