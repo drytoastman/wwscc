@@ -34,9 +34,9 @@ x = setup(
 		"WebTest==1.1"
     ],
 	extras_require = {
-		'PDF':  ["ReportLab>=1.2"]
+		'PDF':  ["ReportLab>=1.2"],
 		'iCalendar': ["icalendar", "python-dateutil"]
-	}
+	},
     setup_requires=["PasteScript>=1.7.3"],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
