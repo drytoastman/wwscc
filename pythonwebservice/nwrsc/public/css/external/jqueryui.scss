@@ -1,8 +1,51 @@
 /*! jQuery UI - v1.10.0 - 2013-01-24
 * http://jqueryui.com
 * Includes: jquery.ui.core.css, jquery.ui.resizable.css, jquery.ui.selectable.css, jquery.ui.autocomplete.css, jquery.ui.button.css, jquery.ui.datepicker.css, jquery.ui.dialog.css, jquery.ui.menu.css, jquery.ui.spinner.css, jquery.ui.tabs.css, jquery.ui.tooltip.css
-* To view and modify this theme, visit http://jqueryui.com/themeroller/?ffDefault=Lucida%20Grande%2CLucida%20Sans%2CArial%2Csans-serif&fwDefault=bold&fsDefault=1.1em&cornerRadius=6px&bgColorHeader=deedf7&bgTextureHeader=03_highlight_soft.png&bgImgOpacityHeader=100&borderColorHeader=aed0ea&fcHeader=222222&iconColorHeader=72a7cf&bgColorContent=f2f5f7&bgTextureContent=04_highlight_hard.png&bgImgOpacityContent=100&borderColorContent=dddddd&fcContent=362b36&iconColorContent=72a7cf&bgColorDefault=d7ebf9&bgTextureDefault=02_glass.png&bgImgOpacityDefault=80&borderColorDefault=aed0ea&fcDefault=2779aa&iconColorDefault=3d80b3&bgColorHover=e4f1fb&bgTextureHover=02_glass.png&bgImgOpacityHover=100&borderColorHover=74b2e2&fcHover=0070a3&iconColorHover=2694e8&bgColorActive=3baae3&bgTextureActive=02_glass.png&bgImgOpacityActive=50&borderColorActive=2694e8&fcActive=ffffff&iconColorActive=ffffff&bgColorHighlight=ffef8f&bgTextureHighlight=03_highlight_soft.png&bgImgOpacityHighlight=25&borderColorHighlight=f9dd34&fcHighlight=363636&iconColorHighlight=2e83ff&bgColorError=cd0a0a&bgTextureError=01_flat.png&bgImgOpacityError=15&borderColorError=cd0a0a&fcError=ffffff&iconColorError=ffffff&bgColorOverlay=eeeeee&bgTextureOverlay=08_diagonals_thick.png&bgImgOpacityOverlay=90&opacityOverlay=80&bgColorShadow=000000&bgTextureShadow=04_highlight_hard.png&bgImgOpacityShadow=70&opacityShadow=30&thicknessShadow=7px&offsetTopShadow=-7px&offsetLeftShadow=-7px&cornerRadiusShadow=8px
 * Copyright (c) 2013 jQuery Foundation and other contributors Licensed MIT */
+
+
+$widgetFontFamily: Lucida Grande, Lucida Sans, Arial, sans-serif;
+$widgetFontSize: 12px;
+
+$widgetContentColor: rgb(54,43,54);
+$widgetContentBackground: rgb(240,240,255);
+$widgetContentBorder: 1px solid rgb(200,200,240);
+
+$widgetHeaderColor: rgb(255,255,255);
+$widgetHeaderBackground: rgb(0,30,70);
+$widgetHeaderBorder: 1px solid rgb(0,40,100);
+
+$widgetStateDefaultColor: rgb(255,255,255);
+$widgetStateDefaultBackground: rgb(0,60,120);
+$widgetStateDefaultBorder: 1px solid rgb(0,50,120);
+
+$widgetStateHoverColor: rgb(70,110,163);
+$widgetStateHoverBackground: rgb(200,217,255);
+$widgetStateHoverBorder: 1px solid rgb(87,110,213);
+
+$widgetStateActiveColor: rgb(24,30,190); 
+$widgetStateActiveBackground: rgb(240,240,255);
+$widgetStateActiveBorder: 1px solid rgb(20,24,200);
+
+$widgetHighlighColor: rgb(54,54,54); 
+$widgetHighlightBackground: rgb(255,239,143);
+$widgetHighlightBorder: 1px solid rgb(249,221,52);
+
+$widgetErrorColor: rgb(255,255,255);
+$widgetErrorBackground: rgb(205,10,10);
+$widgetErrorBorder: 1px solid rgb(205,10,10);
+
+$widgetIcon:          url(images/ui-icons_cccccc_256x240.png);
+$widgetIconDefault:   url(images/ui-icons_cccccc_256x240.png);
+$widgetIconHover:     url(images/ui-icons_2694e8_256x240.png);
+$widgetIconActive:    url(images/ui-icons_222222_256x240.png);
+$widgetIconHighlight: url(images/ui-icons_4b8e0b_256x240.png);
+$widgetIconError:     url(images/ui-icons_a83300_256x240.png);
+
+$widgetCornerRadius: 6px;
+$widgetOverlay: rgb(34,34,34);
+
+
 
 /* Layout helpers
 ----------------------------------*/
@@ -494,7 +537,7 @@ input.ui-button::-moz-focus-inner, button.ui-button::-moz-focus-inner {
     right: .3em;
     top: 50%;
     width: 21px;
-    margin: -13px 0 0 0;
+    margin: -13px -2px 0 0;
     padding: 1px;
     height: 20px;
   }
@@ -734,9 +777,6 @@ body .ui-tooltip {
 /* Component containers
 ----------------------------------*/
 
-$widgetFontFamily: Lucida Grande, Lucida Sans, Arial, sans-serif;
-$widgetFontSize: 12px;
-
 .ui-widget {
   font-family: $widgetFontFamily;
   font-size: $widgetFontSize;
@@ -746,11 +786,6 @@ $widgetFontSize: 12px;
   }
 }
 
-$widgetContentBackground: #f2f5f7;
-// url(images/ui-bg_highlight-hard_100_f2f5f7_1x100.png) 50% top repeat-x;
-$widgetContentBorder: 1px solid #dddddd;
-$widgetContentColor: #362b36;
-
 .ui-widget-content {
   border: $widgetContentBorder;
   background: $widgetContentBackground;
@@ -759,11 +794,6 @@ $widgetContentColor: #362b36;
     color: $widgetContentColor;
   }
 }
-
-$widgetHeaderBackground: #deedf7;
-// url(images/ui-bg_highlight-soft_100_deedf7_1x100.png) 50% 50% repeat-x;
-$widgetHeaderBorder: 1px solid #aed0ea;
-$widgetHeaderColor: #222222;
 
 .ui-widget-header {
   border: $widgetHeaderBorder;
@@ -777,11 +807,6 @@ $widgetHeaderColor: #222222;
 
 /* Interaction states
 ----------------------------------*/
-
-$widgetStateDefaultColor: #2779aa;
-$widgetStateDefaultBorder: 1px solid #aed0ea;
-$widgetStateDefaultBackground: #d7ebf9; 
-// url(images/ui-bg_glass_80_d7ebf9_1x400.png) 50% 50% repeat-x;;
 
 .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
   border: $widgetStateDefaultBorder;
@@ -799,11 +824,6 @@ $widgetStateDefaultBackground: #d7ebf9;
   }
 }
 
-$widgetStateHoverColor: #0070a3;
-$widgetStateHoverBorder: 1px solid #74b2e2;
-$widgetStateHoverBackground: #e4f1fb;
-// url(images/ui-bg_glass_100_e4f1fb_1x400.png) 50% 50% repeat-x;
-
 .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
   border: $widgetStateHoverBorder;
   background: $widgetStateHoverBackground;
@@ -819,11 +839,6 @@ $widgetStateHoverBackground: #e4f1fb;
     text-decoration: none;
   }
 }
-
-$widgetStateActiveColor: #ffffff;
-$widgetStateActiveBorder: 1px solid #2694e8;
-$widgetStateActiveBackground: #3baae3;
-// url(images/ui-bg_glass_50_3baae3_1x400.png) 50% 50% repeat-x;
 
 .ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active {
   border: $widgetStateActiveBorder;
@@ -844,12 +859,6 @@ $widgetStateActiveBackground: #3baae3;
 /* Interaction Cues
 ----------------------------------*/
 
-
-$widgetHighlightBorder: 1px solid #f9dd34;
-$widgetHighlightBackground:  #ffef8f;
-// url(images/ui-bg_highlight-soft_25_ffef8f_1x100.png) 50% top repeat-x;
-$widgetHighlighColor: #363636;
-
 .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight {
   border: $widgetHighlightBorder;
   background: $widgetHighlightBackground;
@@ -859,11 +868,6 @@ $widgetHighlighColor: #363636;
 .ui-state-highlight a, .ui-widget-content .ui-state-highlight a, .ui-widget-header .ui-state-highlight a {
   color: $widgetHighlighColor;
 }
-
-$widgetErrorBorder: 1px solid #cd0a0a;
-$widgetErrorBackground: #cd0a0a;
-// url(images/ui-bg_flat_15_cd0a0a_40x100.png) 50% 50% repeat-x;
-$widgetErrorColor: #ffffff;
 
 .ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {
   border: $widgetErrorBorder;
@@ -900,15 +904,6 @@ $widgetErrorColor: #ffffff;
 ----------------------------------*/
 
 /* states and images */
-
-$widgetIcon:          url(images/ui-icons_72a7cf_256x240.png);
-$widgetIconDefault:   url(images/ui-icons_3d80b3_256x240.png);
-$widgetIconHover:     url(images/ui-icons_2694e8_256x240.png);
-$widgetIconActive:    url(images/ui-icons_ffffff_256x240.png);
-$widgetIconHighlight: url(images/ui-icons_2e83ff_256x240.png);
-$widgetIconError:     url(images/ui-icons_ffffff_256x240.png);
-
-
 .ui-icon {
   width: 16px;
   height: 16px;
@@ -1641,8 +1636,6 @@ $widgetIconError:     url(images/ui-icons_ffffff_256x240.png);
 
 /* Corner radius */
 
-$widgetCornerRadius: 6px;
-
 .ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl {
   border-top-left-radius: $widgetCornerRadius;
 }
@@ -1660,9 +1653,6 @@ $widgetCornerRadius: 6px;
 }
 
 /* Overlays */
-
-$widgetOverlay: #222222;
-// url(images/ui-bg_diagonals-thick_90_eeeeee_40x40.png) 50% 50% repeat;
 
 .ui-widget-overlay {
   background: $widgetOverlay;

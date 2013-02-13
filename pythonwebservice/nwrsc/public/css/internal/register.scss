@@ -1,6 +1,6 @@
 $basefont: Lucida Grande, Lucida Sans, Arial, sans-serif;
 $grayborder: 1px solid #ddd;
-$linkblue: #44f;
+$linkblue: rgb(40,40,255);
 
 @import "external/jqueryui.scss";
 @import "forms.scss";
@@ -11,6 +11,7 @@ body {
   padding-left: 2px;
   font-family: $basefont;
   font-size: 13px;
+  color: #333;
 }
 
 .tabcontainer {
@@ -121,10 +122,13 @@ body {
   margin-left: 20px;
   margin-bottom: 3px;
   font-size: 1.5em;
+  font-family: "SegoeUI", $basefont;
 }
 
 .errorlog {
-  color: #F00;
+	color: #F00;
+	margin-left: 40px;
+	font-weight: bold;
 }
 
 
@@ -188,9 +192,10 @@ h3 {
 	color: $linkblue;
 	margin-top: 5px;
 	margin-bottom: 5px;
-    .ui-icon {
+    img {
 		display: inline-block;
 		vertical-align: middle;
+		margin-right: 3px;
 	}
   }
 
@@ -362,9 +367,27 @@ a.viewlink {
     font-size: 1.1em;
   }
   .desc {
-    color: gray;
+    color: rgb(200,200,200);
+    font-weight: normal;
   }
 }
+
+.ui-state-active {
+ .cardisplay {
+  .desc {
+	color: rgb(100,100,204);
+  }
+ }
+}
+
+.ui-state-hover {
+ .cardisplay {
+  .desc {
+	color: rgb(110,120,204);
+  }
+ }
+}
+	
 
 .ui-button-icon-only {
   width: 25px !important;

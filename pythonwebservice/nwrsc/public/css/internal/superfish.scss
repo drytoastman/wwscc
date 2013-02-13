@@ -69,29 +69,33 @@ ul.sf-menu li {
 
 /*** DEMO SKIN ***/
 
+$menuborder: 1px solid #bfceff;
+
 .sf-menu {
   float: left;
   margin-bottom: 1em;
   font-family: $widgetFontFamily;
   font-weight: bold;
-  background: $widgetStateDefaultBackground;
+  background: $widgetHeaderBackground;
+
+  > li {
+	background: $widgetHeaderBackground;
+	> a {
+    	border-right: $menuborder;
+	}
+  }
 
   ul {
     box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
   }
   a {
-    border-left: 1px solid white;
-    border-right: 1px solid white;
-    border-top: 1px solid #cfdeff;
+    border-top: $menuborder;
     padding: 0.75em 1em;
     text-decoration: none;
-    color: $widgetStateDefaultColor;
-    &:visited {
-      color: $widgetStateDefaultColor;
-    }
+    color: $widgetHeaderColor;
   }
   li {
-    background: $widgetHeaderBackground;
+    background: lighten($widgetHeaderBackground, 2%);
     font-size: 0.9em;
 
 	li {

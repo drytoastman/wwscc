@@ -21,7 +21,7 @@ ${c.driver.firstname} ${c.driver.lastname}
 %endfor
 
 <a class='registeredlink' href='${h.url_for("registerlink", first=c.driver.firstname, last=c.driver.lastname, email=c.driver.email)}'>
-<span class='ui-icon ui-icon-calculator'></span>Registered Cars iCal Link
+<img src='/images/calendaricon.png'>Registered Cars iCal Link
 </a> 
 
 <input  type='button' value='Edit' class='editprofile' data-driverid='${c.driver.id}'/> 

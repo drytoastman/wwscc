@@ -92,13 +92,42 @@ button.small {
 		text-align: right;
 		margin-right: 10px;
 	}
+
+	.dataTables_length, .dataTables_filter, .dataTables_info {
+		margin: 6px;
+	}
+
+	.fg-button {
+		margin: 2px;
+	}
+
+	
+	.DataTables_sort_icon {
+		float: right;
+	}
 }
 
 
 #titlebutton a {
-  color: black;
+  color: rgb(240,240,240);
   &:hover {
   	background: $widgetHeaderBackground;
   }
 }
+
+.cleanlist {
+	padding-left: 20px;
+
+	li  {
+		margin-top:2px;
+	}
+	ul {
+		list-style: none;
+		padding-left: 10px;
+	}
+	a {
+		text-decoration: none;
+	}
+}
+
 

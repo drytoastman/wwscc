@@ -108,7 +108,7 @@
 	span.title { display: inline-block;  width: 200px; height: 20px; text-align:right; margin-right: 4px; font-weight: bold; }
 	span.imageinfo { display: inline-block; width: 80px; }
 	form a, form img { vertical-align: middle; }
-	input.file { font-size: 0.7em; }
+	input.file { font-size: 0.8em; }
 </style>
 
 
@@ -128,7 +128,7 @@ $(document).ready(function(){
 	});
 
     // make anchors into buttons
-	$('form a[target=_blank]').button().css("font-size", "0.7em");
+	$('form a[target=_blank]').button().css("font-size", "0.8em");
 
 });
 </script>
