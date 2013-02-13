@@ -46,9 +46,9 @@ body {
 
   .tab {
     border-top: 0;
-    border-left: $grayborder;
-    border-bottom: $grayborder; 
-    border-right: $grayborder;
+    border-left: $widgetStateDefaultBorder;
+    border-bottom: $widgetStateDefaultBorder;
+    border-right: $widgetStateDefaultBorder;
     border-radius: 0px 0px 6px 6px;
     padding: 5px 13px 8px 13px;
     text-align: center;
