@@ -250,6 +250,7 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 				self.session.commit()
 				self.user.setLoginInfo(driver)
 			else:
+				self.user.setPreviousError("Failed to find profile in %s" % (fr['otherseries']))
 				log.error("Failed to load driver from other series (%s)", fr)
 
 			redirect(url_for(action=''))
@@ -262,6 +263,8 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 				if not self.user.hasCreds(series.name):
 					self.user.setLoginInfo(series.driver, series.name)
 				
+		if not self.user.hasCreds(c.database.upper()):
+			self.user.setPreviousError("login failed")
 		redirect(url_for(action=''))
 
 

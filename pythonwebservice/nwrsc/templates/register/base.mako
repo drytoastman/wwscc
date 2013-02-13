@@ -51,15 +51,8 @@ Other Series
 
 
 <div class='errorlog'>
+${c.previouserror}
 </div>
-
-<!--<div id='hrule'></div>-->
-
-%if c.previouserror:
-<div class='ui-state-error'>
-<span class='ui-state-error-text'>${c.previouserror}</span>
-</div>
-%endif
 
 ${next.body()}
 

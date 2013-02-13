@@ -33,10 +33,10 @@ OR
 
 <td id='othercell'>
 <ul>
-%for name, creds in c.otherseries.iteritems():
+%for name, creds in sorted(c.otherseries.iteritems()):
 <li>
 	<button class='copylogin' data-creds='{"firstname":"${creds.firstname}", "lastname":"${creds.lastname}", "email":"${creds.email}", "series":"${name}"}'>
-		Copy Profile From ${name.upper()}
+		Copy Profile (${creds.firstname}, ${creds.lastname}) From ${name.upper()}
 	</button>
 </li>
 %endfor
