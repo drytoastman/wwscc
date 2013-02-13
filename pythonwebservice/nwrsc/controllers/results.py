@@ -210,9 +210,13 @@ class ResultsController(BaseController):
 		challengeid = int(request.GET.get('id', -1))
 		round = int(request.GET.get('round', -1))
 		c.challenge = self.session.query(Challenge).get(challengeid)
+		if c.challenge is None:
+			return "No challenge found"
 		c.round = self.session.query(ChallengeRound) \
 						.filter(ChallengeRound.challengeid == challengeid) \
 						.filter(ChallengeRound.round == round).first() 
+		if c.round is None:
+			return "No round found"
 		loadSingleRoundResults(self.session, c.challenge, c.round)
 		return render_mako_def('/challenge/challengereport.mako', 'roundReport', round=c.round)
 
