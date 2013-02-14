@@ -100,25 +100,18 @@ body {
 
 #header {
   padding: 4px;
-  a {
-    line-height: 0px;
-  }
-  img {
-    max-height: 60px;
-  }
 }
 
 #sponsorimg {
-  margin-left: 40px;
-  max-height: 60px;
+  margin-left: 10px;
   img, a {
     outline: none;
     border: 0px;
+    line-height: 0px;
   }
 }
 
 #seriesname {
-  padding-top: 10px;
   margin-left: 20px;
   margin-bottom: 3px;
   font-size: 1.5em;
@@ -306,6 +299,8 @@ table.eventdetails {
 }
 
 #seriesimg, #sponsorimg {
+  margin-top:5px;
+  max-height: 60px;
   display: inline-block;
   vertical-align: middle;
 }
@@ -367,7 +362,7 @@ a.viewlink {
     font-size: 1.1em;
   }
   .desc {
-    color: rgb(200,200,200);
+    color: rgb(100,100,100);
     font-weight: normal;
   }
 }

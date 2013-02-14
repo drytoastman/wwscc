@@ -29,7 +29,7 @@
 <span class='input'><input type="text" name="useevents" value="${c.settings.useevents}" size="4" /></span>
 </div>
 		
-<div title="URL link for sponsor banner">            
+<div title="URL link for sponsor banner, can also be a map description">            
 <span class='title'>Sponsor Link</span>
 <span class='input'><input type="text" name="sponsorlink" value="${c.settings.sponsorlink}" size="40" /></span>
 </div>
