@@ -38,6 +38,7 @@ public class Event implements Serializable
 
 	protected int perlimit; // per person
 	protected int totlimit; // for whole event
+	protected boolean doublespecial; // special double entry handling for registration
 	protected int cost;
 	protected String paypal;
 	protected String snail;

@@ -33,7 +33,8 @@ t_events = Table('events', metadata,
 	Column('snail', String(256)),	
 	Column('cost', SmallInteger),
 	Column('notes', String(256)),
-	Column('practice', Boolean)
+	Column('practice', Boolean),
+	Column('doublespecial', Boolean)
 	)
 
 

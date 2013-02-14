@@ -80,8 +80,6 @@ def convert20121(session):
 	metadata.bind = session.bind
 
 	#rename eventresults.ppoint and ppoints
-	"""
-	"""
 	log.info("update eventresults")
 	makeTableOld(session, metadata, 'eventresults');
 	processor = SLDateTime().result_processor(None)
@@ -160,11 +158,28 @@ def convert20123(session):
 	session.commit()
 
 
+def convert20124(session):
+
+	metadata.bind = session.bind
+
+	# Add new doublespecial flag
+	session.execute("ALTER TABLE events ADD COLUMN doublespecial BOOLEAN DEFAULT 0")
+
+	log.info("update settings")
+	settings = Settings()
+	settings.load(session)
+	settings.schema = '20131'
+	settings.save(session)
+
+	session.commit()
+
+
 converters = {
 	'20112': convert2011,
 	'20121': convert20121,
 	'20122': convert20122,
 	'20123': convert20123,
+	'20124': convert20124,
 }
 
 
