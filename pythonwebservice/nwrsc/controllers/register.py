@@ -183,13 +183,15 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 
 
 
-	def _checkLimitState(self, event, driverid):
+	def _checkLimitState(self, event, driverid, setResponse=True):
+		if event.doublespecial:
+			pass
 		if event.totlimit and event.count >= event.totlimit:
-			response.status = "400 Event limit of %d reached" % (event.totlimit)
+			if setResponse: response.status = "400 Event limit of %d reached" % (event.totlimit)
 			return False
 		entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
 		if entries.count() >= event.perlimit:
-			response.status = "400 Entrant limit of %d reached" % (event.perlimit)
+			if setResponse: response.status = "400 Entrant limit of %d reached" % (event.perlimit)
 			return False
 		return True
 		
@@ -234,7 +236,8 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 			self.session.delete(self.session.query(Registration).get(regid))
 			self.session.commit()
 		except Exception, e:
-			self.user.setPreviousError("Possible stale browser state, try reloading page")
+			response.status = '400 Possible stale browser state, try reloading page'
+			log.error("unregistercar", exc_info=1)
 
 		 
 	@validate(schema=LoginSchema(), form='login', prefix_error=False)
@@ -328,8 +331,7 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 		openevents = list()
 		for event in c.events:
 			if not event.isOpen: continue
-			if event.totlimit and event.count >= event.totlimit: continue
-			if registration.filter(Registration.eventid==event.id).count() >= event.perlimit: continue
+			if not self._checkLimitState(event, c.driverid, setResponse=False): continue
 			openevents.append(event.id)
 
 		for car in c.cars:

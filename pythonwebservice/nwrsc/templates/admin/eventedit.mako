@@ -103,6 +103,11 @@
 <td><input type='text' size='40' name='totlimit' value="${c.event.totlimit}"></td>
 </tr>
 
+<tr title='special handling for double entries, total limit only include first car for each entrant'>
+<th>Special DE</th>
+<td><input type='checkbox' name='doublespecial' ${c.event.doublespecial and "checked='yes'"}></td>
+</tr>
+
 <tr class='advanced' title='a paypal email address if paypal payments are desired'>
 <th>PayPal</th>
 <td><input type='text' size='40' name='paypal' value="${c.event.paypal}"></td>

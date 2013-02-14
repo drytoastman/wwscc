@@ -395,6 +395,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		c.event.runs = 4
 		c.event.perlimit = 2
 		c.event.totlimit = 0
+		c.event.doublespecial = False
 		c.event.date = datetime.today()
 		c.event.regopened = datetime.today()
 		c.event.regclosed = datetime.today()

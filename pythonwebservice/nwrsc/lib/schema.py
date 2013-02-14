@@ -114,6 +114,7 @@ class EventSchema(Schema):
 	regopened = SDateTime()
 	regclosed = SDateTime()
 	perlimit = Int(min=1)
+	doublespecial = Bool()
 	totlimit = Int(min=0)
 	paypal = String()
 	cost = Int()
