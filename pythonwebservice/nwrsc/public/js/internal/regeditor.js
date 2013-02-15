@@ -57,7 +57,7 @@
 			me.find('[name=carid]').val(car.id);
 		
 			me.dialog({
-				width: "auto",
+				Xwidth: "auto",
 				modal: true,
 				title: 'Register Car for Events',
 				open: function() { me.find('input').blur(); },
@@ -100,7 +100,7 @@
 			}
 		
 			me.dialog({
-				width: "auto",
+				Xwidth: "auto",
 				modal: true,
 				title: 'Register Cars for ' + theevent.name,
 				open: function() { me.find('input').blur(); },

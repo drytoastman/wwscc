@@ -43,6 +43,7 @@ function editCar(driverid, car) {
 function profileTabSetup()
 {
 	$(".editprofile").button().click( function() {
+		$(this).blur();
 		var driverid = $(this).data('driverid');
 		$('#drivereditor').DriverEdit("doDialog", drivers[driverid], function() {
 			$.nwr.updateDriver($("#drivereditor").serialize(), updateProfile);
@@ -62,11 +63,13 @@ function carTabSetup()
 	$("#carlist .editcar").button({icons: { primary:'ui-icon-pencil'}, text: false} ).click(function() {
 		var driverid = $(this).data('driverid')
 		var car = cars[$(this).data('carid')];
+		$(this).blur();
 		editCar(driverid, car);
 	});
 	
 	$("#carlist .regbutton").button().click( function() {
 		var car = cars[$(this).data('carid')]; // pull from global that we set in template
+		$(this).blur();
 		$("#registereventform").RegEdit('registerForEvent', car, function() {
 			updateCars();
 			$('#registereventform input:checked').each(function() {
@@ -76,6 +79,7 @@ function carTabSetup()
 	});
 	
  	$('button.createcar').button().click(function() {
+		$(this).blur();
 		editCar($(this).data('driverid'), {}); 
 	});
 
@@ -84,12 +88,16 @@ function carTabSetup()
 
 function eventCollapsable()
 {
-	$('#eventsinner > h3').last().addClass('lastevent collapsed');
+	$('#eventsinner > h3').last().addClass('lastevent');
 	$('#eventsinner > h3').click(function() {
-		if ($(this).next().toggle('blind').css('display') != 'none') {
-			$(this).removeClass('collapsed');
-		} else {
-			$(this).addClass('collapsed');
+		var h3 = $(this);
+		var ev = $(this).next();
+		
+		if (ev.is(':visible')) {  // collapse, then add collapsed indicator
+			ev.toggle('blind', function() { h3.addClass('collapsed'); });
+		} else { // remove collapsed indicator, then show it
+			h3.removeClass('collapsed');
+			ev.toggle('blind');
 		}
 		$(this).find(".downarrow").toggle();
 		$(this).find(".rightarrow").toggle();
@@ -115,6 +123,7 @@ function eventPaneSetup(jqe)
 
 		var limit = Math.min( theevent.totlimit - theevent.count, theevent.perlimit - regcars );
 
+		$(this).blur();
 		$("#registercarform").RegEdit('registerCars', theevent, cars, limit, function() {
 			updateCars();
 			updateEvent(eventid);

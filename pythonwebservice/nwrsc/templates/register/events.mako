@@ -21,6 +21,7 @@
 <%def name="eventdisplay(ev)">
 
     <div class='detailscontainer'>
+	<span class='header'>Details</span>
 	<table class='eventdetails'>
 		<tr><th>Closes</th><td>${ev.opened and ev.regclosed.strftime('%a %b %d at %I:%M%p') or 'Has not opened yet'}</td></tr>
 	%if ev.host:
@@ -55,6 +56,7 @@
 	</div>
 
 	<div class='carcontainer'>
+	<span class='header'>Cars</span>
 		<ul>
 		%for reg in ev.regentries:
 			<li>

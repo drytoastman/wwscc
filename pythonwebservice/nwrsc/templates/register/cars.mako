@@ -16,7 +16,7 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 <%def name="carlist()">
 
 <table id='carlist'>
-<tr><th></th><th></th><th><span>Car</span></th><th><span>Registered/Used In</span></th></tr>
+<tr><th></th><th></th><th><span>Cars</span></th><th><span>Registered/Used In</span></th></tr>
 %for car in c.cars:
 	<tr>
 	<td><button class='editcar' data-driverid='${c.driverid}' data-carid='${car.id}' ${disablecar(car)} >Edit</button></td>

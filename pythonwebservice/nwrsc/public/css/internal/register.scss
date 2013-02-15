@@ -1,5 +1,7 @@
 $basefont: Lucida Grande, Lucida Sans, Arial, sans-serif;
-$grayborder: 1px solid #ddd;
+$grayborder: 1px solid #bbb;
+$eventsborder: 1px solid #ccc;
+$containerborder: 1px solid #aaa;
 $linkblue: rgb(40,40,255);
 
 @import "external/jqueryui.scss";
@@ -12,6 +14,12 @@ body {
   font-family: $basefont;
   font-size: 13px;
   color: #333;
+}
+
+a:active, a:focus, a {
+	outline: none;
+	border: 0;
+	ie-dummy: expression(this.hideFocus=true);
 }
 
 .tabcontainer {
@@ -125,24 +133,6 @@ body {
 }
 
 
-h3 {
-  &.eventclosed span {
-    color: #999;
-  }
-}
-
-
-.eventday, .eventmonth {
-  display: inline-block;
-  width: 27px;
-  margin-right: 2px;
-}
-
-.eventdate {
-  display: inline-block;
-  width: 23px;
-  margin-right: 2px;
-}
 
 .helpbox {
   margin: 0;
@@ -200,7 +190,7 @@ h3 {
   border-collapse: collapse;
   th {
     min-width: 26px;
-    border-bottom: 1px solid #dddddd;
+    border-bottom: 1px solid #999;
     span {
       font-size: 140%;
       display: inline-block;
@@ -210,7 +200,7 @@ h3 {
   td {
     vertical-align: top;
     padding: 5px;
-    border-bottom: 1px solid #dddddd;
+    border-bottom: 1px solid #ccc;
   }
 }
 
@@ -318,26 +308,48 @@ table.eventdetails {
   }
 }
 
-#eventsinner h3 {
-  border-top: 1px solid #dddddd;
-  border-left: 1px solid #dddddd;
-  border-right: 1px solid #dddddd;
-  border-radius: 0.5em 0.5em 0em 0em;
-  margin: 0px;
-  margin-top: -1px;
-  padding: 5px;
-  cursor: pointer;
+#eventsinner {
+	h3 {
+		border-top: $eventsborder;
+		border-left: $eventsborder;
+		border-right: $eventsborder;
+		border-radius: 0.5em 0.5em 0em 0em;
+		margin: 0px;
+		margin-top: -1px;
+		padding: 5px;
+		cursor: pointer;
+
+		a {
+			font-size: 1.2em;
+		}
+
+		&.eventopen a {
+			color: $linkblue;
+		}
+
+		&.lastevent.collapsed {
+			border-bottom: $eventsborder;
+			border-radius: 0.5em 0.5em 0.5em 0.5em !important;
+		}
+
+		&.eventclosed span {
+			color: #999;
+		}
+
+		.eventday, .eventmonth {
+			display: inline-block;
+			width: 30px;
+			margin-right: 2px;
+		}
+	
+		.eventdate {
+			display: inline-block;
+			width: 23px;
+			margin-right: 2px;
+		}
+	}
 }
 
-h3 {
-  &.eventopen a {
-    color: $linkblue;
-  }
-  &.lastevent.collapsed {
-    border-bottom: 1px solid #dddddd;
-    border-radius: 0.5em 0.5em 0.5em 0.5em !important;
-  }
-}
 
 .logout {
   position: relative;
@@ -368,7 +380,15 @@ a.viewlink {
   }
 }
 
-.ui-state-active {
+.ui-button {
+ .cardisplay {
+  .desc {
+	color: rgb(200,200,200);
+  }
+ }
+}
+
+.ui-button.ui-state-active {
  .cardisplay {
   .desc {
 	color: rgb(100,100,204);
@@ -376,7 +396,7 @@ a.viewlink {
  }
 }
 
-.ui-state-hover {
+.ui-button.ui-state-hover {
  .cardisplay {
   .desc {
 	color: rgb(110,120,204);
@@ -406,34 +426,43 @@ div.eventholder {
   padding: 3px;
   margin: 0;
   border-radius: 0em 0em 0.5em 0.5em;
-  border-left: 1px solid #dddddd;
-  border-right: 1px solid #dddddd;
-  border-bottom: 1px solid #dddddd;
+  border-left: $eventsborder;
+  border-right: $eventsborder;
+  border-bottom: $eventsborder;
   @extend .ui-helper-clearfix;
 }
 
 div.detailscontainer, div.carcontainer {
   border-radius: 4px;
-  border: $grayborder;
-  background: #F6F6F6;
-  padding: 4px;
+  border: $containerborder;
+  background: #F0F0FF;
+  padding: 5px;
   margin-left: 0.5%;
   margin-right: 0.5%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box; 
 
-  @media screen and (min-width: 601px) {
+  .header {
+	font-size: 1.3em;
+	font-weight: bold;
+	margin-bottom: 3px;
+	color: $widgetHeaderBackground;
+	display: block;
+	text-align: center;
+	border-bottom: 1px solid gray;
+  }
+
+  @media screen and (min-width: 751px) {
 	vertical-align: top;
 	float: left;
     width: 49%;
   	min-height: 100px;
   }
-  @media screen and (max-width: 600px) {
+  @media screen and (max-width: 750px) {
   	display: block;
-    width: 100%;
-	margin-top: 2px;
-	margin-bottom: 2px;
+	margin-top: 3px;
+	margin-bottom: 3px;
   }
 }
 
@@ -482,6 +511,6 @@ button {
 	text-align: center;
 	font-size: 1.1em;
 	font-weight: bold;
-	color: #511;
+	color: #611;
 }
 
