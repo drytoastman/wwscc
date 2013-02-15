@@ -114,7 +114,7 @@ public class Logging
 
 				String record = getFormatter().formatMessage(logRecord);
 				if (record.contains("\n"))
-					record = "<HTML>" + record.replace("\n", "<br>");
+					record = "<HTML>" + record.replace("\n", "<br>") + "</HTML>";
 				JOptionPane.showMessageDialog(null, record, title, type);
 			}
 		}

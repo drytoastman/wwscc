@@ -47,6 +47,8 @@ class ErrorController(BaseController):
 		req = request.environ.get('pylons.original_request')
 		resp = request.environ.get('pylons.original_response')
 		content = literal(resp.body) or cgi.escape(request.GET.get('message', ''))
+		if "<html>" in content:
+			return content
 		page = self.error_template % \
 			dict(prefix=request.environ.get('SCRIPT_NAME', ''),
 				 code=cgi.escape(request.GET.get('code', str(resp.status_int))),

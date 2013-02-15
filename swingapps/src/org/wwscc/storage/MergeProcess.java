@@ -62,7 +62,7 @@ public class MergeProcess
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Unable to download new merged version from server:\n " + e, e);
+			log.log(Level.SEVERE, "Unable to download new merged version from server:\n " + e.getMessage(), e);
 			return false;
 		}
 	}
