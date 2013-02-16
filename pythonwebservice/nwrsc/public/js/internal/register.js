@@ -102,7 +102,7 @@ function eventCollapsable()
 		$(this).find(".downarrow").toggle();
 		$(this).find(".rightarrow").toggle();
 	});
-	$('#eventsinner > h3.eventclosed').click();
+	$('#eventsinner > h3').filter(':not(.eventopen:first)').click(); // close all except first open event
 }
 
 
