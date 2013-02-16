@@ -35,6 +35,7 @@
 
 					var w = me.data('watcher');
 					if (w) { w.change(checked); }
+					me.blur();
 				});
 			}
 

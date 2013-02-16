@@ -89,7 +89,7 @@
 			if (! myform.data('cardialoginit'))
 			{
 				myform.data('cardialoginit', true);
-				myform.find('.numberselect').button().click(function() { methods.chooseNumber.call(myform); return false; });
+				myform.find('.numberselect').button().click(function() { $(this).blur(); methods.chooseNumber.call(myform); return false; });
 				myform.find('[name=classcode]').change(function() { methods.classchange.call(myform); });
 
 				$.validator.setDefaults({ignore:[]});
