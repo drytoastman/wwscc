@@ -7,7 +7,17 @@
 	<title>Live Results</title> 
 	<link rel="stylesheet" href="/css/live.css" />
 	<script src="/js/live.js"></script>
+<script type='text/javascript'>
+<%
+try:
+	context.write('$.nwr.urlbase = "%s";' % h.url_for(action=''));
+except:
+	pass
+%>
+</script>
 </head> 
+
+%
 
 <%
 codeset = set([v['code'] for v in c.views])

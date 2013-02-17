@@ -13,7 +13,11 @@ from mobile import MobileController
 class AnnouncerController(MobileController):
 
 	def index(self):
+		c.title = 'Scorekeeper Announcer'
+
 		if self.eventid:
+			c.javascript = ['/js/announcer.js']
+			c.stylesheets = ['/css/announcer.css']
 			c.event = self.event
 			return render_mako('/announcer/main.mako')
 		elif self.database is not None:

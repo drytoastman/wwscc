@@ -40,17 +40,11 @@
         updateDriver: function(args, callback) { $.post($.nwr.url_for('editdriver'), args, callback); },
         updateCar: function(args, callback) { $.post($.nwr.url_for('editcar'), args, callback); },
 
+		urlbase: "",
         url_for: function(action, other) { 
-			base = window.location.href.substring(0, window.location.href.lastIndexOf('/')+1);
-			if (other) { return base + action + '/' + other; }
-			return base + action;
+			if (other) { return $.nwr.urlbase + action + '/' + other; }
+			return $.nwr.urlbase + action;
 		 },
-
-        event_url_for: function(action, other) { 
-			base = window.location.href;
-			if (other) { return base + '/' + action + '/' + other; }
-			return base + '/' + action;
-		 }
     };
 
 

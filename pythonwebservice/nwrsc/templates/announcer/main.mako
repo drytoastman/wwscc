@@ -1,17 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-<title>Scorekeeper Announcer Tool</title>
-<link href="/css/announcer.css" rel="stylesheet" type="text/css" />
-<script type='text/javascript' src='/js/announcer.js'></script>
-</head>
-
-<body>
+<%inherit file="/base.mako" />
 
 <table class='layout' id='mainlayout'><tr><td>
 
-<div id='runorder' class='ui-corner-all ui-widget ui-widget-content'></div>
+<div id='runorder' class='ui-widget'></div>
 
 <div id="entranttabs">
     <ul>
@@ -43,8 +34,4 @@
 </div>
 
 </td></tr></table>
-
-
-</body>
-</html>
 

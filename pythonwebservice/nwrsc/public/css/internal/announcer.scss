@@ -43,7 +43,8 @@ table {
 
 span.header {
   font-weight: bold;
-  background: #79b7e7;
+  background: $widgetHeaderBackground;
+  color: $widgetHeaderColor;
   display: block;
   border: 1px solid black;
   padding: 2px;
@@ -53,11 +54,13 @@ span.header {
 tr {
   &.header th {
     font-weight: bold;
-    background: #79b7e7;
+    background: $widgetHeaderBackground;
+    color: $widgetHeaderColor;
   }
   &.titles th {
     font-weight: bold;
-    background: #c5dbec;
+    background: $widgetStateDefaultBackground; 
+	color: $widgetStateDefaultColor;
   }
   &.highlight td {
     font-size: 110%;
@@ -90,7 +93,6 @@ table {
 
 #runorder {
   margin-bottom: 10px;
-  padding: 4px;
 }
 
 #classtable td, #champtable td {

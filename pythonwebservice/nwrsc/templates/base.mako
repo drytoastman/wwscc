@@ -4,13 +4,20 @@
 <title>${c.title}</title>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-<!-- <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8;" /> -->
 %for style in c.stylesheets:
 <link href="${style}" rel="stylesheet" type="text/css" />
 %endfor
 %for js in c.javascript:
 ${h.javascript_link(js)}
 %endfor
+<script type='text/javascript'>
+<%
+try:
+	context.write('$.nwr.urlbase = "%s";' % h.url_for(action=''));
+except:
+	pass
+%>
+</script>
 <%def name="extrahead()"></%def>
 ${self.extrahead()}
 </head>

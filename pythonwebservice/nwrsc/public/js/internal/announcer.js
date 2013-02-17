@@ -50,16 +50,16 @@ function processLast(json)
 		data = json[0];
 		delete data['classcode'];
 		lasttime = data.updated;
-		$.getJSON($.nwr.event_url_for('results'), data,  processResults);
-		$('#runorder').load($.nwr.event_url_for('runorder')+'?carid='+data.carid);
-		$.getJSON($.nwr.event_url_for('toptimes'), data,  processTopTimes);
-		$.getJSON($.nwr.event_url_for('nexttofinish'), data,  processNext);
+		$.getJSON($.nwr.url_for('results'), data,  processResults);
+		$('#runorder').load($.nwr.url_for('runorder')+'?carid='+data.carid);
+		$.getJSON($.nwr.url_for('toptimes'), data,  processTopTimes);
+		$.getJSON($.nwr.url_for('nexttofinish'), data,  processNext);
 	}
 }
 
 function updateCheck()
 {
-	$.getJSON($.nwr.event_url_for('last'), { time: lasttime }, processLast);
+	$.getJSON($.nwr.url_for('last'), { time: lasttime }, processLast);
 }
 
 $(document).ready(function(){
