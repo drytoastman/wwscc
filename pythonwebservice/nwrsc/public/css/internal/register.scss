@@ -358,6 +358,12 @@ table.eventdetails {
   float: right;
 }
 
+.limit {
+	display: block;
+	margin-top: 3px;
+	margin-bottom: 3px;
+}
+
 a.viewlink {
   font-weight: bold;
   color: $linkblue;
@@ -415,7 +421,7 @@ a.viewlink {
   ul {
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin-top: 0;
     color: gray;
   }
 }
@@ -469,7 +475,7 @@ div.detailscontainer, div.carcontainer {
 #registereventform ul, #registercarform ul, .carcontainer ul {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin-top: 0;
 }
 
 #registereventform li, #registercarform li, .carcontainer li {

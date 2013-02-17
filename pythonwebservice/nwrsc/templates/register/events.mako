@@ -17,6 +17,9 @@
 </%def>
 
 
+<%def name="entryLink(ev, text)">
+<a class='viewlink' href='${h.url_for(action='view', other=ev.id)}' >${text}</a>
+</%def>
 
 <%def name="eventdisplay(ev)">
 
@@ -31,14 +34,16 @@
 		<tr><th>Location</th><td>${ev.location}</td></tr>
 	%endif
 	%if ev.opened:
-		<tr><th>Entries</th><td>
-		<a class='viewlink' href='${h.url_for(action='view', other=ev.id)}' >
 		%if ev.totlimit:
-			${ev.count}/${ev.totlimit}
+			%if ev.doublespecial:
+				<tr><th>Single Entries</th><td>${entryLink(ev, "%s/%s" % (ev.drivercount, ev.totlimit))}</td></tr>
+				<tr><th>Total Entries</th><td>${entryLink(ev, ev.count)}</td></tr>
+			%else:
+				<tr><th>Entries</th><td>${entryLink(ev, "%s/%s" % (ev.count, ev.totlimit))}</td></tr>
+			%endif
 		%else:
-			${ev.count}
+			<tr><th>Entries</th><td>${entryLink(ev, ev.count)}</td></tr>
 		%endif
-		</a></td></tr>
 	%endif
 
 	%if ev.isOpen: 
@@ -56,7 +61,8 @@
 	</div>
 
 	<div class='carcontainer'>
-	<span class='header'>Cars</span>
+		<span class='header'>Cars</span>
+		%if len(ev.regentries) > 0:
 		<ul>
 		%for reg in ev.regentries:
 			<li>
@@ -67,9 +73,16 @@
 			</li>
 		%endfor
 		</ul>
+		%endif
 
 		%if ev.isOpen:
-			%if ev.totlimit and ev.count >= ev.totlimit:
+			%if ev.doublespecial and len(ev.regentries) > 0:
+				<span class='limit'>Double entries are allowed but not guaranteed for this event yet</span>
+			%endif
+
+			%if ev.doublespecial and ev.totlimit and ev.drivercount >= ev.totlimit and len(ev.regentries) == 0:
+				<span class='limit'>This event's single entry limit of ${ev.totlimit} has been met.</span>
+			%elif not ev.doublespecial and ev.totlimit and count >= ev.totlimit:
 				<span class='limit'>This event's prereg limit of ${ev.totlimit} has been met.</span>
 			%elif len(ev.regentries) >= ev.perlimit:
 				<span class='limit'>You have reached this event's prereg limit of ${ev.perlimit} car(s).</span>

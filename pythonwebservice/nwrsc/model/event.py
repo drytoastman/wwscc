@@ -33,7 +33,8 @@ t_events = Table('events', metadata,
 	Column('snail', String(256)),	
 	Column('cost', SmallInteger),
 	Column('notes', String(256)),
-	Column('practice', Boolean)
+	Column('practice', Boolean),
+	Column('doublespecial', Boolean)
 	)
 
 
@@ -50,8 +51,13 @@ class Event(object):
 	def _get_count(self):
 		""" property getter to get number of entrants for an event based on registration, NOT recorded runs """
 		from registration import Registration
-		return object_session(self).query(func.count(Registration.id)).filter(Registration.eventid==self.id).first()[0]
+		return object_session(self).query(Registration.id).filter(Registration.eventid==self.id).count()
 	count = property(_get_count)
+
+	def _get_drivers_count(self):
+		""" property getter to get number of entrants for an event based on number of distinct drivers registered """
+		return object_session(self).execute("select count(distinct(c.driverid)) from cars as c, registered as r where r.carid=c.id and r.eventid=%d"%self.id).fetchone()[0]
+	drivercount = property(_get_drivers_count)
 
 
 	def getFeed(self):

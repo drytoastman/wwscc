@@ -30,6 +30,7 @@ public class AUTO
 		o.regclosed = rs.getSADateTime("regclosed");
 		o.perlimit = rs.getInt("perlimit");
 		o.totlimit = rs.getInt("totlimit");
+		o.doublespecial = rs.getBoolean("doublespecial");
 		o.cost = rs.getInt("cost");
 		o.paypal = rs.getString("paypal");
 		o.snail = rs.getString("snail");
@@ -39,17 +40,17 @@ public class AUTO
 	
 	public static String getEventVarStr()
 	{
-		return "ispro,practice,courses,runs,countedruns,conepen,gatepen,segments,password,name,date,location,sponsor,host,designer,regopened,regclosed,perlimit,totlimit,cost,paypal,snail,notes";
+		return "ispro,practice,courses,runs,countedruns,conepen,gatepen,segments,password,name,date,location,sponsor,host,designer,regopened,regclosed,perlimit,totlimit,doublespecial,cost,paypal,snail,notes";
 	}
 	
 	public static String getEventArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getEventSetStr()
 	{
-		return "ispro=?,practice=?,courses=?,runs=?,countedruns=?,conepen=?,gatepen=?,segments=?,password=?,name=?,date=?,location=?,sponsor=?,host=?,designer=?,regopened=?,regclosed=?,perlimit=?,totlimit=?,cost=?,paypal=?,snail=?,notes=?";
+		return "ispro=?,practice=?,courses=?,runs=?,countedruns=?,conepen=?,gatepen=?,segments=?,password=?,name=?,date=?,location=?,sponsor=?,host=?,designer=?,regopened=?,regclosed=?,perlimit=?,totlimit=?,doublespecial=?,cost=?,paypal=?,snail=?,notes=?";
 	}
 	
 	public static void addEventValues(org.wwscc.storage.Event o, List<Object> l)
@@ -73,6 +74,7 @@ public class AUTO
 		l.add(o.regclosed);
 		l.add(o.perlimit);
 		l.add(o.totlimit);
+		l.add(o.doublespecial);
 		l.add(o.cost);
 		l.add(o.paypal);
 		l.add(o.snail);
