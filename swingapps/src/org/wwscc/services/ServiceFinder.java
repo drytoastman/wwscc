@@ -15,7 +15,6 @@ import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -122,8 +121,8 @@ public class ServiceFinder implements ThreadedClass
 				ServiceMessage announcement = ServiceMessage.decodeMessage(incoming);
 				if (announcement.isAnnouncement() && serviceNames.contains(announcement.getService()))
 				{
-					if (recv.getAddress().equals(InetAddress.getLocalHost()))
-						continue; // ignore myself, they should use direct connection
+					//if (recv.getAddress().equals(InetAddress.getLocalHost()))
+					//	continue; // ignore myself, they should use direct connection
 					FoundService decoded = new FoundService(recv.getAddress(), announcement);
 					if (!found.containsKey(decoded))
 					{

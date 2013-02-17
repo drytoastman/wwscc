@@ -675,7 +675,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 			if (action == MOVE)
 			{
 				BracketEntry.Transfer e = (BracketEntry.Transfer)data;
-				if (JOptionPane.showConfirmDialog(null,
+				if (JOptionPane.showConfirmDialog(BracketPane.this,
 						String.format("This will remove %s from this round. Is that what you would like to do?", e.entry.entrant.getName()),
 						"Entrant Swap", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION)
 					return;
@@ -735,7 +735,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 					// swap operation in the same level of the challenge
 					if (swap)
 					{
-						if (!target.isEmpty() && (JOptionPane.showConfirmDialog(null,
+						if (!target.isEmpty() && (JOptionPane.showConfirmDialog(BracketPane.this,
 												String.format("This will swap %s and %s.  Is that what you would like to do?", old.entrant.getName(), transfer.entrant.getName()),
 													"Entrant Swap", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION))
 							return false;

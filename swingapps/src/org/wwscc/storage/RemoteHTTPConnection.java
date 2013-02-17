@@ -260,14 +260,18 @@ public class RemoteHTTPConnection
 		return ret;
 	}
 
-
 	public void downloadDatabase(File dst, boolean lockServerSide) throws IOException
+	{
+		String name = dst.getName();
+		this.downloadDatabase(dst, name.substring(0, name.indexOf('.')), lockServerSide);
+	}
+
+	public void downloadDatabase(File dst, String remotename, boolean lockServerSide) throws IOException
 	{
 		monitor = new ProgressMonitor(null, "Download", "Connecting...", 0, Integer.MAX_VALUE);
 		monitor.setMillisToDecideToPopup(0);
 		monitor.setMillisToPopup(0);
-		String name = dst.getName();
-		dbname = name.substring(0, name.indexOf('.'));
+		dbname = remotename;
 		String action = (lockServerSide) ? "download" : "copy";
 
 		byte[] data = basicRequest(new URL(String.format("http://%s/dbserve/%s/%s", host, dbname, action)), "GET", null);

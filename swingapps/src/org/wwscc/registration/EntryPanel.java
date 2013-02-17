@@ -206,7 +206,7 @@ public class EntryPanel extends DriverCarPanel
 			}
 			else if (cmd.equals("Delete Car") && (selectedCar != null))
 			{
-				if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the selected car?", "Delete Car", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
+				if (JOptionPane.showConfirmDialog(this, "Are you sure you want to delete the selected car?", "Delete Car", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
 				{
 					Database.d.deleteCar(selectedCar);
 					reloadCars(null);

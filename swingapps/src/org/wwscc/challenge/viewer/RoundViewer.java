@@ -105,7 +105,7 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 		reset.addActionListener(new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (JOptionPane.showConfirmDialog(null, "This will remove all run data for this round, are you sure?", "Are you Sure?", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION)
+				if (JOptionPane.showConfirmDialog(RoundViewer.this, "This will remove all run data for this round, are you sure?", "Are you Sure?", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION)
 					return;
 				model.resetRound(roundId);
 				event(MT.RUN_CHANGED, null);

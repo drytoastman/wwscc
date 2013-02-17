@@ -108,7 +108,7 @@ public class Menus extends JMenuBar implements ActionListener
 		if (response == null)
 			return;
 		
-		int answer = JOptionPane.showConfirmDialog(null, "Are you sure you with to delete " + response + ".  All current activity will be 'lost'", "Confirm Delete", JOptionPane.WARNING_MESSAGE);
+		int answer = JOptionPane.showConfirmDialog(this, "Are you sure you with to delete " + response + ".  All current activity will be 'lost'", "Confirm Delete", JOptionPane.WARNING_MESSAGE);
 		if (answer == JOptionPane.OK_OPTION)
 		{
 			Database.d.deleteChallenge(response.getId());

@@ -28,13 +28,13 @@ public class MergeTest
 	}
 
 	@Test
-	public void testMergeTo() throws IOException 
+	public void testMergeTo() throws Exception 
 	{
 		System.out.println(testdir);
 		Files.copy(Paths.get(testdir.getPath(), "mergesrc.db"), Paths.get("testsrc.db"), StandardCopyOption.REPLACE_EXISTING);
 		Files.copy(Paths.get(testdir.getPath(), "mergedst.db"), Paths.get("testdst.db"), StandardCopyOption.REPLACE_EXISTING);
 		Database.openDatabaseFile(new File("testsrc.db"));
-		MergeProcess.mergeTo(new SqliteDatabase(new File("testdst.db")));
+		MergeProcess.mergeToInternal(new SqliteDatabase(new File("testdst.db")));
 		// check data here
 		Database.openDatabaseFile(new File("testdst.db"));
 		

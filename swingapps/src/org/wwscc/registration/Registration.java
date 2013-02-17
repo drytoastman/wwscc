@@ -18,6 +18,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
@@ -109,8 +110,14 @@ public class Registration extends JFrame implements ActionListener
 					return;
 				}
 
+				if (!sp[1].equals(Database.d.getCurrentSeries()))
+				{
+					if (JOptionPane.showConfirmDialog(this, "The series names are not the same, do you want to continue?", "Series Names Differ", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION)
+						return;
+				}
+
 				Prefs.setMergeHost(sp[0]);
-				new Thread(new Runnable() { public void run() { MergeProcess.mergeTo(sp[0], sp[1]); }}).start();
+				new Thread(new Runnable() { public void run() { MergeProcess.mergeTo(Registration.this, sp[0], sp[1]); }}).start();
 			}
 		}
 		else
