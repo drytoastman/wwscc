@@ -2,3 +2,4 @@ include nwrsc/config/deployment.ini_tmpl
 recursive-include nwrsc/public *
 recursive-include nwrsc/templates *
 include nwrsc/controllers/lib/*.ttf
+exclude nwrsc/public/js/compiler.jar
