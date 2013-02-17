@@ -184,12 +184,14 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 
 
 	def _checkLimitState(self, event, driverid, setResponse=True):
-		if event.doublespecial:
-			pass
-		if event.totlimit and event.count >= event.totlimit:
+		entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
+
+		if event.doublespecial and event.drivercount >= event.totlimit and entries.count() == 0:  # past single driver limit, no more new singles
+			if setResponse: response.status = "400 Single Driver Limit of %d reached" % (event.totlimit)
+			return False
+		if not event.doublespecial and event.totlimit and event.count >= event.totlimit:
 			if setResponse: response.status = "400 Event limit of %d reached" % (event.totlimit)
 			return False
-		entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
 		if entries.count() >= event.perlimit:
 			if setResponse: response.status = "400 Entrant limit of %d reached" % (event.perlimit)
 			return False

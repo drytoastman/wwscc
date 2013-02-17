@@ -113,7 +113,12 @@ function eventPaneSetup(jqe)
 		var regcars = 0;
 		$.each(cars, function(i, car) { if ($.inArray(theevent.id, car.canregevents) < 0) { regcars++; } } );
 
-		var limit = Math.min( theevent.totlimit - theevent.count, theevent.perlimit - regcars );
+		var limit;
+		if (theevent.doublespecial) {  // if doublespecial and have a single entry (appear in canreg), they can reg up to perlimit
+			limit = theevent.perlimit - regcars;
+		} else {  // otherwise, the event limit is also counted
+			limit = Math.min( theevent.totlimit - theevent.count, theevent.perlimit - regcars );
+		}
 
 		$("#registercarform").RegEdit('registerCars', theevent, cars, limit, function() {
 			updateCars();
