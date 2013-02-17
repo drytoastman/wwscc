@@ -44,7 +44,7 @@
         url_for: function(action, other) { 
 			if (other) { return $.nwr.urlbase + action + '/' + other; }
 			return $.nwr.urlbase + action;
-		 },
+		 }
     };
 
 
