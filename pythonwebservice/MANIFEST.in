@@ -3,3 +3,4 @@ recursive-include nwrsc/public *
 recursive-include nwrsc/templates *
 include nwrsc/controllers/lib/*.ttf
 exclude nwrsc/public/js/compiler.jar
+recursive-exclude nwrsc/public/css/.sass-cache *
