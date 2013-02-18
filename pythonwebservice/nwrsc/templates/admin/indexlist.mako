@@ -61,7 +61,9 @@ $(document).ready(function(){
 			}
 		}
 
-		alert("Couldn't find " + skipped + ".  They were skipped.");
+		if (skipped.length > 0) {
+			alert("Couldn't find " + skipped + ".  They were skipped.");
+		}
         return false;
     });
 });
