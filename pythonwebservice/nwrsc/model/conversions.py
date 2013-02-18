@@ -179,7 +179,7 @@ converters = {
 	'20121': convert20121,
 	'20122': convert20122,
 	'20123': convert20123,
-	'20124': convert20124,
+	'20124': convert20124
 }
 
 
@@ -189,7 +189,7 @@ def convert(session):
 		settings.load(session)
 
 		while settings.schema != SCHEMA_VERSION:
-			log.info("CONVERSION: upgrading %s", settings.schema)
+			log.info("CONVERSION: upgrading %s (need %s)", settings.schema, SCHEMA_VERSION)
 			converters[settings.schema](session)
 			settings.load(session)
 			break

@@ -53,10 +53,14 @@
 		%if ev.paypal:
 			<tr><th>Paypal</th><td>${paypalLink(ev)}</td></tr>
 		%endif
-		%if ev.notes:
-			<tr><th>Notes</th><td>${ev.notes|n}</td></tr>
-		%endif
 	%endif
+
+	%if not ev.closed:
+	%if ev.notes:
+		<tr><th>Notes</th><td>${ev.notes|n}</td></tr>
+	%endif
+	%endif
+
 	</table>
 	</div>
 
