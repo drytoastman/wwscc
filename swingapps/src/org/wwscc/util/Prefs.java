@@ -27,6 +27,11 @@ public class Prefs
 		}));
 	}
 
+	public static void setPrefsNode(String name)
+	{
+		prefs = Preferences.userRoot().node(name);
+	}
+	
 	public static String getHomeServer() { return prefs.get("hostname", "scorekeeper.wwscc.org"); }
 	public static String getMergeHost() { return prefs.get("mergehost", ""); }
 	public static String getPasswordFor(String db) { return prefs.get("password-"+db, "none"); }

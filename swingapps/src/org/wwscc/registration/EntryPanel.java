@@ -215,6 +215,7 @@ public class EntryPanel extends DriverCarPanel
 			else if (cmd.equals("Edit Car") && (selectedCar != null))
 			{
 				final CarDialog cd = new CarDialog(selectedCar, Database.d.getClassData(), false);
+				cd.setOkButtonText("Edit");
 				cd.doDialog("Edit Car", new DialogFinisher<Car>() {
 					@Override
 					public void dialogFinished(Car c) {

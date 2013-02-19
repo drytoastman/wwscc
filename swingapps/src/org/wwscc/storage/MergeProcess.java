@@ -75,6 +75,7 @@ public class MergeProcess
 			dialog.step(4);
 			dest.server.downloadDatabase(db, dest.getCurrentSeries(), false);
 			Database.openDatabaseFile(db);
+			Database.d.clearChanges();
 			Database.d.trackRegChanges(true);
 			Database.d.setCurrentEvent(Database.d.getCurrentEvent());
 

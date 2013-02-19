@@ -96,6 +96,12 @@ public class CarDialog extends BaseDialog<Car>
     }
 	 
 
+    public void setOkButtonText(String text)
+    {
+    	ok.setText(text);
+    }
+    
+    
 	@Override
 	public void actionPerformed(ActionEvent ae)
 	{

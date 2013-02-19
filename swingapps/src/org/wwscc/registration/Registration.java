@@ -36,9 +36,9 @@ public class Registration extends JFrame implements ActionListener
 	SelectionBar setupBar;
 	EntryPanel driverEntry;
 
-	public Registration() throws IOException
+	public Registration(String name) throws IOException
 	{
-		super("Registration");
+		super(name);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		setupBar = new SelectionBar();
@@ -135,10 +135,19 @@ public class Registration extends JFrame implements ActionListener
 	{
 		try
 		{
+			String node = "";
+			for (String arg : args) {
+				if (arg.startsWith("prefs=")) {
+					node = arg.substring(arg.indexOf('=')+1);
+					Prefs.setPrefsNode(node + "/registration");
+				}
+			}
+			
 			Logging.logSetup("registration");
+			final String name = "Registration " + node;
 			SwingUtilities.invokeLater(new Runnable() { public void run() {
 				try {
-					new Registration();
+					new Registration(name);
 				} catch (Throwable ioe) {
 					log.log(Level.SEVERE, "Registration failed to start: " + ioe, ioe);
 				}
