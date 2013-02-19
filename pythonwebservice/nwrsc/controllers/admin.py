@@ -506,3 +506,22 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		self.session.commit()
 		redirect(url_for(action='indexlist'))
 
+
+	def invalidcars(self):
+
+		c.classdata = ClassData(self.session)
+		c.invalidnumber = []
+		c.invalidclass = []
+		c.invalidindex = []
+
+		for car in self.session.query(Car):
+			if car.number is None:
+				c.invalidnumber.append(car)
+			elif not car.classcode or car.classcode not in c.classdata.classlist:
+				c.invalidclass.append(car)
+			elif c.classdata.classlist[car.classcode].carindexed:
+				if not car.indexcode or car.indexcode not in c.classdata.indexlist:
+					c.invalidindex.append(car)
+
+		return render_mako('/admin/invalidcars.mako')
+		

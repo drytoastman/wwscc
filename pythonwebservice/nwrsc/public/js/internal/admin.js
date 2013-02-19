@@ -5,7 +5,6 @@ var drivers = Array();
 
 function newCountedRow(listform, listtemplate)
 {
-	$('.deleterow').click(function() { $(this).closest('tr').remove(); return false; });
 	var ii = $(listform + ' tr:last').data('counter') + 1;
     var rowelem = $(listtemplate + ' tr').clone();
 	rowelem.data('counter', ii);

@@ -107,6 +107,7 @@ ${dorow('xxxxx', Class())}
 
 <script>
 $(document).ready(function(){
+	$('.deleterow').click(function() { $(this).closest('tr').remove(); return false; });
 	$('#classlistform .addbutton').click(function() {
         newCountedRow('#classlistform', '#classlisttemplate');
         return false;

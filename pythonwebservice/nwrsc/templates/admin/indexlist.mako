@@ -37,6 +37,7 @@
 
 <script>
 $(document).ready(function(){
+	$('.deleterow').click(function() { $(this).closest('tr').remove(); return false; });
 	$('#indexlistform .addbutton').click(function() {
         newCountedRow('#indexlistform', '#indexlisttemplate');
         return false;

@@ -51,6 +51,7 @@ ${dorow('xxxxx', DriverField())}
 
 <script>
 $(document).ready(function(){
+	$('.deleterow').click(function() { $(this).closest('tr').remove(); return false; });
 	$('#fieldlistform .addbutton').click(function() {
         newCountedRow('#fieldlistform', '#fieldlisttemplate');
         return false;
