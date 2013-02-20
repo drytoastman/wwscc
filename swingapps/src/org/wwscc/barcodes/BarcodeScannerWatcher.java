@@ -72,7 +72,7 @@ public class BarcodeScannerWatcher implements KeyEventDispatcher, MessageListene
 	 */
 	protected boolean scanQueue()
 	{
-		StringBuilder toconvert = new StringBuilder();
+		StringBuilder barcode = new StringBuilder();
 		ListIterator<KeyEvent> iter = queue.listIterator();
 		boolean firstChar = true;
 		
@@ -91,16 +91,12 @@ public class BarcodeScannerWatcher implements KeyEventDispatcher, MessageListene
 				}
 
 				if (c == config.etx) {
-					try {
-						queue.clear();
-						Messenger.sendEvent(MT.BARCODE_SCANNED, Integer.parseInt(toconvert.toString()));
-					} catch (NumberFormatException nfe) {}
-					return false;
+					queue.clear();
+					Messenger.sendEvent(MT.BARCODE_SCANNED, barcode);
+					return false;  // time to clear
 				}
 							
-				if (!Character.isDigit(c))  // need to be '0'-'9'
-					return false;				
-				toconvert.append(c);				
+				barcode.append(c);				
 			}
 		}
 		return true;
