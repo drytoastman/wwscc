@@ -59,7 +59,9 @@ public class SQLMap
 					"from runs as r, cars as c, drivers as d, eventresults as f " +
 					"where r.carid=c.id and c.driverid=d.id and r.eventid=? and r.rorder=1 and f.eventid=? and f.carid=c.id " +
 					"group by d.id order by position");
+		sql.put("GETDRIVER", "select * from drivers where id=?");
 		sql.put("GETDRIVERSBY", "select * from drivers where firstname like ? and lastname like ? order by firstname,lastname");
+		sql.put("GETDRIVERBYMEMBERSHIP", "select d.* from drivers as d, driverextra as e where d.id=e.driverid and e.name='membership' and e.value like ?");
 		sql.put("GETDRIVERSBYFIRST", "select * from drivers where firstname like ? order by firstname,lastname");
 		sql.put("GETDRIVERSBYLAST", "select * from drivers where lastname like ? order by firstname,lastname");
 		sql.put("GETEVENTENTRANTS", "select distinct d.firstname as firstname,d.lastname as lastname,c.* from runs as r, cars as c, drivers as d " +
@@ -81,6 +83,7 @@ public class SQLMap
 						"order by r.row");
 
 		sql.put("GETRUNORDERROWS", "select row from runorder where eventid=? AND course=? AND carid=?");
+		sql.put("GETRUNORDERROWSCURRENT", "select row from runorder where eventid=? AND course=? AND rungroup=? AND carid=?");
 		sql.put("GETRUNCOUNT", "select count(run) as count from runs where carid=? and eventid=? and course=?");
 		sql.put("GETRUNGROUPMAPPING", "select classcode from rungroups where eventid=? and rungroup=? order by gorder");
 		sql.put("GETRUNSBYCARID", "select * from runs where carid=? and eventid=? and course=?");

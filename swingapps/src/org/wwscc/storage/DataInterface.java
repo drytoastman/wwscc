@@ -91,6 +91,8 @@ public abstract class DataInterface
 	public abstract void deleteDriver(Driver d) throws IOException;
 	public abstract void deleteDrivers(Collection<Driver> d) throws IOException;
 	public abstract List<DriverField> getDriverFields() throws IOException;
+	public abstract Driver getDriver(int driverid);
+	public abstract List<Driver> findDriverByMembership(String membership);
 
 	public abstract List<Car> getCarsForDriver(int driverid); // get all cars for this driverid
 	public abstract List<String> getCarAttributes(String attr); // get a unique list of possible 'attr' for the car
@@ -128,7 +130,21 @@ public abstract class DataInterface
 	public abstract Map<Integer, Driver> getAllDrivers();
 	public abstract Map<Integer, Car> getAllCars();
 	public abstract Map<Integer, Run> getAllRuns();
-	public abstract boolean isInOrder(int carid); //int eventid, int course, int carid);
+	
+	/**
+	 * Uses currentEvent, currentCourse
+	 * @param carid
+	 * @return true if the carid is present in any rungroup for the current event/course
+	 */
+	public abstract boolean isInOrder(int carid);
+	
+	/**
+	 * Uses currentEvent, currentCourse, currentRunGroup
+	 * @param carid
+	 * @return true if the carid is present in the current event/course/rungroup
+	 */
+	public abstract boolean isInCurrentOrder(int carid);
+	
 	public abstract ClassData getClassData();
 }
 

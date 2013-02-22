@@ -391,6 +391,17 @@ public abstract class SQLDataInterface extends DataInterface
 		c.setIndexStr(getIndexStr(c.classcode, c.indexcode, c.tireindexed));
 		return c;
 	}
+	
+	/**
+	 * Wrap driver loading so we can also get the extra fields
+	 * @throws IOException 
+	 */
+	Driver loadDriver(ResultRow res) throws IOException
+	{
+		Driver d = AUTO.loadDriver(res);
+		for (ResultRow r : executeSelect("GETEXTRA", newList(d.id))) { d.setExtra(r.getString("name"), r.getString("value")); }
+		return d;
+	}
 
 	
 	
@@ -756,6 +767,38 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
+	@Override
+	public Driver getDriver(int driverid)
+	{
+		try
+		{
+			ResultData d = executeSelect("GETDRIVER", newList(driverid));
+			if (d.size() > 0)
+				return loadDriver(d.get(0));
+		}
+		catch (Exception ioe)
+		{
+			logError("getDriver", ioe);
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public List<Driver> findDriverByMembership(String membership)
+	{
+		List<Driver> ret = new ArrayList<Driver>();
+		try
+		{
+			for (ResultRow r : executeSelect("GETDRIVERBYMEMBERSHIP", newList(membership)))
+				ret.add(loadDriver(r));
+		}
+		catch (Exception ioe)
+		{
+			logError("findDriverByMembership", ioe);
+		}
+		return ret;
+	}
 	
 	@Override
 	public List<Car> getCarsForDriver(int driverid)
@@ -1551,6 +1594,21 @@ public abstract class SQLDataInterface extends DataInterface
 		catch (Exception ioe)
 		{
 			logError("isInOrder", ioe);
+			return false;
+		}
+	}
+	
+	@Override
+	public boolean isInCurrentOrder(int carid) 
+	{
+		try
+		{
+			ResultData d = executeSelect("GETRUNORDERROWSCURRENT", newList(currentEvent.id, currentCourse, currentRunGroup, carid));
+			return !d.isEmpty();
+		}
+		catch (Exception ioe)
+		{
+			logError("isInCurrentOrder", ioe);
 			return false;
 		}
 	}
