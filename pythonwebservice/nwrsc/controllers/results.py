@@ -3,7 +3,7 @@ import operator
 from decorator import decorator
 
 from pylons import request, response, session, config, tmpl_context as c
-from pylons.controllers.util import url_for
+from pylons.controllers.util import url_for, abort
 
 from pylons.templating import render_mako, render_mako_def
 from nwrsc.controllers.lib.bracket import Bracket
@@ -40,6 +40,8 @@ class ResultsController(BaseController):
 				c.classdata = ClassData(self.session)
 				c.event = self.session.query(Event).get(self.eventid)
 				c.active = Class.activeClasses(self.session, self.eventid)
+				if c.event is None:
+					abort(404, "Invalid event id")
 
 
 	def index(self):
