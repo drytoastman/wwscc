@@ -73,7 +73,7 @@ class DbserveController(BaseController):
 	def available(self):
 		response.headers['Content-type'] = 'text/plain'
 		data = ""
-		for db in self._databaseList():
+		for db in self._databaseList(archived=False):
 			data += "%s %s %s\n" % (db.name, db.locked and "1" or "0", db.archived and "1" or "0")
 		return data
 		
