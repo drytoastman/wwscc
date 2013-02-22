@@ -13,6 +13,12 @@ from nwrsc.model import *
 
 log = logging.getLogger(__name__)
 
+def myint(val):
+	try:
+		return int(val)
+	except:
+		return -1
+
 @decorator
 def checklist(func, self, *args, **kwargs):
 	"""Decorator Wrapper function"""
@@ -94,8 +100,8 @@ class ResultsController(BaseController):
 		if not config['nwrsc.private']:
 			raise BeforePage("Audit only available if server configured private")
 
-		course = int(request.GET.get('course', 1))
-		group = int(request.GET.get('group', 1))
+		course = myint(request.GET.get('course', 1))
+		group = myint(request.GET.get('group', 1))
 		c.order = request.GET.get('order', 'firstname')
 		c.entrants = getAuditResults(self.session, self.settings, c.event, course, group)
 
@@ -199,7 +205,7 @@ class ResultsController(BaseController):
 
 
 	def challenge(self):
-		challengeid = int(request.GET.get('id', 1))
+		challengeid = myint(request.GET.get('id', 1))
 		c.challenge = self.session.query(Challenge).get(challengeid)
 		c.rounds = dict()
 		for rnd in self.session.query(ChallengeRound).filter(ChallengeRound.challengeid == challengeid).all():
@@ -209,8 +215,8 @@ class ResultsController(BaseController):
 
 
 	def round(self):
-		challengeid = int(request.GET.get('id', -1))
-		round = int(request.GET.get('round', -1))
+		challengeid = myint(request.GET.get('id', -1))
+		round = myint(request.GET.get('round', -1))
 		c.challenge = self.session.query(Challenge).get(challengeid)
 		if c.challenge is None:
 			return "No challenge found"
@@ -225,7 +231,7 @@ class ResultsController(BaseController):
 
 	def bracket(self):
 		c.javascript.append('/js/external/jquery-1.9.0.js');
-		challenge = self.session.query(Challenge).get(int(request.GET.get('id', 0)))
+		challenge = self.session.query(Challenge).get(myint(request.GET.get('id', 0)))
 		b = Bracket(challenge.depth)  # Just getting the coords, no drawing takes place
 		b.getImage()
 		c.coords = b.getCoords()
@@ -234,7 +240,7 @@ class ResultsController(BaseController):
 		
 
 	def bracketimg(self):
-		id = int(request.GET.get('id', 0))
+		id = myint(request.GET.get('id', 0))
 		challenge = self.session.query(Challenge).get(id)
 		if challenge is None:
 			return ''
@@ -256,7 +262,7 @@ class ResultsController(BaseController):
 	def blankbracket(self):
 		try:
 			response.headers['Content-type'] = 'image/png'
-			return Bracket(int(request.GET.get('depth', 2))).getImage()
+			return Bracket(myint(request.GET.get('depth', 2))).getImage()
 		except Exception, e:
 			response.headers['Content-type'] = 'text/plain'
 			return "Failed to draw bracket, did you install PIL? (%s)" % e
