@@ -10,32 +10,38 @@ from pylons.controllers.util import abort
 from sqlalchemy import create_engine
 
 from nwrsc.controllers.lib.base import BaseController
+from nwrsc.controllers.lib.auth import SRPAuthentication
 from nwrsc.lib.codec import Codec, DataInput
 from nwrsc.controllers.lib.resultscalc import UpdateClassResults
 from nwrsc.model import *
 
-class DbserveController(BaseController):
+class DbserveController(BaseController, SRPAuthentication):
 	"""
 		DBServe is used as the contact point for the java applications when speaking to
 		the web service.
 	"""
 
-	def __before__(self):
-		# Perform authentication (TBD: real authentication)		
-		action = self.routingargs.get('action', '')
-		if action in ['available']:
-			return
+	def available(self): 
+		""" special URL, doesn't have database assigned, not verfication required """
+		response.headers['Content-type'] = 'text/plain'
+		data = ""
+		for db in self._databaseList():
+			data += "%s %s %s\n" % (db.name, db.locked and "1" or "0", db.archived and "1" or "0")
+		return data
+		
 
-		password = request.environ.get('HTTP_X_SCOREKEEPER', '')
-		if password != self.settings.password:
-			log.warning("Incorrect password used for %s" % (self.database))
-			abort(401)
+	def __before__(self):
+		action = self.routingargs.get('action', '')
+		if action in ['available', 'srp', 'authenticate']:
+			return
+		if not self.verify(request.data):
+			abort(401, "Need SRP Authentication")
 
 
 	def download(self):
 		if self.settings.locked:
 			log.warning("Download request for %s, but it is locked" % (self.database))
-			abort(404)
+			abort(404, "Database locked, unavailable for download")
 		self.settings.locked = True
 		self.settings.save(self.session)
 		self.session.commit()
@@ -67,16 +73,8 @@ class DbserveController(BaseController):
 		self.settings.locked = False
 		self.settings.save(self.session)
 		self.session.commit()
-		return ""
+		return "Complete"
 
-
-	def available(self):
-		response.headers['Content-type'] = 'text/plain'
-		data = ""
-		for db in self._databaseList():
-			data += "%s %s %s\n" % (db.name, db.locked and "1" or "0", db.archived and "1" or "0")
-		return data
-		
 
 	def sqlmap(self):
 		try:
