@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.storage.Car;
@@ -32,6 +33,7 @@ public class CarDialog extends BaseDialog<Car>
 	
 	protected JButton add;
 	protected boolean addToRunOrder;
+	protected JCheckBox override;
 	protected List<ClassData.Index> indexlist;
     
 	/**
@@ -61,7 +63,7 @@ public class CarDialog extends BaseDialog<Car>
 		}
 
 		ok.setText("Create");
-
+		
 		mainPanel.add(label("Year", false), "");
 		mainPanel.add(entry("year", car.getYear()), "wrap");
 
@@ -94,8 +96,12 @@ public class CarDialog extends BaseDialog<Car>
 		mainPanel.add(label("Extra Tire Index", true), "");
 		mainPanel.add(checkbox("tireindexed", car.isTireIndexed()), "wrap");
 		
+		override = new JCheckBox("Override Index Restrictions");
+		override.addActionListener(this);
+		override.setToolTipText("Some classes restrict the available indexes, this lets you override that restriction, only for use in rare circumstances");
+		mainPanel.add(override, "gaptop 10, spanx 2, wrap");
+		
 		actionPerformed(new ActionEvent(selects.get("classcode"), 1, ""));
-
 		result = car;
     }
 	 
@@ -105,8 +111,31 @@ public class CarDialog extends BaseDialog<Car>
     	ok.setText(text);
     }
     
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	protected void updateIndexList(ClassData.Class basis)
+    {
+    	JComboBox<?> indexes = selects.get("indexcode");
+		if (indexes.isVisible())
+		{
+	    	Object selected = indexes.getSelectedItem();
+			if (override.isSelected() || (basis == null) || (basis.restrictedIndexes().size() == 0))
+				indexes.setModel(new DefaultComboBoxModel(indexlist.toArray()));
+			else 
+			{
+				List<ClassData.Index> copy = new ArrayList<ClassData.Index>(indexlist);
+				for (ClassData.Index idx : indexlist)
+				{
+					if (basis.restrictedInverted() == basis.restrictedIndexes().contains(idx.getCode()))
+						copy.remove(idx);
+				}
+						
+				indexes.setModel(new DefaultComboBoxModel(copy.toArray()));
+			}
+			
+			indexes.setSelectedItem(selected);  // if index is still available, keep it selected
+		}
+    }
     
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void actionPerformed(ActionEvent ae)
 	{
@@ -116,29 +145,25 @@ public class CarDialog extends BaseDialog<Car>
 		{
 			JComboBox<?> cb = (JComboBox<?>)ae.getSource();
 			ClassData.Class c = (ClassData.Class)cb.getSelectedItem();
-			if (c == null) return;
+			if (c == null) 
+			{
+				labels.get("Index").setVisible(false);
+				selects.get("indexcode").setVisible(false);
+				labels.get("Extra Tire Index").setVisible(false);
+				checks.get("tireindexed").setVisible(false);
+				return;
+			}
 
 			labels.get("Index").setVisible(c.carsNeedIndex());
-			JComboBox<?> indexes = selects.get("indexcode");
-			indexes.setVisible(c.carsNeedIndex());
-			if (indexes.isVisible())
-			{
-				if (c.restrictedIndexes().size() == 0)
-					indexes.setModel(new DefaultComboBoxModel(indexlist.toArray()));
-				else {
-					List<ClassData.Index> copy = new ArrayList<ClassData.Index>(indexlist);
-					for (ClassData.Index idx : indexlist)
-					{
-						if (c.restrictedInverted() == c.restrictedIndexes().contains(idx.getCode()))
-							copy.remove(idx);
-					}
-							
-					indexes.setModel(new DefaultComboBoxModel(copy.toArray()));
-				}
-			}
+			selects.get("indexcode").setVisible(c.carsNeedIndex());
+			updateIndexList(c);
 			
 			labels.get("Extra Tire Index").setVisible(c.useCarFlag());
 			checks.get("tireindexed").setVisible(c.useCarFlag());
+		}
+		else if (ae.getSource() == override)
+		{
+			updateIndexList((ClassData.Class)selects.get("classcode").getSelectedItem());
 		}
 		else if (ae.getSource() == add)
 		{
