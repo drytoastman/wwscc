@@ -134,5 +134,17 @@ ul.invalidlist {
 	list-style: none;
 }
 
+.indextable, .classtable {
+	margin-bottom: 5px;
 
+	tr:nth-child(3n+2) {
+		border-top: 1px solid #779;
+	}
+	tr:nth-child(3n+2) td {
+		padding-top: 5px;
+	}
+	tr:nth-child(3n+4) td {
+		padding-bottom: 5px;
+	}
+}
 
