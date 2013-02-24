@@ -136,6 +136,7 @@ ul.invalidlist {
 
 .indextable, .classtable {
 	margin-bottom: 5px;
+	border-collapse: collapse;
 
 	tr:nth-child(3n+2) {
 		border-top: 1px solid #779;
