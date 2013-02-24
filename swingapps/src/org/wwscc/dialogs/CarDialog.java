@@ -9,9 +9,12 @@
 package org.wwscc.dialogs;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import net.miginfocom.swing.MigLayout;
@@ -29,6 +32,7 @@ public class CarDialog extends BaseDialog<Car>
 	
 	protected JButton add;
 	protected boolean addToRunOrder;
+	protected List<ClassData.Index> indexlist;
     
 	/**
 	 * Create the dialog.
@@ -77,7 +81,7 @@ public class CarDialog extends BaseDialog<Car>
 		mainPanel.add(ientry("number", (car.getNumber()>0)?car.getNumber():null), "wrap");
 
 		List<ClassData.Class> classlist = cd.getClasses();
-		List<ClassData.Index> indexlist = cd.getIndexes();
+		indexlist = cd.getIndexes();
 		Collections.sort(classlist, new ClassData.Class.StringOrder());
 		Collections.sort(indexlist, new ClassData.Index.StringOrder());
 
@@ -102,6 +106,7 @@ public class CarDialog extends BaseDialog<Car>
     }
     
     
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void actionPerformed(ActionEvent ae)
 	{
@@ -114,7 +119,23 @@ public class CarDialog extends BaseDialog<Car>
 			if (c == null) return;
 
 			labels.get("Index").setVisible(c.carsNeedIndex());
-			selects.get("indexcode").setVisible(c.carsNeedIndex());
+			JComboBox<?> indexes = selects.get("indexcode");
+			indexes.setVisible(c.carsNeedIndex());
+			if (indexes.isVisible())
+			{
+				if (c.restrictedIndexes().size() == 0)
+					indexes.setModel(new DefaultComboBoxModel(indexlist.toArray()));
+				else {
+					List<ClassData.Index> copy = new ArrayList<ClassData.Index>(indexlist);
+					for (ClassData.Index idx : indexlist)
+					{
+						if (c.restrictedInverted() == c.restrictedIndexes().contains(idx.getCode()))
+							copy.remove(idx);
+					}
+							
+					indexes.setModel(new DefaultComboBoxModel(copy.toArray()));
+				}
+			}
 			
 			labels.get("Extra Tire Index").setVisible(c.useCarFlag());
 			checks.get("tireindexed").setVisible(c.useCarFlag());

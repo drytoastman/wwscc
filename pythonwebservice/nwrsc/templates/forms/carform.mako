@@ -18,6 +18,7 @@ for code in sorted(c.classdata.classlist):
 	context.write("<option value='%s' " % (cls.code))
 	if cls.carindexed:
 		context.write("data-indexed='true' ")
+		context.write("data-restrict='%s' " % cls.caridxrestrict)
 	if cls.usecarflag:
 		context.write("data-usecarflag='true' ")
 	context.write(">%s - %s</option>\n" % (cls.code, cls.descrip))

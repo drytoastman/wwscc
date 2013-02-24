@@ -47,7 +47,9 @@ class DataInput(object):
 		return val
 
 	def readString(self, len):
-		return str(self.readByteArray(len))
+		val = self.data[self.index:self.index+len]
+		self.index += len
+		return str(val)
 
 	def readByteArray(self, len):
 		val = self.data[self.index:self.index+len]

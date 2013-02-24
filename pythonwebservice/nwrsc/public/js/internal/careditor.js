@@ -7,16 +7,41 @@
 			var myform = this;
 			var indexcontainer = myform.find('.indexcodecontainer');
 			var tireindexcontainer = myform.find('.tireindexcontainer');
+			var currentclass = myform.find('[name=classcode] option:selected');
+			var indexselect = myform.find('[name=indexcode]');
 
-			if (myform.find('[name=classcode] option:selected').data('indexed')) {
+			if (currentclass.data('indexed')) {
 				indexcontainer.toggle(true);
+				var restrict = currentclass.data('restrict')
+				var list, not;
+				
+				if (restrict == '') {
+					not = true;
+					list = [];
+				} else if (restrict[0] == '!') {
+					not = true;
+					list = restrict.substring(1).split(',');
+				} else {
+					not = false;
+					list = restrict.split(',');
+				}
+
+				indexselect.find("option").each(function()
+				{
+					if (($.inArray($(this).val(), list) >= 0) != not) {
+						$(this).show(); 
+					} else { 
+						$(this).hide();
+					}
+				});
+
 			} else {
-				myform.find('[name=indexcode]').val(0);
+				indexselect.val(0);
 				indexcontainer.toggle(false);
 			}
 		
 			
-			if (myform.find('[name=classcode] option:selected').data('usecarflag')) {
+			if (currentclass.data('usecarflag')) {
 				tireindexcontainer.toggle(true)
 			} else {
 				tireindexcontainer.toggle(false)

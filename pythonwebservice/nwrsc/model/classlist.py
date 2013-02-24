@@ -22,6 +22,7 @@ t_classlist = Table('classlist', metadata,
 	Column('numorder', Integer),
 	Column('countedruns', Integer),
 	Column('usecarflag', Boolean),
+	Column('caridxrestrict', String(128)),
 	UniqueConstraint('code', name='classidx_1')
 	)
 

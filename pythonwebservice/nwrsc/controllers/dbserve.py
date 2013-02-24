@@ -84,6 +84,8 @@ class DbserveController(BaseController):
 			ret = ""
 			while stream.dataAvailable() > 0:
 				(type, key, values) = Codec.decodeRequest(stream)
+				if key in ['TRACK']:
+					raise Exception("You are trying to track database changes over a web connection, switch to direct file\n\n")
 
 				log.debug("sqlmap request %s" % (key))
 				if type == Codec.SELECT:

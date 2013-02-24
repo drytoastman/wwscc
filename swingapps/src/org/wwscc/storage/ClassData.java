@@ -9,8 +9,10 @@
 package org.wwscc.storage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -153,6 +155,10 @@ public class ClassData
 		protected int numorder;
 		protected int countedruns;
 		protected boolean usecarflag;
+		protected String caridxrestrict;
+		
+		private List<String> _restricted;
+		private boolean _inverse;
 
 		public Class()
 		{
@@ -184,6 +190,35 @@ public class ClassData
 		
 		public boolean useCarFlag() {
 			return usecarflag;
+		}
+		
+		private void parseRestricted() 
+		{
+			if (caridxrestrict.trim().equals(""))
+			{
+				_restricted = new ArrayList<String>();
+				_inverse = true;
+			}
+			else if (caridxrestrict.charAt(0) == '!')
+			{
+				_inverse = true;
+				_restricted = Arrays.asList(caridxrestrict.substring(1).split(","));
+			}
+			else
+			{
+				_inverse = false;
+				_restricted = Arrays.asList(caridxrestrict.split(","));
+			}
+		}
+			
+		public List<String> restrictedIndexes () {
+			if (_restricted == null) parseRestricted();
+			return _restricted;
+		}
+		
+		public boolean restrictedInverted() {
+			if (_restricted == null) parseRestricted();
+			return _inverse;
 		}
 
 		static public class StringOrder implements Comparator<ClassData.Class>

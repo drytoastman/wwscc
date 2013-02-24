@@ -382,22 +382,23 @@ public class AUTO
 		o.numorder = rs.getInt("numorder");
 		o.countedruns = rs.getInt("countedruns");
 		o.usecarflag = rs.getBoolean("usecarflag");
+		o.caridxrestrict = rs.getString("caridxrestrict");
 		return o;
 	}
 	
 	public static String getClassVarStr()
 	{
-		return "code,descrip,carindexed,classindex,classmultiplier,eventtrophy,champtrophy,numorder,countedruns,usecarflag";
+		return "code,descrip,carindexed,classindex,classmultiplier,eventtrophy,champtrophy,numorder,countedruns,usecarflag,caridxrestrict";
 	}
 	
 	public static String getClassArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getClassSetStr()
 	{
-		return "code=?,descrip=?,carindexed=?,classindex=?,classmultiplier=?,eventtrophy=?,champtrophy=?,numorder=?,countedruns=?,usecarflag=?";
+		return "code=?,descrip=?,carindexed=?,classindex=?,classmultiplier=?,eventtrophy=?,champtrophy=?,numorder=?,countedruns=?,usecarflag=?,caridxrestrict=?";
 	}
 	
 	public static void addClassValues(org.wwscc.storage.ClassData.Class o, List<Object> l)
@@ -412,6 +413,7 @@ public class AUTO
 		l.add(o.numorder);
 		l.add(o.countedruns);
 		l.add(o.usecarflag);
+		l.add(o.caridxrestrict);
 	}
 	
 	public static org.wwscc.storage.ClassData.Index loadIndex(ResultRow rs) throws IOException

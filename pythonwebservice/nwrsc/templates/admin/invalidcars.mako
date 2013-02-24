@@ -30,11 +30,18 @@ ${car.driver.firstname} ${car.driver.lastname} - ${car.classcode} ${h.ixstr(car)
 %endfor
 </ul>
 
+<h2>Restricted Index</h2>
+<ul class='invalidlist'>
+%for car in c.restrictedindex:
+	${carline(car)}
+%endfor
+</ul>
+
 
 ${carform(False)}
 
 <script>
-%for car in c.invalidnumber + c.invalidclass + c.invalidindex:
+%for car in c.invalidnumber + c.invalidclass + c.invalidindex + c.restrictedindex:
 cars[${car.id}] = ${h.encodesqlobj(car)|n} 
 %endfor
 

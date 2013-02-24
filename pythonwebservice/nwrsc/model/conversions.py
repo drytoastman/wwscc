@@ -173,13 +173,29 @@ def convert20124(session):
 
 	session.commit()
 
+def convert20131(session):
+
+	metadata.bind = session.bind
+
+	# Add option for restricting car indexes
+	session.execute("ALTER TABLE classlist ADD COLUMN caridxrestrict VARCHAR(128) DEFAULT ''")
+
+	log.info("update settings")
+	settings = Settings()
+	settings.load(session)
+	settings.schema = '20132'
+	settings.save(session)
+
+	session.commit()
+
 
 converters = {
 	'20112': convert2011,
 	'20121': convert20121,
 	'20122': convert20122,
 	'20123': convert20123,
-	'20124': convert20124
+	'20124': convert20124,
+	'20131': convert20131
 }
 
 

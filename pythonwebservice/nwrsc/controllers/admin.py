@@ -513,6 +513,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		c.invalidnumber = []
 		c.invalidclass = []
 		c.invalidindex = []
+		c.restrictedindex = []
 
 		for car in self.session.query(Car):
 			if car.number is None:
@@ -522,6 +523,15 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			elif c.classdata.classlist[car.classcode].carindexed:
 				if not car.indexcode or car.indexcode not in c.classdata.indexlist:
 					c.invalidindex.append(car)
+
+			if car.classcode and c.classdata.classlist[car.classcode].caridxrestrict:
+				restrict = c.classdata.classlist[car.classcode].caridxrestrict.split(',')
+				if restrict[0][0] == '!':
+					restrict[0] = restrict[0][1:]
+					if car.indexcode in restrict:
+						c.restrictedindex.append(car)
+				elif car.indexcode not in restrict:
+					c.restrictedindex.append(car)
 
 		return render_mako('/admin/invalidcars.mako')
 		
