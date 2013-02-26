@@ -58,4 +58,25 @@ public class ClassListTest {
 		Assert.assertEquals(allindexes, ret[0]);
 		Assert.assertEquals(allindexes, ret[1]);
 	}
+
+	@Test
+	public void testInvalid() {
+		ClassData.Class cls = new ClassData.Class();
+		cls.caridxrestrict = "-SA, SB, STU, STX, MA, MB, AS";
+		Set<String>[] ret = cls.restrictedIndexes(allindexes);
+
+		Assert.assertEquals(allindexes, ret[0]);
+		Assert.assertEquals(allindexes, ret[1]);
+	}
+
+	@Test
+	public void testHalfInvalid() {
+		ClassData.Class cls = new ClassData.Class();
+		cls.caridxrestrict = "";
+		cls.caridxrestrict = "-SA, SB, STU,  -(MA, MB, AS)";
+		Set<String>[] ret = cls.restrictedIndexes(allindexes);
+
+		Assert.assertEquals(buildSet(new String[] { "SA", "SB", "STU", "STX" }), ret[0]);
+		Assert.assertEquals(allindexes, ret[1]);
+	}
 }
