@@ -208,7 +208,6 @@ def convert(session):
 			log.info("CONVERSION: upgrading %s (need %s)", settings.schema, SCHEMA_VERSION)
 			converters[settings.schema](session)
 			settings.load(session)
-			break
 
 	except:
 		raise ConversionError("Error converting from %s, %s" % (settings.schema, sys.exc_info()[1]))

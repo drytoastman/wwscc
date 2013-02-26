@@ -7,6 +7,8 @@ package org.wwscc.storage;
  */
 public class MetaCar extends Car 
 {
+	private static final long serialVersionUID = 7446741644331347649L;
+	
 	private boolean isRegistered;
 	private boolean isInRunOrder;
 	private boolean hasActivity;

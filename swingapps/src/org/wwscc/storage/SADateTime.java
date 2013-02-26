@@ -22,6 +22,8 @@ import java.util.regex.Pattern;
  */
 public class SADateTime implements Serializable
 {
+	private static final long serialVersionUID = -4131991807546111988L;
+
 	static Pattern dtread = Pattern.compile("(\\d+)-(\\d+)-(\\d+)(?: (\\d+):(\\d+):(\\d+)(?:\\.(\\d+))?)?");
 
 	protected Calendar date;
@@ -71,6 +73,7 @@ public class SADateTime implements Serializable
 
 	public static class SADate extends SADateTime
 	{
+		private static final long serialVersionUID = 3651359966898483574L;
 		Pattern dread = Pattern.compile("(\\d+)-(\\d+)-(\\d+)");
 		public SADate(String s)
 		{
@@ -102,6 +105,7 @@ public class SADateTime implements Serializable
 
 	public static class SATime extends SADateTime
 	{
+		private static final long serialVersionUID = 7247603214976569445L;
 		Pattern tread = Pattern.compile("(\\d+):(\\d+):(\\d+)(?:\\.(\\d+))?");
 		public SATime(String s)
 		{

@@ -12,6 +12,8 @@ import java.io.Serializable;
 
 public class DriverField implements Serializable
 {
+	private static final long serialVersionUID = -7204547717798961851L;
+	
 	protected int id;
 	protected String name;
 	protected String title;

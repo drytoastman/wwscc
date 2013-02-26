@@ -15,6 +15,8 @@ import java.util.Set;
 
 public class Driver implements Serializable
 {
+	private static final long serialVersionUID = -5960219850370470938L;
+	
 	protected int id;
 	protected String firstname;
 	protected String lastname;

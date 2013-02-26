@@ -9,9 +9,11 @@
 package org.wwscc.dialogs;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
+import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.swing.DefaultComboBoxModel;
@@ -35,6 +37,8 @@ public class CarDialog extends BaseDialog<Car>
 	protected boolean addToRunOrder;
 	protected JCheckBox override;
 	protected List<ClassData.Index> indexlist;
+	protected ActionListener classChange;
+	protected ActionListener indexChange;
     
 	/**
 	 * Create the dialog.
@@ -86,12 +90,14 @@ public class CarDialog extends BaseDialog<Car>
 		indexlist = cd.getIndexes();
 		Collections.sort(classlist, new ClassData.Class.StringOrder());
 		Collections.sort(indexlist, new ClassData.Index.StringOrder());
+		classChange = new ClassChange();
+		indexChange = new IndexChange();
 
 		mainPanel.add(label("Class", true), "");
-		mainPanel.add(select("classcode", cd.getClass(car.getClassCode()), classlist, this), "wrap");
+		mainPanel.add(select("classcode", cd.getClass(car.getClassCode()), classlist, classChange), "wrap");
 
 		mainPanel.add(label("Index", true), "");
-		mainPanel.add(select("indexcode", cd.getIndex(car.getIndexCode()), indexlist, null), "wrap");
+		mainPanel.add(select("indexcode", cd.getIndex(car.getIndexCode()), indexlist, indexChange), "wrap");
 
 		mainPanel.add(label("Extra Tire Index", true), "");
 		mainPanel.add(checkbox("tireindexed", car.isTireIndexed()), "wrap");
@@ -101,7 +107,7 @@ public class CarDialog extends BaseDialog<Car>
 		override.setToolTipText("Some classes restrict the available indexes, this lets you override that restriction, only for use in rare circumstances");
 		mainPanel.add(override, "gaptop 10, spanx 2, wrap");
 		
-		actionPerformed(new ActionEvent(selects.get("classcode"), 1, ""));
+		classChange.actionPerformed(new ActionEvent(this, 1, ""));
 		result = car;
     }
 	 
@@ -111,6 +117,7 @@ public class CarDialog extends BaseDialog<Car>
     	ok.setText(text);
     }
     
+    
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void updateIndexList(ClassData.Class basis)
     {
@@ -118,33 +125,27 @@ public class CarDialog extends BaseDialog<Car>
 		if (indexes.isVisible())
 		{
 	    	Object selected = indexes.getSelectedItem();
-			if (override.isSelected() || (basis == null) || (basis.restrictedIndexes().size() == 0))
+			if (override.isSelected() || (basis == null))
+			{
 				indexes.setModel(new DefaultComboBoxModel(indexlist.toArray()));
+			}
 			else 
 			{
-				List<ClassData.Index> copy = new ArrayList<ClassData.Index>(indexlist);
-				for (ClassData.Index idx : indexlist)
-				{
-					if (basis.restrictedInverted() == basis.restrictedIndexes().contains(idx.getCode()))
-						copy.remove(idx);
-				}
-						
-				indexes.setModel(new DefaultComboBoxModel(copy.toArray()));
+		    	Set<ClassData.Index>[] lists = basis.restrictedIndexes(indexlist);
+		    	ClassData.Index[] allowed = lists[0].toArray(new ClassData.Index[0]);
+		    	Arrays.sort(allowed, new ClassData.Index.StringOrder());
+				indexes.setModel(new DefaultComboBoxModel(allowed));
 			}
 			
 			indexes.setSelectedItem(selected);  // if index is still available, keep it selected
 		}
     }
     
-	@Override
-	public void actionPerformed(ActionEvent ae)
-	{
-		Object o = ae.getSource();
-
-		if (o instanceof JComboBox)
-		{
-			JComboBox<?> cb = (JComboBox<?>)ae.getSource();
-			ClassData.Class c = (ClassData.Class)cb.getSelectedItem();
+    class ClassChange implements ActionListener
+    {
+		public void actionPerformed(ActionEvent ae) 
+    	{
+			ClassData.Class c = (ClassData.Class)selects.get("classcode").getSelectedItem();
 			if (c == null) 
 			{
 				labels.get("Index").setVisible(false);
@@ -153,19 +154,48 @@ public class CarDialog extends BaseDialog<Car>
 				checks.get("tireindexed").setVisible(false);
 				return;
 			}
-
+	
 			labels.get("Index").setVisible(c.carsNeedIndex());
 			selects.get("indexcode").setVisible(c.carsNeedIndex());
 			updateIndexList(c);
-			
-			labels.get("Extra Tire Index").setVisible(c.useCarFlag());
-			checks.get("tireindexed").setVisible(c.useCarFlag());
-		}
-		else if (ae.getSource() == override)
+			indexChange.actionPerformed(new ActionEvent(this, 1, ""));
+    	}
+    }
+    
+    
+    class IndexChange implements ActionListener
+    {
+		@SuppressWarnings("unchecked")
+		public void actionPerformed(ActionEvent ae) 
+    	{
+			ClassData.Class basis = (ClassData.Class)selects.get("classcode").getSelectedItem();
+    		if (basis.useCarFlag()) 
+    		{	
+    			ClassData.Index current = (ClassData.Index)selects.get("indexcode").getSelectedItem();
+    			Set<ClassData.Index>[] lists = basis.restrictedIndexes(indexlist);
+    			if (override.isSelected() || lists[1].contains(current)) {
+   	    			labels.get("Extra Tire Index").setVisible(true);
+   	    			checks.get("tireindexed").setVisible(true);
+   	    			return;
+    			}
+    		}
+    		labels.get("Extra Tire Index").setVisible(false);
+    		checks.get("tireindexed").setVisible(false);
+    		checks.get("tireindexed").setSelected(false);
+    	}
+    }
+    
+    
+	@Override
+	public void actionPerformed(ActionEvent ae)
+	{
+		Object o = ae.getSource();
+
+		if (o == override)
 		{
 			updateIndexList((ClassData.Class)selects.get("classcode").getSelectedItem());
 		}
-		else if (ae.getSource() == add)
+		else if (o == add)
 		{
 			addToRunOrder = true;
 			ae.setSource(ok);

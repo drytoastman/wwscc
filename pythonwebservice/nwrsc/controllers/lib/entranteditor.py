@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
 DIRECTIONS = re.compile(r'\s(Ne|Se|Sw|Nw)')
 
 def titlecase(text, key):
-	print text, key
 	if key == 'state' and len(text) < 3:
 		return text.upper()
 	if key == 'address':

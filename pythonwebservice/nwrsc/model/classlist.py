@@ -60,7 +60,7 @@ class Class(object):
 	    tomatch = '^' + item.strip().replace('*', '.*') + '$'
 	    ret = set()
 	    for x in full:
-	        if re.search(str(tomatch), x):
+	        if re.search(tomatch, x):
 	            ret.add(x)
 	    return ret
 

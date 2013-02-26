@@ -9,12 +9,15 @@
 package org.wwscc.storage;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ClassData
 {
@@ -145,6 +148,9 @@ public class ClassData
 	/* Class */
 	public static class Class
 	{
+		private static final Pattern RINDEX = Pattern.compile("([+-])\\((.*?)\\)");
+		private static final Pattern RFLAG = Pattern.compile("([+-])\\[(.*?)\\]");
+
 		protected String code;
 		protected String descrip;
 		protected boolean carindexed;
@@ -156,9 +162,6 @@ public class ClassData
 		protected int countedruns;
 		protected boolean usecarflag;
 		protected String caridxrestrict;
-		
-		private List<String> _restricted;
-		private boolean _inverse;
 
 		public Class()
 		{
@@ -192,35 +195,72 @@ public class ClassData
 			return usecarflag;
 		}
 		
-		private void parseRestricted() 
+	    private Set<Index> globItem(String item, Set<Index> full)
+	    {
+	        Set<Index> ret = new HashSet<Index>();
+	        Pattern glob = Pattern.compile('^' + item.trim().replace("*", ".*") + '$');
+	        for (Index idx : full) {
+	            if (glob.matcher(idx.getCode()).find())
+	                ret.add(idx);
+	        }
+	        return ret;
+	    }
+
+	    /**
+	     * Given the matched expressions, return the list that should be allowed
+	     * @param results matcher object for the string to use
+	     * @param fullset the full set of indexes
+	     * @return a new set of indexes that should be allowed
+	     */
+	    private Set<Index> processList(Matcher results, Set<Index> fullset)
+	    {
+	    	Set<Index> keep = new HashSet<Index>();
+	    	boolean first = true;
+	    	while (results.find())
+	    	{
+	            boolean ADD = results.group(1).equals("+");
+	            if (first && !ADD)
+	            	keep = new HashSet<Index>(fullset);
+	            first = false;
+
+	            for (String item : results.group(2).split(",")) {
+	                if (ADD)
+	                	keep.addAll(globItem(item, fullset));
+	                else
+	                	keep.removeAll(globItem(item, fullset));
+	            }
+	        }
+	    	
+	        return keep; 
+	    }
+
+			
+	    /**
+	     * Return two lists of indexes allowed in particular situations.
+	     * [0] are indexes allowed to be selected for the class data
+	     * [1] are indexes that will allow use of the extra multiplier car flag
+	     * @param all the full list of indexes
+	     * @return 
+	     */
+		@SuppressWarnings("rawtypes")
+		public Set[] restrictedIndexes(Collection<Index> all) 
 		{
-			if (caridxrestrict.trim().equals(""))
+			if (caridxrestrict.trim().isEmpty())
 			{
-				_restricted = new ArrayList<String>();
-				_inverse = true;
-			}
-			else if (caridxrestrict.charAt(0) == '!')
-			{
-				_inverse = true;
-				_restricted = Arrays.asList(caridxrestrict.substring(1).split(","));
+				return new Set[] { new HashSet<Index>(all), new HashSet<Index>(all) };
 			}
 			else
 			{
-				_inverse = false;
-				_restricted = Arrays.asList(caridxrestrict.split(","));
+		        String full = caridxrestrict.replace(" ", "");
+		        Set<Index> allindexes = new HashSet<Index>(all);
+		        Set<Index> indexrestrict = processList(RINDEX.matcher(full), allindexes);
+		        Set<Index> flagrestrict = processList(RFLAG.matcher(full), allindexes);
+		        return new Set[] { indexrestrict, flagrestrict };
 			}
-		}
-			
-		public List<String> restrictedIndexes () {
-			if (_restricted == null) parseRestricted();
-			return _restricted;
-		}
-		
-		public boolean restrictedInverted() {
-			if (_restricted == null) parseRestricted();
-			return _inverse;
+
 		}
 
+		
 		static public class StringOrder implements Comparator<ClassData.Class>
 		{
 		    public int compare(ClassData.Class c1, ClassData.Class c2)
@@ -273,6 +313,30 @@ public class ClassData
 			{
 				return (int)(c1.getValue()*1000 - c2.getValue()*1000);
 			}
+		}
+		
+		@Override
+		public int hashCode() {
+			if (code == null)
+				return 1;
+			return code.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof Index))
+				return false;
+			Index other = (Index) obj;
+			if (code == null) {
+				if (other.code != null)
+					return false;
+			} else if (!code.equals(other.code))
+				return false;
+			return true;
 		}
 	}
 }
