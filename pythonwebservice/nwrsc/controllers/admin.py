@@ -527,13 +527,11 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 				if not car.indexcode or car.indexcode not in c.classdata.indexlist:
 					c.invalidindex.append(car)
 
-			if car.classcode and c.classdata.classlist[car.classcode].caridxrestrict:
-				restrict = c.classdata.classlist[car.classcode].caridxrestrict.split(',')
-				if restrict[0][0] == '!':
-					restrict[0] = restrict[0][1:]
-					if car.indexcode in restrict:
-						c.restrictedindex.append(car)
-				elif car.indexcode not in restrict:
+			if car.classcode:
+				restrict = c.classdata.classlist[car.classcode].restrictedIndexes()
+				if car.indexcode in restrict[0]:
+					c.restrictedindex.append(car)
+				if car.indexcode in restrict[1] and car.tireindexed:
 					c.restrictedindex.append(car)
 
 		return render_mako('/admin/invalidcars.mako')

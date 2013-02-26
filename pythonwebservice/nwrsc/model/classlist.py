@@ -65,11 +65,11 @@ class Class(object):
 	    return ret
 
 	def _processList(self, results, fullset):
-	    ret = set()
+	    ret = set(fullset)
 	    for ii, pair in enumerate(results):
 	        ADD = (pair[0] == '+')
-	        if ii == 0 and not ADD:
-	            ret = fullset.copy()
+	        if ii == 0 and ADD:
+	            ret = set()
 	        for item in pair[1].split(','):
 	            if ADD:
 	                ret |= self._globItem(item, fullset)

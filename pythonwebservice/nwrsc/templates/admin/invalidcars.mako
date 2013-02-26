@@ -30,7 +30,7 @@ ${car.driver.firstname} ${car.driver.lastname} - ${car.classcode} ${h.ixstr(car)
 %endfor
 </ul>
 
-<h2>Restricted Index (Has index in the restricted list)</h2>
+<h2>Restricted Index (Has index in the restricted list or tireindex flag in restricted)</h2>
 <ul class='invalidlist'>
 %for car in c.restrictedindex:
 	${carline(car)}
