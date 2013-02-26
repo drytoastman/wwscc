@@ -15,10 +15,14 @@
 <%
 for code in sorted(c.classdata.classlist):
 	cls = c.classdata.classlist[code]
+	restrict = cls.restrictedIndexes()
 	context.write("<option value='%s' " % (cls.code))
 	if cls.carindexed:
 		context.write("data-indexed='true' ")
-		context.write("data-restrict='%s' " % cls.caridxrestrict)
+	if len(restrict[0]) > 0:
+		context.write("data-idxrestrict='%s' " %  ','.join(restrict[0]))
+	if len(restrict[1]) > 0:
+		context.write("data-flagrestrict='%s' " %  ','.join(restrict[1]))
 	if cls.usecarflag:
 		context.write("data-usecarflag='true' ")
 	context.write(">%s - %s</option>\n" % (cls.code, cls.descrip))

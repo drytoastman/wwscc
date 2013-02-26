@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, ForeignKey, UniqueConstraint
-from sqlalchemy.orm import mapper, relation
+from sqlalchemy.orm import mapper, relation, object_session
 from sqlalchemy.types import Integer, String, Boolean, Float
 
 from meta import metadata
@@ -7,6 +7,7 @@ from settings import Setting
 
 import logging
 import sys
+import re
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +28,9 @@ t_classlist = Table('classlist', metadata,
 	)
 
 class Class(object):
+
+	RINDEX = re.compile(r'([+-])\((.*?)\)')
+	RFLAG = re.compile(r'([+-])\[(.*?)\]')
 
 	def __init__(self, **kwargs):
 		for k, v in kwargs.iteritems():
@@ -52,10 +56,42 @@ class Class(object):
 		return d
 
 
+	def _globItem(self, item, full):
+	    tomatch = '^' + item.strip().replace('*', '.*') + '$'
+	    ret = set()
+	    for x in full:
+	        if re.search(str(tomatch), x):
+	            ret.add(x)
+	    return ret
+
+	def _processList(self, results, fullset):
+	    ret = set()
+	    for ii, pair in enumerate(results):
+	        ADD = (pair[0] == '+')
+	        if ii == 0 and not ADD:
+	            ret = fullset.copy()
+	        for item in pair[1].split(','):
+	            if ADD:
+	                ret |= self._globItem(item, fullset)
+	            else:
+	                ret -= self._globItem(item, fullset)
+	    return fullset - ret
+
+
+	def restrictedIndexes(self):
+		if not self.caridxrestrict:
+			return ([], [])
+		full = self.caridxrestrict.replace(" ", "")
+		idxlist = set([x[0] for x in object_session(self).query(Index.code).all()])
+		indexrestrict = self._processList(self.RINDEX.findall(full), idxlist)
+		flagrestrict = self._processList(self.RFLAG.findall(full), idxlist)
+
+		return (indexrestrict, flagrestrict)
+
+
 	@classmethod
 	def activeClasses(cls, session, eventid):
-		sql = "select distinct x.* from classlist as x, cars as c, runs as r " + \
-				"where r.eventid=:id and r.carid=c.id and c.classcode=x.code"
+		sql = "select distinct x.* from classlist as x, cars as c, runs as r where r.eventid=:id and r.carid=c.id and c.classcode=x.code"
 		return list(session.execute(sql, params={'id':eventid}, mapper=Class))
 
 

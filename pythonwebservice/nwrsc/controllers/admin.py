@@ -296,6 +296,9 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 	def printhelp(self):
 		return render_mako('/admin/printhelp.mako')
 
+	def restricthelp(self):
+		return render_mako('/admin/restricthelp.mako')
+
 
 	def numbers(self):
 		# As with other places, one big query followed by mangling in python is faster (and clearer)
