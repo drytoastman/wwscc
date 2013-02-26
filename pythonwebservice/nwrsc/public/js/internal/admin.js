@@ -5,7 +5,7 @@ var drivers = Array();
 
 function newCountedRow(listform, listtemplate)
 {
-	var ii = $(listform + ' tr:last').data('counter') + 1;
+	var ii = $(listform + ' tr:last').data('counter') + 1 || 1;
     var rowelem = $(listtemplate + ' tr').clone();
 	rowelem.data('counter', ii);
     rowelem.find("input").attr("name", function(i, val) { return val.replace(/xxxxx/g, ii); });

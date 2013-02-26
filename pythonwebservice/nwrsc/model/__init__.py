@@ -16,7 +16,7 @@ from registration import Registration
 from event import Event
 from dialin import Dialins
 
-SCHEMA_VERSION = '20131'
+SCHEMA_VERSION = '20132'
 
 __all__ = (
 'SCHEMA_VERSION',

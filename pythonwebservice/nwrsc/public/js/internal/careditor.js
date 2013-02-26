@@ -6,25 +6,49 @@
 
 			var myform = this;
 			var indexcontainer = myform.find('.indexcodecontainer');
-			var tireindexcontainer = myform.find('.tireindexcontainer');
+			var currentclass = myform.find('[name=classcode] option:selected');
+			var indexselect = myform.find('[name=indexcode]');
 
-			if (myform.find('[name=classcode] option:selected').data('indexed')) {
+			if (currentclass.data('indexed')) {
 				indexcontainer.toggle(true);
+				var restrict = currentclass.data('idxrestrict') || "";
+				restrict = restrict.split(',')
+				
+				indexselect.find("option").each(function()
+				{
+					var opt = $(this);
+					opt.toggle($.inArray(opt.val(), restrict) < 0);
+				});
+
 			} else {
-				myform.find('[name=indexcode]').val(0);
+				indexselect.val(0);
 				indexcontainer.toggle(false);
 			}
 		
-			
-			if (myform.find('[name=classcode] option:selected').data('usecarflag')) {
-				tireindexcontainer.toggle(true)
-			} else {
-				tireindexcontainer.toggle(false)
-			}
-		
+			methods.indexchange.call(myform);
 			methods.setnum.call(myform, "");
 		},
 	
+
+		indexchange: function() {
+			// Need separate function to capture this when only index changes
+
+			var myform = this;
+			var tireindexcontainer = myform.find('.tireindexcontainer');
+			var currentclass = myform.find('[name=classcode] option:selected');
+			var currentindex = myform.find('[name=indexcode] option:selected').val() || "noindex";
+			var restrict = currentclass.data('flagrestrict') || "";
+			restrict = restrict.split(',')
+
+			if (currentclass.data('usecarflag') && ($.inArray(currentindex, restrict) < 0)) {
+				tireindexcontainer.toggle(true)
+			} else {
+				myform.find('[name=tireindexed]').prop('checked', false);
+				tireindexcontainer.toggle(false)
+			}
+		
+		},
+
 
 		setnum: function(val) {
 
@@ -91,6 +115,7 @@
 				myform.data('cardialoginit', true);
 				myform.find('.numberselect').button().click(function() { $(this).blur(); methods.chooseNumber.call(myform); return false; });
 				myform.find('[name=classcode]').change(function() { methods.classchange.call(myform); });
+				myform.find('[name=indexcode]').change(function() { methods.indexchange.call(myform); });
 
 				$.validator.setDefaults({ignore:[]});
 				myform.validate({

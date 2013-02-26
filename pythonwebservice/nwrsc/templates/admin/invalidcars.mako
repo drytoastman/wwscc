@@ -9,23 +9,30 @@ ${car.driver.firstname} ${car.driver.lastname} - ${car.classcode} ${h.ixstr(car)
 </li>
 </%def>
 
-<h2>Invalid Numbers</h2>
+<h2>Invalid Numbers (No number)</h2>
 <ul class='invalidlist'>
 %for car in c.invalidnumber:
 	${carline(car)}
 %endfor
 </ul>
 
-<h2>Invalid Class</h2>
+<h2>Invalid Class (No class or not in classlist)</h2>
 <ul class='invalidlist'>
 %for car in c.invalidclass:
 	${carline(car)}
 %endfor
 </ul>
 
-<h2>Invalid Index</h2>
+<h2>Invalid Index (Needs index and is blank or not in indexlist)</h2>
 <ul class='invalidlist'>
 %for car in c.invalidindex:
+	${carline(car)}
+%endfor
+</ul>
+
+<h2>Restricted Index (Has index in the restricted list or tireindex flag in restricted)</h2>
+<ul class='invalidlist'>
+%for car in c.restrictedindex:
 	${carline(car)}
 %endfor
 </ul>
@@ -34,7 +41,7 @@ ${car.driver.firstname} ${car.driver.lastname} - ${car.classcode} ${h.ixstr(car)
 ${carform(False)}
 
 <script>
-%for car in c.invalidnumber + c.invalidclass + c.invalidindex:
+%for car in c.invalidnumber + c.invalidclass + c.invalidindex + c.restrictedindex:
 cars[${car.id}] = ${h.encodesqlobj(car)|n} 
 %endfor
 

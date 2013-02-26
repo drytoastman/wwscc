@@ -1,3 +1,5 @@
+<%inherit file="/base.mako" />
+
 <P>General printing setup for blank 5x8 index cards (office depot, staples, etc).  At least what has worked for me.</P>
 
 <P>Very first time (Windows):</P>

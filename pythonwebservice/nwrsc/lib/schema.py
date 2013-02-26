@@ -36,6 +36,7 @@ class ClassSchema(Schema):
 	usecarflag = Bool()
 	numorder = Int()
 	countedruns = Int(if_empty=0)
+	caridxrestrict = String()
 	
 class ClassListSchema(Schema):
 	pre_validators = [NestedVariables()] 

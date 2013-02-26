@@ -76,12 +76,22 @@ class DbserveController(BaseController, SRPAuthentication):
 		return "Complete"
 
 
+	def available(self):
+		response.headers['Content-type'] = 'text/plain'
+		data = ""
+		for db in self._databaseList(archived=False):
+			data += "%s %s %s\n" % (db.name, db.locked and "1" or "0", db.archived and "1" or "0")
+		return data
+		
+
 	def sqlmap(self):
 		try:
 			stream = DataInput(request.environ['wsgi.input'].read(int(request.environ['CONTENT_LENGTH'])))
 			ret = ""
 			while stream.dataAvailable() > 0:
 				(type, key, values) = Codec.decodeRequest(stream)
+				if key in ['TRACK']:
+					raise Exception("You are trying to track database changes over a web connection, switch to direct file\n\n")
 
 				log.debug("sqlmap request %s" % (key))
 				if type == Codec.SELECT:

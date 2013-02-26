@@ -134,5 +134,83 @@ ul.invalidlist {
 	list-style: none;
 }
 
+.indextable, .classtable {
+	margin-bottom: 15px;
+	border-collapse: collapse;
+
+	tr:nth-child(3n+2) {
+		border-top: 1px solid #779;
+	}
+	tr:nth-child(3n+2) td {
+		padding-top: 5px;
+	}
+	tr:nth-child(3n+4) td {
+		padding-bottom: 5px;
+	}
+}
+
+.classtable {
+	td {
+		text-align: center;
+		vertical-align: top;
+	}
+
+	th {
+		&.multcol, &.flagcol {
+			border-top: 1px solid #cccccc;
+		}
+	}
+
+	tr:last-child td {
+		&.multcol, &.flagcol {
+			border-bottom: 1px solid #cccccc;
+			padding-bottom: 4px;
+		}
+	}
+
+	td.multcol, th.multcol {
+		border-left: 1px solid #cccccc;
+		padding-left: 6px;
+	}
+
+	td.flagcol, th.flagcol {
+		border-right: 1px solid #cccccc;
+		padding-right: 6px;
+	}
+
+	th.clsindexcol, td.clsindexcol {
+		padding-right: 6px;
+	}
+
+	th.limitcol, td.limitcol {
+		padding-left: 6px;
+	}
+}
+
+
+.doctable {
+	th {
+		white-space: nowrap;
+		text-align: right;
+		padding-right: 5px;
+		vertical-align: top;
+	}
+
+	ol {
+		margin: 0;
+		padding-left: 14px;
+	}
+
+	li {
+		padding-top: 2px;
+		font-style: italic;
+		color: rgb(50,100,200);
+		span {
+			font-weight: bold;
+			font-size: 1.1em;
+			color: rgb(25,50,100);
+		}
+	}
+}
 
 

@@ -15,6 +15,8 @@ import java.io.Serializable;
  */
 public class Event implements Serializable
 {
+	private static final long serialVersionUID = 3721488283732959966L;
+	
 	protected int id;
 	protected boolean ispro;
 	protected boolean practice;

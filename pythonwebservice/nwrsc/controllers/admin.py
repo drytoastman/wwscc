@@ -296,6 +296,9 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 	def printhelp(self):
 		return render_mako('/admin/printhelp.mako')
 
+	def restricthelp(self):
+		return render_mako('/admin/restricthelp.mako')
+
 
 	def numbers(self):
 		# As with other places, one big query followed by mangling in python is faster (and clearer)
@@ -513,6 +516,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		c.invalidnumber = []
 		c.invalidclass = []
 		c.invalidindex = []
+		c.restrictedindex = []
 
 		for car in self.session.query(Car):
 			if car.number is None:
@@ -522,6 +526,13 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			elif c.classdata.classlist[car.classcode].carindexed:
 				if not car.indexcode or car.indexcode not in c.classdata.indexlist:
 					c.invalidindex.append(car)
+
+			if car.classcode:
+				restrict = c.classdata.classlist[car.classcode].restrictedIndexes()
+				if car.indexcode in restrict[0]:
+					c.restrictedindex.append(car)
+				if car.indexcode in restrict[1] and car.tireindexed:
+					c.restrictedindex.append(car)
 
 		return render_mako('/admin/invalidcars.mako')
 		

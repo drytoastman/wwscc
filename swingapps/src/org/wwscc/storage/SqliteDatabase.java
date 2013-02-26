@@ -129,8 +129,8 @@ public class SqliteDatabase extends SQLDataInterface
 		rollback = new Prepared("rollback");
 
 		String ver = getSetting("schema");
-		if (!ver.equals("20131"))
-			throw new IOException("Database schema version is " + ver + " but software is 20131");
+		if (!ver.equals("20132"))
+			throw new IOException("Database schema version is " + ver + " but software is 20132");
 	}
 
 	@Override

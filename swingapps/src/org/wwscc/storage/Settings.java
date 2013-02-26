@@ -15,6 +15,8 @@ import java.util.Properties;
  */
 public class Settings extends Properties
 {
+	private static final long serialVersionUID = -7290068895174856883L;
+
 	public Settings()
 	{
 	}

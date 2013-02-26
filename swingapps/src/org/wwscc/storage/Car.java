@@ -13,6 +13,8 @@ import java.util.Comparator;
 
 public class Car implements Serializable
 {
+	private static final long serialVersionUID = -4356095380991113575L;
+	
 	protected int id;
 	protected int driverid;
 
