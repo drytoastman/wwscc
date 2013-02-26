@@ -214,13 +214,13 @@ public class ClassData
 	     */
 	    private Set<Index> processList(Matcher results, Set<Index> fullset)
 	    {
-	    	Set<Index> keep = new HashSet<Index>();
+	    	Set<Index> keep = new HashSet<Index>(fullset);
 	    	boolean first = true;
 	    	while (results.find())
 	    	{
 	            boolean ADD = results.group(1).equals("+");
-	            if (first && !ADD)
-	            	keep = new HashSet<Index>(fullset);
+	            if (first && ADD)
+	            	keep = new HashSet<Index>();
 	            first = false;
 
 	            for (String item : results.group(2).split(",")) {

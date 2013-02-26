@@ -1,6 +1,5 @@
 package org.wwscc.storage;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,6 +39,15 @@ public class ClassListTest {
 		Assert.assertEquals(buildSet(new String[] { "SA", "SB", "STU", "STX", "MA", "MB" }), ret[1]);
 	}
 
+	@Test
+	public void testSingleRestrictBlank() {
+		ClassData.Class cls = new ClassData.Class();
+		cls.caridxrestrict = "-(ST*)";
+		Set<String>[] ret = cls.restrictedIndexes(allindexes);
+
+		Assert.assertEquals(buildSet(new String[] { "SA", "SB", "MA", "MB", "AS" }), ret[0]);
+		Assert.assertEquals(allindexes, ret[1]);
+	}
 	
 	@Test
 	public void testRestrictBlank() {
