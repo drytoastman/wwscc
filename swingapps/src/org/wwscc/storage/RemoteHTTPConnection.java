@@ -13,6 +13,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -41,8 +43,13 @@ public class RemoteHTTPConnection
 	byte[] buffer;
 	ProgressMonitor monitor;
 	int transfered;
+	
+	static { CookieHandler.setDefault(new CookieManager()); }
 
-	class AuthException extends IOException {}
+	class AuthException extends IOException 
+	{
+		public AuthException(String e) { super(e); }
+	}
 
 	public RemoteHTTPConnection() throws UnknownHostException
 	{
@@ -97,7 +104,8 @@ public class RemoteHTTPConnection
 					monitor.close();
 					throw new CancelException("No input for password dialog");
 				}
-				Prefs.setPasswordFor(dbname, s);
+				
+				new SRPAuthentication(dbname+":series", s).start();
 			}
 			catch (CancelException ce)
 			{
@@ -116,9 +124,7 @@ public class RemoteHTTPConnection
 	{
 		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 		conn.setConnectTimeout(3500);
-		conn.setRequestProperty("User-Agent", "Scorekeeper 1.1");
-		conn.setRequestProperty("X-Scorekeeper", Prefs.getPasswordFor(dbname));
-		//conn.setRequestProperty("Host", hostname);
+		conn.setRequestProperty("User-Agent", "Scorekeeper 2.0");
 		conn.setUseCaches(false);
 		conn.setDoInput(true);
 
@@ -183,16 +189,12 @@ public class RemoteHTTPConnection
 		catch (HttpRetryException rte) // only try and catch the need for auth retry
 		{
 			if (rte.responseCode() == 401)
-				throw new AuthException();
+				throw new AuthException("retry");
 			throw rte;
 		}
 		catch (IOException ioe)
 		{
-			// catch 401 in an IOexception, can't use getResponseCode as this may be a connection error
-			String msg = ioe.getMessage();
-			if (msg.contains("401") && msg.contains("response code"))
-				throw new AuthException();
-			
+			// catch 401 in an IOexception, can't use getResponseCode as this may be a connection error			
 			InputStream err = conn.getErrorStream();
 			if (err == null)
 				throw ioe;
@@ -200,9 +202,13 @@ public class RemoteHTTPConnection
 			err.read(errorbuf);
 			String serror = new String(errorbuf);
 			if (serror.contains("<body>"))
-				throw new IOException(serror.substring(serror.indexOf("<body>")+7), ioe);
-			else
-				throw new IOException(serror, ioe);
+				serror = serror.substring(serror.indexOf("<body>")+6, serror.length()-14);
+
+			String msg = ioe.getMessage();
+			if (msg.contains("401") && msg.contains("response code"))
+				throw new AuthException(serror);
+			
+			throw new IOException(serror, ioe);
 		}
 	}
 

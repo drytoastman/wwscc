@@ -26,7 +26,7 @@ public class Prefs
 			}
 		}));
 	}
-
+	
 	public static void setPrefsNode(String name)
 	{
 		prefs = Preferences.userRoot().node(name);
@@ -34,7 +34,6 @@ public class Prefs
 	
 	public static String getHomeServer() { return prefs.get("hostname", "scorekeeper.wwscc.org"); }
 	public static String getMergeHost() { return prefs.get("mergehost", ""); }
-	public static String getPasswordFor(String db) { return prefs.get("password-"+db, "none"); }
 	public static String getInstallRoot() { return prefs.get("installroot", System.getProperty("user.home")); }
 	public static String getSeriesFile(String def) { return prefs.get("seriesfile", def); }
 	public static String getSeriesURL(String def) { return prefs.get("seriesurl", def); }
@@ -59,7 +58,6 @@ public class Prefs
 
 	public static void setHomeServer(String s) { prefs.put("hostname", s); }
 	public static void setMergeHost(String h) { prefs.put("mergehost", h); }
-	public static void setPasswordFor(String db, String s) { prefs.put("password-"+db, s); }
 	public static void setInstallRoot(String s) { prefs.put("installroot", s); }
 	public static void setSeriesFile(String s) { prefs.put("seriesfile", s); }
 	public static void setSeriesURL(String s) { prefs.put("seriesurl", s); }

@@ -135,16 +135,8 @@ public class Registration extends JFrame implements ActionListener
 	{
 		try
 		{
-			String node = "";
-			for (String arg : args) {
-				if (arg.startsWith("prefs=")) {
-					node = arg.substring(arg.indexOf('=')+1);
-					Prefs.setPrefsNode(node + "/registration");
-				}
-			}
-			
 			Logging.logSetup("registration");
-			final String name = "Registration " + node;
+			final String name = "Registration " + ((args.length>1)?args[1]:"");
 			SwingUtilities.invokeLater(new Runnable() { public void run() {
 				try {
 					new Registration(name);

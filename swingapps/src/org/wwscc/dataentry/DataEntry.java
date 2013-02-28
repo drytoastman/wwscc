@@ -83,9 +83,9 @@ public class DataEntry extends JFrame implements MessageListener
 		}
 	}
 
-	public DataEntry() throws IOException
+	public DataEntry(String title) throws IOException
 	{
-		super("Data Entry");
+		super(title);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new BarcodeScannerWatcher());
 		
@@ -167,9 +167,10 @@ public class DataEntry extends JFrame implements MessageListener
 			Class.forName("org.wwscc.dataentry.Sounds");
 			Logging.logSetup("dataentry");
 			
+			final String title = "DataEntry " + ((args.length>1)?args[1]:"");
 			SwingUtilities.invokeLater(new Runnable() { public void run() {
 				try {
-					new DataEntry();
+					new DataEntry(title);
 					Toolkit.getDefaultToolkit().getSystemEventQueue().push(new LastManEventQueue());
 				} catch (Throwable e) {
 					log.log(Level.SEVERE, "DataEntry creation failed: " + e, e);
