@@ -33,19 +33,6 @@ class PrintErrors(ErrorMiddleware):
 		return '<pre>Exception %s in %s (%s line %s)</pre>' % (exc[1], name, os.path.basename(file), line)
 
 
-class ReWriter(object):
-
-	def __init__(self, app, maps):
-		self.app = app
-		self.maps = maps or dict()
-
-	def __call__(self, environ, start_response):
-		if environ['PATH_INFO'] in self.maps:
-			environ['PATH_INFO'] = self.maps[environ['PATH_INFO']]
-		return self.app(environ, start_response)
-
-
-
 def make_app(global_conf, full_stack=True, **app_conf):
 	"""Create a Pylons WSGI application and return it
 
@@ -83,8 +70,6 @@ def make_app(global_conf, full_stack=True, **app_conf):
 		else:
 			app = PrintErrors(app, global_conf, **config['pylons.errorware'])
 
-		app = StatusCodeRedirect(app)
-
 	# Establish the Registry for this application
 	app = RegistryManager(app)
 
@@ -92,7 +77,6 @@ def make_app(global_conf, full_stack=True, **app_conf):
 	# server is handling this static content, remove the following 2 lines)
 	static_app = StaticURLParser(config['pylons.paths']['static_files'])
 	app = Cascade([static_app, app])
-	# app = ReWriter(app, {'/mobile/css':'/css/announcer.css'})
 	app = GzipMiddleware(app, compresslevel=5)
 
 	if asbool(config.get("nwrsc.onsite", False)):
