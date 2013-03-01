@@ -1,6 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * This software is licensed under the GPLv3 license, included as
+ * ./GPLv3-LICENSE.txt in the source distribution.
+ *
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
+ * All rights reserved.
  */
 
 package org.wwscc.storage;
@@ -32,8 +35,6 @@ import org.wwscc.util.CancelException;
 import org.wwscc.util.Prefs;
 
 /**
- *
- * @author bwilson
  */
 public class RemoteHTTPConnection
 {
@@ -105,7 +106,7 @@ public class RemoteHTTPConnection
 					throw new CancelException("No input for password dialog");
 				}
 				
-				new SRPAuthentication(dbname+":series", s).start();
+				//new SRPAuthentication(url.getHost(), dbname+":series", s).start();
 			}
 			catch (CancelException ce)
 			{
