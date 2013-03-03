@@ -5,15 +5,16 @@ import logging
 
 log = logging.getLogger(__name__)
 
-from pylons import request, response
-from pylons.controllers.util import abort
+from pylons import request, response, session
+from pylons.controllers.util import abort, url_for
 from sqlalchemy import create_engine
 
-from nwrsc.controllers.lib.base import BaseController
+from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.controllers.lib.auth import SRPAuthentication
 from nwrsc.lib.codec import Codec, DataInput
 from nwrsc.controllers.lib.resultscalc import UpdateClassResults
 from nwrsc.model import *
+
 
 class DbserveController(BaseController, SRPAuthentication):
 	"""
@@ -32,10 +33,12 @@ class DbserveController(BaseController, SRPAuthentication):
 
 	def __before__(self):
 		action = self.routingargs.get('action', '')
+		session['mark'] = 1
+		session.save() # force cookie out
 		if action in ['available', 'srp', 'authenticate']:
 			return
-		if not self.verify(request.data):
-			abort(401, "Need SRP Authentication")
+		if not self.verify(request.body):
+			abort(401, headers={'WWW-Authenticate':'srp users="%s:series", loc="%s"' % (self.database, url_for(action='srp'))})
 
 
 	def download(self):

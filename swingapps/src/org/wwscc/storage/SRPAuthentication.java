@@ -30,10 +30,13 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.AuthenticationException;
+import org.apache.http.auth.Credentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
@@ -128,19 +131,36 @@ public class SRPAuthentication
 		}
 	}
 	
+	class DialogCreds extends BasicCredentialsProvider
+	{
+	    public Credentials getCredentials(final AuthScope authscope) 
+	    {
+	    	Credentials creds = super.getCredentials(authscope);
+	    	if (creds == null)
+	    	{
+	    		// Input Dialog
+	    	}
+	    	return creds;
+	    }
+		
+	}
+	
 	public void start() throws IOException, URISyntaxException
 	{			
 		DefaultHttpClient httpclient = new DefaultHttpClient();
-		httpclient.addRequestInterceptor(new ScorekeeperSigner());
-	
+		//httpclient.addRequestInterceptor(new ScorekeeperSigner());
+		httpclient.setCredentialsProvider(new DialogCreds());
+		
         try {
+        	/*
             List<NameValuePair> parm = new ArrayList<NameValuePair>();
             parm.add(new BasicNameValuePair("username", username));
             parm.add(new BasicNameValuePair("A", Base64.encodeBase64String(getBigBytes(A))));
-
-            HttpPost httppost = new HttpPost(new URI("http", hostname, "/dbserve/ww2013/testauth", null)); 
-            httppost.setEntity(new UrlEncodedFormEntity(parm));
-
+			*/
+            HttpPost httppost = new HttpPost(new URI("http", "scorekeeper.wwscc.org", "/authtest.txt", null)); 
+            //httppost.setEntity(new UrlEncodedFormEntity(parm));
+			
+        	
             HttpResponse response = httpclient.execute(httppost);
             try {
                 HttpEntity resEntity = response.getEntity();
