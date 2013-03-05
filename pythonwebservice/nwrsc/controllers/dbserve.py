@@ -10,13 +10,13 @@ from pylons.controllers.util import abort, url_for
 from sqlalchemy import create_engine
 
 from nwrsc.controllers.lib.base import BaseController, BeforePage
-from nwrsc.controllers.lib.auth import SRPAuthentication
+from nwrsc.lib.digest import DigestAuthentication
 from nwrsc.lib.codec import Codec, DataInput
-from nwrsc.controllers.lib.resultscalc import UpdateClassResults
+from nwrsc.lib.resultscalc import UpdateClassResults
 from nwrsc.model import *
 
 
-class DbserveController(BaseController, SRPAuthentication):
+class DbserveController(BaseController):
 	"""
 		DBServe is used as the contact point for the java applications when speaking to
 		the web service.
@@ -33,13 +33,19 @@ class DbserveController(BaseController, SRPAuthentication):
 
 	def __before__(self):
 		action = self.routingargs.get('action', '')
-		session['mark'] = 1
-		session.save() # force cookie out
-		if action in ['available', 'srp', 'authenticate']:
-			return
-		if not self.verify(request.body):
-			abort(401, headers={'WWW-Authenticate':'srp users="%s:series", loc="%s"' % (self.database, url_for(action='srp'))})
+		if not self.database or action == 'index':
+			raise BeforePage("")
 
+		if action in ('available'):
+			return
+
+		try:
+			digestinfo = session.setdefault('digest', {})
+			DigestAuthentication(digestinfo, request, self.database+":series", self.settings.password)
+			# at this point, they are verified as knowing the password for database:series
+		finally:
+			session.save()
+		
 
 	def download(self):
 		if self.settings.locked:

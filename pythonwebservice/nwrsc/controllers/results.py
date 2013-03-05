@@ -6,7 +6,7 @@ from pylons import request, response, session, config, tmpl_context as c
 from pylons.controllers.util import url_for, abort
 
 from pylons.templating import render_mako, render_mako_def
-from nwrsc.controllers.lib.bracket import Bracket
+from nwrsc.lib.bracket import Bracket
 from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.lib.rungroups import *
 from nwrsc.model import *
