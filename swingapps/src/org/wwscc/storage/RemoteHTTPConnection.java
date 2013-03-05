@@ -53,7 +53,7 @@ public class RemoteHTTPConnection
 	private static final Logger log = Logger.getLogger(RemoteHTTPConnection.class.getCanonicalName());
 	String host;
 	String dbname;
-	MyClient httpclient;
+	DefaultHttpClient httpclient;
 
 	public RemoteHTTPConnection() throws IOException
 	{
@@ -64,57 +64,56 @@ public class RemoteHTTPConnection
 	{
 		host = remote;
 		dbname = "";
-		httpclient = new MyClient();
+		httpclient = new DefaultHttpClient();
 		HttpProtocolParams.setUserAgent(httpclient.getParams(), "Scorekeeper/2.0");
 		CredentialsProvider creds = httpclient.getCredentialsProvider();
 
 		for (Map.Entry<String,String> entry : Prefs.getPasswords().entrySet())
 		{
-			creds.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, entry.getKey()+"/series", "Digest"), 
+			creds.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, entry.getKey()+":series", "Digest"), 
 									new UsernamePasswordCredentials("admin", entry.getValue()));
 		}
 	}
 
-	class MyClient extends DefaultHttpClient
+
+	public HttpResponse execute(HttpUriRequest request) throws IOException, ClientProtocolException 
 	{
-		public final HttpResponse wrappedExecute(HttpUriRequest request) throws IOException, ClientProtocolException 
+		while (true)
 		{
-			while (true)
+			HttpResponse response = httpclient.execute(request);
+			if (response.getStatusLine().getStatusCode() == 401)  // try and get new credentials from user cause something failed
 			{
-				HttpResponse response = super.execute(request);
-				if (response.getStatusLine().getStatusCode() == 401)  // try and get new credentials from user cause something failed
-				{
-					String s = JOptionPane.showInputDialog("Password not accepted, please enter the proper password: ");
-					if (s == null) 
-						throw new CancelException("No input for password dialog");
-					
-					Prefs.setPasswordFor(dbname, s);
-					httpclient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, dbname+"/series", "Digest"), 
-																		new UsernamePasswordCredentials("admin", s));
-					continue;
-				}
-				else if (response.getStatusLine().getStatusCode() != 200)
-				{
-					String error = EntityUtils.toString(response.getEntity());
-					if (error.contains("<body>"))
-						error = error.substring(error.indexOf("<body>")+6, error.length()-14);
-					throw new IOException(error);
-				}
+				String s = JOptionPane.showInputDialog("Password not accepted, please enter the proper password: ");
+				if (s == null) 
+					throw new CancelException("No input for password dialog");
 				
-				return response;
+				Prefs.setPasswordFor(dbname, s);
+				httpclient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, dbname+":series", "Digest"), 
+																	new UsernamePasswordCredentials("admin", s));
+				EntityUtils.consume(response.getEntity());
+				continue;
+			}
+			else if (response.getStatusLine().getStatusCode() != 200)
+			{
+				String error = EntityUtils.toString(response.getEntity());
+				if (error.contains("<body>"))
+					error = error.substring(error.indexOf("<body>")+6, error.length()-14);
+				throw new IOException(error);
 			}
 			
+			return response;
 		}
+		
 	}
-	
 
+	
 	public byte[] performSQL(String name, byte[] data) throws IOException, URISyntaxException
 	{
 		dbname = name;
         ByteArrayEntity entity = new ByteArrayEntity(data);
         HttpPost sqlmap = new HttpPost(URIs.sqlmap(host, dbname));
         sqlmap.setEntity(new CountingEntity("Remote SQL", entity));		        
-        return EntityUtils.toByteArray(new CountingEntity("SQL Results", httpclient.execute(sqlmap).getEntity()));
+        return EntityUtils.toByteArray(new CountingEntity("SQL Results", execute(sqlmap).getEntity()));
 	}
 
 	
@@ -132,7 +131,7 @@ public class RemoteHTTPConnection
 		ret.put("locked", new ArrayList<String>());
 		
 		HttpGet available = new HttpGet(URIs.available(host));
-		HttpEntity resEntity = new CountingEntity("Download", httpclient.execute(available).getEntity());
+		HttpEntity resEntity = new CountingEntity("Download", execute(available).getEntity());
 		String data = EntityUtils.toString(resEntity);
 		for (String db : data.split("\n"))
 		{
@@ -166,7 +165,7 @@ public class RemoteHTTPConnection
 	{
 		dbname = remotename;		
 		HttpGet download = new HttpGet((lockServerSide) ? URIs.download(host, dbname) : URIs.copy(host, dbname));
-		HttpEntity resEntity = new CountingEntity("Download", httpclient.execute(download).getEntity());
+		HttpEntity resEntity = new CountingEntity("Download", execute(download).getEntity());
 		FileOutputStream output = new FileOutputStream(dst);
 		resEntity.writeTo(output);
 	}
@@ -180,7 +179,7 @@ public class RemoteHTTPConnection
         entity.addPart("db", new FileBody(f, dbname, ContentType.APPLICATION_OCTET_STREAM.getMimeType()));
         HttpPost upload = new HttpPost(URIs.download(host, dbname));
         upload.setEntity(new CountingEntity("Upload", entity));			
-        EntityUtils.consume(httpclient.execute(upload).getEntity());
+        EntityUtils.consume(execute(upload).getEntity());
 	}
 
 	static class URIs {
@@ -240,7 +239,8 @@ public class RemoteHTTPConnection
 	
 	public static void main(String[] args) throws Exception
 	{
-		RemoteHTTPConnection c = new RemoteHTTPConnection("localhost");
-		c.uploadDatabase(new File("d:/cygwin/home/bwilson/testing.db"));
+		RemoteHTTPConnection c = new RemoteHTTPConnection("127.0.0.1");
+		c.downloadDatabase(new File("junk.db"), "ww2013", false);
+		//c.uploadDatabase(new File("d:/cygwin/home/bwilson/testing.db"));
 	}
 }
