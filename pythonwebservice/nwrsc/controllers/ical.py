@@ -5,6 +5,7 @@ from nwrsc.controllers.lib.base import BeforePage, BaseController
 
 from collections import defaultdict
 import icalendar
+import re
 
 class IcalController(BaseController):
 
@@ -39,9 +40,10 @@ class IcalController(BaseController):
 			event = icalendar.Event()
 			event.add('summary', "%s: %s" % (name, ','.join(codes)))
 			event.add('dtstart', date)
-			event['uid'] = 'SCOREKEEPER-CALENDAR-%s-%s' % (name.replace(' ',''), date)
+			event['uid'] = 'SCOREKEEPER-CALENDAR-%s-%s' % (re.sub(r'\W','', name), date)
 			toencode.append(event)
 		
+		toencode.sort(key=lambda x: x['dtstart'].dt)
 		return self._publishEvents(toencode)
 
 
