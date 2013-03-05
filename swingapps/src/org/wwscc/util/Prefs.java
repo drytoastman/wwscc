@@ -8,7 +8,13 @@
 package org.wwscc.util;
 
 import java.awt.Rectangle;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
 
 /**
  *
@@ -16,6 +22,8 @@ import java.util.prefs.Preferences;
  */
 public class Prefs
 {
+	private static final Logger log = Logger.getLogger(Prefs.class.getCanonicalName());
+	
 	private static Preferences prefs;
 	static
 	{
@@ -26,14 +34,32 @@ public class Prefs
 			}
 		}));
 	}
-	
+
 	public static void setPrefsNode(String name)
 	{
 		prefs = Preferences.userRoot().node(name);
 	}
 	
+	
+	public static Map<String,String> getPasswords() 
+	{
+		Map<String,String> ret = new HashMap<String,String>();
+		try {
+			for (String k : prefs.keys())
+			{
+				if (k.startsWith("password-"))
+					ret.put(k.substring(9), prefs.get(k, ""));
+			}
+		} catch (BackingStoreException bse) {
+			log.log(Level.WARNING, "Failed to load passwords from prefs: {0}", bse.getMessage());
+		}
+		
+		return ret;
+	}
+	
 	public static String getHomeServer() { return prefs.get("hostname", "scorekeeper.wwscc.org"); }
 	public static String getMergeHost() { return prefs.get("mergehost", ""); }
+	public static String getPasswordFor(String db) { return prefs.get("password-"+db, ""); }
 	public static String getInstallRoot() { return prefs.get("installroot", System.getProperty("user.home")); }
 	public static String getSeriesFile(String def) { return prefs.get("seriesfile", def); }
 	public static String getSeriesURL(String def) { return prefs.get("seriesurl", def); }
@@ -58,6 +84,7 @@ public class Prefs
 
 	public static void setHomeServer(String s) { prefs.put("hostname", s); }
 	public static void setMergeHost(String h) { prefs.put("mergehost", h); }
+	public static void setPasswordFor(String db, String s) { prefs.put("password-"+db, s); }
 	public static void setInstallRoot(String s) { prefs.put("installroot", s); }
 	public static void setSeriesFile(String s) { prefs.put("seriesfile", s); }
 	public static void setSeriesURL(String s) { prefs.put("seriesurl", s); }
