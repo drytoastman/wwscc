@@ -10,7 +10,7 @@ from pylons.controllers.util import abort, url_for
 from sqlalchemy import create_engine
 
 from nwrsc.controllers.lib.base import BaseController, BeforePage
-from nwrsc.lib.digest import DigestAuthentication
+from nwrsc.lib.digest import digestAuthentication, abortChallenge, AuthException
 from nwrsc.lib.codec import Codec, DataInput
 from nwrsc.lib.resultscalc import UpdateClassResults
 from nwrsc.model import *
@@ -41,8 +41,12 @@ class DbserveController(BaseController):
 
 		try:
 			digestinfo = session.setdefault('digest', {})
-			DigestAuthentication(digestinfo, request, self.database+":series", self.settings.password)
+			seriesrealm = self.database + ":series"
+			authrealm = digestAuthentication(digestinfo, {seriesrealm : self.settings.password}, request)
 			# at this point, they are verified as knowing the password for database:series
+		except AuthException, e: 
+			log.info("Authorization failed: %s", e)
+			abortChallenge(digestinfo, seriesrealm)
 		finally:
 			session.save()
 		
