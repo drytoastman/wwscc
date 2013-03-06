@@ -34,8 +34,8 @@ def DigestAuthentication(store, request, realm, password):
 		if 'HTTP_AUTHORIZATION' not in request.environ:
 			raise AuthException("No authorization header")
 
-		(type, param) = request.environ['HTTP_AUTHORIZATION'].split(" ", 1)
-		if type.strip().lower() != 'digest':
+		(authtype, param) = request.environ['HTTP_AUTHORIZATION'].split(" ", 1)
+		if authtype.strip().lower() != 'digest':
 			raise AuthException("Not digest authorization")
 
 		auth = AuthHeader()
@@ -68,8 +68,8 @@ def DigestAuthentication(store, request, realm, password):
 		method = request.environ['REQUEST_METHOD']
 		path = request.environ['PATH_INFO']
 		body = request.body
-		if auth == 'auth-int':
-			ha2 = digest('%s:%s' % (method, path, digest(body).hexdigest())).hexdigest()
+		if auth.qop == 'auth-int':
+			ha2 = digest('%s:%s:%s' % (method, path, digest(body).hexdigest())).hexdigest()
 		else:
 			ha2 = digest('%s:%s' % (method, path)).hexdigest()
 		if auth.response != digest("%s:%s:%s:%s:%s:%s" % (ha1, auth.nonce, auth.nc, auth.cnonce, auth.qop, ha2)).hexdigest():
