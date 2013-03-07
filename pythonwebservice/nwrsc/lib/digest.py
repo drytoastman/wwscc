@@ -78,9 +78,12 @@ def digestAuthentication(store, realm, passwords, request):
 
 	method = request.environ['REQUEST_METHOD']
 	path = request.environ['REQUEST_URI']
-	body = request.environ['wsgi.input']
 	if auth.qop == 'auth-int':
-		ha2 = digest('%s:%s:%s' % (method, path, digest(body).hexdigest())).hexdigest()
+		body = request.environ['wsgi.input']
+		integ = ""
+		if body is not None:
+			integ = digest(body.getvalue()).hexdigest()
+		ha2 = digest('%s:%s:%s' % (method, path, integ)).hexdigest()
 	else:
 		ha2 = digest('%s:%s' % (method, path)).hexdigest()
 

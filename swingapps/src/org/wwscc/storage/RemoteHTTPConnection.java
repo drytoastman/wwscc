@@ -10,7 +10,6 @@ package org.wwscc.storage;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -24,8 +23,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
-import javax.swing.ProgressMonitor;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
@@ -88,7 +85,7 @@ public class RemoteHTTPConnection
 			
 		CredentialsProvider creds = httpclient.getCredentialsProvider();
 		for (Map.Entry<String,String> entry : Prefs.getPasswords().entrySet())
-			creds.setCredentials(getOurScope(entry.getKey()), new UsernamePasswordCredentials("admin", entry.getValue()));
+			creds.setCredentials(produceScope(entry.getKey()), produceCredentials(entry.getValue()));
 		
 		context = new BasicHttpContext();
 	}
@@ -114,25 +111,21 @@ public class RemoteHTTPConnection
 					throw new CancelException("No input for password dialog");
 				
 				Prefs.setPasswordFor(database, s);
-				httpclient.getCredentialsProvider().setCredentials(getOurScope(database), new UsernamePasswordCredentials("admin", s));
+				httpclient.getCredentialsProvider().setCredentials(produceScope(database), produceCredentials(s));
 				EntityUtils.consume(response.getEntity());
 				continue;
 			}
 			else if (response.getStatusLine().getStatusCode() != 200)
 			{
 				String error = EntityUtils.toString(response.getEntity());
-				if (error.contains("<body>"))
-				{
-					error = error.substring(error.indexOf("<body>")+6, error.length()-14);
+				if (error.contains("<body")) {
+					error = error.substring(error.indexOf("<body")+6, error.length()-14);
 				}
 
-				if (error.length() > 400)
-				{
-					System.out.println(error.length() + " - " + error.substring(0, 400));
+				if (error.length() > 600) {
 					error = "oversized error from backend";
 				}
 
-				System.out.println(error);
 				throw new IOException(error);
 			}
 			
@@ -247,8 +240,12 @@ public class RemoteHTTPConnection
 	 * @param seriesname the series name to get the authscope for
 	 * @return a new AuthScope object that should match the realm/type for the database from the server
 	 */
-	protected static AuthScope getOurScope(String seriesname) {
-		return new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, seriesname+":series", "digest");
+	protected static AuthScope produceScope(String seriesname) {
+		return new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, seriesname, "digest");
+	}
+	
+	protected static Credentials produceCredentials(String password) {
+		return new UsernamePasswordCredentials("admin", password);
 	}
 	
 	
@@ -305,8 +302,7 @@ public class RemoteHTTPConnection
 	            if (authScheme != null) {
 	                //doPreemptiveAuth
 	            	String[] bits = request.getRequestLine().getUri().split("/");  // magic time, we know the URL scheme  (/{controller}/{seriesname}/...)
-	    	        AuthScope authScope = getOurScope(bits[2]);
-	    	        Credentials creds = credsProvider.getCredentials(authScope);
+	    	        Credentials creds = credsProvider.getCredentials(produceScope(bits[2]));
 	    	        if (creds != null) {
 	    	        	targetState.setState(AuthProtocolState.SUCCESS);
 	    	        	targetState.update(authScheme, creds);
