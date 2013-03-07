@@ -200,10 +200,10 @@ class BaseController(WSGIController):
 		# WSGIController.__call__ dispatches to the Controller method
 		# the request is routed to. This routing information is
 		# available in environ['pylons.routes_dict']
-		log.debug("process (%s?%s)" % (environ['PATH_INFO'], environ['QUERY_STRING']))
+		log.debug("process (%s)" % request.environ['REQUEST_URI'])
 
 		self.srcip = request.environ.get("X_FORWARDED_FOR", request.environ["REMOTE_ADDR"]) 
-		self.routingargs = environ['wsgiorg.routing_args'][1]
+		self.routingargs = request.environ['wsgiorg.routing_args'][1]
 		self.database = self.routingargs.get('database', None)
 
 		if self.database is None:  # no database specified yet, allow selection later by controller

@@ -18,6 +18,7 @@ from nwrsc.controllers.lib.objecteditors import ObjectEditor
 from nwrsc.controllers.lib.cardprinting import CardPrinting
 from nwrsc.controllers.lib.purgecopy import PurgeCopy
 
+from nwrsc.lib.digest import authCheck
 from nwrsc.lib.schema import *
 from nwrsc.model import *
 
@@ -79,8 +80,11 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		if self.eventid and self.eventid.isdigit():
 			c.event = self.session.query(Event).get(self.eventid)
 
-		if self.eventid and self.action not in ('login'):
-			self._checkauth(self.eventid, c.event)
+		if c.event is None and self.eventid != 's':
+			c.text = "<h3>No such event for %s</h3>" % self.eventid
+			raise BeforePage(render_mako('/admin/simple.mako'))
+
+		self._checkauth(c.event)
 
 		if self.settings.locked:
 			if self.action not in ('login', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'newentrants', 'printhelp', 'forceunlock'):
@@ -89,33 +93,24 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 				raise BeforePage(render_mako('/admin/locked.mako'))
 
 
-	def _checkauth(self, eventid, event):
+	def _checkauth(self, event):
 		if self.srcip == '127.0.0.1':
 			c.isAdmin = True
 			return
+
+		try:
+			digestinfo = session.setdefault(('digest', self.srcip), {})
+			passwords = { "admin" : self.settings.password }
+			if event is not None:
+				passwords["event"] = event.password
+
+			authname = authCheck(digestinfo, self.database, passwords, request)
+			if authname == "admin":
+				c.isAdmin = True
+		finally:
+			session.save()
+		
 	
-		if event is None and eventid != 's':
-			c.text = "<h3>No such event for %s</h3>" % eventid
-			raise BeforePage(render_mako('/admin/simple.mako'))
-	
-		mysession = AdminSession(session.setdefault(('admin', self.srcip), {}), self.database)
-
-		if mysession.isSeriesAdmin():
-			c.isAdmin = True
-			return
-
-		if event is not None and mysession.isEventAdmin(eventid):
-			return
-			
-		if event is not None:
-			c.request = "Need authentication token for %s" % event.name
-		else:
-			c.request = "Need authentication token for the series"
-
-		mysession.saveAction(self.routingargs['action'])
-		raise BeforePage(render_mako('/admin/login.mako'))
-	
-
 	def forceunlock(self):
 		self.settings.locked = False
 		self.settings.save(self.session)
