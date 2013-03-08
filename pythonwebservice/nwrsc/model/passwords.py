@@ -27,10 +27,10 @@ class Password(object):
 
 	@classmethod
 	def save(self, session, values):
-		for pwd in self.session.query(Password):
-			self.session.delete(pwd)
+		for pwd in session.query(Password):
+			session.delete(pwd)
 		for tag, val in values.iteritems():
-			self.session.add(Password(tag=tag, val=val))
+			session.add(Password(tag=tag, value=val))
 
 mapper(Password, t_passwords)
 

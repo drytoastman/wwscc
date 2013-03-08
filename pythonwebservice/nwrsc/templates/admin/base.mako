@@ -14,10 +14,11 @@
 	<li><a href='${h.url_for(eventid='s', action='createevent')}'>New Event</a></li>
 	<li><a href='${h.url_for(eventid='s', action='classlist')}'>Classes</a></li>
 	<li><a href='${h.url_for(eventid='s', action='indexlist')}'>Indexes</a></li>
+	<li><a href='${h.url_for(eventid='s', action='seriessettings')}'>Settings</a></li>
+	<li><a href='${h.url_for(eventid='s', action='passwords')}'>Passwords</a></li>
 	<li><a href='${h.url_for(eventid='s', action='invalidcars')}'>Invalid Cars</a></li>
 	<li><a href='${h.url_for(eventid='s', action='fieldlist')}'>Driver Fields</a></li>
 	<li><a href='${h.url_for(eventid='s', action='drivers')}'>Driver/Car Editor</a></li>
-	<li><a href='${h.url_for(eventid='s', action='seriessettings')}'>Settings</a></li>
 	<li><a href='${h.url_for(eventid='s', action='recalc')}'>Recalculate Results</a></li>
 	<li><a href='${h.url_for(eventid='s', action='purge')}'>Purge Tool</a></li>
 	</ul>

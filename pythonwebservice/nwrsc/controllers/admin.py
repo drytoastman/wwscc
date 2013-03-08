@@ -94,6 +94,20 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			session.save()
 		
 	
+	def passwords(self):
+		c.action = 'setpasswords'
+		return render_mako("/admin/passwords.mako")
+
+	def setpasswords(self):
+		passwords = Password.load(self.session)
+		for k, v in request.POST.iteritems():
+			if v.strip() != '':
+				passwords[k] = v
+		Password.save(self.session, passwords)
+		self.session.commit()
+		redirect(url_for(action='index'))
+
+
 	def forceunlock(self):
 		self.settings.locked = False
 		self.settings.save(self.session)

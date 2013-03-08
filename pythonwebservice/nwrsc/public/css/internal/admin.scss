@@ -24,6 +24,28 @@ table {
   }
 }
 
+.passwordform {
+	margin-left: 10px;
+
+	table {
+		margin-bottom: 10px;
+	}
+
+	td {
+		text-align: right;
+	}
+
+	label {
+		font-weight: bold;
+		font-size: 1.0em;
+
+		&.series {
+			font-size: 1.3em;
+			padding-bottom: 20px;
+		}
+	}
+}
+	
 
 table.editor {
   border-collapse: collapse;
@@ -106,6 +128,8 @@ button.small {
 		float: right;
 	}
 }
+
+
 
 
 #titlebutton a {
