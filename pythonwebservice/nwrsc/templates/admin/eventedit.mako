@@ -9,11 +9,6 @@
 <td><input type='text' size='40' name='name' value="${c.event.name}"></td>
 </tr>
 
-<tr title='event level password for accessing from admin site'>
-<th>Password</th>
-<td><input type='text' size='40' name='password' value="${c.event.password}"></td>
-</tr>
-
 <tr title='date when the event occurs'>
 <th>Event Date</th>
 <td><input id='formdate' type='text' size='40' name='date' value="${c.event.date.strftime("%m/%d/%Y")}"></td>

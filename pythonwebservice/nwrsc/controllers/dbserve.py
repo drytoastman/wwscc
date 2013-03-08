@@ -41,7 +41,8 @@ class DbserveController(BaseController):
 
 		try:
 			digestinfo = session.setdefault('digest', {})
-			authCheck(digestinfo, self.database, {"admin" : self.settings.password}, request)
+			passwords = Password.load(self.session)
+			authCheck(digestinfo, self.database, {"admin" : passwords['series'] }, request)
 			# at this point, they are verified as knowing the password for database:series
 		finally:
 			session.save()

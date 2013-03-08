@@ -76,15 +76,16 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 
 	def _checkauth(self, event):
-		if self.srcip == '127.0.0.1':
-			c.isAdmin = True
-			return
+		#if self.srcip == '127.0.0.1':
+		#	c.isAdmin = True
+		#	return
 
 		try:
 			digestinfo = session.setdefault(('digest', self.srcip), {})
-			passwords = { "admin" : self.settings.password }
-			if event is not None:
-				passwords["event"] = event.password
+			pwdict = Password.load(self.session)
+			passwords = { "admin" : pwdict["series"] }
+			if event is not None and str(event.id) in pwdict:
+				passwords["event"] = pwdict[str(event.id)]
 
 			authname = authCheck(digestinfo, self.database, passwords, request)
 			if authname == "admin":

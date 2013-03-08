@@ -5,6 +5,7 @@ from driver import Driver, DriverExtra, DriverField
 from runs import Run
 from cars import Car
 from settings import Settings, Setting
+from passwords import Password
 from challenge import Challenge, ChallengeRound, loadChallengeResults, loadSingleRoundResults
 from result import Result, getAuditResults, getClassResultsShort, getClassResults, TopTimesStorage
 from champ import getChampResults
@@ -16,7 +17,7 @@ from registration import Registration
 from event import Event
 from dialin import Dialins
 
-SCHEMA_VERSION = '20132'
+SCHEMA_VERSION = '20133'
 
 __all__ = (
 'SCHEMA_VERSION',
@@ -24,6 +25,7 @@ __all__ = (
 'Session',
 'Setting',
 'Settings',
+'Password',
 'Data',
 'Class',
 'Index',

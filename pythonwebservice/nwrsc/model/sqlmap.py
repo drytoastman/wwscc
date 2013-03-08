@@ -73,6 +73,6 @@ sqlmap = {
 'UPDATECHALLENGE':'update challenges set eventid=:h1,name=:h2,depth=:h3 where id=:h4',
 'UPDATECHALLENGEROUND':'update challengerounds set challengeid=:h1,round=:h2,swappedstart=:h3,car1id=:h4,car1dial=:h5,car1result=:h6,car1newdial=:h7,car2id=:h8,car2dial=:h9,car2result=:h10,car2newdial=:h11 where id=:h12',
 'UPDATEDRIVER':'update drivers set firstname=:h1,lastname=:h2,alias=:h3,email=:h4,address=:h5,city=:h6,state=:h7,zip=:h8,phone=:h9,brag=:h10,sponsor=:h11 where id=:h12',
-'UPDATEEVENTS':'update events set ispro=:h1,practice=:h2,courses=:h3,runs=:h4,countedruns=:h5,conepen=:h6,gatepen=:h7,segments=:h8,password=:h9,name=:h10,date=:h11,location=:h12,sponsor=:h13,host=:h14,designer=:h15,regopened=:h16,regclosed=:h17,perlimit=:h18,totlimit=:h19,doublespecial=:h20,cost=:h21,paypal=:h22,snail=:h23,notes=:h24 where id=:h25',
+'UPDATEEVENTS':'update events set ispro=:h1,practice=:h2,courses=:h3,runs=:h4,countedruns=:h5,conepen=:h6,gatepen=:h7,segments=:h8,name=:h9,date=:h10,location=:h11,sponsor=:h12,host=:h13,designer=:h14,regopened=:h15,regclosed=:h16,perlimit=:h17,totlimit=:h18,doublespecial=:h19,cost=:h20,paypal=:h21,snail=:h22,notes=:h23 where id=:h24',
 'UPDATERUN':'update runs set carid=:h1,eventid=:h2,course=:h3,run=:h4,cones=:h5,gates=:h6,status=:h7,rorder=:h8,norder=:h9,brorder=:h10,bnorder=:h11,reaction=:h12,sixty=:h13,seg1=:h14,seg2=:h15,seg3=:h16,seg4=:h17,seg5=:h18,raw=:h19,net=:h20 where id=:h21',
 }
