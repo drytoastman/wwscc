@@ -65,7 +65,7 @@ def digestAuthentication(store, realm, passwords, request):
 	if info is None:
 		raise AuthException("No previous info for realm %s." % auth.realm, stale=True)
 	if auth.nonce != info.nonce:
-		raise AuthException("Nonce value not the same as what we provided (%s vs %s)" % (auth.nonce, info.none), stale=True)
+		raise AuthException("Nonce value not the same as what we provided (%s vs %s)" % (auth.nonce, info.nonce), stale=True)
 	if auth.nc < info.nc:
 		raise AuthException("NC value has not incremented (provided %s vs recorded %s)" % (auth.nc, info.nc), stale=True)
 
@@ -76,16 +76,18 @@ def digestAuthentication(store, realm, passwords, request):
 	digest = getattr(hashlib, auth.algorithm.lower())
 	ha1 = digest("%s:%s:%s" % (auth.username, auth.realm, passwords[auth.username])).hexdigest()
 
-	method = request.environ['REQUEST_METHOD']
-	path = request.environ['REQUEST_URI']
-	if auth.qop == 'auth-int':
-		body = request.environ['wsgi.input']
-		integ = ""
-		if body is not None:
-			integ = digest(body.getvalue()).hexdigest()
-		ha2 = digest('%s:%s:%s' % (method, path, integ)).hexdigest()
-	else:
-		ha2 = digest('%s:%s' % (method, path)).hexdigest()
+	try:
+		method = request.environ['REQUEST_METHOD']
+		path = request.environ['REQUEST_URI']
+		if auth.qop == 'auth-int':
+			body = request.environ['wsgi.input'].read()
+			integ = digest(body).hexdigest()
+			ha2 = digest('%s:%s:%s' % (method, path, integ)).hexdigest()
+			request.environ['wsgi.input'].seek(0)
+		else:
+			ha2 = digest('%s:%s' % (method, path)).hexdigest()
+	except Exception, e:
+		raise AuthException("Error processing parameters: %s" % e)
 
 	if auth.response != digest("%s:%s:%s:%s:%s:%s" % (ha1, auth.nonce, auth.nc, auth.cnonce, auth.qop, ha2)).hexdigest():
 		raise AuthException("Digest response invalid")

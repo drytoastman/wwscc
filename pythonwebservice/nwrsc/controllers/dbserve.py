@@ -27,18 +27,18 @@ class DbserveController(BaseController):
 		""" special URL, doesn't have database assigned, not verfication required """
 		response.headers['Content-type'] = 'text/plain'
 		data = ""
-		for db in self._databaseList():
+		for db in self._databaseList(archived=False):
 			data += "%s %s %s\n" % (db.name, db.locked and "1" or "0", db.archived and "1" or "0")
 		return data
 		
 
 	def __before__(self):
 		action = self.routingargs.get('action', '')
-		if not self.database or action == 'index':
-			raise BeforePage("")
 
 		if action in ('available'):
 			return
+		if not self.database or action == 'index':
+			raise BeforePage("")
 
 		try:
 			digestinfo = session.setdefault('digest', {})
@@ -67,9 +67,7 @@ class DbserveController(BaseController):
 
 
 	def upload(self):
-		dbpost = request.POST['db']
-		restorePasswords(dbpost.file, self.databasePath(self.database))
-		dbpost.file.close()
+		restorePasswords(request.environ['wsgi.input'], self.databasePath(self.database))
 		
 		engine = create_engine('sqlite:///%s' % self.databasePath(self.database))
 		self.session.bind = engine
@@ -82,14 +80,6 @@ class DbserveController(BaseController):
 		self.session.commit()
 		return "Complete"
 
-
-	def available(self):
-		response.headers['Content-type'] = 'text/plain'
-		data = ""
-		for db in self._databaseList(archived=False):
-			data += "%s %s %s\n" % (db.name, db.locked and "1" or "0", db.archived and "1" or "0")
-		return data
-		
 
 	def sqlmap(self):
 		try:

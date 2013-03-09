@@ -8,7 +8,9 @@
 
 package org.wwscc.storage;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,6 +47,7 @@ import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.client.protocol.RequestAuthCache;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.HttpEntityWrapper;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
@@ -226,11 +229,8 @@ public class RemoteHTTPConnection
 	public void uploadDatabase(File f) throws IOException, URISyntaxException
 	{
 		String dbname = f.getName().substring(0, f.getName().indexOf('.'));
-		
-        MultipartEntity entity = new MultipartEntity();
-        entity.addPart("db", new FileBody(f, dbname, ContentType.APPLICATION_OCTET_STREAM.getMimeType()));
-        HttpPost upload = new HttpPost(URIs.download(hostname, dbname));
-        upload.setEntity(new CountingEntity("Upload", entity));			
+        HttpPost upload = new HttpPost(URIs.upload(hostname, dbname));
+        upload.setEntity(new CountingEntity("Upload", new FileEntity(f)));			
         EntityUtils.consume(execute(upload, dbname).getEntity());
 	}
 
