@@ -39,7 +39,7 @@ def digestAuthentication(store, realm, passwords, request):
 		passwords - dictionary of username to password mapping that can be used
 		request - the incoming request to verify
 	"""
-	if 'HTTP_AUTHORIZATION' not in request.environ:
+	if 'HTTP_AUTHORIZATION' not in request.environ or request.environ['HTTP_AUTHORIZATION'].strip() == "":
 		raise AuthException("No authorization header")
 
 	(authtype, param) = request.environ['HTTP_AUTHORIZATION'].split(" ", 1)

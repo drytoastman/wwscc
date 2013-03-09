@@ -76,9 +76,9 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 
 	def _checkauth(self, event):
-		#if self.srcip == '127.0.0.1':
-		#	c.isAdmin = True
-		#	return
+		if self.srcip == '127.0.0.1':
+			c.isAdmin = True
+			return
 
 		try:
 			digestinfo = session.setdefault(('digest', self.srcip), {})

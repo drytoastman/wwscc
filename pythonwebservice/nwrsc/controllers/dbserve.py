@@ -61,13 +61,19 @@ class DbserveController(BaseController):
 
 	def copy(self):
 		response.headers['Content-type'] = 'application/octet-stream'
-		data = stripPasswords(self.databasePath(self.database))
+		#data = stripPasswords(self.databasePath(self.database))
+		fp = open(self.databasePath(self.database), 'rb')
+		data = fp.read()
+		fp.close()
 		log.info("Read in database file of %d bytes", len(data))
 		return data
 
 
 	def upload(self):
-		restorePasswords(request.environ['wsgi.input'], self.databasePath(self.database))
+		#restorePasswords(request.environ['wsgi.input'], self.databasePath(self.database))
+		dbptr = open(self.databasePath(self.database), 'wb')
+		shutil.copyfileobj(request.environ['wsgi.input'], dbptr)
+		dbptr.close()
 		
 		engine = create_engine('sqlite:///%s' % self.databasePath(self.database))
 		self.session.bind = engine
