@@ -13,6 +13,7 @@ from nwrsc.controllers.lib.base import BaseController, BeforePage
 from nwrsc.lib.digest import authCheck
 from nwrsc.lib.codec import Codec, DataInput
 from nwrsc.lib.resultscalc import UpdateClassResults
+from nwrsc.lib.passwordstrip import stripPasswords, restorePasswords
 from nwrsc.model import *
 
 
@@ -60,19 +61,15 @@ class DbserveController(BaseController):
 
 	def copy(self):
 		response.headers['Content-type'] = 'application/octet-stream'
-		fp = open(self.databasePath(self.database), 'rb')
-		data = fp.read()
+		data = stripPasswords(self.databasePath(self.database))
 		log.info("Read in database file of %d bytes", len(data))
-		fp.close()
 		return data
 
 
 	def upload(self):
 		dbpost = request.POST['db']
-		out = open(self.databasePath(self.database), 'wb')
-		shutil.copyfileobj(dbpost.file, out)
+		restorePasswords(dbpost.file, self.databasePath(self.database))
 		dbpost.file.close()
-		out.close()
 		
 		engine = create_engine('sqlite:///%s' % self.databasePath(self.database))
 		self.session.bind = engine
