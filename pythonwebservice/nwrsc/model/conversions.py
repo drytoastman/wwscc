@@ -5,7 +5,7 @@ import logging
 import datetime
 
 from nwrsc.model import *
-from sqlalchemy.databases.sqlite import SLDateTime
+from sqlalchemy.databases.sqlite import SLDateTime, SLDate
 
 log = logging.getLogger(__name__)
 
@@ -188,6 +188,37 @@ def convert20131(session):
 
 	session.commit()
 
+def convert20132(session):
+
+	metadata.bind = session.bind
+
+	# Create passwords table and copy over values
+	metadata.tables['passwords'].create()
+	session.execute("INSERT INTO passwords (tag, value) select 'series', val from settings where name='password'");
+	session.execute("INSERT INTO passwords (tag, value) select id, password from events")
+
+	# Remove password from events table
+	log.info("update events")
+	makeTableOld(session, metadata, 'events');
+	for row in session.execute("select * from oldevents"):
+		event = Event(**row2dict(row))
+		event.date = SLDate().result_processor(None)(event.date)
+		event.regopened = SLDateTime().result_processor(None)(event.regopened)
+		event.regclosed = SLDateTime().result_processor(None)(event.regclosed)
+		session.add(event)
+	session.execute("DROP TABLE oldevents")
+
+	# Remove password from settings
+	session.execute("DELETE FROM settings where name='password'")
+
+	log.info("update settings")
+	settings = Settings()
+	settings.load(session)
+	settings.schema = '20133'
+	settings.save(session)
+
+	session.commit()
+
 
 converters = {
 	'20112': convert2011,
@@ -195,7 +226,8 @@ converters = {
 	'20122': convert20122,
 	'20123': convert20123,
 	'20124': convert20124,
-	'20131': convert20131
+	'20131': convert20131,
+	'20132': convert20132
 }
 
 

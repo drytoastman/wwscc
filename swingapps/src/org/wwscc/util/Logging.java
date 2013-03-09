@@ -35,6 +35,8 @@ public class Logging
 		LogManager lm = LogManager.getLogManager();
 		Logger root = lm.getLogger("");
 		Logger wwscc = Logger.getLogger("org.wwscc");
+		Logger apache = Logger.getLogger("org.apache.http.impl.client");
+		Logger headers = Logger.getLogger("org.apache.http.headers");
 		SingleLineFormatter formatter = new SingleLineFormatter();
 
 		ConsoleHandler ch = new ConsoleHandler();
@@ -67,6 +69,8 @@ public class Logging
 
 		root.setLevel(Level.WARNING);
 		wwscc.setLevel(Level.FINER);
+		//apache.setLevel(Level.FINER);
+		//headers.setLevel(Level.FINER);
 	}
 
 	public static class AlertHandler extends Handler

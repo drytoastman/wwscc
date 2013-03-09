@@ -10,7 +10,6 @@ import sys
 ## Events table
 t_events = Table('events', metadata,
 	Column('id', Integer, primary_key=True, autoincrement=True),
-	Column('password', String(64)),	
 	Column('name', String(64)),	
 	Column('date', Date),	
 	Column('location', String(64)),	
@@ -63,7 +62,7 @@ class Event(object):
 	def getFeed(self):
 		d = dict()
 		for k,v in self.__dict__.iteritems():
-			if v is None or k in ['_sa_instance_state', 'password', 'paypal', 'snail', 'cost', ]:
+			if v is None or k in ['_sa_instance_state', 'paypal', 'snail', 'cost', ]:
 				continue
 			d[k] = v
 		return d

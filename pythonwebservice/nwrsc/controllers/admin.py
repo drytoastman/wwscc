@@ -18,11 +18,13 @@ from nwrsc.controllers.lib.objecteditors import ObjectEditor
 from nwrsc.controllers.lib.cardprinting import CardPrinting
 from nwrsc.controllers.lib.purgecopy import PurgeCopy
 
+from nwrsc.lib.digest import authCheck
 from nwrsc.lib.schema import *
 from nwrsc.model import *
 
 log = logging.getLogger(__name__)
 nummatch = re.compile('(\d{6}_\d)|(\d{6})')
+
 
 def _validateNumber(num):
 	obj = nummatch.search(num)
@@ -31,34 +33,15 @@ def _validateNumber(num):
 	raise IndexError("nothing found")
 			
 
-class AdminSession(object):
+class WeekendReport(object):
+	pass
 
-	def __init__(self, data, database):
-		self.data = data
-		self.database = database
-		self.tokens = data.setdefault('authtokens', set())
 
-	def isSeriesAdmin(self):
-		return "%s:series"%self.database in self.tokens
-
-	def isEventAdmin(self, eventid):
-		return "%s:%s" % (self.database,eventid) in self.tokens
-
-	def addSeriesAdmin(self):
-		self.tokens.add("%s:series" % self.database)
-		session.save()
-
-	def addEventAdmin(self, eventid):
-		self.tokens.add("%s:%s" % (self.database, eventid))
-		session.save()
-
-	def saveAction(self, act):
-		self.data['action'] = act
-		session.save()
-
-	def getClearAction(self):
-		return self.data.pop('action', '')
-		session.save()
+class RegObj(object):
+	def __init__(self, d, c, r):
+		self.driver = d
+		self.car = c
+		self.reg = r
 
 
 class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting, PurgeCopy):
@@ -79,64 +62,57 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		if self.eventid and self.eventid.isdigit():
 			c.event = self.session.query(Event).get(self.eventid)
 
-		if self.eventid and self.action not in ('login'):
-			self._checkauth(self.eventid, c.event)
+		if c.event is None and self.eventid not in (None, 's'):
+			c.text = "<h3>No such event for %s</h3>" % self.eventid
+			raise BeforePage(render_mako('/admin/simple.mako'))
+
+		self._checkauth(c.event)
 
 		if self.settings.locked:
-			if self.action not in ('login', 'index', 'printcards', 'paid', 'numbers', 'paypal', 'newentrants', 'printhelp', 'forceunlock'):
+			if self.action not in ('index', 'printcards', 'paid', 'numbers', 'paypal', 'newentrants', 'printhelp', 'forceunlock'):
 				c.seriesname = self.settings.seriesname
 				c.next = self.action
 				raise BeforePage(render_mako('/admin/locked.mako'))
 
 
-	def _checkauth(self, eventid, event):
-		if self.srcip == '127.0.0.1':
-			c.isAdmin = True
-			return
-	
-		if event is None and eventid != 's':
-			c.text = "<h3>No such event for %s</h3>" % eventid
-			raise BeforePage(render_mako('/admin/simple.mako'))
-	
-		mysession = AdminSession(session.setdefault(('admin', self.srcip), {}), self.database)
+	def _checkauth(self, event):
+		#if self.srcip == '127.0.0.1':
+		#	c.isAdmin = True
+		#	return
 
-		if mysession.isSeriesAdmin():
-			c.isAdmin = True
-			return
+		try:
+			digestinfo = session.setdefault(('digest', self.srcip), {})
+			pwdict = Password.load(self.session)
+			passwords = { "admin" : pwdict["series"] }
+			if event is not None and str(event.id) in pwdict:
+				passwords["event"] = pwdict[str(event.id)]
 
-		if event is not None and mysession.isEventAdmin(eventid):
-			return
-			
-		if event is not None:
-			c.request = "Need authentication token for %s" % event.name
-		else:
-			c.request = "Need authentication token for the series"
-
-		mysession.saveAction(self.routingargs['action'])
-		raise BeforePage(render_mako('/admin/login.mako'))
+			authname = authCheck(digestinfo, self.database, passwords, request)
+			if authname == "admin":
+				c.isAdmin = True
+		finally:
+			session.save()
+		
 	
+	def passwords(self):
+		c.action = 'setpasswords'
+		return render_mako("/admin/passwords.mako")
+
+	def setpasswords(self):
+		passwords = Password.load(self.session)
+		for k, v in request.POST.iteritems():
+			if v.strip() != '':
+				passwords[k] = v
+		Password.save(self.session, passwords)
+		self.session.commit()
+		redirect(url_for(action='index'))
+
 
 	def forceunlock(self):
 		self.settings.locked = False
 		self.settings.save(self.session)
 		self.session.commit()
 		redirect(url_for(action=request.GET.get('next', '')))
-
-
-	def login(self):
-		password = request.POST.get('password')
-		mysession = AdminSession(session.setdefault(('admin', self.srcip), {}), self.database)
-
-		if password == self.settings.password:
-			mysession.addSeriesAdmin()
-
-		for event in c.events:
-			if password == event.password:
-				mysession.addEventAdmin(event.id)
-
-		action = mysession.getClearAction()
-		redirect(url_for(action=action))
-			
 
 
 	def index(self):
@@ -147,7 +123,6 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			return render_mako('/admin/simple.mako')
 		else:
 			return self.databaseSelector(archived=True)
-
 
 
 	def contactlist(self):
@@ -190,10 +165,6 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 
 
-	class WeekendReport(object):
-		pass
-
-
 	def weekend(self):
 		""" Create a weekend report reporting unique entrants and their information """
 		bins = defaultdict(list)
@@ -205,7 +176,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		c.weeks = dict()
 		for wed in sorted(bins):
 			eventids = [e.id for e in bins[wed]]
-			report = self.WeekendReport()
+			report = WeekendReport()
 			c.weeks[wed] = report
 
 			report.events = bins[wed]
@@ -426,12 +397,6 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		redirect(url_for(eventid='s', action=''))
 
 
-	class RegObj(object):
-		def __init__(self, d, c, r):
-			self.driver = d
-			self.car = c
-			self.reg = r
-
 	def list(self):
 		query = self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==self.eventid)
 		c.classdata = ClassData(self.session)
@@ -439,7 +404,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		for (driver, car, reg) in query.all():
 			if car.classcode not in c.registered:
 				c.registered[car.classcode] = []
-			c.registered[car.classcode].append(self.RegObj(driver, car, reg))
+			c.registered[car.classcode].append(RegObj(driver, car, reg))
 		return render_mako('/admin/entrylist.mako')
 
 	def delreg(self):
@@ -511,7 +476,6 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 
 
 	def invalidcars(self):
-
 		c.classdata = ClassData(self.session)
 		c.invalidnumber = []
 		c.invalidclass = []
@@ -535,4 +499,4 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 					c.restrictedindex.append(car)
 
 		return render_mako('/admin/invalidcars.mako')
-		
+

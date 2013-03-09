@@ -1,22 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * This software is licensed under the GPLv3 license, included as
+ * ./GPLv3-LICENSE.txt in the source distribution.
+ *
+ * Portions created by Brett Wilson are Copyright 2012 Brett Wilson.
+ * All rights reserved.
  */
 
 package org.wwscc.storage;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpRetryException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,195 +23,134 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.JOptionPane;
-import javax.swing.ProgressMonitor;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthProtocolState;
+import org.apache.http.auth.AuthScheme;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.AuthState;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.protocol.RequestAuthCache;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.FileEntity;
+import org.apache.http.entity.HttpEntityWrapper;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.ExecutionContext;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.wwscc.util.CancelException;
+import org.wwscc.util.MonitorProgressStream;
 import org.wwscc.util.Prefs;
 
 /**
- *
- * @author bwilson
+ * Wraps Apache HTTPClient to provide access /dbserve URL methods like download, upload, sqlmap, etc.
  */
 public class RemoteHTTPConnection
 {
 	private static final Logger log = Logger.getLogger(RemoteHTTPConnection.class.getCanonicalName());
-	String host;
-	String dbname;
-	byte[] buffer;
-	ProgressMonitor monitor;
-	int transfered;
 
-	class AuthException extends IOException {}
+	DefaultHttpClient httpclient;
+	HttpContext context;
+	String hostname;
 
-	public RemoteHTTPConnection() throws UnknownHostException
+	public RemoteHTTPConnection() throws IOException
 	{
 		this(Prefs.getHomeServer());
 	}
 
-	public RemoteHTTPConnection(String remote) throws UnknownHostException
+	public RemoteHTTPConnection(String remote) throws IOException
 	{
-		host = remote;
-		dbname = "";
-		buffer = new byte[4096];
-	}
-
-	protected void transferData(InputStream in, OutputStream out) throws IOException
-	{
-		int len;
-		while((len = in.read(buffer)) >= 0)
-		{
-			if (len == 0)
-				continue;
-
-			out.write(buffer, 0, len);
-
-			if (monitor.isCanceled())
-				throw new CancelException();
-
-			transfered += len;
-			monitor.setProgress(transfered);
-		}
+		hostname = remote;
 		
-		in.close();
+		httpclient = new DefaultHttpClient();
+		HttpProtocolParams.setUserAgent(httpclient.getParams(), "Scorekeeper/2.0");
+		httpclient.removeRequestInterceptorByClass(RequestAuthCache.class);
+		httpclient.addRequestInterceptor(new URLBasedAuthCache(), 7);
+			
+		CredentialsProvider creds = httpclient.getCredentialsProvider();
+		for (Map.Entry<String,String> entry : Prefs.getPasswords().entrySet())
+			creds.setCredentials(produceScope(entry.getKey()), produceCredentials(entry.getValue()));
+		
+		context = new BasicHttpContext();
 	}
-
-	protected byte[] basicRequest(URL url, String method, String content, Object... args) throws IOException
+	
+	
+	/**
+	 * Worker function to actual perform the HTTP request/response and take car of error or authentication return values.
+	 * @param request the request
+	 * @param database the database name in question
+	 * @return a response object if things complete successfully.
+	 * @throws IOException
+	 * @throws ClientProtocolException
+	 */
+	public HttpResponse execute(HttpUriRequest request, String database) throws IOException, ClientProtocolException 
 	{
 		while (true)
 		{
-			monitor.setProgress(0);
-			transfered = 0;
-
-			try
+			HttpResponse response = httpclient.execute(request, context);
+			if (response.getStatusLine().getStatusCode() == 401)  // try and get new credentials from user cause something failed
 			{
-				byte[] data = doRequest(url, method, content, args);
-				monitor.close();
-				return data;
-			}
-			catch (AuthException e)
-			{
-				String s = JOptionPane.showInputDialog("Password not accepted, please enter the proper password: ");
+				String s = JOptionPane.showInputDialog("Password not accepted for " + database + ", please enter the proper password: ");
 				if (s == null) 
-				{
-					monitor.close();
 					throw new CancelException("No input for password dialog");
-				}
-				Prefs.setPasswordFor(dbname, s);
-			}
-			catch (CancelException ce)
-			{
-				monitor.close();
-				throw ce;
-			}
-			catch (IOException ioe)
-			{
-				monitor.close();
-				throw ioe;
-			}
-		}
-	}
-
-	protected byte[] doRequest(URL url, String method, String content, Object... args) throws IOException
-	{
-		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-		conn.setConnectTimeout(3500);
-		conn.setRequestProperty("User-Agent", "Scorekeeper 1.1");
-		conn.setRequestProperty("X-Scorekeeper", Prefs.getPasswordFor(dbname));
-		//conn.setRequestProperty("Host", hostname);
-		conn.setUseCaches(false);
-		conn.setDoInput(true);
-
-		if (method != null)
-			conn.setRequestMethod(method);
-
-		if (content != null)
-			conn.setRequestProperty("Content-Type", content);
-
-		try
-		{
-			OutputStream out = null;
-			int sendlength = 0;
-
-			if (args.length > 0)
-			{
-				for (Object o : args)
-				{
-					if (o instanceof byte[])
-						sendlength += ((byte[])o).length;
-					else if (o instanceof File)
-						sendlength += ((File)o).length();
-					else
-						throw new IOException("Invalid data type for sending: " + o.getClass());
-				}
-			}
-
-			if (sendlength > 0)
-			{
-				conn.setFixedLengthStreamingMode(sendlength);
-				conn.setDoOutput(true);
 				
-				out = conn.getOutputStream();
-				transfered = 0;
-				monitor.setNote("sending data...");
-				monitor.setMaximum(sendlength+1);
-
-				// Send the request and data
-				for (Object o : args)
-				{
-					if (o instanceof byte[])
-						transferData(new ByteArrayInputStream((byte[])o), out);
-					else if (o instanceof File)
-						transferData(new FileInputStream((File)o), out);
-				}
-				
-				out.flush();
+				Prefs.setPasswordFor(database, s);
+				httpclient.getCredentialsProvider().setCredentials(produceScope(database), produceCredentials(s));
+				EntityUtils.consume(response.getEntity());
+				continue;
 			}
+			else if (response.getStatusLine().getStatusCode() != 200)
+			{
+				String error = EntityUtils.toString(response.getEntity());
+				if (error.contains("<body")) {
+					error = error.substring(error.indexOf("<body")+6, error.length()-14);
+				}
 
-			InputStream in = conn.getInputStream();
-			ByteArrayOutputStream buf = new ByteArrayOutputStream();
-			transfered = 0;
-			monitor.setNote("receiving data...");
-			monitor.setMaximum(conn.getContentLength() + 1);
-			transferData(in, buf);
+				if (error.length() > 600) {
+					error = "oversized error from backend";
+				}
 
-			if (out != null)
-				out.close();
-			in.close();
-			return buf.toByteArray();
-		}
-		catch (HttpRetryException rte) // only try and catch the need for auth retry
-		{
-			if (rte.responseCode() == 401)
-				throw new AuthException();
-			throw rte;
-		}
-		catch (IOException ioe)
-		{
-			// catch 401 in an IOexception, can't use getResponseCode as this may be a connection error
-			String msg = ioe.getMessage();
-			if (msg.contains("401") && msg.contains("response code"))
-				throw new AuthException();
+				throw new IOException(error);
+			}
 			
-			InputStream err = conn.getErrorStream();
-			if (err == null)
-				throw ioe;
-			byte[] errorbuf = new byte[err.available()];
-			err.read(errorbuf);
-			String serror = new String(errorbuf);
-			if (serror.contains("<body>"))
-				throw new IOException(serror.substring(serror.indexOf("<body>")+7), ioe);
-			else
-				throw new IOException(serror, ioe);
+			return response;
 		}
+		
 	}
 
-	public byte[] performSQL(String name, byte[] data) throws IOException
+	/**
+	 * Call to sqlmap to perform operations on the remote database
+	 * @param dbname the database name
+	 * @param data the encoded request data
+	 * @return the encoded response data if 200 response
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public byte[] performSQL(String dbname, byte[] data) throws IOException, URISyntaxException
 	{
-		monitor = new ProgressMonitor(null, "performSQL", "Connecting...", 0, Integer.MAX_VALUE);
-		monitor.setMillisToDecideToPopup(300);
-		monitor.setMillisToPopup(1000);
-		dbname = name;
-		return basicRequest(new URL(String.format("http://%s/dbserve/%s/sqlmap", host, dbname)), "POST", "text/plain", data);
+        ByteArrayEntity entity = new ByteArrayEntity(data);
+        HttpPost sqlmap = new HttpPost(URIs.sqlmap(hostname, dbname));
+        sqlmap.setEntity(new CountingEntity("Remote SQL", entity));		        
+        return EntityUtils.toByteArray(new CountingEntity("SQL Results", execute(sqlmap, dbname).getEntity()));
 	}
 
 	
@@ -221,17 +159,17 @@ public class RemoteHTTPConnection
 	 * on the status of the database, currently "locked" or "unlocked".
 	 * @return a map of status to lists of names
 	 * @throws IOException
+	 * @throws URISyntaxException 
 	 */
-	public Map<String, List<String>> getAvailableForCheckout() throws IOException
+	public Map<String, List<String>> getAvailableForCheckout() throws IOException, URISyntaxException
 	{
 		Map<String, List<String>> ret = new HashMap<String, List<String>>();
 		ret.put("unlocked", new ArrayList<String>());
 		ret.put("locked", new ArrayList<String>());
-
-		monitor = new ProgressMonitor(null, "getAvailable", "Connecting...", 0, Integer.MAX_VALUE);
-		monitor.setMillisToDecideToPopup(0);
-		monitor.setMillisToPopup(0);
-		String data = new String(basicRequest(new URL(String.format("http://%s/dbserve/available", host)), "GET", null));
+		
+		HttpGet available = new HttpGet(URIs.available(hostname));
+		HttpEntity resEntity = new CountingEntity("Download", execute(available, "error").getEntity());
+		String data = EntityUtils.toString(resEntity);
 		for (String db : data.split("\n"))
 		{
 			String[] parts = db.split("\\s+");
@@ -244,81 +182,133 @@ public class RemoteHTTPConnection
 			String name = parts[0];
 			boolean locked = parts[1].trim().equals("1");
 			boolean archived = parts[2].trim().equals("1");
-			
-			if (archived)
-				continue;
-			
-			if (!locked)
-				ret.get("unlocked").add(name);
-			else
-				ret.get("locked").add(name);
+			if (archived) continue;
+			ret.get(locked ? "locked" : "unlocked").add(name);
 		}
 
 		for (List<String> list : ret.values())
 			Collections.sort(list);
-		
 		return ret;
 	}
 
-	public void downloadDatabase(File dst, boolean lockServerSide) throws IOException
+	/**
+	 * Download a database to a location file, optionally locked it server side
+	 * @param dst the location file to write to, we determine name of remote database from the this name
+	 * @param lockServerSide true if server side should be locked.
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public void downloadDatabase(File dst, boolean lockServerSide) throws IOException, URISyntaxException
 	{
 		String name = dst.getName();
 		this.downloadDatabase(dst, name.substring(0, name.indexOf('.')), lockServerSide);
 	}
 
-	public void downloadDatabase(File dst, String remotename, boolean lockServerSide) throws IOException
-	{
-		monitor = new ProgressMonitor(null, "Download", "Connecting...", 0, Integer.MAX_VALUE);
-		monitor.setMillisToDecideToPopup(0);
-		monitor.setMillisToPopup(0);
-		dbname = remotename;
-		String action = (lockServerSide) ? "download" : "copy";
-
-		byte[] data = basicRequest(new URL(String.format("http://%s/dbserve/%s/%s", host, dbname, action)), "GET", null);
+	/**
+	 * Same a counterpart but we specify the remote name rather than determine it from the file name.
+	 * @param dst the location file to write to
+	 * @param remotename the remote database name
+	 * @param lockServerSide true if server side should be locked
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public void downloadDatabase(File dst, String remotename, boolean lockServerSide) throws IOException, URISyntaxException
+	{	
+		HttpGet download = new HttpGet((lockServerSide) ? URIs.download(hostname, remotename) : URIs.copy(hostname, remotename));
+		HttpEntity resEntity = new CountingEntity("Download", execute(download, remotename).getEntity());
 		FileOutputStream output = new FileOutputStream(dst);
-		output.write(data);
-		output.close();
-		output = null;
+		resEntity.writeTo(output);
 	}
 
-	public void uploadDatabase(File f) throws IOException
+	/**
+	 * Upload a database from the provided file to the remote server
+	 * @param f the location file to read from, we determine name of remote database from the this name
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public void uploadDatabase(File f) throws IOException, URISyntaxException
 	{
-		monitor = new ProgressMonitor(null, "Upload", "Connecting...", 0, Integer.MAX_VALUE);
-		monitor.setMillisToDecideToPopup(0);
-		monitor.setMillisToPopup(0);
-		String name = f.getName();
-		dbname = name.substring(0, name.indexOf('.'));
-
-		String boundary = "--------------------" + Long.toString(System.currentTimeMillis(), 16);
-		byte[] header = mimeFileHeader(boundary, "db", dbname, "application/octet-stream").getBytes();
-		byte[] footer = mimeFooter(boundary).getBytes();
-
-		basicRequest(new URL(String.format("http://%s/dbserve/%s/upload", host, dbname)),
-						"POST", "multipart/form-data; boundary="+boundary, header, f, footer);
-	}
-
-	public String mimeFileHeader(String boundary, String name, String fileName, String mimeType)
-	{
-		String header = new String();
-		header += "--"+boundary+"\r\n";
-		header += "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + fileName + "\"\r\n";
-		header += "Content-Type: " + mimeType + "\r\n";
-		header += "\r\n";
-		return header;
+		String dbname = f.getName().substring(0, f.getName().indexOf('.'));
+        HttpPost upload = new HttpPost(URIs.upload(hostname, dbname));
+        upload.setEntity(new CountingEntity("Upload", new FileEntity(f)));			
+        EntityUtils.consume(execute(upload, dbname).getEntity());
 	}
 
 
-	public String mimeFooter(String boundary)
-	{
-		String footer = new String();
-		footer += "\r\n";
-		footer += "--"+boundary+"--\r\n";
-		return footer;
+	/**
+	 * Utility so that everyone uses the same authscope for determining authentication paramters.
+	 * @param seriesname the series name to get the authscope for
+	 * @return a new AuthScope object that should match the realm/type for the database from the server
+	 */
+	protected static AuthScope produceScope(String seriesname) {
+		return new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, seriesname, "digest");
+	}
+	
+	protected static Credentials produceCredentials(String password) {
+		return new UsernamePasswordCredentials("admin", password);
+	}
+	
+	
+	/**
+	 * Single location for specification of URLs
+	 */
+	static class URIs {
+		public static URI upload(String host, String db) throws URISyntaxException { return base(host, db, "upload"); }
+		public static URI download(String host, String db) throws URISyntaxException { return base(host, db, "download"); }
+		public static URI copy(String host, String db) throws URISyntaxException { return base(host, db, "copy"); }
+		public static URI sqlmap(String host, String db) throws URISyntaxException { return base(host, db, "sqlmap"); }
+		public static URI available(String host) throws URISyntaxException { return new URI("http", host, "/dbserve/available", null); }
+		private static URI base(String host, String db, String action) throws URISyntaxException { return new URI("http", host, String.format("/dbserve/%s/%s", db, action), null); } 
 	}
 
-	public static void main(String[] args) throws Exception
+	/**
+	 * Wrap an HttpEntity so that we can attach a progress bar watcher to it
+	 */
+	static class CountingEntity extends HttpEntityWrapper
 	{
-		RemoteHTTPConnection c = new RemoteHTTPConnection("localhost");
-		c.uploadDatabase(new File("d:/cygwin/home/bwilson/testing.db"));
+		String title;
+		public CountingEntity(String monitorTitle, HttpEntity wrapped) { 
+			super(wrapped);
+			title = monitorTitle;
+		}
+		@Override
+		public void writeTo(final OutputStream out) throws IOException {
+			if (out instanceof MonitorProgressStream)
+				wrappedEntity.writeTo(out);
+			else
+				wrappedEntity.writeTo(new MonitorProgressStream(title, out, wrappedEntity.getContentLength()));
+		}
+	}
+	
+	/**
+	 * We replace the authcaching portion of HttpClient as it retrieves the password for ANY realm, not the one we want.
+	 * Note, we forgo alot of the error checking as its already been down a hundred times by the other interceptors. 
+	 */
+	static class URLBasedAuthCache implements HttpRequestInterceptor 
+	{
+	    public URLBasedAuthCache() {
+	        super();
+	    }
+
+	    public void process(final HttpRequest request, final HttpContext reqcontext) throws HttpException, IOException 
+	    {
+	        AuthCache authCache = (AuthCache) reqcontext.getAttribute(ClientContext.AUTH_CACHE);
+	        AuthState targetState = (AuthState) reqcontext.getAttribute(ClientContext.TARGET_AUTH_STATE);
+	        CredentialsProvider credsProvider = (CredentialsProvider) reqcontext.getAttribute(ClientContext.CREDS_PROVIDER);
+	        HttpHost target = (HttpHost) reqcontext.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
+	        
+	        if (target != null && targetState != null && authCache != null && targetState.getState() == AuthProtocolState.UNCHALLENGED) {
+	            AuthScheme authScheme = authCache.get(target);
+	            if (authScheme != null) {
+	                //doPreemptiveAuth
+	            	String[] bits = request.getRequestLine().getUri().split("/");  // magic time, we know the URL scheme  (/{controller}/{seriesname}/...)
+	    	        Credentials creds = credsProvider.getCredentials(produceScope(bits[2]));
+	    	        if (creds != null) {
+	    	        	targetState.setState(AuthProtocolState.SUCCESS);
+	    	        	targetState.update(authScheme, creds);
+	    	        } 
+	            }
+	        }
+	    }
 	}
 }

@@ -5,14 +5,17 @@ import logging
 
 log = logging.getLogger(__name__)
 
-from pylons import request, response
-from pylons.controllers.util import abort
+from pylons import request, response, session
+from pylons.controllers.util import abort, url_for
 from sqlalchemy import create_engine
 
-from nwrsc.controllers.lib.base import BaseController
+from nwrsc.controllers.lib.base import BaseController, BeforePage
+from nwrsc.lib.digest import authCheck
 from nwrsc.lib.codec import Codec, DataInput
-from nwrsc.controllers.lib.resultscalc import UpdateClassResults
+from nwrsc.lib.resultscalc import UpdateClassResults
+from nwrsc.lib.passwordstrip import stripPasswords, restorePasswords
 from nwrsc.model import *
+
 
 class DbserveController(BaseController):
 	"""
@@ -20,22 +23,36 @@ class DbserveController(BaseController):
 		the web service.
 	"""
 
+	def available(self): 
+		""" special URL, doesn't have database assigned, not verfication required """
+		response.headers['Content-type'] = 'text/plain'
+		data = ""
+		for db in self._databaseList(archived=False):
+			data += "%s %s %s\n" % (db.name, db.locked and "1" or "0", db.archived and "1" or "0")
+		return data
+		
+
 	def __before__(self):
-		# Perform authentication (TBD: real authentication)		
 		action = self.routingargs.get('action', '')
-		if action in ['available']:
+
+		if action in ('available'):
 			return
+		if not self.database or action == 'index':
+			raise BeforePage("")
 
-		password = request.environ.get('HTTP_X_SCOREKEEPER', '')
-		if password != self.settings.password:
-			log.warning("Incorrect password used for %s" % (self.database))
-			abort(401)
-
+		try:
+			digestinfo = session.setdefault('digest', {})
+			passwords = Password.load(self.session)
+			authCheck(digestinfo, self.database, {"admin" : passwords['series'] }, request)
+			# at this point, they are verified as knowing the password for database:series
+		finally:
+			session.save()
+		
 
 	def download(self):
 		if self.settings.locked:
 			log.warning("Download request for %s, but it is locked" % (self.database))
-			abort(404)
+			abort(404, "Database locked, unavailable for download")
 		self.settings.locked = True
 		self.settings.save(self.session)
 		self.session.commit()
@@ -44,19 +61,13 @@ class DbserveController(BaseController):
 
 	def copy(self):
 		response.headers['Content-type'] = 'application/octet-stream'
-		fp = open(self.databasePath(self.database), 'rb')
-		data = fp.read()
+		data = stripPasswords(self.databasePath(self.database))
 		log.info("Read in database file of %d bytes", len(data))
-		fp.close()
 		return data
 
 
 	def upload(self):
-		dbpost = request.POST['db']
-		out = open(self.databasePath(self.database), 'wb')
-		shutil.copyfileobj(dbpost.file, out)
-		dbpost.file.close()
-		out.close()
+		restorePasswords(request.environ['wsgi.input'], self.databasePath(self.database))
 		
 		engine = create_engine('sqlite:///%s' % self.databasePath(self.database))
 		self.session.bind = engine
@@ -67,16 +78,8 @@ class DbserveController(BaseController):
 		self.settings.locked = False
 		self.settings.save(self.session)
 		self.session.commit()
-		return ""
+		return "Complete"
 
-
-	def available(self):
-		response.headers['Content-type'] = 'text/plain'
-		data = ""
-		for db in self._databaseList(archived=False):
-			data += "%s %s %s\n" % (db.name, db.locked and "1" or "0", db.archived and "1" or "0")
-		return data
-		
 
 	def sqlmap(self):
 		try:

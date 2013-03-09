@@ -27,7 +27,6 @@ public class Event implements Serializable
 	protected double gatepen;
 	protected String segments;
 
-	protected String password;
 	protected String name;
 	protected SADateTime.SADate date;
 	protected String location;

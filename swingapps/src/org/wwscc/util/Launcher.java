@@ -46,6 +46,14 @@ public class Launcher
 			Prefs.setLastApplication(app);
 			LibLoader.installLibrary("sqliteintf", "database access");
 			LibLoader.installLibrary("rxtxSerial", "serial port access");
+			
+			for (String arg : args) {
+				if (arg.startsWith("prefs=")) {
+					String node = arg.substring(arg.indexOf('=')+1);
+					Prefs.setPrefsNode(node + "/" + app);
+				}
+			}
+			
 			if (app.equals("DataEntry"))
 				DataEntry.main(args);
 			else if (app.equals("ChallengeGUI"))

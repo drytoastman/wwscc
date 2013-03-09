@@ -9,11 +9,6 @@
 <span class='input'><input type="text" name="seriesname" value="${c.settings.seriesname}" size="40" /></span>
 </div>
 		
-<div title="the series password">            
-<span class='title'>Password</span>
-<span class='input'><input type="text" name="password" value="${c.settings.password}" size="40" /></span>
-</div>
-		
 <div title="Largest car number to be available during preregistration">  
 <span class='title'>Largest Car Number</span>
 <span class='input'><input type="text" name="largestcarnumber" value="${c.settings.largestcarnumber}" size="4"/></span>

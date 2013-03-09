@@ -49,6 +49,9 @@ x = setup(
 
     [paste.app_install]
     main = pylons.util:PylonsInstaller
+
+    [paste.server_runner]
+    mycherrypy=nwrsc.server.pastebridge:cpwsgi_server
     """
 )
 

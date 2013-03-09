@@ -77,7 +77,6 @@ class SettingsSchema(Schema):
 	allow_extra_fields = True
 	filter_extra_fields = False
 	seriesname = String(not_empty=True)
-	password = String(not_empty=True)
 	largestcarnumber = Int(min=99)
 	minevents = Int(if_empty=0)
 	useevents = Int(not_empty=True)
@@ -98,7 +97,6 @@ class EventSchema(Schema):
 	filter_extra_fields = True
 	name = String(not_empty=True)
 	date = SDate()
-	password = String(not_empty=True)
 	location = String()
 	sponsor = String()
 	host = String()

@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -183,7 +184,13 @@ public class WebDataSource extends SQLDataInterface
 		if (buffer.size() <= 0)
 			return null;
 		
-		byte[] data = server.performSQL(seriesName, buffer.toByteArray());
+		byte[] data;
+		try {
+			data = server.performSQL(seriesName, buffer.toByteArray());
+		} catch (URISyntaxException e) {
+			throw new IOException("URI Exception while processing request: " + e.getMessage());
+		}
+		
 		buffer.clear();
 		CountedDataInputStream in = new CountedDataInputStream(new ByteArrayInputStream(data));
 
