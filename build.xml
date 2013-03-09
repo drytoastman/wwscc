@@ -42,9 +42,10 @@
 		<property name="issname" value="install.iss" />
 		<property name="installdir" value="installers/windows" />
 
-		<!-- rm -r windows/python/Lib/site-packages/nwrsc* -->
+		<!-- rm -r windows/python/Lib/site-packages/nwrsc* pythonwebservice/build -->
 		<delete includeemptydirs="true">
 		    <fileset dir="${installdir}/python/Lib/site-packages" includes="nwrsc*/**" />
+		    <fileset dir="pythonwebservice" includes="build/**" />
 		</delete>
 
 		<!-- ./windows/python/python ../pythonwebservice/setup.py easy_install -_-no-deps . -->

@@ -9,13 +9,18 @@
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
     <path id="JUnit 4.libraryclasspath">
-        <pathelement location="../../../../../Program Files (x86)/Eclipse/plugins/org.junit_4.10.0.v4_10_0_v20120426-0900/junit.jar"/>
-        <pathelement location="../../../../../Program Files (x86)/Eclipse/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
+        <pathelement location="../../../../../software/juno-sr1/plugins/org.junit_4.10.0.v4_10_0_v20120426-0900/junit.jar"/>
+        <pathelement location="../../../../../software/juno-sr1/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
     </path>
     <path id="Scorekeeper Java Apps.classpath">
         <pathelement location="bin"/>
         <pathelement location="lib/miglayout-3.7.4-swing.jar"/>
         <pathelement location="lib/RXTXcomm.jar"/>
+        <pathelement location="lib/commons-codec-1.6.jar"/>
+        <pathelement location="lib/commons-logging-1.1.1.jar"/>
+        <pathelement location="lib/httpcore-4.2.2.jar"/>
+        <pathelement location="lib/httpmime-4.2.3.jar"/>
+        <pathelement location="lib/httpclient-4.2.3.jar"/>
         <path refid="JUnit 4.libraryclasspath"/>
     </path>
     <target name="init">
@@ -46,22 +51,9 @@
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
-    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
-        <copy todir="${ant.library.dir}">
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </copy>
-        <unzip dest="${ant.library.dir}">
-            <patternset includes="jdtCompilerAdapter.jar"/>
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </unzip>
-    </target>
-    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
-        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
-        <antcall target="build"/>
-    </target>
-    <target name="Registration">
+    <target name="Admin">
         <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="Registration"/>
+            <arg line="Admin"/>
             <classpath refid="Scorekeeper Java Apps.classpath"/>
         </java>
     </target>
@@ -71,9 +63,33 @@
             <classpath refid="Scorekeeper Java Apps.classpath"/>
         </java>
     </target>
+    <target name="Registration">
+        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
+            <arg line="Registration"/>
+            <classpath refid="Scorekeeper Java Apps.classpath"/>
+        </java>
+    </target>
+    <target name="Registration Node2">
+        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
+            <arg line="Registration prefs=node2"/>
+            <classpath refid="Scorekeeper Java Apps.classpath"/>
+        </java>
+    </target>
+    <target name="Registration Node1">
+        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
+            <arg line="Registration prefs=node1"/>
+            <classpath refid="Scorekeeper Java Apps.classpath"/>
+        </java>
+    </target>
     <target name="DataEntry">
         <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
             <arg line="DataEntry"/>
+            <classpath refid="Scorekeeper Java Apps.classpath"/>
+        </java>
+    </target>
+    <target name="DataEntry Node1">
+        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
+            <arg line="DataEntry prefs=node1"/>
             <classpath refid="Scorekeeper Java Apps.classpath"/>
         </java>
     </target>
@@ -86,12 +102,6 @@
     <target name="BWTimer">
         <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
             <arg line="BWTimer"/>
-            <classpath refid="Scorekeeper Java Apps.classpath"/>
-        </java>
-    </target>
-    <target name="Admin">
-        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="Admin"/>
             <classpath refid="Scorekeeper Java Apps.classpath"/>
         </java>
     </target>
