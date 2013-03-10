@@ -92,7 +92,7 @@ public class BarcodeScannerWatcher implements KeyEventDispatcher, MessageListene
 
 				if (c == config.etx) {
 					queue.clear();
-					Messenger.sendEvent(MT.BARCODE_SCANNED, barcode);
+					Messenger.sendEvent(MT.BARCODE_SCANNED, barcode.toString());
 					return false;  // time to clear
 				}
 							
