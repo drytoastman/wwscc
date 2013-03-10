@@ -98,7 +98,8 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		dscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		dscroll.getVerticalScrollBar().setPreferredSize(new Dimension(15,200));
 
-		driverInfo = displayArea("\n\n\n\n");
+		// create default height
+		driverInfo = displayArea("\n\n\n\n\n");
 
 		/* Car Section */
 		cars = new JList<Car>();
@@ -346,12 +347,12 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	public String driverDisplay(Driver d)
 	{
 		StringBuilder ret = new StringBuilder();
-		ret.append(d.getId()).append(": ");
-		ret.append(d.getFullName()).append("\n");
+		ret.append(d.getFullName()).append("  (").append(d.getId()).append(")\n");
 		ret.append(d.getAddress()).append("\n");
 		ret.append(String.format("%s, %s %s\n", d.getCity(), d.getState(), d.getZip()));
 		ret.append(d.getEmail()).append("\n");
-		ret.append(d.getPhone());
+		ret.append(d.getPhone()).append("\n");
+		ret.append("Member #").append(d.getExtra("membership"));
 		return ret.toString();
 	}
 
