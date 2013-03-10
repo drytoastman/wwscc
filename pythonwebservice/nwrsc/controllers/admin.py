@@ -66,6 +66,9 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			c.text = "<h3>No such event for %s</h3>" % self.eventid
 			raise BeforePage(render_mako('/admin/simple.mako'))
 
+		if self.database is None:
+			return
+
 		self._checkauth(c.event)
 
 		if self.settings.locked:
