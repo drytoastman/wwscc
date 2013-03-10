@@ -11,10 +11,14 @@ package org.wwscc.util;
 
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.swing.SwingUtilities;
 
 public class Messenger
 {
+	private static final Logger log = Logger.getLogger(Messenger.class.getCanonicalName());
 	private static EnumMap<MT, HashSet<MessageListener>> listPtrs =
 		new EnumMap<MT, HashSet<MessageListener>>(MT.class);
 
@@ -44,7 +48,13 @@ public class Messenger
 
 	public static void sendEvent(final MT type, final Object data)
 	{
-		SwingUtilities.invokeLater(new Runnable() { public void run() { sendEventNow(type, data); }});
+		SwingUtilities.invokeLater(new Runnable() { public void run() { 
+			try {
+				sendEventNow(type, data); 
+			} catch (Exception e) {
+				log.log(Level.WARNING, e.getMessage(), e);
+			}
+		}});
 	}
 
 	public static void sendEventNow(MT type, Object data)

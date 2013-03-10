@@ -126,7 +126,7 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 			return;
 		}
 
-		log.log(Level.WARNING, "Unable to locate a registed car without runs for driver {0}", d.getId());
+		log.log(Level.WARNING, "Unable to locate a registed car without runs for driver {0}", d.getFullName());
 	}
 
 	
