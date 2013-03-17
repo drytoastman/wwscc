@@ -218,7 +218,7 @@ public class CarDialog extends BaseDialog<Car>
 	
 	/**
 	 * Called after OK to verify data before closing.
-	 * @return
+	 * @return true if data is valid, false otherwise
 	 */
 	@Override
 	public boolean verifyData()
@@ -259,8 +259,7 @@ public class CarDialog extends BaseDialog<Car>
 
 
 	/**
-	 * Data is good, return it.
-	 * @return
+	 * @return if the return value is valid, a Car, null otherwise
 	 */
 	@Override
 	public Car getResult()

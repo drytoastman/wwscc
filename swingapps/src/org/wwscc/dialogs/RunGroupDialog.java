@@ -69,20 +69,12 @@ public class RunGroupDialog extends BaseDialog<Map<String,Integer>>
 		return l;
 	}
 	
-	/**
-	 * Called after OK to verify data before closing.
-	 * @return
-	 */ 
 	@Override
 	public boolean verifyData()
 	{
 		return true;
 	}
 
-	/**
-	 * OK was pressed, data was verified, now return it.
-	 * @return
-	 */
 	@Override
 	public Map<String,Integer> getResult()
 	{
