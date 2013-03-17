@@ -1,7 +1,9 @@
 
 import re
+import os
 import logging
 import re
+import glob
 import sqlite3
 
 from nwrsc.model import Session, Settings
@@ -31,16 +33,16 @@ def loadAttendanceFromDB(dbpath):
 	return ret
 
 
-def loadAttenance():
+def loadAttendance(directory):
 	ret = list()
-	for db in glob.glob(config.get('archivedir', 'missing')+'/*.attendance'):
+	for db in glob.glob(os.path.join(directory, '*.attendance')):
 		try:
 			conn = sqlite3.connect(db)
-			for row in conn.execute('select series, year, first, last, attended, champ from history'):
+			for row in conn.execute('select series, year, first, last, attended, champ from attendance'):
 				ret.append(row[:])
 			conn.close()
 		except Exception, e:
-			raise Exception("unable to process attendance %s: %s" % (db, e))
+			log.warning("unable to load from attendance %s: %s" % (db, e))
 	return ret
 
 

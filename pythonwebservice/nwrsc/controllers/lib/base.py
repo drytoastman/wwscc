@@ -84,8 +84,12 @@ class BaseController(WSGIController):
 	
 			for obj in objects:
 				line = []
-				for t in titles:
-					s = getattr(obj, t) 
+				for ii, t in enumerate(titles):
+					try:
+						s = getattr(obj, t) 
+					except:
+						s = obj[ii]
+
 					if s is None:
 						line.append("\"\"")
 					elif hasattr(s, 'replace'):

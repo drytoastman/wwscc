@@ -3,6 +3,7 @@ from pylons.templating import render_mako
 from pylons import request, config, tmpl_context as c
 
 from nwrsc.model import *
+from nwrsc.lib.attendance import loadAttendance, loadAttendanceFromDB
 from nwrsc.controllers.lib.base import BaseController
 from sqlalchemy import create_engine
 
@@ -44,6 +45,15 @@ class HistoryController(BaseController):
 	def index(self):
 		return render_mako('/history/main.mako')
 
+	
+	def attendance(self):
+		""" eventually, this will be the only thing present, no processing server side, let use configure what they want to view """
+		data = loadAttendance(config['archivedir'])
+		for db in self._databaseList(archived=False):
+			data.extend(loadAttendanceFromDB(os.path.join(config['seriesdir'], db.name+'.db')))
+		return self.csv("attendance", ('series', 'year', 'first', 'last', 'attended', 'champ'), data)
+
+
 	def report(self):
 		""" 
 			POST:
@@ -83,7 +93,7 @@ class HistoryController(BaseController):
 
 		selection = request.POST['selection']
 		if selection == 'CSV':
-			return self.csv("cards", c.names, c.results)
+			return self.csv("history", c.names, c.results)
 		
 		return render_mako('/history/tableoutput.mako')
 
