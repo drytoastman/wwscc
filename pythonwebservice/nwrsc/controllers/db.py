@@ -18,6 +18,8 @@ class DbController(BaseController):
 	monthname = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 	def index(self):
+		if 'name' in request.GET:
+			return self.cached(request.GET['name'])
 		abort(404, "Invalid db URL")
 
 	def cached(self, name):
