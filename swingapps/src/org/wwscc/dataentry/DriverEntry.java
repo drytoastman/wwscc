@@ -48,6 +48,7 @@ public class DriverEntry extends DriverCarPanel
 		Messenger.register(MT.OBJECT_CLICKED, this);
 		Messenger.register(MT.OBJECT_DCLICKED, this);
 		Messenger.register(MT.ENTRANTS_CHANGED, this);
+		Messenger.register(MT.SHOW_ADD_PANE, this);
 
 		MyListRenderer listRenderer = new MyListRenderer();
 		drivers.setCellRenderer(listRenderer);
@@ -179,6 +180,14 @@ public class DriverEntry extends DriverCarPanel
 
 			case ENTRANTS_CHANGED: // resync loaded cars to check status
 				reloadCars(selectedCar);
+				break;
+			
+			case SHOW_ADD_PANE:
+				if (o instanceof Driver)
+				{
+					Driver d = (Driver)o;
+					focusOnDriver(d.getFirstName(), d.getLastName());
+				}
 				break;
 				
 			default:
