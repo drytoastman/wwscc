@@ -45,7 +45,7 @@
 		},
 
 
-		registerForEvent: function(car, okcallback) {
+		registerForEvent: function(car, okcallback, completecallback) {
 
 			var me = $(this);
 			me.find('ul.selectableevents li').each(function() {
@@ -65,7 +65,8 @@
 				buttons: {
 					'Ok': function() {
 						me.dialog('close');
-						$.post($.nwr.url_for('registerEventsForCar'), me.serialize(), okcallback); 
+						okcallback();
+						$.post($.nwr.url_for('registerEventsForCar'), me.serialize(), completecallback); 
 					},
 					Cancel: function() { me.dialog('close'); }
 				},
@@ -77,7 +78,7 @@
 		},
 
 
-		registerCars: function(theevent, cars, limit, okcallback) {
+		registerCars: function(theevent, cars, limit, okcallback, completecallback) {
 
 			var me = $(this);
 			me.find('ul.selectablecars li').each(function() {
@@ -108,7 +109,8 @@
 				buttons: {
 					'Ok': function() {
 						me.dialog('close');
-						$.post($.nwr.url_for('registerCarsForEvent'), me.serialize(), okcallback); 
+						okcallback();
+						$.post($.nwr.url_for('registerCarsForEvent'), me.serialize(), completecallback); 
 					},
 					Cancel: function() { me.dialog('close'); }
 				},

@@ -69,13 +69,19 @@ function carTabSetup()
 	
 	$("#carlist .regbutton").button().click( function() {
 		var car = cars[$(this).data('carid')]; // pull from global that we set in template
-		$(this).blur();
-		$("#registereventform").RegEdit('registerForEvent', car, function() {
-			updateCars();
-			$('#registereventform input:checked').each(function() {
-				updateEvent($(this).prop('name')); // the input name= contains the eventid
-			});
-		});
+		var thisbutton = $(this);
+		thisbutton.blur();
+		$("#registereventform").RegEdit('registerForEvent', car, 
+			function() {
+				thisbutton.parents('.carevents').html("<div class='strong'>registering for events ...</div>");
+			},
+			function() {
+				updateCars();
+				$('#registereventform input:checked').each(function() {
+					updateEvent($(this).prop('name')); // the input name= contains the eventid
+				});
+			}
+		);
 	});
 	
  	$('button.createcar').button().click(function() {
@@ -129,10 +135,17 @@ function eventPaneSetup(jqe)
 		}
 
 		$(this).blur();
-		$("#registercarform").RegEdit('registerCars', theevent, cars, limit, function() {
-			updateCars();
-			updateEvent(eventid);
-		});
+		$("#registercarform").RegEdit('registerCars', theevent, cars, limit, 
+			function() {
+				container = jqe.find('.carcontainer');
+				container.find('ul,button').remove();
+				container.append("<div class='strong'>registering cars ...</div>");
+			},
+			function() {
+				updateCars();
+				updateEvent(eventid);
+			}
+		);
 	});
 
 	unregButtons(jqe);
