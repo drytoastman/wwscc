@@ -351,7 +351,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		ret.append(String.format("%s, %s %s\n", d.getCity(), d.getState(), d.getZip()));
 		ret.append(d.getEmail()).append("\n");
 		ret.append(d.getPhone()).append("\n");
-		ret.append("Member #").append(d.getExtra("membership"));
+		ret.append("Member #").append(d.getMembership());
 		return ret.toString();
 	}
 

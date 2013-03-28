@@ -274,14 +274,17 @@ public class EntryPanel extends DriverCarPanel
 			activeLabel.setValue(""+selectedDriver.getId(), String.format("%d - %s", selectedDriver.getId(), selectedDriver.getFullName()));
 			activeLabel.repaint();
 			membershipwarning.setText("");
-			List<Driver> dups = Database.d.findDriverByMembership(selectedDriver.getExtra("membership"));
-			dups.remove(selectedDriver);
-			if (dups.size() > 0)
+			if (!selectedDriver.getMembership().trim().equals(""))
 			{
-				StringBuffer buf = new StringBuffer(dups.get(0).getFullName());
-				for (int ii = 1; ii < dups.size(); ii++)
-					buf.append(", ").append(dups.get(ii).getFullName());
-				membershipwarning.setText("Duplicate Membership with " + buf);
+				List<Driver> dups = Database.d.findDriverByMembership(selectedDriver.getMembership());
+				dups.remove(selectedDriver);
+				if (dups.size() > 0)
+				{
+					StringBuffer buf = new StringBuffer(dups.get(0).getFullName());
+					for (int ii = 1; ii < dups.size(); ii++)
+						buf.append(", ").append(dups.get(ii).getFullName());
+					membershipwarning.setText("Duplicate Membership with " + buf);
+				}
 			}
 		}
 		else

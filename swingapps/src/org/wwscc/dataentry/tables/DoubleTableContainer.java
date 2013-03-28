@@ -82,8 +82,10 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 	{
 		if (barcode.startsWith("I"))
 		{
-			int id = Integer.parseInt(barcode.substring(1));
-			return Database.d.getDriver(id);
+			Driver byid = Database.d.getDriver(Integer.parseInt(barcode.substring(1)));
+			if (byid == null)
+				throw new BarcodeException("Unable to located a driver with ID field " + barcode);
+			return byid;
 		}
 		
 		if (barcode.length() < 4)

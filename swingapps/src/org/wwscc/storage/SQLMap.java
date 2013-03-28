@@ -61,7 +61,7 @@ public class SQLMap
 					"group by d.id order by position");
 		sql.put("GETDRIVER", "select * from drivers where id=?");
 		sql.put("GETDRIVERSBY", "select * from drivers where firstname like ? and lastname like ? order by firstname,lastname");
-		sql.put("GETDRIVERBYMEMBERSHIP", "select d.* from drivers as d, driverextra as e where d.id=e.driverid and e.name=\"membership\" and e.value like ?");
+		sql.put("GETDRIVERBYMEMBERSHIP", "select * from drivers where membership like ?");
 		sql.put("GETDRIVERSBYFIRST", "select * from drivers where firstname like ? order by firstname,lastname");
 		sql.put("GETDRIVERSBYLAST", "select * from drivers where lastname like ? order by firstname,lastname");
 		sql.put("GETEVENTENTRANTS", "select distinct d.firstname as firstname,d.lastname as lastname,c.* from runs as r, cars as c, drivers as d " +

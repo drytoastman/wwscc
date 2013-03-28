@@ -63,6 +63,11 @@
 <td colspan='6'><input name='sponsor' type='text' value='${driver.sponsor}'/></td>
 </tr>
 
+<tr>
+<th>Membership</th>
+<td colspan='6'><input name='membership' type='text' value='${driver.membership}'/></td>
+</tr>
+
 %for field in c.fields:
 <tr>
 <th>${field.title}</th>

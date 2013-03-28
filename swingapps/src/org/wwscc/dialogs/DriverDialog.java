@@ -81,8 +81,11 @@ public class DriverDialog extends BaseDialog<Driver>
 
 		c.gridx = 0; c.gridy = 6; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label("Sponsor", false), c);
 		c.gridx = 1; c.gridy = 6; c.gridwidth = 3; c.weightx = 1; mainPanel.add(entry("sponsor", d.getSponsor()), c);
+		
+		c.gridx = 0; c.gridy = 7; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label("Membership", false), c);
+		c.gridx = 1; c.gridy = 7; c.gridwidth = 3; c.weightx = 1; mainPanel.add(entry("membership", d.getMembership()), c);
 
-		int row = 7;
+		int row = 8;
 		for (DriverField field : xfields)
 		{
 			c.gridx = 0; c.gridy = row; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label(field.getTitle(), false), c);
@@ -128,6 +131,7 @@ public class DriverDialog extends BaseDialog<Driver>
 		result.setPhone(getEntryText("phone"));
 		result.setBrag(getEntryText("brag"));
 		result.setSponsor(getEntryText("sponsor"));
+		result.setMembership(getEntryText("membership"));
 		for (DriverField field : xfields)
 		{
 			result.setExtra(field.getName(), getEntryText(field.getName()));
