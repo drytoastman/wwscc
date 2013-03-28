@@ -99,7 +99,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 		mainPanel = new JPanel(lm);
 		mainPanel.setBorder(new EmptyBorder(6,6,6,6));
 
-		add(mainPanel, BorderLayout.WEST);
+		add(mainPanel, BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
     }
   

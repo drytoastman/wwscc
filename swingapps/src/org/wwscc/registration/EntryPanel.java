@@ -8,12 +8,14 @@
 
 package org.wwscc.registration;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.print.DocFlavor;
@@ -50,6 +52,7 @@ public class EntryPanel extends DriverCarPanel
 	private static final Logger log = Logger.getLogger(EntryPanel.class.getCanonicalName());
 
 	JButton addit, removeit, editcar, deletecar;
+	JLabel membershipwarning;
 	JComboBox<PrintService> printers;
 	Code39 activeLabel;
 
@@ -92,6 +95,11 @@ public class EntryPanel extends DriverCarPanel
 		deletecar.addActionListener(this);
 		deletecar.setEnabled(false);
 		
+		membershipwarning = new JLabel("");
+		membershipwarning.setOpaque(true);
+		membershipwarning.setForeground(Color.WHITE);
+		membershipwarning.setBackground(Color.RED);
+		
 		activeLabel = new Code39();
 
 		/* Delete button, row 0 */
@@ -104,11 +112,12 @@ public class EntryPanel extends DriverCarPanel
 		add(smallButton("Clear"), "right, wrap");
 
 		add(createTitle("2. Driver"), "spanx 3, growx, gaptop 4, wrap");
-		add(dscroll, "spany 5, grow");
+		add(dscroll, "spany 6, grow");
 		add(smallButton("New Driver"), "growx");
 		add(smallButton("Edit Driver"), "growx, wrap");
 		driverInfo.setLineWrap(false);
 		add(driverInfo, "spanx 2, growx, wrap");
+		add(membershipwarning, "spanx 2, growx, wrap");
 		add(activeLabel, "center, spanx 2, wrap");
 		add(printerList(), "center, spanx 2, wrap");
 		add(smallButton("Print Label"), "center, growx, spanx 2, wrap");
@@ -264,11 +273,22 @@ public class EntryPanel extends DriverCarPanel
 		{
 			activeLabel.setValue(""+selectedDriver.getId(), String.format("%d - %s", selectedDriver.getId(), selectedDriver.getFullName()));
 			activeLabel.repaint();
+			membershipwarning.setText("");
+			List<Driver> dups = Database.d.findDriverByMembership(selectedDriver.getExtra("membership"));
+			dups.remove(selectedDriver);
+			if (dups.size() > 0)
+			{
+				StringBuffer buf = new StringBuffer(dups.get(0).getFullName());
+				for (int ii = 1; ii < dups.size(); ii++)
+					buf.append(", ").append(dups.get(ii).getFullName());
+				membershipwarning.setText("Duplicate Membership with " + buf);
+			}
 		}
 		else
 		{
 			activeLabel.setValue("", "");
 			activeLabel.repaint();
+			membershipwarning.setText("");
 		}
 		
 		if (selectedCar != null)

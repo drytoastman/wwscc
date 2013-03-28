@@ -90,5 +90,17 @@ public class Driver implements Serializable
 			extras.put(name, val);
 	}
 	
+	@Override
+	public boolean equals(Object o)
+	{
+		return ((o instanceof Driver) && ((Driver)o).id == id);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return id;
+	}
+	
 }
 

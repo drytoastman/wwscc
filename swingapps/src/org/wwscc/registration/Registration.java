@@ -52,8 +52,9 @@ public class Registration extends JFrame implements ActionListener
 		setContentPane(content);		
 		log.log(Level.INFO, "Starting Registration: {0}", new java.util.Date());
 
+	
 		JMenu file = new JMenu("File");
-		file.add(createItem("Open Local Database"));
+		file.add(createItem("Open Database"));
 		file.add(createItem("Download Database Copy"));
 		file.add(new JSeparator());
 		file.add(createItem("Merge Database"));
@@ -83,9 +84,9 @@ public class Registration extends JFrame implements ActionListener
 		{
 			System.exit(0);
 		}
-		else if (cmd.equals("Open Local Database"))
+		else if (cmd.equals("Open Database"))
 		{
-			Database.open(true, false);
+			Database.open(true, true);
 		}
 		else if (cmd.equals("Download Database Copy"))
 		{

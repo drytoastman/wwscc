@@ -343,8 +343,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		}
 	}
 
-
-	public String driverDisplay(Driver d)
+	protected String driverDisplay(Driver d)
 	{
 		StringBuilder ret = new StringBuilder();
 		ret.append(d.getFullName()).append("  (").append(d.getId()).append(")\n");
@@ -357,7 +356,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	}
 
 
-	public String carDisplay(Car c)
+	protected String carDisplay(Car c)
 	{
 		StringBuilder ret = new StringBuilder();
 		ret.append(c.getId()).append(": ");
