@@ -1,3 +1,11 @@
+/*
+ * This software is licensed under the GPLv3 license, included as
+ * ./GPLv3-LICENSE.txt in the source distribution.
+ *
+ * Portions created by Brett Wilson are Copyright 2013 Brett Wilson.
+ * All rights reserved.
+ */
+
 package org.wwscc.registration.attendance;
 
 import java.util.ArrayList;
@@ -5,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,16 +24,12 @@ import java.util.regex.Pattern;
 
 public class Syntax
 {
+	private static final Logger log = Logger.getLogger(Syntax.class.getCanonicalName());
+	
 	static Pattern filter = Pattern.compile("(\\w+)\\((.*?)\\)");
 	static Pattern comparison = Pattern.compile("(\\w+)([<>=!]*)(\\d+)");
 			 
-	public static void main(String args[]) throws Exception
-	{
-		scan("PunchCard = Series(nwr,pro);MinYear(2011);maxyear<=4;championships=0");
-		scan("ISTClass = totalevents<10;avgperyear<3");
-	}
-	
-	public static Processor scan(String s) throws Exception // all sorts of parsing and reflection stuff
+	public static AttendanceCalculation scan(String s) throws Exception // all sorts of parsing and reflection stuff
 	{
 		List<Filter> filters = new ArrayList<Filter>();
 		List<Comparison> comparisons = new ArrayList<Comparison>();
@@ -44,13 +49,18 @@ public class Syntax
 			}	
 		}
 		
-		return new Processor(a[0], filters, comparisons);
+		return new AttendanceCalculation(a[0], filters, comparisons);
 	}
 	
 	
 	public interface Filter
 	{
 		public boolean filter(AttendanceEntry in);
+	}
+	
+	static class YesFilter implements Filter
+	{
+		public boolean filter(AttendanceEntry in) { return true; }
 	}
 	
 	static class MinYearFilter implements Filter
@@ -101,17 +111,23 @@ public class Syntax
 			value = Double.parseDouble(n);
 		}
 		
-		public boolean compare(Map<String,Number> values)
+		public boolean compare(Map<String,Double> values)
 		{
-			Number input = values.get(arg);
+			Double input = values.get(arg);
+			if (input == null)
+			{
+				log.warning("Unknown variable name " + arg);
+				return false;
+			}
+			
 			switch (type)
 			{
-				case LESSTHAN: return input.doubleValue() < value;
-				case LESSTHANEQUAL: return input.doubleValue() <= value;
-				case GREATERTHAN: return input.doubleValue() > value;
-				case GREATERTHANEQUAL: return input.doubleValue() >= value;
-				case EQUAL: return input.doubleValue() == value;
-				case NOTEQUAL: return input.doubleValue() != value;
+				case LESSTHAN: return input < value;
+				case LESSTHANEQUAL: return input <= value;
+				case GREATERTHAN: return input > value;
+				case GREATERTHANEQUAL: return input >= value;
+				case EQUAL: return input == value;
+				case NOTEQUAL: return input != value;
 			}			
 			return false;
 		}

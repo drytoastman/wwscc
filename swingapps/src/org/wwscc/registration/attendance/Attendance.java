@@ -1,4 +1,4 @@
-package org.wwscc.registration;
+package org.wwscc.registration.attendance;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,14 +15,13 @@ import java.util.Map;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpProtocolParams;
-import org.wwscc.registration.attendance.Processor;
 import org.wwscc.util.CSVParser;
 import org.wwscc.util.Prefs;
 
-public class History
+public class Attendance
 {
 	//private static final Logger log = Logger.getLogger(History.class.getCanonicalName());
-	private static final File defaultfile = new File(Prefs.getInstallRoot(), "attendance.txt");
+	private static final File defaultfile = new File(Prefs.getInstallRoot(), "attendance.csv");
 	
 	/**
 	 * Retrieve the attendance report from the main host
@@ -31,7 +30,7 @@ public class History
 	 * @throws URISyntaxException 
 	 * @throws UnsupportedEncodingException 
 	 */
-	public static void getHistory(String host) throws IOException, URISyntaxException
+	public static void getAttendance(String host) throws IOException, URISyntaxException
 	{		
 		DefaultHttpClient httpclient = new DefaultHttpClient();
 		HttpProtocolParams.setUserAgent(httpclient.getParams(), "Scorekeeper/2.0");
@@ -44,10 +43,10 @@ public class History
 	/**
 	 * Read in the history data from a csv file
 	 * @param file the csv file to read from
-	 * @return a map of lower case name to map of key/values
+	 * @param processors the processors that are getting the data
 	 * @throws IOException
 	 */
-	public static void readFile(File file, List<Processor> processors) throws IOException
+	public static void readFile(File file, List<AttendanceCalculation> processors) throws IOException
 	{
         BufferedReader buffer = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         CSVParser parser = new CSVParser();
@@ -62,12 +61,15 @@ public class History
 	        	for (int ii = 0; ii < titles.length; ii++) {
 	        		object.put(titles[ii], parts[ii]);
 	        	}
-	        	//ret.put(object.remove("first") + " " + object.remove("last"), object);
+	        	
+	        	AttendanceEntry ae = new AttendanceEntry(object);
+	        	for (AttendanceCalculation ac : processors) {
+	        		ac.processEntry(ae);
+	        	}
+	        	
 	        }
         } finally {
         	buffer.close();
         }
-
-        return null;
 	}	
 }
