@@ -1,7 +1,7 @@
 import logging
 
 from pylons import request, response
-from pylons.controllers.util import etag_cache
+from pylons.controllers.util import etag_cache, abort
 
 from nwrsc.controllers.lib.base import BaseController
 from nwrsc.model import Data
@@ -17,7 +17,12 @@ class DbController(BaseController):
 	weekdayname = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 	monthname = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-	def index(self, name):
+	def index(self):
+		if 'name' in request.GET:
+			return self.cached(request.GET['name'])
+		abort(404, "Invalid db URL")
+
+	def cached(self, name):
 		log.debug("dbload: name is %s" % name)
 		ret = self.session.query(Data).get(name)
 		if ret is not None:

@@ -210,7 +210,7 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 				self.session.add(reg)
 			self.session.commit()
 		except Exception, e:
-			response.status = '400 Possible stale browser state, try reloading page'
+			response.status = '400 Car registration failed. Possible stale browser state, try reloading page'
 			log.error("registerevents", exc_info=1)
 
 		 
@@ -228,7 +228,7 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 
 			self.session.commit()
 		except Exception, e:
-			response.status = '400 Possible stale browser state, try reloading page'
+			response.status = '400 Event registration failed. Possible stale browser state, try reloading page'
 			log.error("registercars", exc_info=1)
 
 		 
@@ -238,7 +238,7 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 			self.session.delete(self.session.query(Registration).get(regid))
 			self.session.commit()
 		except Exception, e:
-			response.status = '400 Possible stale browser state, try reloading page'
+			response.status = '400 Unregister failed. Possible stale browser state, try reloading page'
 			log.error("unregistercar", exc_info=1)
 
 		 

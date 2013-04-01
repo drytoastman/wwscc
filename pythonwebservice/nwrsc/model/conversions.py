@@ -220,6 +220,27 @@ def convert20132(session):
 	session.commit()
 
 
+def convert20133(session):
+
+	# Put membership back into driver table, not extras
+	session.execute("ALTER TABLE drivers ADD COLUMN membership VARCHAR(16) DEFAULT ''")
+	for row in session.execute("select driverid, value from driverextra where name='membership'"):
+		session.execute("update drivers set membership=:value where id=:driverid", row)
+	session.execute("delete from driverextra where name='membership'")
+	session.execute("delete from driverfields where name='membership'")
+
+	cardpy = session.query(Data).filter(Data.name=='card.py').first()
+	cardpy.data = re.sub("getExtra\('membership'\)", 'membership', cardpy.data)
+
+	log.info("update settings")
+	settings = Settings()
+	settings.load(session)
+	settings.schema = '20134'
+	settings.save(session)
+
+	session.commit()
+
+
 converters = {
 	'20112': convert2011,
 	'20121': convert20121,
@@ -227,7 +248,8 @@ converters = {
 	'20123': convert20123,
 	'20124': convert20124,
 	'20131': convert20131,
-	'20132': convert20132
+	'20132': convert20132,
+	'20133': convert20133
 }
 
 

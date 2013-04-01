@@ -66,7 +66,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			c.text = "<h3>No such event for %s</h3>" % self.eventid
 			raise BeforePage(render_mako('/admin/simple.mako'))
 
-		if self.database is None:
+		if self.database is None or (self.action == 'index' and c.event is None):
 			return
 
 		self._checkauth(c.event)
@@ -161,8 +161,6 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		""" Process settings form submission """
 		idlist = request.POST['ids'].split(',')
 		drivers = self.session.query(Driver).filter(Driver.id.in_(idlist)).all()
-		for d in drivers:
-			d.membership = d.getExtra('membership') # load for access in csv call
 		cols = ['id', 'firstname', 'lastname', 'email', 'address', 'city', 'state', 'zip', 'phone', 'membership', 'brag', 'sponsor']
 		return self.csv("ContactList", cols, drivers)
 
@@ -187,11 +185,10 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			report.membership = list()
 			report.invalid = list()
 			for d in report.drivers:
-				member = d.getExtra('membership')
 				try:
-					report.membership.append(_validateNumber(member) or "")
+					report.membership.append(_validateNumber(d.membership) or "")
 				except IndexError:
-					report.invalid.append(member or " ")
+					report.invalid.append(d.membership or " ")
 
 			report.membership.sort()  # TODO: should we take into account first letters and go totally numeric?
 			report.invalid.sort()

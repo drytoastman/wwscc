@@ -10,6 +10,7 @@ package org.wwscc.dataentry.tables;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -70,38 +71,38 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 	
 	public RunsTable getRunsTable() { return runsTable; }
 	public DriverTable getDriverTable() { return driverTable; }
+
+	class BarcodeException extends IOException {
+		public BarcodeException(String message) {
+			super(message);
+		}
+	}
 	
-	public Driver findDriverByBarcode(String barcode)
+	public Driver findDriverByBarcode(String barcode) throws BarcodeException
 	{
 		if (barcode.startsWith("I"))
 		{
-			int id = Integer.parseInt(barcode.substring(1));
-			return Database.d.getDriver(id);
+			Driver byid = Database.d.getDriver(Integer.parseInt(barcode.substring(1)));
+			if (byid == null)
+				throw new BarcodeException("Unable to located a driver with ID field " + barcode);
+			return byid;
 		}
 		
 		if (barcode.length() < 4)
-		{
-			log.log(Level.WARNING, "'{0}' is too short to be a membership value, ignoring", barcode);
-			return null;
-		}
+			throw new BarcodeException(barcode + " is too short to be a valid barcode value, ignoring");
 		
 		List<Driver> found = Database.d.findDriverByMembership(barcode);
 		if (found.size() == 0)
-			return null;
+			throw new BarcodeException("Unable to locate a driver using barcode " + barcode);
 		if (found.size() > 1)
 			log.log(Level.WARNING, "{0} drivers exist with the membership value {1}, using the first", new Object[] {found.size(), barcode});
 		
 		return found.get(0);
 	}
 	
-	public void processBarcode(String barcode)
+	public void processBarcode(String barcode) throws BarcodeException
 	{
 		Driver d = findDriverByBarcode(barcode);
-		if (d == null)
-		{
-			log.log(Level.WARNING, "Unable to locate a driver using barcode {0}", barcode);
-			return;
-		}
 		
 		List<Car> available = Database.d.getRegisteredCars(d.getId());
 		Iterator<Car> iter = available.iterator();
@@ -120,13 +121,14 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 			return;
 		}
 
-		for (Car c : available) {  // skip TOPM, pick whatever else
+		for (Car c : available) {  // multiple available, skip TOPM, pick whatever else
 			if (c.getClassCode().equals("TOPM")) continue;
 			event(MT.CAR_ADD, c.getId());
 			return;
 		}
 
-		log.log(Level.WARNING, "Unable to locate a registed car without runs for driver {0}", d.getFullName());
+		Messenger.sendEvent(MT.SHOW_ADD_PANE, d);
+		throw new BarcodeException("Unable to locate a registed car for " + d.getFullName() + " that isn't already used in this event on this course.  See left panel.");
 	}
 
 	
@@ -151,7 +153,12 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 				break;
 				
 			case BARCODE_SCANNED:
-				processBarcode((String)o);
+				try {
+					processBarcode((String)o);
+				} catch (BarcodeException be) {
+					log.log(Level.SEVERE, be.getMessage());
+				}
+				
 				break;
 				
 			case CAR_CHANGE:

@@ -17,7 +17,7 @@ def make_map():
 
 	# db is its own thing
 	map.connect('/db/{database}/nocache/{name}', controller='db', action='nocache')
-	map.connect('/db/{database}/{name}', controller='db')
+	map.connect('/db/{database}/{name}', controller='db', action='cached')
 
 	# controllers that don't follow the main pattern
 	map.connect('/dbserve/available', controller='dbserve', action='available')

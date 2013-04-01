@@ -25,7 +25,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
-import org.wwscc.barcodes.ScannerTest;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.dialogs.GroupDialog;
 import org.wwscc.storage.Database;
@@ -66,7 +65,8 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		JMenu edit = new JMenu("Edit");
 		add(edit);
 		edit.add(createItem("Find", KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK)));
-		edit.add(createItem("Quick Add Driver", KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK)));
+		edit.add(createItem("Quick Add By CarId", KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK)));
+		edit.add(createItem("Manual Barcode Entry", KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK)));
 
 		/* Event Menu */
 		JMenu event = new JMenu("Event Options");
@@ -114,7 +114,6 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		debug.add(createItem("Start Fake User", null));
 		debug.add(createItem("Stop Fake User", null));
 		debug.add(createItem("Configure Fake User", null));
-		debug.add(createItem("Scanner Test", null));
 	}
 
 	protected final JMenuItem createItem(String title, KeyStroke ks)
@@ -214,10 +213,15 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		{
 			Messenger.sendEvent(MT.OPEN_FIND, null);
 		}
-		else if(cmd.equals("Quick Add Driver"))
+		else if(cmd.equals("Quick Add By CarId"))
 		{
-			Messenger.sendEvent(MT.QUICK_ADD, null);
+			Messenger.sendEvent(MT.OPEN_CARID_ENTRY, null);
 		}
+		else if (cmd.equals("Manual Barcode Entry"))
+		{
+			Messenger.sendEvent(MT.OPEN_BARCODE_ENTRY, null);
+		}
+		
 		else if (cmd.equals("Start Fake User"))
 		{
 			Messenger.sendEvent(MT.START_FAKE_USER, null);
@@ -230,10 +234,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		{
 			Messenger.sendEvent(MT.CONFIGURE_FAKE_USER, null);
 		}
-		else if (cmd.equals("Scanner Test"))
-		{
-			new ScannerTest();
-		}
+
 		else
 		{ 
 			log.log(Level.INFO, "Unknown command from menubar: {0}", cmd);

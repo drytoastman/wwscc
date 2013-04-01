@@ -18,6 +18,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
@@ -45,8 +46,6 @@ public class DataEntry extends JFrame implements MessageListener
 	DriverEntry driverEntry;
 	ClassTree  numberTree;
 	AnnouncerPanel announcer;
-	FindEntry finder;
-	PreregPanel prereg;
 	TimeEntry timeEntry;
 	JTabbedPane tabs;
 
@@ -96,14 +95,12 @@ public class DataEntry extends JFrame implements MessageListener
 		numberTree = new ClassTree();
 		driverEntry = new DriverEntry();
 		announcer = new AnnouncerPanel();
-		finder = new FindEntry();
-		prereg = new PreregPanel(numberTree);
 		
 		tabs = new JTabbedPane();
 		tabs.setMinimumSize(new Dimension(270, 400));
 		tabs.setPreferredSize(new Dimension(270, 768));
 		tabs.addTab("Add By Name", driverEntry);
-		tabs.addTab("Preregistered", prereg);
+		tabs.addTab("Preregistered", new JScrollPane(numberTree));
 		tabs.addTab(" Announcer Data ", announcer);
 
 		DoubleTableContainer tableScroll = new DoubleTableContainer();
@@ -122,13 +119,14 @@ public class DataEntry extends JFrame implements MessageListener
 		infoBoxes.add(help, "grow, hmin 20");
 		infoBoxes.add(myip, "grow");
 
-		JPanel content = new JPanel(new MigLayout("fill, ins 1, gap 2",
-				"[grow 0][fill][grow 0]",
-				"[grow 0][grow 0][]"));
+		JPanel content = new JPanel(new MigLayout("fill, ins 1, gap 2", "[grow 0][fill][grow 0]", "[grow 0][grow 0][]"));
 		content.add(setupBar, "spanx 3, growx, wrap");
-		content.add(tabs, "spany 2, growx 0, growy");
-		content.add(finder, "growx, growy 0, hidemode 2");
-		content.add(timeEntry, "spany 2, growx 0, growy, wrap");
+		content.add(tabs, "spany 4, growx 0, growy");
+		content.add(new MiniInput.ManualBarcodeInput(), "growx, growy 0, hidemode 2");
+		content.add(timeEntry, "spany 4, growx 0, growy, wrap");
+		
+		content.add(new MiniInput.ManualCarIdInput(), "growx, growy 0, hidemode 2, wrap");
+		content.add(new MiniInput.FindEntry(), "growx, growy 0, hidemode 2, wrap");
 		content.add(tableScroll, "grow, wrap");
 		content.add(infoBoxes, "spanx 3, growx, wrap");
 

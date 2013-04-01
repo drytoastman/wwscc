@@ -232,6 +232,8 @@ class ResultsController(BaseController):
 	def bracket(self):
 		c.javascript.append('/js/external/jquery-1.9.0.js');
 		challenge = self.session.query(Challenge).get(myint(request.GET.get('id', 0)))
+		if challenge is None:
+			abort(404, "Invalid or no challenge id")
 		b = Bracket(challenge.depth)  # Just getting the coords, no drawing takes place
 		b.getImage()
 		c.coords = b.getCoords()

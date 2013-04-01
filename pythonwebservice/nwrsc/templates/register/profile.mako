@@ -16,6 +16,7 @@ ${c.driver.firstname} ${c.driver.lastname}
 %if c.driver.sponsor:
 <span class='dsponsor'>Sponsor: ${c.driver.sponsor}</span>
 %endif
+<span class='membership'>Membership: ${c.driver.membership}</span>
 %for field in c.fields:
 <span class='e-${field.name}'>${field.name}: ${c.driver.getExtra(field.name)}</span>
 %endfor

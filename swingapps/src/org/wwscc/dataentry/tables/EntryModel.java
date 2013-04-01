@@ -64,7 +64,7 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		{
 			if (!Prefs.useReorderingTable())
 			{
-				log.log(Level.WARNING, "Card #{0} already in table", Integer.toString(e.getCarId()));
+				log.log(Level.WARNING, "Carid {0} already in table, perhaps you want to enable constant staging mode", Integer.toString(e.getCarId()));
 				return;
 			}
 			tableData.remove(e); // remove it from position and following will readd at the end
