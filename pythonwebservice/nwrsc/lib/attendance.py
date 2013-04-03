@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 def loadAttendanceFromDB(dbpath):
 	ret = list()
-	match = re.search('/(\w+?)(\d+)\.', dbpath)
+	match = re.search('(\w+?)(\d+)\.db$', dbpath)
 	if match is None:
 		return ret
 	series = match.group(1)
@@ -28,7 +28,7 @@ def loadAttendanceFromDB(dbpath):
 
 	for row in session.execute("select d.firstname, d.lastname, count(distinct r.eventid) from runs as r, cars as c, drivers as d where r.carid=c.id and c.driverid=d.id and r.eventid < 100 group by d.id"):
 		count = int(row[2])
-		ret.append((series.lower(), year, row[0].lower().strip(), row[1].lower().strip(), count, count > settings.useevents))
+		ret.append((series.lower(), year, row[0].lower().strip(), row[1].lower().strip(), count, int(count > settings.useevents)))
 
 	return ret
 
@@ -56,23 +56,4 @@ def writeAttendance(dbpath, data):
 	except Exception, e:
 		raise Exception("unable to write attendance: %s" % (e))
 
-	
-def _processData(self, limits, first, last, series, year, count, champ):
-	if (last, first) not in self.results:
-		self.results[last,first] = Result(last, first)
-
-	result = self.results[last,first]
-	result.series.add(series.lower())
-	result.years.add(year)
-	result.isttotal += count
-
-	if series.lower() in limits['pcseries']:
-		if champ:
-			result.pcchamp += 1
-			if limits['pcchamp']:
-				result.pcqualify = False
-		if year >= limits['pcsinceyear']:
-			result.pcevents[year] += count
-			if result.pcevents[year] > limits['pcyearmax']:
-				result.pcqualify = False
 

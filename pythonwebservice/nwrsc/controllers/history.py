@@ -48,9 +48,11 @@ class HistoryController(BaseController):
 	
 	def attendance(self):
 		""" eventually, this will be the only thing present, no processing server side, let use configure what they want to view """
-		data = loadAttendance(config['archivedir'])
-		for db in self._databaseList(archived=False):
+		data = loadAttendance(config['archivedir'])  # load prebuilt attendance file
+		for db in self._databaseList(archived=False):  # load from current series files
 			data.extend(loadAttendanceFromDB(os.path.join(config['seriesdir'], db.name+'.db')))
+
+		# return a csv file of the data
 		return self.csv("attendance", ('series', 'year', 'first', 'last', 'attended', 'champ'), data)
 
 
