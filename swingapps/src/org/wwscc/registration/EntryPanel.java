@@ -286,12 +286,15 @@ public class EntryPanel extends DriverCarPanel
 					membershipwarning.setText("Duplicate Membership with " + buf);
 				}
 			}
+			
+			Messenger.sendEvent(MT.DRIVER_SELECTED, selectedDriver);
 		}
 		else
 		{
 			activeLabel.setValue("", "");
 			activeLabel.repaint();
 			membershipwarning.setText("");
+			Messenger.sendEvent(MT.DRIVER_SELECTED, null);
 		}
 		
 		if (selectedCar != null)

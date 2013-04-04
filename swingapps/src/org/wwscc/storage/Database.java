@@ -114,7 +114,7 @@ public class Database
 		file = null;
 	}
 
-	private static String getHost() throws IOException
+	public static String getHost() throws IOException
 	{
 		MultiInputDialog dia = new MultiInputDialog("Scorekeeper Server");
 		String host = Prefs.getHomeServer();

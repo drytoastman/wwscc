@@ -9,9 +9,7 @@
 package org.wwscc.registration.attendance;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Map;
-
+import java.util.List;
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -22,25 +20,24 @@ import org.junit.Test;
 public class AttendanceTest
 {
 	@Test
-	public void testPunchcard() throws Exception
+	public void testPunchcardIST() throws Exception
 	{
-		AttendanceCalculation a = Syntax.scan("PunchCard = Series(nwr,pro); MinYear(2011); maxyearcount<=4; championships=0");
-		Attendance.readFile(new File("tests/org/wwscc/registration/attendance/attendance.csv"), Arrays.asList(new AttendanceCalculation[] {a}));
-		Map<String,Double> m = a.getResult("wilson, brett");
-		Assert.assertEquals(m.get("totalevents"), 17.0);
-		Assert.assertEquals(m.get("avgyearcount"), 4.25);
-		Assert.assertEquals(m.get("calculation"), 0.0);
-	}
-	
-	@Test
-	public void testIST() throws Exception
-	{
-		AttendanceCalculation b = Syntax.scan("ISTClass = totalevents<=9; avgyearcount<=3");
-		Attendance.readFile(new File("tests/org/wwscc/registration/attendance/attendance.csv"), Arrays.asList(new AttendanceCalculation[] {b}));
-		Map<String,Double> m = b.getResult("wilson, brett");
-		Assert.assertEquals(m.get("totalevents"), 23.0);
-		Assert.assertEquals(m.get("avgyearcount"), 5.75);
-		Assert.assertEquals(m.get("calculation"), 0.0);
-	}
+		List<AttendanceCalculation> calcs = Syntax.scanAll("PunchCard = Series(nwr,pro); championships=0; MinYear(2011); maxyearcount<=4; \n\nISTClass = totalevents<=9; avgyearcount<=3");
+		List<AttendanceEntry> entries = Attendance.scanFile(new File("tests/org/wwscc/registration/attendance/attendance.csv"));
+		AttendanceResult result = calcs.get(0).getResult("Brett", "Wilson", entries);
+		Assert.assertEquals("Series([nwr, pro])", result.pieces.get(0).name);
+		Assert.assertEquals("championships", result.pieces.get(1).name);
+		Assert.assertEquals("5.000", result.pieces.get(1).value);
+		Assert.assertEquals("MinYear(2011)", result.pieces.get(2).name);
+		Assert.assertEquals("maxyearcount", result.pieces.get(3).name);
+		Assert.assertEquals("3.000", result.pieces.get(3).value);
+		Assert.assertEquals(false, result.result);
 
+		result = calcs.get(1).getResult("Brett", "Wilson", entries);
+		Assert.assertEquals("totalevents", result.pieces.get(0).name);
+		Assert.assertEquals("104.000", result.pieces.get(0).value);
+		Assert.assertEquals("avgyearcount", result.pieces.get(1).name);
+		Assert.assertEquals("9.455", result.pieces.get(1).value);
+		Assert.assertEquals(false, result.result);
+	}
 }

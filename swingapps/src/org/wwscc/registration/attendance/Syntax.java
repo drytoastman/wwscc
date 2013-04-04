@@ -18,8 +18,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * PunchCard = Series(nwr,pro);MinYear(2011);maxyear<=4;championships=0
- * ISTClass = totalevents<10;avgperyear<3
+ * PunchCard = Series(nwr,pro);MinYear(2011);maxyearcount<=4;championships=0
+ * ISTClass = totalevents<=9;avgyearcount<=3
  */
 
 public class Syntax
@@ -29,38 +29,51 @@ public class Syntax
 	static Pattern filter = Pattern.compile("(\\w+)\\((.*?)\\)");
 	static Pattern comparison = Pattern.compile("(\\w+)([<>=!]*)(\\d+)");
 			 
-	public static AttendanceCalculation scan(String s) throws Exception // all sorts of parsing and reflection stuff
+	public static List<AttendanceCalculation> scanAll(String multiline)
 	{
-		List<Filter> filters = new ArrayList<Filter>();
-		List<Comparison> comparisons = new ArrayList<Comparison>();
+		List<AttendanceCalculation> ret = new ArrayList<AttendanceCalculation>();
+		for (String s : multiline.split("\n")) {
+			try {
+				AttendanceCalculation c = scan(s);
+				if (c != null) ret.add(c);
+			} catch (Exception e) {
+				log.severe("Failed to parse attedance setting line  (" + s + "): " + e);
+			}
+		}
 		
+		return ret;
+	}
+	
+	public static AttendanceCalculation scan(String s) throws Exception // all sorts of parsing and reflection stuff
+	{		
 		String a[] = s.replace(" ",  "").split("=", 2);
+		if (a.length < 2)
+			return null;
+		
+		AttendanceCalculation ret = new AttendanceCalculation(a[0]);
+		
 		for (String action : a[1].split(";"))
 		{
 			Matcher m = filter.matcher(action);
 			if (m.find()) {
-				filters.add(filterMap.get(m.group(1)).getConstructor(String.class).newInstance(m.group(2)));
+				ret.add(filterMap.get(m.group(1)).getConstructor(String.class).newInstance(m.group(2)));
 				continue;
 			}
 
 			m = comparison.matcher(action);
 			if (m.find()) {
-				comparisons.add(new Comparison(m.group(1), m.group(2), m.group(3))); 
+				ret.add(new Comparison(m.group(1), m.group(2), m.group(3))); 
 			}	
 		}
 		
-		return new AttendanceCalculation(a[0], filters, comparisons);
+		return ret;
 	}
 	
 	
 	public interface Filter
 	{
 		public boolean filter(AttendanceEntry in);
-	}
-	
-	static class YesFilter implements Filter
-	{
-		public boolean filter(AttendanceEntry in) { return true; }
+		public String getName();
 	}
 	
 	static class MinYearFilter implements Filter
@@ -68,6 +81,7 @@ public class Syntax
 		int minyear;
 		public MinYearFilter(String arg) { minyear = Integer.parseInt(arg); }
 		public boolean filter(AttendanceEntry in) { return (in.year >= minyear); }
+		public String getName() { return String.format("MinYear(%s)", minyear); }
 	}
 	
 	static class SeriesFilter implements Filter
@@ -75,6 +89,7 @@ public class Syntax
 		List<String> matchseries;
 		public SeriesFilter(String arg) { matchseries = Arrays.asList(arg.split(",")); }
 		public boolean filter(AttendanceEntry in) { return (matchseries.contains(in.series.toLowerCase())); }
+		public String getName() { return String.format("Series(%s)", matchseries); }
 	}
 	
 	public static final Map<String, Class<? extends Filter>> filterMap;
@@ -111,15 +126,13 @@ public class Syntax
 			value = Double.parseDouble(n);
 		}
 		
-		public boolean compare(Map<String,Double> values)
+		public String getName()
 		{
-			Double input = values.get(arg);
-			if (input == null)
-			{
-				log.warning("Unknown variable name " + arg);
-				return false;
-			}
-			
+			return arg;
+		}
+		
+		public boolean compare(Double input)
+		{			
 			switch (type)
 			{
 				case LESSTHAN: return input < value;

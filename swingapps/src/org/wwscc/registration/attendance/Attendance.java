@@ -9,19 +9,19 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpProtocolParams;
 import org.wwscc.util.CSVParser;
+import org.wwscc.util.CountingEntity;
 import org.wwscc.util.Prefs;
 
 public class Attendance
 {
-	//private static final Logger log = Logger.getLogger(History.class.getCanonicalName());
-	private static final File defaultfile = new File(Prefs.getInstallRoot(), "attendance.csv");
+	//private static final Logger log = Logger.getLogger(Attendance.class.getCanonicalName());
+	public static final File defaultfile = new File(Prefs.getInstallRoot(), "attendance.csv");
 	
 	/**
 	 * Retrieve the attendance report from the main host
@@ -37,39 +37,33 @@ public class Attendance
 		
         HttpPost request = new HttpPost(new URI("http", host, "/history/attendance", null));
         FileOutputStream out = new FileOutputStream(defaultfile);
-        httpclient.execute(request).getEntity().writeTo(out);
+        CountingEntity download = new CountingEntity("Downloading Attendance", httpclient.execute(request).getEntity());
+        download.writeTo(out);
 	}
 	
 	/**
 	 * Read in the history data from a csv file
 	 * @param file the csv file to read from
-	 * @param processors the processors that are getting the data
+	 * @return a list of attendance entry values from the file
 	 * @throws IOException
 	 */
-	public static void readFile(File file, List<AttendanceCalculation> processors) throws IOException
+	public static List<AttendanceEntry> scanFile(File file) throws IOException
 	{
         BufferedReader buffer = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         CSVParser parser = new CSVParser();
+        List<AttendanceEntry> ret = new ArrayList<AttendanceEntry>();
         
         try {
 	    	String[] titles = parser.parseLine(buffer.readLine());
 	        while (true) {
-	        	// last first years series isttotal istavg pcchamp pcevents istqualify pcqualify
 	        	String[] parts = parser.parseLine(buffer.readLine());
-	        	if (parts == null) break;
-	        	Map<String, String> object = new HashMap<String,String>();
-	        	for (int ii = 0; ii < titles.length; ii++) {
-	        		object.put(titles[ii], parts[ii]);
-	        	}
-	        	
-	        	AttendanceEntry ae = new AttendanceEntry(object);
-	        	for (AttendanceCalculation ac : processors) {
-	        		ac.processEntry(ae);
-	        	}
-	        	
+	        	if (parts == null) break;	        	
+	        	ret.add(new AttendanceEntry(titles, parts));
 	        }
         } finally {
         	buffer.close();
         }
+        
+        return ret;
 	}	
 }
