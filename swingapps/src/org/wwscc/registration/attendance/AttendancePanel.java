@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 
 import org.wwscc.components.UnderlineBorder;
@@ -34,6 +35,10 @@ import net.miginfocom.swing.MigLayout;
 public class AttendancePanel extends JPanel
 {
 	private static final Logger log = Logger.getLogger(AttendancePanel.class.getCanonicalName());
+	
+	public static final Font titleFont = ((Font)UIManager.getFont("Label.font")).deriveFont(Font.BOLD, 14f);
+	public static final Font filterFont = ((Font)UIManager.getFont("Label.font")).deriveFont(Font.BOLD, 12f);
+	public static final Font variableFont = ((Font)UIManager.getFont("Label.font")).deriveFont(12f);
 	
 	List<AttendanceCalculation> calcs;
 	List<AttendanceEntry> entries;
@@ -77,11 +82,11 @@ public class AttendancePanel extends JPanel
 			super(new MigLayout("gap 0, fill"));
 			calc = c;
 			title = new JLabel(c.processname);
-			title.setFont(title.getFont().deriveFont(Font.BOLD, 12f));
+			title.setFont(titleFont);
 			title.setBorder(new UnderlineBorder());
 			decision = new JLabel();
 			decision.setHorizontalAlignment(JLabel.CENTER);
-			decision.setFont(title.getFont());
+			decision.setFont(titleFont);
 			decision.setBorder(new UnderlineBorder());
 
 			Messenger.register(MT.DRIVER_SELECTED, new MessageListener() { public void event(MT type, Object data) { update((Driver)data); }});
@@ -99,8 +104,23 @@ public class AttendancePanel extends JPanel
 				decision.setText(result.result ? "Yes":"No");
 				for (AttendanceResultPiece p : result.pieces)
 				{
-					add(new JLabel(p.name), "al right");
-					add(new JLabel(p.value), "gap 10px, wrap");
+					if (p.value == null)
+					{
+						JLabel n = new JLabel(p.name);
+						n.setFont(filterFont);
+						
+						add(n, "spanx 2, center, wrap");
+					}
+					else
+					{
+						JLabel n = new JLabel(p.name);
+						n.setFont(variableFont);
+						JLabel v = new JLabel(p.value);
+						v.setFont(variableFont);
+						
+						add(n, "al right");
+						add(v, "gap 10px, wrap");
+					}
 				}
 				
 				revalidate();

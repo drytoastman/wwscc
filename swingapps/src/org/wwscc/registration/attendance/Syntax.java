@@ -17,9 +17,11 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
- * PunchCard = Series(nwr,pro);MinYear(2011);maxyearcount<=4;championships=0
- * ISTClass = totalevents<=9;avgyearcount<=3
+ * PunchCard = Series(nwr,pro); championships=0; MinYear(2011); maxyearcount<=4;
+ * ISTClass = totalevents<=9; avgyearcount<=3
  */
 
 public class Syntax
@@ -89,7 +91,7 @@ public class Syntax
 		List<String> matchseries;
 		public SeriesFilter(String arg) { matchseries = Arrays.asList(arg.split(",")); }
 		public boolean filter(AttendanceEntry in) { return (matchseries.contains(in.series.toLowerCase())); }
-		public String getName() { return String.format("Series(%s)", matchseries); }
+		public String getName() { return String.format("Series(%s)", StringUtils.join(matchseries, ',')); }
 	}
 	
 	public static final Map<String, Class<? extends Filter>> filterMap;
