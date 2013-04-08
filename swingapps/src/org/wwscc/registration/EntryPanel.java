@@ -61,6 +61,7 @@ public class EntryPanel extends DriverCarPanel
 		super();
 		setLayout(new MigLayout("fill", "[400, grow 25][150, grow 25][150, grow 25]"));
 		Messenger.register(MT.EVENT_CHANGED, this);
+		Messenger.register(MT.ATTENDANCE_SETUP_CHANGE, this);
 
 
 		drivers.setCellRenderer(new DefaultListCellRenderer() {
@@ -96,7 +97,6 @@ public class EntryPanel extends DriverCarPanel
 		deletecar.setEnabled(false);
 		
 		membershipwarning = new JLabel("");
-		membershipwarning.setOpaque(true);
 		membershipwarning.setForeground(Color.WHITE);
 		membershipwarning.setBackground(Color.RED);
 		
@@ -117,7 +117,7 @@ public class EntryPanel extends DriverCarPanel
 		add(smallButton("Edit Driver"), "growx, wrap");
 		driverInfo.setLineWrap(false);
 		add(driverInfo, "spanx 2, growx, wrap");
-		add(membershipwarning, "spanx 2, growx, wrap");
+		add(membershipwarning, "spanx 2, growx, h 15, wrap");
 		add(activeLabel, "center, spanx 2, wrap");
 		add(printerList(), "center, spanx 2, wrap");
 		add(smallButton("Print Label"), "center, growx, spanx 2, wrap");
@@ -133,7 +133,7 @@ public class EntryPanel extends DriverCarPanel
 		add(carInfo, "spanx 2, growx, top, wrap");
 		
 		add(createTitle("4. Do it"), "spanx 3, growx, gaptop 4, wrap");
-		add(addit, "split 2, spanx 3, gapbottom 3");
+		add(addit, "split 2, spanx 3, gapbottom 5");
 		add(removeit, "wrap");
 		
 	}
@@ -271,9 +271,11 @@ public class EntryPanel extends DriverCarPanel
 		super.valueChanged(e);
 		if (selectedDriver != null)
 		{
-			activeLabel.setValue(""+selectedDriver.getId(), String.format("%d - %s", selectedDriver.getId(), selectedDriver.getFullName()));
+			activeLabel.setValue(selectedDriver.getMembership(), String.format("%s - %s", selectedDriver.getMembership(), selectedDriver.getFullName()));
 			activeLabel.repaint();
 			membershipwarning.setText("");
+			membershipwarning.setOpaque(false);
+			
 			if (!selectedDriver.getMembership().trim().equals(""))
 			{
 				List<Driver> dups = Database.d.findDriverByMembership(selectedDriver.getMembership());
@@ -284,6 +286,7 @@ public class EntryPanel extends DriverCarPanel
 					for (int ii = 1; ii < dups.size(); ii++)
 						buf.append(", ").append(dups.get(ii).getFullName());
 					membershipwarning.setText("Duplicate Membership with " + buf);
+					membershipwarning.setOpaque(true);
 				}
 			}
 			
@@ -294,6 +297,7 @@ public class EntryPanel extends DriverCarPanel
 			activeLabel.setValue("", "");
 			activeLabel.repaint();
 			membershipwarning.setText("");
+			membershipwarning.setOpaque(false);
 			Messenger.sendEvent(MT.DRIVER_SELECTED, null);
 		}
 		
@@ -321,8 +325,30 @@ public class EntryPanel extends DriverCarPanel
 				reloadCars(selectedCar);
 				break;
 				
+			case ATTENDANCE_SETUP_CHANGE:
+				if (selectedDriver != null)
+					Messenger.sendEvent(MT.DRIVER_SELECTED, selectedDriver);
+				break;
+				
 			default:
 				super.event(type, o);
 		}
 	}
+	
+	/*
+	class SearchDrivers2 extends SearchTrigger
+	{
+		@Override
+		public void search(String txt)
+		{
+			String first = null, last = null;
+			if (lastSearch.getDocument().getLength() > 0) 
+				last = lastSearch.getText();
+			if (firstSearch.getDocument().getLength() > 0)
+				first = firstSearch.getText();
+			List<Driver> found = Database.d.getDriversLike(first, last);
+			drivers.setListData(found);
+			drivers.setSelectedIndex(0);
+		}
+	} */
 }

@@ -79,7 +79,6 @@ public class Code39 extends JComponent implements Printable
 		{
 			if (!barChar.containsKey(c))
 			{
-				log.log(Level.WARNING, "Can''t encode ''{0}'', ignoring", c);
 				continue;
 			}
 			String seq = barChar.get(c);				

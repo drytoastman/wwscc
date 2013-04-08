@@ -60,12 +60,10 @@ public class Registration extends JFrame implements ActionListener
 		JPanel content = new JPanel(layout);
 		content.add(setupBar, BorderLayout.NORTH);
 		content.add(driverEntry, BorderLayout.CENTER);
-		
 
 		setContentPane(content);		
 		log.log(Level.INFO, "Starting Registration: {0}", new java.util.Date());
 
-	
 		JMenu file = new JMenu("File");
 		file.add(createItem("Open Database"));
 		file.add(createItem("Download Database Copy"));
@@ -167,9 +165,9 @@ public class Registration extends JFrame implements ActionListener
 		{
 			if (((JCheckBoxMenuItem)e.getSource()).isSelected())
 			{
-				Messenger.sendEvent(MT.ATTENDANCE_SETUP_CHANGE, null);
 				getContentPane().add(attendanceDisplay, BorderLayout.EAST);
 				pack();
+				Messenger.sendEvent(MT.ATTENDANCE_SETUP_CHANGE, null);
 			}
 			else
 			{

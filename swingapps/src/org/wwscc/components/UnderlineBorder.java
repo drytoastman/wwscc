@@ -16,9 +16,18 @@ import javax.swing.border.*;
  */
 public class UnderlineBorder extends EmptyBorder
 {
+	Color color;
+	
 	public UnderlineBorder()
 	{
 		super(0, 0, 0, 0);
+		color = Color.BLACK;
+	}
+	
+	public UnderlineBorder(Color c)
+	{
+		super(0, 0, 0, 0);
+		color = c;
 	}
 
 	public UnderlineBorder(int top, int left, int bottom, int right)
@@ -31,7 +40,7 @@ public class UnderlineBorder extends EmptyBorder
 		Color oldColor = g.getColor();
 		int h = y+height-1;
 
-		g.setColor(Color.BLACK);
+		g.setColor(color);
 		g.drawLine(x, h, x+width-1, h);
 		g.setColor(oldColor);
 	}

@@ -8,9 +8,11 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 
 import net.miginfocom.swing.MigLayout;
 
+import org.wwscc.components.UnderlineBorder;
 import org.wwscc.storage.MetaCar;
 
 
@@ -36,18 +38,20 @@ class RegListRenderer extends DefaultListCellRenderer
 			p.setForeground(list.getForeground());
 		}
 
-		p.label2.setText(myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor());
+		p.carinfo.setText(String.format("%s %s #%d", c.getClassCode(), c.getIndexStr(), c.getNumber()));
+		p.cardesc.setText(String.format("%s %s %s %s", c.getYear(), c.getMake(), c.getModel(), c.getColor()));
+		
 		if (c.isInRunOrder())
-			p.label1.setText("In Event");
+			p.status.setText("In Event");
 		else if (c.isRegistered())
-			p.label1.setText("Registered");
+			p.status.setText("Registered");
 		else if(c.hasActivity())
 		{
-			p.label1.setText("Used");
-			p.label1.setForeground(superLightGray);
+			p.status.setText("Used");
+			p.status.setForeground(superLightGray);
 		}
 		else
-			p.label1.setText("");
+			p.status.setText("");
 		
 
 		return p;
@@ -57,27 +61,34 @@ class RegListRenderer extends DefaultListCellRenderer
 
 class MyPanel extends JPanel
 {
-	JLabel label1;
-	JLabel label2;
+	JLabel status;
+	JLabel carinfo;
+	JLabel cardesc;
 	
 	public MyPanel()
 	{
-		setLayout(new MigLayout("ins 0", "[85!][100:500:10000]", "[20!]"));
+		setLayout(new MigLayout("ins 5, gap 0", "[85!][100:500:10000]", "[15!][15!]"));
+		setBorder(new UnderlineBorder(new Color(180, 180, 180)));
 		
-		label1 = new JLabel();
-		label1.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-		add(label1, "gap left 5, ay center");
+		status = new JLabel();
+		status.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+		add(status, "ay center, spany 2");
 		
-		label2 = new JLabel();
-		label2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
-		add(label2, "ay center");
+		carinfo = new JLabel();
+		carinfo.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+		add(carinfo, "wrap");
+		
+		cardesc = new JLabel();
+		cardesc.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+		add(cardesc, "");
 	}
 	
 	@Override
 	public void setForeground(Color f)
 	{
 		super.setForeground(f);
-		if (label1 != null) label1.setForeground(f);
-		if (label2 != null) label2.setForeground(f);
+		if (status != null) status.setForeground(f);
+		if (carinfo != null) carinfo.setForeground(f);
+		if (cardesc != null) cardesc.setForeground(f);
 	}
 }

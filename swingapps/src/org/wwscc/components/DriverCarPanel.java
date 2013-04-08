@@ -52,7 +52,6 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 
 	protected JTextField firstSearch;
 	protected JTextField lastSearch;
-	protected SearchDrivers searchDrivers = new SearchDrivers();
 
 	protected JScrollPane dscroll;
 	protected JList<Driver> drivers;
@@ -79,6 +78,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		selectedCar = null;
 
 		/* Search Section */
+		SearchDrivers searchDrivers = new SearchDrivers();
 		firstSearch = new JTextField("", 8);
 		firstSearch.getDocument().addDocumentListener(searchDrivers);
 		firstSearch.addFocusListener(this);
@@ -346,7 +346,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	protected String driverDisplay(Driver d)
 	{
 		StringBuilder ret = new StringBuilder();
-		ret.append(d.getFullName()).append("  (").append(d.getId()).append(")\n");
+		ret.append(d.getFullName()).append("  (driverid=").append(d.getId()).append(")\n");
 		ret.append(d.getAddress()).append("\n");
 		ret.append(String.format("%s, %s %s\n", d.getCity(), d.getState(), d.getZip()));
 		ret.append(d.getEmail()).append("\n");
@@ -359,10 +359,8 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	protected String carDisplay(Car c)
 	{
 		StringBuilder ret = new StringBuilder();
-		ret.append(c.getId()).append(": ");
-		ret.append(c.getClassCode());
-		ret.append(" " + c.getIndexStr());
-		ret.append(" - #" + c.getNumber() + "\n");
+		ret.append(c.getClassCode()).append(" ").append(c.getIndexStr()).append(" #").append(c.getNumber());
+		ret.append("  (carid=").append(c.getId()).append(")\n");
 		ret.append(c.getYear() + " " + c.getMake() + " " + c.getModel() + " " + c.getColor());
 		return ret.toString();
 	}

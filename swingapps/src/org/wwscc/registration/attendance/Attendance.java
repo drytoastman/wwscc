@@ -11,6 +11,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpProtocolParams;
@@ -36,9 +38,10 @@ public class Attendance
 		HttpProtocolParams.setUserAgent(httpclient.getParams(), "Scorekeeper/2.0");
 		
         HttpPost request = new HttpPost(new URI("http", host, "/history/attendance", null));
-        FileOutputStream out = new FileOutputStream(defaultfile);
+        File temp = File.createTempFile("attendance", "tmp");
         CountingEntity download = new CountingEntity("Downloading Attendance", httpclient.execute(request).getEntity());
-        download.writeTo(out);
+        download.writeTo(new FileOutputStream(temp));
+        FileUtils.copyFile(temp, defaultfile);
 	}
 	
 	/**

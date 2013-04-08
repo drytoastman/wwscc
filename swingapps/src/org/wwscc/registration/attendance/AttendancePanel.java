@@ -9,6 +9,7 @@
 package org.wwscc.registration.attendance;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +33,7 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display for attendance calculations and values
  */
-public class AttendancePanel extends JPanel
+public class AttendancePanel extends JPanel implements MessageListener
 {
 	private static final Logger log = Logger.getLogger(AttendancePanel.class.getCanonicalName());
 	
@@ -47,30 +48,36 @@ public class AttendancePanel extends JPanel
 	{
 		super(new MigLayout("fillx, w 170"));
 		setBorder(new LineBorder(Color.GRAY));		
-		Messenger.register(MT.ATTENDANCE_SETUP_CHANGE, new ChangeListener());
+		Messenger.register(MT.ATTENDANCE_SETUP_CHANGE, this);
+		Messenger.register(MT.DRIVER_SELECTED, this);
 	}
 	
-
-	class ChangeListener implements MessageListener
+	@Override
+	public void event(MT type, Object data)
 	{
-		@Override
-		public void event(MT type, Object data)
+		switch (type)
 		{
-			try {
-				removeAll();
-				calcs = Syntax.scanAll(Prefs.getAttendanceCalculations());
-				entries = Attendance.scanFile(Attendance.defaultfile);
-			} catch (Exception e) {
-				log.severe("Failed to read attendance calculation setup: " + e.getMessage());
-			}
-			
-			Collections.sort(calcs);
-			for (AttendanceCalculation c : calcs)
-			{
-				add(new CalculationPanel(c), "grow, wrap");
-			}
+			case ATTENDANCE_SETUP_CHANGE:
+				try {
+					removeAll();
+					calcs = Syntax.scanAll(Prefs.getAttendanceCalculations());
+					entries = Attendance.scanFile(Attendance.defaultfile);
+				} catch (Exception e) {
+					log.severe("Failed to read attendance calculation setup: " + e.getMessage());
+				}
+				
+				Collections.sort(calcs);
+				for (AttendanceCalculation c : calcs)
+					add(new CalculationPanel(c), "grow, wrap");
+				break;
+				
+			case DRIVER_SELECTED:
+				for (Component c : AttendancePanel.this.getComponents())
+					((CalculationPanel)c).update((Driver)data);
+				break;
 		}
 	}
+	
 	
 	class CalculationPanel extends JPanel
 	{
@@ -88,8 +95,6 @@ public class AttendancePanel extends JPanel
 			decision.setHorizontalAlignment(JLabel.CENTER);
 			decision.setFont(titleFont);
 			decision.setBorder(new UnderlineBorder());
-
-			Messenger.register(MT.DRIVER_SELECTED, new MessageListener() { public void event(MT type, Object data) { update((Driver)data); }});
 		}
 		
 		public void update(Driver d)
