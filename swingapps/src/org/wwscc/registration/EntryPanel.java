@@ -15,6 +15,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,12 +43,15 @@ import org.wwscc.components.DriverCarPanel;
 import org.wwscc.components.UnderlineBorder;
 import org.wwscc.dialogs.CarDialog;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
+import org.wwscc.registration.attendance.Name;
+import org.wwscc.registration.attendance.NameStorage;
 import org.wwscc.storage.Car;
 import org.wwscc.storage.Driver;
 import org.wwscc.storage.Database;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.Prefs;
+import org.wwscc.util.SearchTrigger;
 
 
 public class EntryPanel extends DriverCarPanel
@@ -55,27 +62,26 @@ public class EntryPanel extends DriverCarPanel
 	JLabel membershipwarning;
 	JComboBox<PrintService> printers;
 	Code39 activeLabel;
+	SearchDrivers2 searchDrivers2;
+	NameStorage extraNames;
 
-	public EntryPanel()
+	public EntryPanel(NameStorage names)
 	{
 		super();
 		setLayout(new MigLayout("fill", "[400, grow 25][150, grow 25][150, grow 25]"));
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.ATTENDANCE_SETUP_CHANGE, this);
 
-
-		drivers.setCellRenderer(new DefaultListCellRenderer() {
-			Font font = getFont().deriveFont(14f);
-			public Component getListCellRendererComponent(JList<?> l, Object o, int i, boolean s, boolean c)
-			{
-				super.getListCellRendererComponent(l, o, i, s, c);
-				setFont(font);
-				setText(((Driver)o).getFullName());
-				return this;
-			}
-		});
+		extraNames = names;
 		
-		cars.setCellRenderer(new RegListRenderer());
+		searchDrivers2 = new SearchDrivers2();
+		firstSearch.getDocument().removeDocumentListener(searchDrivers);
+		firstSearch.getDocument().addDocumentListener(searchDrivers2);
+		lastSearch.getDocument().removeDocumentListener(searchDrivers);
+		lastSearch.getDocument().addDocumentListener(searchDrivers2);
+
+		drivers.setCellRenderer(new DriverRenderer());		
+		cars.setCellRenderer(new CarRenderer());
 
 		/* Buttons */
 		addit = new JButton("Register Entrant");
@@ -159,9 +165,8 @@ public class EntryPanel extends DriverCarPanel
 	{
 		HashPrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
 		aset.add(new Copies(2)); // silly request but cuts out fax, xps, etc.
-        PrintService[] printServices = PrintServiceLookup.lookupPrintServices(
-				DocFlavor.SERVICE_FORMATTED.PRINTABLE, 
-				aset);		
+        PrintService[] printServices = PrintServiceLookup.lookupPrintServices(DocFlavor.SERVICE_FORMATTED.PRINTABLE, aset);
+        
 		printers = new JComboBox<PrintService>(printServices);
 		printers.setRenderer(new DefaultListCellRenderer() {
 			@Override
@@ -178,8 +183,7 @@ public class EntryPanel extends DriverCarPanel
 			}
 		});
 		
-		for (PrintService ps : printServices)
-		{
+		for (PrintService ps : printServices) {
 			if (ps.getName().equals(Prefs.getDefaultPrinter()))
 				printers.setSelectedItem(ps);
 		}
@@ -269,49 +273,57 @@ public class EntryPanel extends DriverCarPanel
 	public void valueChanged(ListSelectionEvent e) 
 	{
 		super.valueChanged(e);
-		if (selectedDriver != null)
-		{
-			activeLabel.setValue(selectedDriver.getMembership(), String.format("%s - %s", selectedDriver.getMembership(), selectedDriver.getFullName()));
-			activeLabel.repaint();
-			membershipwarning.setText("");
-			membershipwarning.setOpaque(false);
-			
-			if (!selectedDriver.getMembership().trim().equals(""))
-			{
-				List<Driver> dups = Database.d.findDriverByMembership(selectedDriver.getMembership());
-				dups.remove(selectedDriver);
-				if (dups.size() > 0)
-				{
-					StringBuffer buf = new StringBuffer(dups.get(0).getFullName());
-					for (int ii = 1; ii < dups.size(); ii++)
-						buf.append(", ").append(dups.get(ii).getFullName());
-					membershipwarning.setText("Duplicate Membership with " + buf);
-					membershipwarning.setOpaque(true);
-				}
-			}
-			
-			Messenger.sendEvent(MT.DRIVER_SELECTED, selectedDriver);
-		}
-		else
-		{
-			activeLabel.setValue("", "");
-			activeLabel.repaint();
-			membershipwarning.setText("");
-			membershipwarning.setOpaque(false);
-			Messenger.sendEvent(MT.DRIVER_SELECTED, null);
-		}
+		if (e.getValueIsAdjusting())
+				return;
 		
-		if (selectedCar != null)
+		if (e.getSource() == drivers)
 		{
-			addit.setEnabled(!selectedCar.isRegistered());
-			removeit.setEnabled(selectedCar.isRegistered() && !selectedCar.isInRunOrder());
-			editcar.setEnabled(!selectedCar.isInRunOrder() && !selectedCar.hasActivity());
-			deletecar.setEnabled(!selectedCar.isRegistered() && !selectedCar.isInRunOrder() && !selectedCar.hasActivity());
+			if (selectedDriver != null)
+			{
+				activeLabel.setValue(selectedDriver.getMembership(), String.format("%s - %s", selectedDriver.getMembership(), selectedDriver.getFullName()));
+				activeLabel.repaint();
+				membershipwarning.setText("");
+				membershipwarning.setOpaque(false);
+				
+				if (!selectedDriver.getMembership().trim().equals(""))
+				{
+					List<Driver> dups = Database.d.findDriverByMembership(selectedDriver.getMembership());
+					dups.remove(selectedDriver);
+					if (dups.size() > 0)
+					{
+						StringBuffer buf = new StringBuffer(dups.get(0).getFullName());
+						for (int ii = 1; ii < dups.size(); ii++)
+							buf.append(", ").append(dups.get(ii).getFullName());
+						membershipwarning.setText("Duplicate Membership with " + buf);
+						membershipwarning.setOpaque(true);
+					}
+				}
+				Messenger.sendEvent(MT.DRIVER_SELECTED, new Name(selectedDriver.getFirstName(), selectedDriver.getLastName()));
+			}
+			else
+			{
+				activeLabel.setValue("", "");
+				activeLabel.repaint();
+				membershipwarning.setText("");
+				membershipwarning.setOpaque(false);
+				Messenger.sendEvent(MT.DRIVER_SELECTED, drivers.getSelectedValue());
+			}
 		}
-		else
+	
+		if (e.getSource() == cars)
 		{
-			addit.setEnabled(false);
-			removeit.setEnabled(true);
+			if (selectedCar != null)
+			{
+				addit.setEnabled(!selectedCar.isRegistered());
+				removeit.setEnabled(selectedCar.isRegistered() && !selectedCar.isInRunOrder());
+				editcar.setEnabled(!selectedCar.isInRunOrder() && !selectedCar.hasActivity());
+				deletecar.setEnabled(!selectedCar.isRegistered() && !selectedCar.isInRunOrder() && !selectedCar.hasActivity());
+			}
+			else
+			{
+				addit.setEnabled(false);
+				removeit.setEnabled(true);
+			}
 		}
 	}
 
@@ -327,15 +339,15 @@ public class EntryPanel extends DriverCarPanel
 				
 			case ATTENDANCE_SETUP_CHANGE:
 				if (selectedDriver != null)
-					Messenger.sendEvent(MT.DRIVER_SELECTED, selectedDriver);
+					Messenger.sendEvent(MT.DRIVER_SELECTED, new Name(selectedDriver.getFirstName(), selectedDriver.getLastName()));
 				break;
-				
+
 			default:
 				super.event(type, o);
 		}
 	}
 	
-	/*
+
 	class SearchDrivers2 extends SearchTrigger
 	{
 		@Override
@@ -346,9 +358,47 @@ public class EntryPanel extends DriverCarPanel
 				last = lastSearch.getText();
 			if (firstSearch.getDocument().getLength() > 0)
 				first = firstSearch.getText();
-			List<Driver> found = Database.d.getDriversLike(first, last);
-			drivers.setListData(found);
+			
+			List<Object> display = new ArrayList<Object>();
+			HashSet<Name> used = new HashSet<Name>();
+			for (Driver d : Database.d.getDriversLike(first, last))
+			{
+				display.add(d);
+				used.add(new Name(d.getFirstName(), d.getLastName()));
+			}
+			
+			for (Name n : extraNames.getNamesLike(first, last))
+			{
+				if (!used.contains(n))
+					display.add(n);
+			}
+			
+
+			Collections.sort(display, new NameDriverComparator());			
+			drivers.setListData(display.toArray());
 			drivers.setSelectedIndex(0);
 		}
-	} */
+	}
+	
+	
+	class NameDriverComparator implements Comparator<Object> 
+	{
+		public int compare(Object o1, Object o2)
+		{
+			String c1 = "", c2 = "";
+			
+			if (o1 instanceof Driver)
+				c1 = ((Driver)o1).getFullName();
+			else if (o1 instanceof Name)
+				c1 = ((Name)o1).toString();
+
+			if (o2 instanceof Driver)
+				c2 = ((Driver)o2).getFullName();
+			else if (o2 instanceof Name)
+				c2 = ((Name)o2).toString();
+						
+			return c1.compareTo(c2);
+
+		}
+	}
 }

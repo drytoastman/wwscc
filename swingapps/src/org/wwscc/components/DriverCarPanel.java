@@ -54,7 +54,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	protected JTextField lastSearch;
 
 	protected JScrollPane dscroll;
-	protected JList<Driver> drivers;
+	protected JList<Object> drivers;
 	protected JTextArea driverInfo;
 
 	protected JScrollPane cscroll;
@@ -66,6 +66,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	protected MetaCar selectedCar;
 	
 	protected List<DriverField> driverFields;
+	protected SearchDrivers searchDrivers = new SearchDrivers();
 
 	public DriverCarPanel()
 	{
@@ -78,7 +79,6 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		selectedCar = null;
 
 		/* Search Section */
-		SearchDrivers searchDrivers = new SearchDrivers();
 		firstSearch = new JTextField("", 8);
 		firstSearch.getDocument().addDocumentListener(searchDrivers);
 		firstSearch.addFocusListener(this);
@@ -87,7 +87,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		lastSearch.addFocusListener(this);
 
 		/* Driver Section */
-		drivers = new JList<Driver>();
+		drivers = new JList<Object>();
 		drivers.addListSelectionListener(this);
 		drivers.setVisibleRowCount(1);
 		//drivers.setPrototypeCellValue("12345678901234567890");

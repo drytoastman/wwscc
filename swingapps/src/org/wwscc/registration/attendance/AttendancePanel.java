@@ -22,7 +22,6 @@ import javax.swing.border.LineBorder;
 
 import org.wwscc.components.UnderlineBorder;
 import org.wwscc.registration.attendance.AttendanceResult.AttendanceResultPiece;
-import org.wwscc.storage.Driver;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -33,7 +32,7 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display for attendance calculations and values
  */
-public class AttendancePanel extends JPanel implements MessageListener
+public class AttendancePanel extends JPanel implements MessageListener, NameStorage
 {
 	private static final Logger log = Logger.getLogger(AttendancePanel.class.getCanonicalName());
 	
@@ -43,15 +42,18 @@ public class AttendancePanel extends JPanel implements MessageListener
 	
 	List<AttendanceCalculation> calcs;
 	List<AttendanceEntry> entries;
+	ExtraNameStorage names;
 	
 	public AttendancePanel()
 	{
 		super(new MigLayout("fillx, w 170"));
+		names = new ExtraNameStorage();
 		setBorder(new LineBorder(Color.GRAY));		
 		Messenger.register(MT.ATTENDANCE_SETUP_CHANGE, this);
 		Messenger.register(MT.DRIVER_SELECTED, this);
 	}
-	
+
+
 	@Override
 	public void event(MT type, Object data)
 	{
@@ -62,6 +64,7 @@ public class AttendancePanel extends JPanel implements MessageListener
 					removeAll();
 					calcs = Syntax.scanAll(Prefs.getAttendanceCalculations());
 					entries = Attendance.scanFile(Attendance.defaultfile);
+					names = new ExtraNameStorage(entries);
 				} catch (Exception e) {
 					log.severe("Failed to read attendance calculation setup: " + e.getMessage());
 				}
@@ -73,9 +76,17 @@ public class AttendancePanel extends JPanel implements MessageListener
 				
 			case DRIVER_SELECTED:
 				for (Component c : AttendancePanel.this.getComponents())
-					((CalculationPanel)c).update((Driver)data);
+					((CalculationPanel)c).update(data);
 				break;
 		}
+	}
+	
+
+	@Override
+	public List<Name> getNamesLike(String first, String last)
+	{
+		// indirect access to ref that changes
+		return names.getNamesLike(first, last);
 	}
 	
 	
@@ -97,41 +108,40 @@ public class AttendancePanel extends JPanel implements MessageListener
 			decision.setBorder(new UnderlineBorder());
 		}
 		
-		public void update(Driver d)
+		public void update(Object o)
 		{
 			removeAll();
-			if (d != null)
+			if (o == null)
+				return;
+			
+			add(title, "grow");
+			add(decision, "grow, wrap");
+			
+			Name name = (Name)o;
+			AttendanceResult result = calc.getResult(name.first, name.last, entries);
+			decision.setText(result.result ? "Yes":"No");
+			for (AttendanceResultPiece p : result.pieces)
 			{
-				add(title, "grow");
-				add(decision, "grow, wrap");
-				
-				AttendanceResult result = calc.getResult(d.getFirstName(), d.getLastName(), entries);
-				decision.setText(result.result ? "Yes":"No");
-				for (AttendanceResultPiece p : result.pieces)
+				if (p.value == null)
 				{
-					if (p.value == null)
-					{
-						JLabel n = new JLabel(p.name);
-						n.setFont(filterFont);
-						
-						add(n, "spanx 2, center, wrap");
-					}
-					else
-					{
-						JLabel n = new JLabel(p.name);
-						n.setFont(variableFont);
-						JLabel v = new JLabel(p.value);
-						v.setFont(variableFont);
-						
-						add(n, "al right");
-						add(v, "gap 10px, wrap");
-					}
+					JLabel n = new JLabel(p.name);
+					n.setFont(filterFont);
+					
+					add(n, "spanx 2, center, wrap");
 				}
-				
-				revalidate();
+				else
+				{
+					JLabel n = new JLabel(p.name);
+					n.setFont(variableFont);
+					JLabel v = new JLabel(p.value);
+					v.setFont(variableFont);
+					
+					add(n, "al right");
+					add(v, "gap 10px, wrap");
+				}
 			}
+			
+			revalidate();
 		}
 	}
-
-
 }

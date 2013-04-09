@@ -8,15 +8,13 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
-
 import net.miginfocom.swing.MigLayout;
 
 import org.wwscc.components.UnderlineBorder;
 import org.wwscc.storage.MetaCar;
 
 
-class RegListRenderer extends DefaultListCellRenderer
+class CarRenderer extends DefaultListCellRenderer
 {
 	private MyPanel p = new MyPanel();
 	private Color superLightGray = new Color(200, 200, 200);
@@ -25,8 +23,6 @@ class RegListRenderer extends DefaultListCellRenderer
 	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
 	{
 		MetaCar c = (MetaCar)value;
-		String myclass = c.getClassCode() + " " + c.getIndexStr();				
-
 		if (isSelected)
 		{
 			p.setBackground(list.getSelectionBackground());

@@ -53,8 +53,8 @@ public class Registration extends JFrame implements ActionListener
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		setupBar = new SelectionBar();
-		driverEntry = new EntryPanel();
 		attendanceDisplay = new AttendancePanel();
+		driverEntry = new EntryPanel(attendanceDisplay);
 
 		BorderLayout layout = new BorderLayout();
 		JPanel content = new JPanel(layout);

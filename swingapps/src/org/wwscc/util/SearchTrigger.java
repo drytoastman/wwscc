@@ -5,6 +5,9 @@
 
 package org.wwscc.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -15,6 +18,7 @@ import javax.swing.text.Document;
  */
 public abstract class SearchTrigger implements DocumentListener
 {
+	private static final Logger log = Logger.getLogger(SearchTrigger.class.getCanonicalName());
 	private boolean enabled = true;
 
 	@Override
@@ -33,7 +37,7 @@ public abstract class SearchTrigger implements DocumentListener
 	{
 		Document d = e.getDocument();
 		try { search(d.getText(0, d.getLength())); }
-		catch (Exception ex) {}
+		catch (Exception ex) { log.log(Level.INFO, "Search error: " + ex); }
 	}
 
 	public abstract void search(String txt);
