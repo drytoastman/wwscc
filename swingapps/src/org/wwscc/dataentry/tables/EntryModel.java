@@ -64,10 +64,15 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		{
 			if (!Prefs.useReorderingTable())
 			{
-				log.log(Level.WARNING, "Carid {0} already in table, perhaps you want to enable constant staging mode", Integer.toString(e.getCarId()));
+				log.log(Level.WARNING, "Carid {0} already in table, perhaps you want to enable constant staging mode", Integer.toString(carid));
 				return;
 			}
 			tableData.remove(e); // remove it from position and following will readd at the end
+		}
+		else if (Database.d.isInOrder(carid))
+		{
+			log.log(Level.SEVERE, "Carid {0} already in use in another rungroup", Integer.toString(carid));
+			return;
 		}
 		
 		tableData.add(e);
