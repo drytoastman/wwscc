@@ -33,7 +33,7 @@ public abstract class MiniInput extends JPanel implements ActionListener
 	 */
 	public MiniInput(String label, MT openevent)
 	{
-		super(new MigLayout("fill, ins 1", "[80][grow][10]"));
+		super(new MigLayout("fill, ins 1", "[60][grow][20]"));
 		entry = new JTextField();
 		close = new IconButton();
 		close.setActionCommand("esc");
@@ -114,7 +114,7 @@ public abstract class MiniInput extends JPanel implements ActionListener
 	{
 		public ManualCarIdInput()
 		{
-			super("Reg/CarId", MT.OPEN_CARID_ENTRY);
+			super("CarId", MT.OPEN_CARID_ENTRY);
 		}
 		
 		public void actionPerformed(ActionEvent e)
@@ -135,6 +135,9 @@ public abstract class MiniInput extends JPanel implements ActionListener
 			{
 				try
 				{
+					if (carText.startsWith("C")) // filter out C if they put it in the carid field, used for barcode directly
+						carText = carText.substring(1);
+					
 					int carID = Integer.parseInt(carText);
 					if(!Database.d.isRegistered(carID))
 					{

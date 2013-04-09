@@ -80,11 +80,11 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 	
 	public Driver findDriverByBarcode(String barcode) throws BarcodeException
 	{
-		if (barcode.startsWith("I"))
+		if (barcode.startsWith("D"))
 		{
 			Driver byid = Database.d.getDriver(Integer.parseInt(barcode.substring(1)));
 			if (byid == null)
-				throw new BarcodeException("Unable to located a driver with ID field " + barcode);
+				throw new BarcodeException("Unable to located a driver with ID=" + barcode.substring(1));
 			return byid;
 		}
 		
@@ -102,6 +102,15 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 	
 	public void processBarcode(String barcode) throws BarcodeException
 	{
+		if (barcode.startsWith("C"))
+		{
+			int carid = Integer.parseInt(barcode.substring(1));
+			if (Database.d.loadEntrant(carid, false) == null)
+				throw new BarcodeException("Unable to find a car with ID=" + carid);
+			event(MT.CAR_ADD, carid);
+			return;
+		}
+		
 		Driver d = findDriverByBarcode(barcode);
 		
 		List<Car> available = Database.d.getRegisteredCars(d.getId());
