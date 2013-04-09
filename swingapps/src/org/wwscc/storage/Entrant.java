@@ -56,7 +56,7 @@ public class Entrant
 	}
 
 	/**
-	 * Return an array of runs, each in their proper indexed locations, missing runs will be null
+	 * @return an array of runs, each in their proper indexed locations, missing runs will be null
 	 */
 	public Run[] getRuns()
 	{
@@ -73,7 +73,7 @@ public class Entrant
 	}
 
 	/**
-	 * Determine if this entrant has any runs entered at all
+	 * @return true if this entrant has any runs entered at all
 	 */
 	public boolean hasRuns()
 	{
@@ -81,7 +81,7 @@ public class Entrant
 	}
 
 	/**
-	 * Return the number of actual recorded runs (not the max run number recorded)
+	 * @return the number of actual recorded runs (not the max run number recorded)
 	 */
 	public int runCount()
 	{

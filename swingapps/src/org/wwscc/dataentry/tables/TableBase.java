@@ -53,7 +53,7 @@ public class TableBase extends JTable
 		setRowHeight(36);
 	}
 	
-	/*** automatic adjust of column widths ****/
+	// automatic adjust of column widths
 	
 	public void setColumnSizes(TableColumnModelEvent e)
 	{

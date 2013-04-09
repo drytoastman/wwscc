@@ -383,6 +383,8 @@ public abstract class SQLDataInterface extends DataInterface
 	
 	/**
 	 * Wrap car loading so we can calculate the cached indexstr
+	 * @param r the result row from the data source
+	 * @return a Car object
 	 * @throws IOException 
 	 */
 	Car loadCar(ResultRow r) throws IOException
@@ -394,6 +396,8 @@ public abstract class SQLDataInterface extends DataInterface
 	
 	/**
 	 * Wrap driver loading so we can also get the extra fields
+	 * @param res the result row from the data source
+	 * @return a Driver object
 	 * @throws IOException 
 	 */
 	Driver loadDriver(ResultRow res) throws IOException
@@ -459,7 +463,7 @@ public abstract class SQLDataInterface extends DataInterface
 	 * Gets all the entrants and their runs based on the current run order.  Ends up
 	 * being a lot faster (particular over a network) to load all of the runs for the run
 	 * group as one and then filter them to each entrant locally.
-	 * @return
+	 * @return the list of entrants in the current run order
 	 */
 	@Override
 	public List<Entrant> getEntrantsByRunOrder()
@@ -818,7 +822,12 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
-	/** Subclasses override to deal with odd circumstances of getattr sql */
+	/** 
+	 * Subclasses override to deal with odd circumstances of getattr sql 
+	 * @param attr the attribute to look up 
+	 * @return a ResultData object with the result rows
+	 * @throws IOException 
+	 */
 	protected abstract ResultData getCarAttributesImpl(String attr) throws IOException;
 
 	@Override

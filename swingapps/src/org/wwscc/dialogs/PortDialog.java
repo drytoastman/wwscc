@@ -22,8 +22,9 @@ public class PortDialog extends BaseDialog<String>
 
 	/**
 	 * Create the dialog
-	 * @param fileDefault a possible default for the file database
-	 * @param urlDefault a possible default for the URL database
+	 * @param def the default radio to select
+	 * @param available the radios to show as available
+	 * @param unavailable  the radios to show as not available
 	 */
     public PortDialog(String def, Collection<String> available, Collection<String> unavailable)
 	{

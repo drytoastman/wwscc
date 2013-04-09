@@ -56,7 +56,7 @@ public class Id
 		}
 
 		/**
-		 * Get the depth within the tree, 1 is the final round, 2 is semis, 3 is quarters, etc.
+		 * @return the depth within the tree, 1 is the final round, 2 is semis, 3 is quarters, etc.
 		 */
 		public int getDepth()
 		{

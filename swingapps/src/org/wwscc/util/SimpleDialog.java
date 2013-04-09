@@ -22,9 +22,8 @@ public class SimpleDialog extends JDialog implements ActionListener
 
 	/**
 	 * Create the dialog.
-	 * @param parent	the parent Frame if any
-	 * @param title		the title to use for the window
-	 * @param useCancel	whether to show a cancel button or not
+	 * @param title the title to use for the window
+	 * @param panel a panel of controls to use as content pane if provided
 	 */
     public SimpleDialog(String title, JComponent panel)
 	{

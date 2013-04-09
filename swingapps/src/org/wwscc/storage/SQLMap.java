@@ -133,6 +133,8 @@ public class SQLMap
 
 	/**
 	 * Write python version of file.
+	 * @param args the command line args, ignored
+	 * @throws IOException 
 	 */
 	public static void main(String args[]) throws IOException
 	{

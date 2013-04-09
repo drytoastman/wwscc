@@ -155,7 +155,8 @@ public class CSVParser {
         this.ignoreLeadingWhiteSpace = ignoreLeadingWhiteSpace;
     }
 
-    private boolean anyCharactersAreTheSame(char separator, char quotechar, char escape) {
+    @SuppressWarnings("hiding")
+	private boolean anyCharactersAreTheSame(char separator, char quotechar, char escape) {
         return isSameCharacter(separator, quotechar) || isSameCharacter(separator, escape) || isSameCharacter(quotechar, escape);
     }
 

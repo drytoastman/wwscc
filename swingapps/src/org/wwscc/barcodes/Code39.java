@@ -18,15 +18,13 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 
 /**
  */
 public class Code39 extends JComponent implements Printable
 {
-	private static final Logger log = Logger.getLogger(Code39.class.getCanonicalName());
+	//private static final Logger log = Logger.getLogger(Code39.class.getCanonicalName());
 	static public final Map<Character, String> barChar = new HashMap<Character, String>();
 	static 
 	{

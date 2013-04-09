@@ -54,18 +54,30 @@ public abstract class DataInterface
 	public abstract boolean getBooleanSetting(String key);
 	public abstract void putBooleanSetting(String key, boolean val);
 	
-	/** get a list of all events in the database */
-	public abstract List<Event> getEvents(); 
-	/** update the current event data in the database */
+	/** 
+	 * @return a list of all events in the database 
+	 */
+	public abstract List<Event> getEvents();
+	
+	/** 
+	 * send the current event data to the database 
+	 * @return true if update succeeded
+	 */
 	public abstract boolean updateEvent();
 
-	/** get all entrants participating in an event */
-	public abstract List<Entrant> getEntrantsByEvent();
-	/** get all entrants registered for an event */
-	public abstract List<Entrant> getRegisteredEntrants();
 	/** 
-	 * get all registered car ids for a driver
+	 * @return a list of all entrants participating in the current event  
+	 */
+	public abstract List<Entrant> getEntrantsByEvent();
+	
+	/** 
+	 * @return a list of all entrants registered for an event 
+	 */
+	public abstract List<Entrant> getRegisteredEntrants();
+	
+	/** 
 	 * @param driverid the driver id of the cars to search for
+	 * @return a list of all registered car ids for a driver
 	 */
 	public abstract List<Car> getRegisteredCars(int driverid);
 	
