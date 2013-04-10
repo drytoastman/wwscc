@@ -24,7 +24,7 @@ def checklist(func, self, *args, **kwargs):
 	"""Decorator Wrapper function"""
 	if 'list' not in request.str_GET or request.str_GET['list'] == "":
 		log.error("Got request byclass without list (ref: %s)" % request.environ.get('HTTP_REFERER', ""))
-		return "<h2>Missing list of classes to get</h2>"
+		abort(404, "Missing list of classes to get")
 	return func(self, *args, **kwargs)
 
 
@@ -63,9 +63,14 @@ class ResultsController(BaseController):
 
 	@checklist
 	def byclass(self):
-		c.title = 'Results for Class %s' % (request.str_GET['list'])
+		classlist = set(request.str_GET['list'].split(','))
+		classlist.intersection_update(set(c.classdata.classlist))
+		if len(classlist) == 0:
+			abort(404, "No valid classes provided (class codes are case sensitive)")
+		
+		c.title = 'Results for Class %s' % (','.join(classlist))
 		c.header = '<h2>%s</h2>' % (c.title)
-		c.results = getClassResults(self.session, self.settings, c.event, c.classdata, request.str_GET['list'].split(','))
+		c.results = getClassResults(self.session, self.settings, c.event, c.classdata, classlist)
 		return render_mako('db:classresult.mako')
 
 	@checklist
