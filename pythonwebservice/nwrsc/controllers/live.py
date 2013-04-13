@@ -1,4 +1,5 @@
 from pylons import tmpl_context as c, request
+from pylons.controllers.util import redirect, url_for
 from pylons.templating import render_mako, render_mako_def
 from nwrsc.model import *
 from mobile import MobileController
@@ -18,7 +19,11 @@ class LiveController(MobileController):
 
 	def browser(self):
 		c.views = []
-		args = request.GET.get('views', 'Any,PAX').split(',')
+		try:
+			args = request.GET.get('views', 'Any,PAX').split(',')
+		except:
+			redirect(url_for(action='index'))
+
 		for v in zip(args[::2], args[1::2]):
 			c.views.append({'code':v[0], 'type':v[1]})
 		return render_mako('/live/browser.mako')

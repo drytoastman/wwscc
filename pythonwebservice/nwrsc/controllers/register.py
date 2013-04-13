@@ -314,7 +314,10 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 
 		 
 	def view(self):
-		id = int(self.routingargs.get('other', 0))
+		try:
+			id = int(self.routingargs.get('other', 0))
+		except:
+			abort(404, "No event for input provided")
 		if id == 0:
 			redirect(url_for(action=''))
 			

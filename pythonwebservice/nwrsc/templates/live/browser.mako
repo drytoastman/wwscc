@@ -17,8 +17,6 @@ except:
 </script>
 </head> 
 
-%
-
 <%
 codeset = set([v['code'] for v in c.views])
 def idfor(v):
