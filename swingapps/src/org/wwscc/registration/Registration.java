@@ -142,13 +142,17 @@ public class Registration extends JFrame implements ActionListener
 		}
 		else if (cmd.equals("Download Attendance History"))
 		{
-			try {
-				Attendance.getAttendance(Database.getHost());
-			} catch (CancelException ce) {
-				// pass
-			} catch (Exception e1) {
-				log.severe("Failed to download attendance: " + e1);
-			}
+			new Thread(new Runnable() {
+				public void run() {
+					try {						
+						Attendance.getAttendance(Database.getHost());
+					} catch (CancelException ce) {
+						// pass
+					} catch (Exception e1) {
+						log.severe("Failed to download attendance: " + e1);
+					}
+				}
+			}).start();
 		}
 		else if (cmd.equals("Configure Attendance Values"))
 		{

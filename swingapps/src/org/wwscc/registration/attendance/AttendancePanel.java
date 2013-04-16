@@ -67,6 +67,7 @@ public class AttendancePanel extends JPanel implements MessageListener, NameStor
 					names = new ExtraNameStorage(entries);
 				} catch (Exception e) {
 					log.severe("Failed to read attendance calculation setup: " + e.getMessage());
+					return;
 				}
 				
 				Collections.sort(calcs);

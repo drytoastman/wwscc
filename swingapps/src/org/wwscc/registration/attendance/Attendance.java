@@ -10,6 +10,7 @@ package org.wwscc.registration.attendance;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,11 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpProtocolParams;
 import org.wwscc.util.CSVParser;
-import org.wwscc.util.CountingEntity;
+import org.wwscc.util.MonitorProgressStream;
 import org.wwscc.util.Prefs;
 
 public class Attendance
@@ -45,10 +47,22 @@ public class Attendance
 		DefaultHttpClient httpclient = new DefaultHttpClient();
 		HttpProtocolParams.setUserAgent(httpclient.getParams(), "Scorekeeper/2.0");
 		
+		MonitorProgressStream monitor = new MonitorProgressStream("Download Attendance");
+		monitor.setProgress(1);
+		monitor.setNote("Initialize");
+		
         HttpPost request = new HttpPost(new URI("http", host, "/history/attendance", null));
         File temp = File.createTempFile("attendance", "tmp");
-        CountingEntity download = new CountingEntity("Downloading Attendance", httpclient.execute(request).getEntity());
-        download.writeTo(new FileOutputStream(temp));
+		monitor.setProgress(2);
+		monitor.setNote("Connecting/Calcuation...");
+
+        HttpEntity download = httpclient.execute(request).getEntity();
+		monitor.setProgress(3);
+		monitor.setNote("Downloading...");
+
+		FileOutputStream todisk = new FileOutputStream(temp);
+        monitor.setStream(todisk, download.getContentLength());
+        download.writeTo(monitor);
         FileUtils.copyFile(temp, defaultfile);
 	}
 	

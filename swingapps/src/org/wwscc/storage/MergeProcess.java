@@ -13,6 +13,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -68,8 +69,10 @@ public class MergeProcess
 		{
 			File db = Database.file;
 			Database.d.close();
+			FileDescriptor.out.sync();
+			Thread.sleep(500);
 			if (!db.delete())
-				throw new IOException("Error deleting "+db.getPath()+" already on disk");
+				throw new IOException("Error deleting "+db.getPath()+" before downloading new copy.  Try rerunning merge.");
 
 			dialog.waitStep(3);
 
