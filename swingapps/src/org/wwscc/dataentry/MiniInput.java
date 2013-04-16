@@ -15,6 +15,7 @@ import javax.swing.KeyStroke;
 import net.miginfocom.swing.MigLayout;
 
 import org.wwscc.storage.Database;
+import org.wwscc.util.IconButton;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -23,6 +24,7 @@ import org.wwscc.util.SearchTrigger;
 public abstract class MiniInput extends JPanel implements ActionListener
 {
 	JTextField entry;
+	IconButton close;
 	
 	/**
 	 * Base mini input that set the layout and basic actions (Esc means hide)
@@ -31,14 +33,18 @@ public abstract class MiniInput extends JPanel implements ActionListener
 	 */
 	public MiniInput(String label, MT openevent)
 	{
-		super(new MigLayout("fill, ins 1", "[80][grow]"));
+		super(new MigLayout("fill, ins 1", "[60][grow][20]"));
 		entry = new JTextField();
+		close = new IconButton();
+		close.setActionCommand("esc");
+		close.addActionListener(this);
 
 		JLabel lbl = new JLabel(label);
 		lbl.setFont(lbl.getFont().deriveFont(Font.BOLD, 12));
 		
 		add(lbl, "al right");
 		add(entry, "growx");
+		add(close, "aligny top");
 		setVisible(false);
 		
 		Messenger.register(openevent,  new MessageListener() {
@@ -129,6 +135,9 @@ public abstract class MiniInput extends JPanel implements ActionListener
 			{
 				try
 				{
+					if (carText.startsWith("C")) // filter out C if they put it in the carid field, used for barcode directly
+						carText = carText.substring(1);
+					
 					int carID = Integer.parseInt(carText);
 					if(!Database.d.isRegistered(carID))
 					{

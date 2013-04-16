@@ -9,23 +9,33 @@
 package org.wwscc.registration;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import org.wwscc.dialogs.DatabaseDialog;
+import org.wwscc.registration.attendance.Attendance;
+import org.wwscc.registration.attendance.AttendancePanel;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.MergeProcess;
+import org.wwscc.util.CancelException;
 import org.wwscc.util.Logging;
+import org.wwscc.util.MT;
+import org.wwscc.util.Messenger;
 import org.wwscc.util.Prefs;
 
 
@@ -35,6 +45,7 @@ public class Registration extends JFrame implements ActionListener
 
 	SelectionBar setupBar;
 	EntryPanel driverEntry;
+	AttendancePanel attendanceDisplay;
 
 	public Registration(String name) throws IOException
 	{
@@ -42,7 +53,8 @@ public class Registration extends JFrame implements ActionListener
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		setupBar = new SelectionBar();
-		driverEntry = new EntryPanel();
+		attendanceDisplay = new AttendancePanel();
+		driverEntry = new EntryPanel(attendanceDisplay);
 
 		BorderLayout layout = new BorderLayout();
 		JPanel content = new JPanel(layout);
@@ -53,14 +65,22 @@ public class Registration extends JFrame implements ActionListener
 		log.log(Level.INFO, "Starting Registration: {0}", new java.util.Date());
 
 		JMenu file = new JMenu("File");
-		file.add(createItem("Open Local Database"));
+		file.add(createItem("Open Database"));
 		file.add(createItem("Download Database Copy"));
 		file.add(new JSeparator());
 		file.add(createItem("Merge Database"));
 		file.add(createItem("Quit"));
 		
+		JMenu attendance = new JMenu("Attendance");
+		attendance.add(createItem("Download Attendance History"));
+		attendance.add(createItem("Configure Attendance Values"));
+		JCheckBoxMenuItem cb = new JCheckBoxMenuItem("Show Attendance Values");
+		cb.addActionListener(this);
+		attendance.add(cb);
+		
 		JMenuBar bar = new JMenuBar();
 		bar.add(file);
+		bar.add(attendance);
 		setJMenuBar(bar);
 
 		Database.openDefault();
@@ -83,9 +103,9 @@ public class Registration extends JFrame implements ActionListener
 		{
 			System.exit(0);
 		}
-		else if (cmd.equals("Open Local Database"))
+		else if (cmd.equals("Open Database"))
 		{
-			Database.open(true, false);
+			Database.open(true, true);
 		}
 		else if (cmd.equals("Download Database Copy"))
 		{
@@ -118,6 +138,41 @@ public class Registration extends JFrame implements ActionListener
 
 				Prefs.setMergeHost(sp[0]);
 				new Thread(new Runnable() { public void run() { MergeProcess.mergeTo(Registration.this, sp[0], sp[1]); }}).start();
+			}
+		}
+		else if (cmd.equals("Download Attendance History"))
+		{
+			try {
+				Attendance.getAttendance(Database.getHost());
+			} catch (CancelException ce) {
+				// pass
+			} catch (Exception e1) {
+				log.severe("Failed to download attendance: " + e1);
+			}
+		}
+		else if (cmd.equals("Configure Attendance Values"))
+		{
+			JTextPane p = new JTextPane();
+			p.setText(Prefs.getAttendanceCalculations());
+			p.setPreferredSize(new Dimension(600,400));
+			if (JOptionPane.showConfirmDialog(null, new JScrollPane(p), "Enter Requested Attendance Calculations", JOptionPane.OK_CANCEL_OPTION)
+						== JOptionPane.OK_OPTION) {
+				Prefs.setAttendanceCalculations(p.getText());
+				Messenger.sendEvent(MT.ATTENDANCE_SETUP_CHANGE, null);
+			}
+		}
+		else if (cmd.equals("Show Attendance Values"))
+		{
+			if (((JCheckBoxMenuItem)e.getSource()).isSelected())
+			{
+				getContentPane().add(attendanceDisplay, BorderLayout.EAST);
+				pack();
+				Messenger.sendEvent(MT.ATTENDANCE_SETUP_CHANGE, null);
+			}
+			else
+			{
+				getContentPane().remove(attendanceDisplay);
+				pack();
 			}
 		}
 		else

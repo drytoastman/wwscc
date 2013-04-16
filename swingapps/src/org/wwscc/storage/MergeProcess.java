@@ -43,6 +43,7 @@ public class MergeProcess
 	 * @param root a component to use as base when opening a dialog, can be null
 	 * @param host the hostname
 	 * @param name the series name on the remote host
+	 * @return true if success, false for failure
 	 */
 	public static boolean mergeTo(JFrame root, String host, String name)
 	{
@@ -94,7 +95,7 @@ public class MergeProcess
 	 * Perform merge of two sqldatainterface based databases, could be remote or local 
 	 * but we specify SQLDataInteface so we can use the start/commit/rollback access.
 	 * @param dest the destination to merge to
-	 * @throws Exception 
+	 * @throws IOException 
 	 */
 	protected static void mergeToInternal(SQLDataInterface dest) throws IOException
 	{

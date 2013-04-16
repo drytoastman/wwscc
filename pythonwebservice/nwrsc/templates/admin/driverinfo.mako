@@ -30,6 +30,7 @@ drivers[${info.driver.id}] = ${h.encodesqlobj(info.driver)|n}
 <tr><th>CSZ</th><td>${info.driver.city}, ${info.driver.state} ${info.driver.zip}</td></tr>
 <tr><th>Brag</th><td>${info.driver.brag}</td></tr>
 <tr><th>Sponsor</th><td>${info.driver.sponsor}</td></tr>
+<tr><th>Membership</th><td>${info.driver.membership}</td></tr>
 
 %for field in c.fields:
 <tr><th>${field.title}</th><td>${info.driver.getExtra(field.name)}</td></tr>

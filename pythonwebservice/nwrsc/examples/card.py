@@ -137,7 +137,7 @@ def drawCard(c, event, driver, car, image, **kwargs):
 	x = 330
 	y = 187
 	c.drawString(x, y, driver.brag or ""); y += 21
-	c.drawString(x, y, driver.getExtra('membership') or ""); y += 21
+	c.drawString(x, y, driver.membership or ""); y += 21
 	c.drawString(x, y, car.color or ""); y += 21
 	c.drawString(x, y, car.model or ""); y += 21
 	c.drawString(x, y, car.make or ""); y += 21

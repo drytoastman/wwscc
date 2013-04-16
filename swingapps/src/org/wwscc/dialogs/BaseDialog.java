@@ -99,7 +99,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 		mainPanel = new JPanel(lm);
 		mainPanel.setBorder(new EmptyBorder(6,6,6,6));
 
-		add(mainPanel, BorderLayout.WEST);
+		add(mainPanel, BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
     }
   
@@ -123,6 +123,7 @@ public class BaseDialog<E> extends JPanel implements ActionListener
 
 	/**
 	 * Create a new textfield with some default look
+	 * @param name		the name to store the entry under
 	 * @param text		the default text for the field
 	 * @return			a pointer to the new JLabel
 	 */

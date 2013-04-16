@@ -16,8 +16,8 @@ public class MonitorProgressStream extends FilterOutputStream
 	public MonitorProgressStream(String title, OutputStream out, long max) { 
 		super(out); 
 		monitor = new ProgressMonitor(null, title, "Connecting...", 0, (int)max);
-		monitor.setMillisToDecideToPopup(50);
-		monitor.setMillisToPopup(50);
+		monitor.setMillisToDecideToPopup(10);
+		monitor.setMillisToPopup(10);
 		monitor.setProgress(0);
 	}
 	@Override

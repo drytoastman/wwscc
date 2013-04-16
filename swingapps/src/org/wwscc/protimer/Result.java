@@ -59,8 +59,8 @@ class Result
 	}
 
 	/**
-	 * Delete the finish if it exists, if it does return a duplicate object of
-	 * the before delete processes.
+	 * Delete the finish if it exists
+	 * @return if delete is successful, a duplicate of this before the delete, null otherwise
 	 */
 	public Result deleteFinish()
 	{

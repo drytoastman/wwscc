@@ -135,7 +135,8 @@ public class TimerModel implements TableModel, TimeStorage
 	}
 
 
-	/*** Segments ****/
+	//** Segments ****/
+	
 	private void doSegment(int s, long time)
 	{
 		// Segment timer, non-critical, try and keep in sync if errors
@@ -195,9 +196,9 @@ public class TimerModel implements TableModel, TimeStorage
 		return timestamps[0].size() - timestamps[lights-1].size();
 	}
 
-	/****************************************************************
-	 * Fire off events to table/list listeners
-	 */
+	//***************************************************************
+	// Fire off events to table/list listeners
+	//
 
 	protected void rowsUpdated(int rstart, int rend)
 	{
@@ -256,7 +257,7 @@ public class TimerModel implements TableModel, TimeStorage
 
 	 /**
 	  * @param row
-	  * @return
+	  * @return the run at the given 'row' index
 	  */
 	@Override
 	public Run getRun(int row)

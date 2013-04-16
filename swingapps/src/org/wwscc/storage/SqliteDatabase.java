@@ -129,8 +129,8 @@ public class SqliteDatabase extends SQLDataInterface
 		rollback = new Prepared("rollback");
 
 		String ver = getSetting("schema");
-		if (!ver.equals("20133"))
-			throw new IOException("Database schema version is " + ver + " but software is 20133");
+		if (!ver.equals("20134"))
+			throw new IOException("Database schema version is " + ver + " but software is 20134");
 	}
 
 	@Override
@@ -339,12 +339,12 @@ public class SqliteDatabase extends SQLDataInterface
 
 
 
-	/**
-	 * Native calls into sqlite
-	 * These are all really static, not just the first two.  However, if I ever decide
-	 * to access them with object values, declaring them non-static forces the code to
-	 * treat it as so.
-	 */
+	//
+	// Native calls into sqlite
+	// These are all really static, not just the first two.  However, if I ever decide
+	// to access them with object values, declaring them non-static forces the code to
+	// treat it as so.
+	
 	//private native static void init();
     private native static String libversion();
 	private native String errmsg(long db);

@@ -157,6 +157,7 @@ public class DataEntry extends JFrame implements MessageListener
 
 	/**
 	 * Main
+	 * @param args the command line args, added to title
 	 */
 	public static void main(String[] args)
 	{

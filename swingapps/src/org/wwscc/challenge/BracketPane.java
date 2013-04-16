@@ -142,6 +142,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 	
 	/**
 	 * Construct a basic bracket pane.
+	 * @param m the model to use for data
 	 */
 	public BracketPane(ChallengeModel m)
 	{
@@ -283,7 +284,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 	/**
 	 * Sets the depth of rounds that take place, 1 is just 2 people in a finale,
 	 * recreate the brackets and components.
-	 * @param id
+	 * @param c the challenge to make active
 	 */
 	public void setChallenge(Challenge c)
 	{

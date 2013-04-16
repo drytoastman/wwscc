@@ -52,10 +52,9 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 
 	protected JTextField firstSearch;
 	protected JTextField lastSearch;
-	protected SearchDrivers searchDrivers = new SearchDrivers();
 
 	protected JScrollPane dscroll;
-	protected JList<Driver> drivers;
+	protected JList<Object> drivers;
 	protected JTextArea driverInfo;
 
 	protected JScrollPane cscroll;
@@ -67,6 +66,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	protected MetaCar selectedCar;
 	
 	protected List<DriverField> driverFields;
+	protected SearchDrivers searchDrivers = new SearchDrivers();
 
 	public DriverCarPanel()
 	{
@@ -87,7 +87,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		lastSearch.addFocusListener(this);
 
 		/* Driver Section */
-		drivers = new JList<Driver>();
+		drivers = new JList<Object>();
 		drivers.addListSelectionListener(this);
 		drivers.setVisibleRowCount(1);
 		//drivers.setPrototypeCellValue("12345678901234567890");
@@ -343,27 +343,24 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		}
 	}
 
-
-	public String driverDisplay(Driver d)
+	protected String driverDisplay(Driver d)
 	{
 		StringBuilder ret = new StringBuilder();
-		ret.append(d.getFullName()).append("  (").append(d.getId()).append(")\n");
+		ret.append(d.getFullName()).append("  (driverid=").append(d.getId()).append(")\n");
 		ret.append(d.getAddress()).append("\n");
 		ret.append(String.format("%s, %s %s\n", d.getCity(), d.getState(), d.getZip()));
 		ret.append(d.getEmail()).append("\n");
 		ret.append(d.getPhone()).append("\n");
-		ret.append("Member #").append(d.getExtra("membership"));
+		ret.append("Member #").append(d.getMembership());
 		return ret.toString();
 	}
 
 
-	public String carDisplay(Car c)
+	protected String carDisplay(Car c)
 	{
 		StringBuilder ret = new StringBuilder();
-		ret.append(c.getId()).append(": ");
-		ret.append(c.getClassCode());
-		ret.append(" " + c.getIndexStr());
-		ret.append(" - #" + c.getNumber() + "\n");
+		ret.append(c.getClassCode()).append(" ").append(c.getIndexStr()).append(" #").append(c.getNumber());
+		ret.append("  (carid=").append(c.getId()).append(")\n");
 		ret.append(c.getYear() + " " + c.getMake() + " " + c.getModel() + " " + c.getColor());
 		return ret.toString();
 	}

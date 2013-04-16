@@ -236,11 +236,10 @@ public class ClassData
 
 			
 	    /**
-	     * Return two lists of indexes allowed in particular situations.
 	     * [0] are indexes allowed to be selected for the class data
 	     * [1] are indexes that will allow use of the extra multiplier car flag
 	     * @param all the full list of indexes
-	     * @return 
+	     * @return two sets of indexes allowed in particular situations.
 	     */
 		@SuppressWarnings("rawtypes")
 		public Set[] restrictedIndexes(Collection<Index> all) 

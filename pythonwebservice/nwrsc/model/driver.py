@@ -54,6 +54,7 @@ t_drivers = Table('drivers', metadata,
 	Column('phone', String(16)),
 	Column('brag', String(128)),
 	Column('sponsor', String(64)),
+	Column('membership', String(16)),
 	)
 Index('driveridx_1', t_drivers.c.firstname)
 Index('driveridx_2', t_drivers.c.lastname)

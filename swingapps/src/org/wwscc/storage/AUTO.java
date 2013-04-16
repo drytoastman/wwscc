@@ -94,22 +94,23 @@ public class AUTO
 		o.phone = rs.getString("phone");
 		o.brag = rs.getString("brag");
 		o.sponsor = rs.getString("sponsor");
+		o.membership = rs.getString("membership");
 		return o;
 	}
 	
 	public static String getDriverVarStr()
 	{
-		return "firstname,lastname,alias,email,address,city,state,zip,phone,brag,sponsor";
+		return "firstname,lastname,alias,email,address,city,state,zip,phone,brag,sponsor,membership";
 	}
 	
 	public static String getDriverArgStr()
 	{
-		return "?,?,?,?,?,?,?,?,?,?,?";
+		return "?,?,?,?,?,?,?,?,?,?,?,?";
 	}
 	
 	public static String getDriverSetStr()
 	{
-		return "firstname=?,lastname=?,alias=?,email=?,address=?,city=?,state=?,zip=?,phone=?,brag=?,sponsor=?";
+		return "firstname=?,lastname=?,alias=?,email=?,address=?,city=?,state=?,zip=?,phone=?,brag=?,sponsor=?,membership=?";
 	}
 	
 	public static void addDriverValues(org.wwscc.storage.Driver o, List<Object> l)
@@ -125,6 +126,7 @@ public class AUTO
 		l.add(o.phone);
 		l.add(o.brag);
 		l.add(o.sponsor);
+		l.add(o.membership);
 	}
 	
 	public static org.wwscc.storage.DriverField loadDriverField(ResultRow rs) throws IOException

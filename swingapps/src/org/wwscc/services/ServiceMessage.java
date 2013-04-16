@@ -70,7 +70,7 @@ public class ServiceMessage
 	/**
 	 * Utility for encoding list of messages
 	 * @param msgs
-	 * @return 
+	 * @return a single string encoding of the list of services
 	 */
 	public static String encodeList(List<ServiceMessage> msgs)
 	{
@@ -87,7 +87,7 @@ public class ServiceMessage
 	/**
 	 * Utility for encoding a list of requests
 	 * @param names
-	 * @return 
+	 * @return a single string encoding of the list of requests
 	 */
 	public static String encodeRequstList(List<String> names)			
 	{

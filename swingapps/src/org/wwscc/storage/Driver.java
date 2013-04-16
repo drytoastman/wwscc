@@ -29,6 +29,7 @@ public class Driver implements Serializable
 	protected String phone;
 	protected String brag;
 	protected String sponsor;
+	protected String membership;
 	private Map<String, String> extras;
 
 	/* meta */
@@ -59,6 +60,7 @@ public class Driver implements Serializable
 	public String getBrag() { return brag; }
 	public String getSponsor() { return sponsor; }
 	public String getAlias() { return alias; }
+	public String getMembership() { return membership; }
 	public String getExtra(String name) 
 	{ 
 		String ret = extras.get(name); 
@@ -82,12 +84,25 @@ public class Driver implements Serializable
 	public void setBrag(String s) { brag = s; }
 	public void setSponsor(String s) { sponsor = s; }
 	public void setAlias(String s) { alias = s; }
+	public void setMembership(String s) { membership = s; }
 	public void setExtra(String name, String val) 
 	{ 
 		if ((val == null) || (val.trim().length() == 0))
 			extras.remove(name);
 		else
 			extras.put(name, val);
+	}
+	
+	@Override
+	public boolean equals(Object o)
+	{
+		return ((o instanceof Driver) && ((Driver)o).id == id);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return id;
 	}
 	
 }

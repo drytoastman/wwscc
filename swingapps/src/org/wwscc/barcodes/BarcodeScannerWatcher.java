@@ -14,6 +14,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.swing.Timer;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
@@ -27,6 +30,7 @@ import org.wwscc.util.Prefs;
  */
 public class BarcodeScannerWatcher implements KeyEventDispatcher, MessageListener
 {
+	private static final Logger log = Logger.getLogger(BarcodeScannerWatcher.class.getCanonicalName());
 	private final LinkedList<KeyEvent> queue;
 	private final Timer queuePush;
 	ScannerConfig config;
@@ -92,6 +96,7 @@ public class BarcodeScannerWatcher implements KeyEventDispatcher, MessageListene
 
 				if (c == config.etx) {
 					queue.clear();
+					log.log(Level.FINE, "Scanned barcode {0}", barcode);
 					Messenger.sendEvent(MT.BARCODE_SCANNED, barcode.toString());
 					return false;  // time to clear
 				}

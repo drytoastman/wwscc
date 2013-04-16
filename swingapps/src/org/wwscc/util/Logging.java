@@ -35,8 +35,8 @@ public class Logging
 		LogManager lm = LogManager.getLogManager();
 		Logger root = lm.getLogger("");
 		Logger wwscc = Logger.getLogger("org.wwscc");
-		Logger apache = Logger.getLogger("org.apache.http.impl.client");
-		Logger headers = Logger.getLogger("org.apache.http.headers");
+		//Logger apache = Logger.getLogger("org.apache.http.impl.client");
+		//Logger headers = Logger.getLogger("org.apache.http.headers");
 		SingleLineFormatter formatter = new SingleLineFormatter();
 
 		ConsoleHandler ch = new ConsoleHandler();

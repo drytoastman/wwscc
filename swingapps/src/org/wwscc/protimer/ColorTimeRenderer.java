@@ -26,6 +26,7 @@ public class ColorTimeRenderer extends DefaultTableCellRenderer
 
 	/**
 	 * Create the renderer using a particular font, if given.
+	 * @param fsize the HTML font size value
 	 */
 	public ColorTimeRenderer(int fsize)
 	{

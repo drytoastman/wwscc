@@ -8,12 +8,9 @@
 
 package org.wwscc.storage;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -46,11 +43,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.client.protocol.RequestAuthCache;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
-import org.apache.http.entity.HttpEntityWrapper;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
@@ -58,7 +51,7 @@ import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.wwscc.util.CancelException;
-import org.wwscc.util.MonitorProgressStream;
+import org.wwscc.util.CountingEntity;
 import org.wwscc.util.Prefs;
 
 /**
@@ -261,25 +254,6 @@ public class RemoteHTTPConnection
 		private static URI base(String host, String db, String action) throws URISyntaxException { return new URI("http", host, String.format("/dbserve/%s/%s", db, action), null); } 
 	}
 
-	/**
-	 * Wrap an HttpEntity so that we can attach a progress bar watcher to it
-	 */
-	static class CountingEntity extends HttpEntityWrapper
-	{
-		String title;
-		public CountingEntity(String monitorTitle, HttpEntity wrapped) { 
-			super(wrapped);
-			title = monitorTitle;
-		}
-		@Override
-		public void writeTo(final OutputStream out) throws IOException {
-			if (out instanceof MonitorProgressStream)
-				wrappedEntity.writeTo(out);
-			else
-				wrappedEntity.writeTo(new MonitorProgressStream(title, out, wrappedEntity.getContentLength()));
-		}
-	}
-	
 	/**
 	 * We replace the authcaching portion of HttpClient as it retrieves the password for ANY realm, not the one we want.
 	 * Note, we forgo alot of the error checking as its already been down a hundred times by the other interceptors. 

@@ -144,8 +144,8 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 		super();
 		background = new Color(240, 240, 240);
 		backgroundSelect = new Color(120, 120, 120);
-		backgroundFound = new Color(255, 255, 220);
-		backgroundFoundSelect = new Color(255, 255, 120);
+		backgroundFound = new Color(255, 255, 120);
+		backgroundFoundSelect = new Color(210, 210, 120);
 		topLine = null;
 		bottomLine = null;
 		

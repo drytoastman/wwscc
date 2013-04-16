@@ -48,7 +48,7 @@ public class CarDialog extends BaseDialog<Car>
 	 */
     public CarDialog(Car car, ClassData cd, boolean addoption)
 	{
-		super(new MigLayout("", "[70, align right][100, fill]"), true);
+		super(new MigLayout("fillx", "[right, grow 0][grow 100, fill, 130]"), true);
 
 		if (car == null)
 			car = new Car();
@@ -102,10 +102,10 @@ public class CarDialog extends BaseDialog<Car>
 		mainPanel.add(label("Extra Tire Index", true), "");
 		mainPanel.add(checkbox("tireindexed", car.isTireIndexed()), "wrap");
 		
-		override = new JCheckBox("Override Index Restrictions");
+		override = new JCheckBox("Override Index Restrictions (rare)");
 		override.addActionListener(this);
 		override.setToolTipText("Some classes restrict the available indexes, this lets you override that restriction, only for use in rare circumstances");
-		mainPanel.add(override, "gaptop 10, spanx 2, wrap");
+		mainPanel.add(override, "spanx 2, wrap");
 		
 		classChange.actionPerformed(new ActionEvent(this, 1, ""));
 		result = car;
@@ -218,7 +218,7 @@ public class CarDialog extends BaseDialog<Car>
 	
 	/**
 	 * Called after OK to verify data before closing.
-	 * @return
+	 * @return true if data is valid, false otherwise
 	 */
 	@Override
 	public boolean verifyData()
@@ -259,8 +259,7 @@ public class CarDialog extends BaseDialog<Car>
 
 
 	/**
-	 * Data is good, return it.
-	 * @return
+	 * @return if the return value is valid, a Car, null otherwise
 	 */
 	@Override
 	public Car getResult()
