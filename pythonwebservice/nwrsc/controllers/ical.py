@@ -16,7 +16,19 @@ class IcalController(BaseController):
 		return JEncoder(indent=1).encode(o)
 
 	def index(self):
-		return "No type provided."
+		events = list()
+
+		for db in self._databaseList(archived=False):
+			path = self.databasePath(db.name)
+			engine = create_engine('sqlite:///%s' % path)
+			self.session.bind = engine
+			events.extend([(x.date, db.name, x.name) for x in self.session.query(Event)])
+
+		events.sort()
+		print events
+		return "<br>\n".join(["%s - %s %s" % x for x in events])
+		
+		
 
 	def registered(self):
 		first = self.routingargs.get('first', None)
