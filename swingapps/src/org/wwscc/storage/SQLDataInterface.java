@@ -365,6 +365,7 @@ public abstract class SQLDataInterface extends DataInterface
 			e.firstname = erow.getString("firstname");
 			e.lastname = erow.getString("lastname");
 			e.index = getEffectiveIndex(e.car.classcode, e.car.indexcode, e.car.tireindexed);
+			e.paid = erow.getBoolean("paid");
 
 			if (runs != null)
 			{

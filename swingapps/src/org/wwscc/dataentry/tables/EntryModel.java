@@ -83,9 +83,11 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 			log.log(Level.INFO, "Registration during car add failed: {0}" + ioe.getMessage(), ioe);
 		}
 
+		/*
 		if (Prefs.useDoubleCourseMode())
 			Database.d.addToRunOrderOpposite(carid);
-
+		*/
+		
 		int row = tableData.size();
 		fireTableRowsInserted(row, row);
     	fireEntrantsChanged();
@@ -103,6 +105,7 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		}
 		newe.setRuns(old.removeRuns());
 
+		/*
 		if (Prefs.useDoubleCourseMode())
 		{
 			Entrant oldop = Database.d.loadEntrantOpposite(old.getCarId(), true);
@@ -116,6 +119,7 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 				log.warning("Dual course mode swap failed, couldn't load data");
 			}
 		}
+		*/
 
 		tableData.set(row, newe);
 		fireRunsChanged(newe);
@@ -238,6 +242,7 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 					return;
 				}
 
+				/*
 				if (Prefs.useDoubleCourseMode())
 				{
 					if (Database.d.hasRunsOpposite(e.getCarId())) {
@@ -248,9 +253,9 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 					}
 				}
 				else
-				{
+				{ */
 					tableData.remove(row); // remove the row which removes from runorder upon commit
-				}
+				//}
 				fireTableDataChanged();
 			}
 

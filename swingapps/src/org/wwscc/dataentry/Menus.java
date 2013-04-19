@@ -41,7 +41,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 	private static final Logger log = Logger.getLogger("org.wwscc.dataentry.Menus");
 
 	Map <String,JMenuItem> items;
-	JCheckBoxMenuItem dcMode;
+	//JCheckBoxMenuItem dcMode;
 	JCheckBoxMenuItem reorderMode;
 	JFileChooser chooser;
 	ButtonGroup runGrouping;
@@ -84,9 +84,9 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 			runs.add(m);
 		}
 
-		dcMode = new JCheckBoxMenuItem("Use Double Course Mode", Prefs.useDoubleCourseMode());
-		dcMode.addActionListener(this);
-		event.add(dcMode);
+		//dcMode = new JCheckBoxMenuItem("Use Double Course Mode", Prefs.useDoubleCourseMode());
+		//dcMode.addActionListener(this);
+		//event.add(dcMode);
 
 		reorderMode = new JCheckBoxMenuItem("Constant Staging Mode", Prefs.useReorderingTable());
 		reorderMode.addActionListener(this);
@@ -187,6 +187,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 				}
 			}).start();
 		}
+		/*
 		else if (cmd.equals("Use Double Course Mode"))
 		{
 			if (dcMode.getState())
@@ -196,13 +197,15 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 			}
 			Prefs.setDoubleCourseMode(dcMode.getState());
 		}
+		*/
 		else if (cmd.equals("Constant Staging Mode"))
 		{
+			/*
 			if (reorderMode.getState())
 			{
 				dcMode.setSelected(false); // can't have both at the same time
 				Prefs.setDoubleCourseMode(false);
-			}
+			} */
 			Prefs.setReorderingTable(reorderMode.getState());
 		}
 		else if (cmd.equals("Barcode Scanner Options"))

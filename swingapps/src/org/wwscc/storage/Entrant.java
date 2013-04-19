@@ -24,6 +24,7 @@ public class Entrant
 	Car car;
 	Map<Integer, Run> runs;
 	double index = 1.000;  // loaded/calculated when loading entrant
+	boolean paid = false;
 
 	public Entrant()
 	{
@@ -48,6 +49,7 @@ public class Entrant
 	public String getIndexStr() { return car.getIndexStr(); }
 	public double getIndex() { return index; }
 	public int getNumber() { return car.number; }
+	public boolean isPaid() { return paid; }
 
 
 	public Run getRun(int num)

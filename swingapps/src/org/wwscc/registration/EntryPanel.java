@@ -115,24 +115,24 @@ public class EntryPanel extends DriverCarPanel
 		add(firstSearch, "grow, wrap");
 		add(new JLabel("Last Name"), "split 2");
 		add(lastSearch, "grow, wrap");
-		add(smallButton("Clear"), "right, wrap");
+		add(smallButton("Clear", true), "right, wrap");
 
 		add(createTitle("2. Driver"), "spanx 3, growx, gaptop 4, wrap");
 		add(dscroll, "spany 6, grow");
-		add(smallButton("New Driver"), "growx");
-		add(smallButton("Edit Driver"), "growx, wrap");
+		add(smallButton("New Driver", true), "growx");
+		add(smallButton("Edit Driver", true), "growx, wrap");
 		driverInfo.setLineWrap(false);
 		add(driverInfo, "spanx 2, growx, wrap");
 		add(membershipwarning, "spanx 2, growx, h 15, wrap");
 		add(activeLabel, "center, spanx 2, wrap");
 		add(printerList(), "center, spanx 2, wrap");
-		add(smallButton("Print Label"), "center, growx, spanx 2, wrap");
+		add(smallButton("Print Label", false), "center, growx, spanx 2, wrap");
 
 		
 		add(createTitle("3. Car"), "spanx 3, growx, gaptop 4, wrap");
 		add(cscroll, "spany 3, hmin 130, grow");
-		add(smallButton("New Car"), "growx");
-		add(smallButton("New From"), "growx, wrap");
+		add(smallButton("New Car", true), "growx");
+		add(smallButton("New From", true), "growx, wrap");
 		add(editcar, "growx"); 
 		add(deletecar, "growx, wrap");
 		carInfo.setLineWrap(false);
@@ -153,15 +153,22 @@ public class EntryPanel extends DriverCarPanel
 		return lbl;
 	}
 
-	private JButton smallButton(String text)
+	private JButton smallButton(String text, boolean enabled)
 	{
 		JButton b = new JButton(text);
 		b.setFont(new Font(null, Font.PLAIN, 11));
 		b.addActionListener(this);
+		b.setEnabled(enabled);
 		return b;
 	}
 	
 	private JComboBox<PrintService> printerList()
+	{
+		printers = new JComboBox<PrintService>();
+		return printers;
+	}
+	
+	private JComboBox<PrintService> XprinterList()
 	{
 		HashPrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
 		aset.add(new Copies(2)); // silly request but cuts out fax, xps, etc.
@@ -184,6 +191,7 @@ public class EntryPanel extends DriverCarPanel
 		});
 		
 		for (PrintService ps : printServices) {
+			log.log(Level.INFO, "Found printer: {0}", ps);
 			if (ps.getName().equals(Prefs.getDefaultPrinter()))
 				printers.setSelectedItem(ps);
 		}
