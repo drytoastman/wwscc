@@ -13,7 +13,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -69,10 +68,16 @@ public class MergeProcess
 		{
 			File db = Database.file;
 			Database.d.close();
-			FileDescriptor.out.sync();
-			Thread.sleep(500);
+			
+			try {
+				System.gc();
+				Thread.sleep(500);
+			} catch (Exception e) {
+				log.log(Level.INFO, "gc/sleep threw up: {0}", e.getMessage());
+			}
+			
 			if (!db.delete())
-				throw new IOException("Error deleting "+db.getPath()+" before downloading new copy.  Try rerunning merge.");
+				throw new IOException("Can't delete "+db.getPath()+" before downloading new copy.  Try rerunning merge.");
 
 			dialog.waitStep(3);
 
@@ -89,7 +94,7 @@ public class MergeProcess
 		}
 		catch (Exception e)
 		{
-			dialog.setError("Exception getting merged copy: " + e.getMessage());
+			dialog.setError("Merge complete, but error getting new copy: " + e.getMessage());
 			return false;
 		}
 	}
