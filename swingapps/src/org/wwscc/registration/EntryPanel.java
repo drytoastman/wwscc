@@ -58,13 +58,13 @@ public class EntryPanel extends DriverCarPanel
 {
 	private static final Logger log = Logger.getLogger(EntryPanel.class.getCanonicalName());
 
-	JButton addit, removeit, editcar, deletecar;
+	JButton addit, removeit, editcar, deletecar, print;
 	JLabel membershipwarning;
 	JComboBox<PrintService> printers;
 	Code39 activeLabel;
 	SearchDrivers2 searchDrivers2;
 	NameStorage extraNames;
-
+	
 	public EntryPanel(NameStorage names)
 	{
 		super();
@@ -73,6 +73,24 @@ public class EntryPanel extends DriverCarPanel
 		Messenger.register(MT.ATTENDANCE_SETUP_CHANGE, this);
 
 		extraNames = names;
+		
+		printers = new JComboBox<PrintService>();
+		printers.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> jlist, Object e, int i, boolean bln, boolean bln1) {
+				super.getListCellRendererComponent(jlist, e, i, bln, bln1);
+				if ((e != null) && (e instanceof PrintService))
+					setText(((PrintService)e).getName());
+				return this;
+			}
+		});		
+		printers.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent ie) {
+				Prefs.setDefaultPrinter(((PrintService)printers.getSelectedItem()).getName());
+				print.setEnabled(true);
+			}
+		});
 		
 		searchDrivers2 = new SearchDrivers2();
 		firstSearch.getDocument().removeDocumentListener(searchDrivers);
@@ -125,8 +143,9 @@ public class EntryPanel extends DriverCarPanel
 		add(driverInfo, "spanx 2, growx, wrap");
 		add(membershipwarning, "spanx 2, growx, h 15, wrap");
 		add(activeLabel, "center, spanx 2, wrap");
-		add(printerList(), "center, spanx 2, wrap");
-		add(smallButton("Print Label", false), "center, growx, spanx 2, wrap");
+		add(printers, "center, spanx 2, wrap");
+		print = smallButton("Print Label", false);
+		add(print, "center, growx, spanx 2, wrap");
 
 		
 		add(createTitle("3. Car"), "spanx 3, growx, gaptop 4, wrap");
@@ -142,6 +161,23 @@ public class EntryPanel extends DriverCarPanel
 		add(addit, "split 2, spanx 3, gapbottom 5");
 		add(removeit, "wrap");
 		
+		new Thread(new FindPrinters()).start();
+	}
+	
+	class FindPrinters implements Runnable
+	{
+		public void run()
+		{
+			HashPrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+			aset.add(new Copies(2)); // silly request but cuts out fax, xps, etc.
+	        PrintService[] printServices = PrintServiceLookup.lookupPrintServices(DocFlavor.SERVICE_FORMATTED.PRINTABLE, aset);			
+			for (PrintService ps : printServices) {
+				log.log(Level.INFO, "Found printer: {0}", ps);
+				printers.addItem(ps);
+				if (ps.getName().equals(Prefs.getDefaultPrinter()))
+					printers.setSelectedItem(ps);
+			}
+		}
 	}
 
 	private JComponent createTitle(String text)
@@ -160,43 +196,6 @@ public class EntryPanel extends DriverCarPanel
 		b.addActionListener(this);
 		b.setEnabled(enabled);
 		return b;
-	}
-	
-	private JComboBox<PrintService> printerList()
-	{
-		printers = new JComboBox<PrintService>();
-		return printers;
-	}
-	
-	private JComboBox<PrintService> XprinterList()
-	{
-		HashPrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
-		aset.add(new Copies(2)); // silly request but cuts out fax, xps, etc.
-        PrintService[] printServices = PrintServiceLookup.lookupPrintServices(DocFlavor.SERVICE_FORMATTED.PRINTABLE, aset);
-        
-		printers = new JComboBox<PrintService>(printServices);
-		printers.setRenderer(new DefaultListCellRenderer() {
-			@Override
-			public Component getListCellRendererComponent(JList<?> jlist, Object e, int i, boolean bln, boolean bln1) {
-				super.getListCellRendererComponent(jlist, e, i, bln, bln1);
-				setText(((PrintService)e).getName());
-				return this;
-			}
-		});		
-		printers.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent ie) {
-				Prefs.setDefaultPrinter(((PrintService)printers.getSelectedItem()).getName());
-			}
-		});
-		
-		for (PrintService ps : printServices) {
-			log.log(Level.INFO, "Found printer: {0}", ps);
-			if (ps.getName().equals(Prefs.getDefaultPrinter()))
-				printers.setSelectedItem(ps);
-		}
-		
-		return printers;
 	}
 
 	public void reloadCars(Car select)
