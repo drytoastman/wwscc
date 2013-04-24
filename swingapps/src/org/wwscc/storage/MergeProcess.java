@@ -171,10 +171,11 @@ public class MergeProcess
 				}
 				else if (type.equals("REGISTERCAR"))
 				{
-					Integer carid = (Integer)change.arg;
-					if (caridmap.containsKey(carid))
-						carid = caridmap.get(carid);
-					dest.registerCar(carid);
+					//Integer carid = (Integer)change.arg;
+					Object[] args = (Object[])change.arg;
+					if (caridmap.containsKey(args[0]))
+						args[0] = caridmap.get(args[0]);
+					dest.registerCar((Integer)args[0], (Boolean)args[1], true);
 				}
 			}
 

@@ -489,7 +489,7 @@ public abstract class SQLDataInterface extends DataInterface
 	{
 		try
 		{
-			ResultData d = executeSelect("LOADENTRANT", newList(carid));
+			ResultData d = executeSelect("LOADENTRANT", newList(carid, currentEvent.id));
 			ResultData runs = null;
 			if (loadruns)
 				runs = executeSelect("GETRUNSBYCARID", newList(carid, currentEvent.id, course));
@@ -511,12 +511,6 @@ public abstract class SQLDataInterface extends DataInterface
 		return loadEntrant(currentCourse, carid, loadruns);
 	}
 
-	@Override
-	public Entrant loadEntrantOpposite(int carid, boolean loadruns)
-	{
-		return loadEntrant(oppositeCourse(), carid, loadruns);
-	}
-	
 
 	@Override
 	public Set<Integer> getCarIdsForCourse()
@@ -606,44 +600,6 @@ public abstract class SQLDataInterface extends DataInterface
 		return ret;
 	}
 
-
-	@Override
-	public void addToRunOrderOpposite(int carid)  // append carid to run order on opposite course
-	{
-		int save = currentCourse;
-		try
-		{
-			currentCourse = oppositeCourse();
-			List<Integer> list = loadRunOrder();
-			list.add(carid);
-			setRunOrder(list);
-		}
-		catch (Exception ioe)
-		{
-			logError("addToRunOrderOpposite", ioe);
-		}
-		currentCourse = save;
-	}
-
-
-	@Override
-	public void removeFromRunOrderOpposite(int carid) // remove carid from opposite course run order
-	{
-		int save = currentCourse;
-		try
-		{
-			currentCourse = oppositeCourse();
-			List<Integer> list = loadRunOrder();
-			list.remove(new Integer(carid));
-			setRunOrder(list);
-		}
-		catch (Exception ioe)
-		{
-			logError("removeFromRunOrderOpposite", ioe);
-		}
-		currentCourse = save;
-	}
-
 	protected boolean hasRuns(int carid, int course)
 	{
 		try
@@ -659,33 +615,34 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
-	@Override
-	public boolean hasRuns(int carid)  // return true if car has runs recorded
-	{
-		return hasRuns(carid, currentCourse);
-	}
 
 	@Override
-	public boolean hasRunsOpposite(int carid) // return true if car has runs recorded opposite
-	{
-		return hasRuns(carid, oppositeCourse());
-	}
-
-	@Override
-	public boolean hasActivity(int carid)
+	public MetaCar loadMetaCar(Car c)
 	{
 		try
 		{
-			ResultData d = executeSelect("GETANYRUNS", newList(carid));
-			return (d.get(0).getInt("count") > 0);
+			MetaCar mc = new MetaCar(c);
+			ResultData cr = executeSelect("ISREGISTERED", newList(c.getId(), currentEvent.id));
+			mc.isPaid = false;
+			mc.isRegistered = !cr.isEmpty();
+			if (mc.isRegistered)
+				mc.isPaid = cr.get(0).getBoolean("paid");
+			
+			cr = executeSelect("HASANYRUNS", newList(c.getId()));
+			mc.hasActivity = !cr.isEmpty();
+			
+			cr = executeSelect("ISINEVENT", newList(c.getId(), currentEvent.id));
+			mc.isInRunOrder = !cr.isEmpty();
+
+			return mc;
 		}
 		catch (Exception ioe)
 		{
-			logError("hasActivity", ioe);
-			return false;
+			logError("loadMetaCar", ioe);
+			return null;
 		}
 	}
-	
+
 	
 	@Override
 	public List<String> getRunGroupMapping() // return the class codes assigned to the current event
@@ -850,11 +807,14 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void registerCar(int carid) throws IOException
+	public void registerCar(int carid, boolean paid, boolean overwrite) throws IOException
 	{
-		List<Object> vals = newList(currentEvent.id, carid);
-		executeUpdate("REGISTERCAR", vals);
-		trackChange("REGISTERCAR", carid);
+		List<Object> vals = newList(currentEvent.id, carid, paid);
+		if (overwrite)
+			executeUpdate("REGISTERCARFORCE", vals);
+		else
+			executeUpdate("REGISTERCAR", vals);
+		trackChange("REGISTERCAR", new Object[] { carid, paid });
 	}
 
 	@Override
@@ -911,11 +871,6 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
-	@Override
-	public boolean isRegistered(Car c)
-	{
-		return isRegistered(c.id);
-	}
 	
 	@Override
 	public boolean isRegistered(int carid)

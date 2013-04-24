@@ -66,13 +66,13 @@ public class Prefs
 	public static boolean useSeriesURL() { return prefs.getBoolean("useurl", false); }
 	public static int getEventId(int def) { return prefs.getInt("eventid", def); }
 	public static int getChallengeId(int def) { return prefs.getInt("challengeid", def); }
-	//public static boolean useDoubleCourseMode() { return prefs.getBoolean("doublecoursemode", false); }
 	public static boolean useReorderingTable() { return prefs.getBoolean("reorderingtable", false); }
 	public static String getLastApplication() { return prefs.get("application", ""); }
 	public static int getLightCount() { return prefs.getInt("lights", 2); }
 	public static String getScannerConfig() { return prefs.get("scannerconfig", ""); }
 	public static String getDefaultPrinter() { return prefs.get("defaultprinter", ""); }
 	public static String getAttendanceCalculations() { return prefs.get("attendancecalcs", ""); }
+	public static boolean usePaidFlag() { return prefs.getBoolean("paidflag", false); }
 	public static Rectangle getTimerWindow()
 	{
 		Rectangle r = new Rectangle();
@@ -92,13 +92,13 @@ public class Prefs
 	public static void setUseSeriesURL(boolean b) { prefs.putBoolean("useurl", b); }
 	public static void setEventId(int i) { prefs.putInt("eventid", i); }
 	public static void setChallengeId(int i) { prefs.putInt("challengeid", i); }
-	//public static void setDoubleCourseMode(boolean b) { prefs.putBoolean("doublecoursemode", b); }
 	public static void setReorderingTable(boolean b) { prefs.putBoolean("reorderingtable", b); }
 	public static void setLastApplication (String s) { prefs.put("application", s); }
 	public static void setLightCount(int i) { prefs.putInt("lights", i); }
 	public static void setScannerConfig(String s) { prefs.put("scannerconfig", s); }
 	public static void setDefaultPrinter(String s) { prefs.put("defaultprinter", s); }
 	public static void setAttendanceCalculations(String s) { prefs.put("attendancecalcs", s); }
+	public static void setUsePaidFlag(boolean b) { prefs.putBoolean("paidflag", b); }
 	public static void setTimerWindow(Rectangle r)
 	{
 		prefs.putInt("timer.x", r.x);

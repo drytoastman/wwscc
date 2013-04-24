@@ -78,15 +78,10 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		tableData.add(e);
 
 		try {
-			Database.d.registerCar(carid);
+			Database.d.registerCar(carid, false, false);
 		} catch (IOException ioe) {
 			log.log(Level.INFO, "Registration during car add failed: {0}" + ioe.getMessage(), ioe);
 		}
-
-		/*
-		if (Prefs.useDoubleCourseMode())
-			Database.d.addToRunOrderOpposite(carid);
-		*/
 		
 		int row = tableData.size();
 		fireTableRowsInserted(row, row);
@@ -104,22 +99,6 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 			return;
 		}
 		newe.setRuns(old.removeRuns());
-
-		/*
-		if (Prefs.useDoubleCourseMode())
-		{
-			Entrant oldop = Database.d.loadEntrantOpposite(old.getCarId(), true);
-			Entrant newop = Database.d.loadEntrant(carid, true);
-			if (oldop != null && newop != null)
-			{
-				newop.setRuns(oldop.removeRuns());
-			}
-			else
-			{
-				log.warning("Dual course mode swap failed, couldn't load data");
-			}
-		}
-		*/
 
 		tableData.set(row, newe);
 		fireRunsChanged(newe);
@@ -241,21 +220,8 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 					log.warning("Can't remove an entrant that has runs");
 					return;
 				}
-
-				/*
-				if (Prefs.useDoubleCourseMode())
-				{
-					if (Database.d.hasRunsOpposite(e.getCarId())) {
-						log.warning("Can't remove this entrant as there are runs on the opposite course.");
-					} else {
-						Database.d.removeFromRunOrderOpposite(e.getCarId());
-						tableData.remove(row);
-					}
-				}
-				else
-				{ */
-					tableData.remove(row); // remove the row which removes from runorder upon commit
-				//}
+				
+				tableData.remove(row); // remove the row which removes from runorder upon commit
 				fireTableDataChanged();
 			}
 

@@ -243,7 +243,7 @@ def convert20133(session):
 
 def convert20134(session):
 
-	session.execute("ALTER TABLE registered ADD COLUMN paid BOOLEAN DEFAULT FALSE")
+	session.execute("ALTER TABLE registered ADD COLUMN paid BOOLEAN DEFAULT 0")
 	log.info("update settings")
 	settings = Settings()
 	settings.load(session)

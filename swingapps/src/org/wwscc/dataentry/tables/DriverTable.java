@@ -38,6 +38,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.wwscc.dataentry.tables.TableBase.SimpleDataTransfer;
 import org.wwscc.storage.Entrant;
+import org.wwscc.util.Prefs;
 
 
 /**
@@ -134,6 +135,8 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 	private Color backgroundSelect;
 	private Color backgroundFound;
 	private Color backgroundFoundSelect;
+	private Color backgroundError;
+	private Color backgroundErrorSelect;
 	private String topLine;
 	private String bottomLine;
 	private Font topFont;
@@ -146,6 +149,8 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 		backgroundSelect = new Color(120, 120, 120);
 		backgroundFound = new Color(255, 255, 120);
 		backgroundFoundSelect = new Color(210, 210, 120);
+		backgroundError = new Color(255, 0, 0);
+		backgroundErrorSelect = new Color(230, 100, 100);
 		topLine = null;
 		bottomLine = null;
 		
@@ -180,10 +185,10 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 					break;
 			}
 
-		 	if (!e.isPaid())
-		 		setBackground(Color.red);
-		 	else if (matchMe(topLine, bottomLine, ((DriverTable)table).activeSearch))
+		 	if (matchMe(topLine, bottomLine, ((DriverTable)table).activeSearch))
 				setBackground((isSelected) ?  backgroundFoundSelect : backgroundFound);
+		 	else if (Prefs.usePaidFlag() && !e.isPaid())
+		 		setBackground((isSelected) ?  backgroundErrorSelect : backgroundError);
 		}
 		else if (value != null)
 		{

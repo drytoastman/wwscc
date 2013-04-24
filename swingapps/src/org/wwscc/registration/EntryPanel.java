@@ -57,8 +57,13 @@ import org.wwscc.util.SearchTrigger;
 public class EntryPanel extends DriverCarPanel
 {
 	private static final Logger log = Logger.getLogger(EntryPanel.class.getCanonicalName());
+	
+	public static final String REGISTERANDPAY = "Registered and Paid";
+	public static final String REGISTERONLY = "Registered Only";
+	public static final String UNREGISTER = "Unregister";
 
-	JButton addit, removeit, editcar, deletecar, print;
+	JButton registeredandpaid, registerit, unregisterit;
+	JButton editcar, deletecar, print;
 	JLabel membershipwarning;
 	JComboBox<PrintService> printers;
 	Code39 activeLabel;
@@ -102,15 +107,20 @@ public class EntryPanel extends DriverCarPanel
 		cars.setCellRenderer(new CarRenderer());
 
 		/* Buttons */
-		addit = new JButton("Register Entrant");
-		addit.addActionListener(this);
-		addit.setEnabled(false);
-		addit.setFont(addit.getFont().deriveFont(12f));
+		registeredandpaid = new JButton(REGISTERANDPAY);
+		registeredandpaid.addActionListener(this);
+		registeredandpaid.setEnabled(false);
+		registeredandpaid.setFont(registeredandpaid.getFont().deriveFont(12f));
 
-		removeit = new JButton("Unregister Entrant");
-		removeit.addActionListener(this);
-		removeit.setEnabled(false);
-		removeit.setFont(removeit.getFont().deriveFont(12f));
+		registerit = new JButton(REGISTERONLY);
+		registerit.addActionListener(this);
+		registerit.setEnabled(false);
+		registerit.setFont(registerit.getFont().deriveFont(12f));
+
+		unregisterit = new JButton(UNREGISTER);
+		unregisterit.addActionListener(this);
+		unregisterit.setEnabled(false);
+		unregisterit.setFont(unregisterit.getFont().deriveFont(12f));
 		
 		editcar = new JButton("Edit Car");
 		editcar.addActionListener(this);
@@ -158,8 +168,9 @@ public class EntryPanel extends DriverCarPanel
 		add(carInfo, "spanx 2, growx, top, wrap");
 		
 		add(createTitle("4. Do it"), "spanx 3, growx, gaptop 4, wrap");
-		add(addit, "split 2, spanx 3, gapbottom 5");
-		add(removeit, "wrap");
+		add(registeredandpaid, "split 3, spanx 3, gapbottom 5");
+		add(registerit, "");
+		add(unregisterit, "wrap");
 		
 		new Thread(new FindPrinters()).start();
 	}
@@ -214,15 +225,20 @@ public class EntryPanel extends DriverCarPanel
 		String cmd = e.getActionCommand();
 		try
 		{
-			if (cmd.equals("Register Entrant") && (selectedCar != null))
+			if (cmd.equals(REGISTERONLY) && (selectedCar != null))
 			{
-					Database.d.registerCar(selectedCar.getId());
-					reloadCars(selectedCar);
+				Database.d.registerCar(selectedCar.getId(), false, true);
+				reloadCars(selectedCar);
 			}
-			else if (cmd.equals("Unregister Entrant") && (selectedCar != null))
+			else if (cmd.equals(REGISTERANDPAY) && (selectedCar != null))
 			{
-					Database.d.unregisterCar(selectedCar.getId());
-					reloadCars(selectedCar);
+				Database.d.registerCar(selectedCar.getId(), true, true);
+				reloadCars(selectedCar);
+			}
+			else if (cmd.equals(UNREGISTER) && (selectedCar != null))
+			{
+				Database.d.unregisterCar(selectedCar.getId());
+				reloadCars(selectedCar);
 			}
 			else if (cmd.equals("Delete Car") && (selectedCar != null))
 			{
@@ -321,15 +337,18 @@ public class EntryPanel extends DriverCarPanel
 		{
 			if (selectedCar != null)
 			{
-				addit.setEnabled(!selectedCar.isRegistered());
-				removeit.setEnabled(selectedCar.isRegistered() && !selectedCar.isInRunOrder());
+				registeredandpaid.setEnabled((!selectedCar.isRegistered() || !selectedCar.isPaid()) && !selectedCar.isInRunOrder());
+				registerit.setEnabled((!selectedCar.isRegistered() || selectedCar.isPaid()) && !selectedCar.isInRunOrder());
+				unregisterit.setEnabled(selectedCar.isRegistered() && !selectedCar.isInRunOrder());
+				
 				editcar.setEnabled(!selectedCar.isInRunOrder() && !selectedCar.hasActivity());
 				deletecar.setEnabled(!selectedCar.isRegistered() && !selectedCar.isInRunOrder() && !selectedCar.hasActivity());
 			}
 			else
 			{
-				addit.setEnabled(false);
-				removeit.setEnabled(true);
+				registeredandpaid.setEnabled(false);
+				registerit.setEnabled(false);
+				unregisterit.setEnabled(true);
 			}
 		}
 	}

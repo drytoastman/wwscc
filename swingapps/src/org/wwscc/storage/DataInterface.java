@@ -84,17 +84,10 @@ public abstract class DataInterface
 	/* Entrants w/ runs */
 	public abstract List<Entrant> getEntrantsByRunOrder(); // get all entrants in a particular event/course/rungroup and loads their runs
 	public abstract Entrant loadEntrant(int carid, boolean loadruns); // load an entrant by carid and all of the associated runs if desired
-	public abstract Entrant loadEntrantOpposite(int carid, boolean loadruns);
 
 	public abstract List<Integer> getCarIdsForRunGroup(); // get the carids based on the current run group
 	public abstract Set<Integer> getCarIdsForCourse(); // get the participating cardids based on the course
 	public abstract void setRunOrder(List<Integer> carids); // set the run order of the current rungroup to carids
-
-	public abstract void addToRunOrderOpposite(int carid);  // append carid to run order on opposite course
-	public abstract void removeFromRunOrderOpposite(int carid); // remove carid from opposite course run order
-	public abstract boolean hasRuns(int carid);  // return true if car has runs recorded
-	public abstract boolean hasRunsOpposite(int carid); // return true if car has runs recorded opposite
-	public abstract boolean hasActivity(int carid); // return true if car has runs recorded for any event/course
 
 	public abstract List<String> getRunGroupMapping(); // return the class codes assigned to the current run group
 
@@ -108,14 +101,25 @@ public abstract class DataInterface
 
 	public abstract List<Car> getCarsForDriver(int driverid); // get all cars for this driverid
 	public abstract List<String> getCarAttributes(String attr); // get a unique list of possible 'attr' for the car
-	public abstract void registerCar(int carid) throws IOException; // add this car to the current event registration
+	
+	/**
+	 * Upon successful return, the provided car will be in the registered table for the current event.  If overwrite
+	 * is true, then the paid value will overwrite the current value in the database if already present, otherwise, the
+	 * value in the database already will stay.  If nothing is already present, overwrite is irrelevant.
+	 * @param carid the carid to register in the current event
+	 * @param paid true if the paid flag should be set
+	 * @param overwrite true if we should overwrite a current registration entry (i.e. paid flag)
+	 * @throws IOException
+	 */
+	public abstract void registerCar(int carid, boolean paid, boolean overwrite) throws IOException;
+	
 	public abstract void unregisterCar(int carid) throws IOException; // remove this car from the current event registration
 	public abstract void newCar(Car c) throws IOException; // create a new car entry with this data, sets the id variable
 	public abstract void updateCar(Car d) throws IOException; // update the car values in the database
 	public abstract void deleteCar(Car d) throws IOException;
 	public abstract void deleteCars(Collection<Car> d) throws IOException;
-	public abstract boolean isRegistered(Car c);
 	public abstract boolean isRegistered(int carid);
+	public abstract MetaCar loadMetaCar(Car c);
 
 	public abstract boolean setEntrantRuns(Car newCar, Collection<Run> runs);
 	public abstract void insertRun(Run r); 

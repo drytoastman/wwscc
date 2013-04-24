@@ -9,18 +9,17 @@ public class MetaCar extends Car
 {
 	private static final long serialVersionUID = 7446741644331347649L;
 	
-	private boolean isRegistered;
-	private boolean isInRunOrder;
-	private boolean hasActivity;
+	protected boolean isRegistered;
+	protected boolean isInRunOrder;
+	protected boolean hasActivity;
+	protected boolean isPaid;
 	
-	public MetaCar(Car c, boolean reg, boolean order, boolean activity)
+	public MetaCar(Car c)
 	{
 		super(c);
-		isRegistered = reg;
-		isInRunOrder = order;
-		hasActivity = activity;
 	}
 	
+	public boolean isPaid() { return isPaid; }
 	public boolean isRegistered() { return isRegistered; }
 	public boolean isInRunOrder() { return isInRunOrder; }
 	public boolean hasActivity() { return hasActivity; }

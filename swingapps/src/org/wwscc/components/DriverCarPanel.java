@@ -17,7 +17,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -192,12 +191,9 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		if (d == null) // nothing to do
 			return;
 
-		List<Car> driverCars = Database.d.getCarsForDriver(d.getId());
 		Vector<MetaCar> touse = new Vector<MetaCar>();
-		for (Iterator<Car> citer = driverCars.iterator(); citer.hasNext(); )
-		{
-			Car c = citer.next();
-			touse.add(new MetaCar(c, Database.d.isRegistered(c), Database.d.isInOrder(c.getId()), Database.d.hasActivity(c.getId())));
+		for (Car c : Database.d.getCarsForDriver(d.getId())) {
+			touse.add(Database.d.loadMetaCar(c));
 		}
 
 		cars.setListData(touse);

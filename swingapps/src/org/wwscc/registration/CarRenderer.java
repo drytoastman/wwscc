@@ -40,7 +40,12 @@ class CarRenderer extends DefaultListCellRenderer
 		if (c.isInRunOrder())
 			p.status.setText("In Event");
 		else if (c.isRegistered())
-			p.status.setText("Registered");
+		{
+			if (c.isPaid())
+				p.status.setText("Reg/Paid");
+			else
+				p.status.setText("Registered");
+		}
 		else if(c.hasActivity())
 		{
 			p.status.setText("Used");
