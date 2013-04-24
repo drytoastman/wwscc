@@ -108,7 +108,7 @@ public class SQLMap
 						"where c.driverid=d.id and c.id=?");
 		sql.put("LOADRUNORDER", "select carid from runorder where eventid=? and course=? and rungroup=? order by row");
 
-		sql.put("REGISTERCAR", "insert or ignore into registered (eventid, carid) values (?,?)");
+		sql.put("REGISTERCAR", "insert or ignore into registered (eventid, carid, paid) values (?,?, 0)");
 		sql.put("REPLACEANNOUNCERDATA", "insert or replace into announcer ("+AUTO.getAnnouncerDataVarStr()+") values ("+AUTO.getAnnouncerDataArgStr()+")");
 
 		sql.put("SWAPRUNORDER", "update runorder set carid=? where eventid=? and course=? and rungroup=? and carid=?");

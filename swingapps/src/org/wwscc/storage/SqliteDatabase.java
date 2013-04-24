@@ -21,6 +21,7 @@ public class SqliteDatabase extends SQLDataInterface
 {
 	private static final Logger log = Logger.getLogger(SqliteDatabase.class.getCanonicalName());
 
+	public static final String SCHEMA_VERSION = "20135";
 	public static final int SQLITE_OK		= 0;
 	public static final int SQLITE_BUSY		= 5;
 	public static final int SQLITE_ROW		= 100;
@@ -129,8 +130,8 @@ public class SqliteDatabase extends SQLDataInterface
 		rollback = new Prepared("rollback");
 
 		String ver = getSetting("schema");
-		if (!ver.equals("20134"))
-			throw new IOException("Database schema version is " + ver + " but software is 20134");
+		if (!ver.equals(SCHEMA_VERSION))
+			throw new IOException("Database schema version is " + ver + " but software is " + SCHEMA_VERSION);
 	}
 
 	@Override

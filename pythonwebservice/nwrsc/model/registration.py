@@ -1,6 +1,6 @@
 from sqlalchemy import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import mapper, relation
-from sqlalchemy.types import Integer
+from sqlalchemy.types import Integer, Boolean
 
 from meta import metadata
 from runs import Run
@@ -10,6 +10,7 @@ t_registered = Table('registered', metadata,
 	Column('id', Integer, primary_key=True),
 	Column('eventid', Integer, ForeignKey('events.id')),
 	Column('carid', Integer, ForeignKey('cars.id')),
+	Column('paid', Boolean),
 	UniqueConstraint('eventid', 'carid', name='regindex_1')
 	)
 
@@ -17,6 +18,7 @@ class Registration(object):
 	def __init__(self, eventid, carid):
 		self.eventid = eventid
 		self.carid = carid
+		self.paid = False
 
 	@classmethod
 	def updateFromRuns(cls, session):

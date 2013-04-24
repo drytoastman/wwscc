@@ -180,7 +180,9 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 					break;
 			}
 
-			if (matchMe(topLine, bottomLine, ((DriverTable)table).activeSearch))
+		 	if (!e.isPaid())
+		 		setBackground(Color.red);
+		 	else if (matchMe(topLine, bottomLine, ((DriverTable)table).activeSearch))
 				setBackground((isSelected) ?  backgroundFoundSelect : backgroundFound);
 		}
 		else if (value != null)
