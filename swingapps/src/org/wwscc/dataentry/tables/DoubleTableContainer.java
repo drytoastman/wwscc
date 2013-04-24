@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.border.LineBorder;
@@ -23,6 +25,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.JTableHeader;
 import org.wwscc.dataentry.Sounds;
 import org.wwscc.storage.Car;
+import org.wwscc.storage.ClassData;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Driver;
 import org.wwscc.storage.Entrant;
@@ -37,6 +40,7 @@ import org.wwscc.util.Messenger;
 public class DoubleTableContainer extends JScrollPane implements MessageListener
 {
 	private static final Logger log = Logger.getLogger(DoubleTableContainer.class.getCanonicalName());
+	
 	EntryModel dataModel;
 	DriverTable driverTable;
 	RunsTable runsTable;
@@ -78,7 +82,7 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 		}
 	}
 	
-	public Driver findDriverByBarcode(String barcode) throws BarcodeException
+	public Driver findDriverByBarcode(String barcode) throws IOException
 	{
 		if (barcode.startsWith("D"))
 		{
@@ -93,14 +97,35 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 		
 		List<Driver> found = Database.d.findDriverByMembership(barcode);
 		if (found.size() == 0)
+		{
+			if (JOptionPane.showConfirmDialog(this, "Unable to locate a driver using barcode " + barcode + 
+											".  Do you want to create a placeholder with this membership value?",
+											"Missing Driver",
+											JOptionPane.YES_NO_OPTION) == JOptionPane.YES_NO_OPTION)
+			{
+				Driver d = new Driver("Placeholder", barcode);
+				d.setMembership(barcode);
+				Database.d.newDriver(d);
+				Car c = new Car();
+				c.setDriverId(d.getId());
+				c.setModel("Placeholder " + barcode);
+				c.setClassCode(ClassData.getMissing().getCode());
+				c.setNumber(0);
+				Database.d.newCar(c);
+				Database.d.registerCar(c.getId());
+				return d;
+			}
+
 			throw new BarcodeException("Unable to locate a driver using barcode " + barcode);
+		}
+		
 		if (found.size() > 1)
 			log.log(Level.WARNING, "{0} drivers exist with the membership value {1}, using the first", new Object[] {found.size(), barcode});
 		
 		return found.get(0);
 	}
 	
-	public void processBarcode(String barcode) throws BarcodeException
+	public void processBarcode(String barcode) throws IOException
 	{
 		if (barcode.startsWith("C"))
 		{
@@ -164,7 +189,7 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 			case BARCODE_SCANNED:
 				try {
 					processBarcode((String)o);
-				} catch (BarcodeException be) {
+				} catch (IOException be) {
 					log.log(Level.SEVERE, be.getMessage());
 				}
 				

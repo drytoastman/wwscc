@@ -44,6 +44,16 @@ public class Driver implements Serializable
 	{
 		firstname = f;
 		lastname = l;
+		alias = "";
+		email = "";
+		address = "";
+		city = "";
+		state = "";
+		zip = "";
+		phone = "";
+		brag = "";
+		sponsor = "";
+		membership = "";
 		extras = new HashMap<String,String>();
 	}
 

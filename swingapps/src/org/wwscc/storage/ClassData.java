@@ -22,7 +22,20 @@ import java.util.regex.Pattern;
 public class ClassData
 {
 	private static Logger log = Logger.getLogger(ClassData.class.getCanonicalName());
-
+	private static ClassData.Class placeHolder;
+	
+	static 
+	{
+		placeHolder = new Class();
+		placeHolder.code = "UKNWN";
+		placeHolder.descrip = "Missing Driver Class";
+		placeHolder.classindex = "";
+		placeHolder.classmultiplier = 1.0;
+		placeHolder.numorder  = 0;
+		placeHolder.countedruns  = 0;
+		placeHolder.caridxrestrict = "";
+	}
+	
 	HashMap <String, ClassData.Class> classes;
 	HashMap <String, ClassData.Index> indexes;
 	
@@ -42,9 +55,16 @@ public class ClassData
 		indexes.put(i.getCode(), i);
 	}
 
+	public static ClassData.Class getMissing()
+	{
+		return placeHolder;
+	}
+	
 	public ClassData.Class getClass(String code)
 	{
-		return classes.get(code);
+		if (classes.containsKey(code))
+			classes.get(code);
+		return getMissing();
 	}
 
 	public ClassData.Index getIndex(String code)

@@ -9,6 +9,8 @@ import logging
 import sys
 import re
 
+from collections import defaultdict
+
 log = logging.getLogger(__name__)
 
 ## Classes table
@@ -128,10 +130,24 @@ class Index(object):
 mapper(Index, t_indexlist)
 
 
+class PlaceHolder(object):
+	def __init__(self):
+		self.code = 'UKNWN'
+		self.descrip = "Class for unknown scanned drivers"
+		self.carindexed = False
+		self.classindex = ""
+		self.classmultiplier = 1.0
+		self.eventtrophy = False
+		self.champtrophy = False
+		self.numorder = 0
+		self.countedruns = 0
+		self.usecarflag = False
+		self.caridxrestrict = ""
+	
 class ClassData(object):
 
 	def __init__(self, session):
-		self.classlist = dict()
+		self.classlist = defaultdict(PlaceHolder)
 		self.indexlist = dict()
 		for cls in session.query(Class):
 			self.classlist[cls.code] = cls

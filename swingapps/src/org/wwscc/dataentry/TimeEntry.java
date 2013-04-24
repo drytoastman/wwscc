@@ -451,9 +451,11 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			/* ... select the next value if one exists */
 			selectNext(0);
 		}
-		catch (IndexOutOfBoundsException iobe)
+		catch (Exception e)
 		{
-			error.setText(iobe.getMessage());
+			String msg = e.getMessage();
+			error.setText((msg != null)?msg : "Unknown error, see log trace");
+			log.log(Level.INFO, "Time entry failed: " + e.getMessage(), e);
             Toolkit.getDefaultToolkit().beep();
 		}
 	}
