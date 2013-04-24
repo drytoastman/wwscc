@@ -306,7 +306,7 @@ class DriverTransferHandler extends TransferHandler
 			DriverTable t = (DriverTable)c;
 			log.fine("cut driver");
 			for (int ii = 0; ii < rowsidx.length; ii++)
-				t.setValueAt(null, rowsidx[ii], 0);
+				t.setValueAt(null, rowsidx[0], 0);  // as rows are removed, we are always removing the first index
 		}
 
 		rowsidx = null;
