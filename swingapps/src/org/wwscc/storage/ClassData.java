@@ -63,7 +63,7 @@ public class ClassData
 	public ClassData.Class getClass(String code)
 	{
 		if (classes.containsKey(code))
-			classes.get(code);
+			return classes.get(code);
 		return getMissing();
 	}
 

@@ -259,7 +259,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		return render_mako('/admin/recalc.mako')
 		
 	def dorecalc(self):
-		from nwrsc.controllers.lib.resultscalc import RecalculateResults
+		from nwrsc.lib.resultscalc import RecalculateResults
 		response.content_type = 'text/plain'
 		return RecalculateResults(self.session, self.settings)
 
