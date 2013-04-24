@@ -489,7 +489,7 @@ public abstract class SQLDataInterface extends DataInterface
 	{
 		try
 		{
-			ResultData d = executeSelect("LOADENTRANT", newList(carid, currentEvent.id));
+			ResultData d = executeSelect("LOADENTRANT", newList(currentEvent.id, carid));
 			ResultData runs = null;
 			if (loadruns)
 				runs = executeSelect("GETRUNSBYCARID", newList(carid, currentEvent.id, course));

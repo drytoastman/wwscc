@@ -77,8 +77,9 @@ public class SQLMap
 		sql.put("GETREGISTEREDCARS", "select c.* from registered as x, cars as c, drivers as d " +
 						"where x.carid=c.id AND c.driverid=d.id and x.eventid=? and d.id=?");
 		sql.put("GETROUNDSFORCHALLENGE", "select * from challengerounds where challengeid=?");
-		sql.put("GETRUNORDERENTRANTS", "select d.firstname,d.lastname,c.*,reg.paid from registered as reg, runorder as r, cars as c, drivers as d " +
-						"where reg.carid=c.id and reg.eventid=r.eventid and r.carid=c.id AND c.driverid=d.id and r.eventid=? AND r.course=? AND r.rungroup=? " +
+		sql.put("GETRUNORDERENTRANTS", "select d.firstname,d.lastname,c.*,reg.paid " +
+						"from drivers as d, cars as c, runorder as r LEFT JOIN registered as reg ON reg.carid=c.id and reg.eventid=r.eventid  " +
+						"where r.carid=c.id AND c.driverid=d.id and r.eventid=? AND r.course=? AND r.rungroup=? " +
 						"order by r.row");
 
 		sql.put("GETRUNORDERROWS", "select row from runorder where eventid=? AND course=? AND carid=?");
@@ -106,8 +107,8 @@ public class SQLMap
 		sql.put("ISINEVENT", "select row from runorder where carid=? and eventid=? limit 1");
 
 		sql.put("LOADDRIVERCARS", "select * from cars where driverid = ? order by classcode, number");
-		sql.put("LOADENTRANT", "select d.firstname,d.lastname,c.*,r.paid from registered as r, cars as c, drivers as d " +
-						"where r.carid=c.id and c.driverid=d.id and c.id=? and r.eventid=? ");
+		sql.put("LOADENTRANT", "select d.firstname,d.lastname,c.*,r.paid from drivers as d, cars as c LEFT JOIN registered as r on r.carid=c.id and r.eventid=?  " +
+						"where c.driverid=d.id and c.id=? ");
 		sql.put("LOADRUNORDER", "select carid from runorder where eventid=? and course=? and rungroup=? order by row");
 
 		sql.put("REGISTERCARFORCE", "insert or replace into registered (eventid, carid, paid) values (?,?,?)");
