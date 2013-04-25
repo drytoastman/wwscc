@@ -10,6 +10,7 @@ package org.wwscc.registration;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -27,6 +28,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+
+import org.wwscc.barcodes.BarcodeScannerOptionsAction;
+import org.wwscc.barcodes.BarcodeScannerWatcher;
 import org.wwscc.dialogs.DatabaseDialog;
 import org.wwscc.registration.attendance.Attendance;
 import org.wwscc.registration.attendance.AttendancePanel;
@@ -51,6 +55,7 @@ public class Registration extends JFrame implements ActionListener
 	{
 		super(name);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new BarcodeScannerWatcher());
 
 		setupBar = new SelectionBar();
 		attendanceDisplay = new AttendancePanel();
@@ -71,6 +76,9 @@ public class Registration extends JFrame implements ActionListener
 		file.add(createItem("Merge Database"));
 		file.add(createItem("Quit"));
 		
+		JMenu options = new JMenu("Options");
+		options.add(new BarcodeScannerOptionsAction());
+		
 		JMenu attendance = new JMenu("Attendance");
 		attendance.add(createItem("Download Attendance History"));
 		attendance.add(createItem("Configure Attendance Values"));
@@ -80,6 +88,7 @@ public class Registration extends JFrame implements ActionListener
 		
 		JMenuBar bar = new JMenuBar();
 		bar.add(file);
+		bar.add(options);
 		bar.add(attendance);
 		setJMenuBar(bar);
 
@@ -203,6 +212,9 @@ public class Registration extends JFrame implements ActionListener
 					log.log(Level.SEVERE, "Registration failed to start: " + ioe, ioe);
 				}
 			}});
+			
+			Thread.sleep(2000);
+			Messenger.sendEvent(MT.BARCODE_SCANNED, "C310");
 		}
 		catch (Throwable e)
 		{

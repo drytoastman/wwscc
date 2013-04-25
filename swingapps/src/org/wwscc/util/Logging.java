@@ -23,6 +23,8 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+
+import javax.swing.FocusManager;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileSystemView;
 
@@ -119,7 +121,7 @@ public class Logging
 				String record = getFormatter().formatMessage(logRecord);
 				if (record.contains("\n"))
 					record = "<HTML>" + record.replace("\n", "<br>") + "</HTML>";
-				JOptionPane.showMessageDialog(null, record, title, type);
+				JOptionPane.showMessageDialog(FocusManager.getCurrentManager().getActiveWindow(), record, title, type);
 			}
 		}
 

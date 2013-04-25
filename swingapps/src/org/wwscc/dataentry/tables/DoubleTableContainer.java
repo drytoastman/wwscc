@@ -23,7 +23,9 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.JTableHeader;
+
 import org.wwscc.dataentry.Sounds;
+import org.wwscc.storage.BarcodeLookup;
 import org.wwscc.storage.Car;
 import org.wwscc.storage.ClassData;
 import org.wwscc.storage.Database;
@@ -75,71 +77,41 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 	
 	public RunsTable getRunsTable() { return runsTable; }
 	public DriverTable getDriverTable() { return driverTable; }
-
-	class BarcodeException extends IOException {
-		public BarcodeException(String message) {
-			super(message);
-		}
-	}
-	
-	public Driver findDriverByBarcode(String barcode) throws IOException
-	{
-		if (barcode.startsWith("D"))
-		{
-			Driver byid = Database.d.getDriver(Integer.parseInt(barcode.substring(1)));
-			if (byid == null)
-				throw new BarcodeException("Unable to located a driver with ID=" + barcode.substring(1));
-			return byid;
-		}
-		
-		if (barcode.length() < 4)
-			throw new BarcodeException(barcode + " is too short to be a valid barcode value, ignoring");
-		
-		List<Driver> found = Database.d.findDriverByMembership(barcode);
-		if (found.size() == 0)
-		{
-			if (JOptionPane.showConfirmDialog(this, "Unable to locate a driver using barcode " + barcode + 
-											".  Do you want to create a placeholder with this membership value?",
-											"Missing Driver",
-											JOptionPane.YES_NO_OPTION) == JOptionPane.YES_NO_OPTION)
-			{
-				Driver d = new Driver("Placeholder", barcode);
-				d.setMembership(barcode);
-				Database.d.newDriver(d);
-				Car c = new Car();
-				c.setDriverId(d.getId());
-				c.setModel("Placeholder " + barcode);
-				c.setClassCode(ClassData.getMissing().getCode());
-				c.setNumber(0);
-				Database.d.newCar(c);
-				Database.d.registerCar(c.getId(), false, false);
-				return d;
-			}
-
-			throw new BarcodeException("Unable to locate a driver using barcode " + barcode);
-		}
-		
-		if (found.size() > 1)
-			log.log(Level.WARNING, "{0} drivers exist with the membership value {1}, using the first", new Object[] {found.size(), barcode});
-		
-		return found.get(0);
-	}
 	
 	public void processBarcode(String barcode) throws IOException
 	{
-		if (barcode.startsWith("C"))
+		Object o = BarcodeLookup.findObjectByBarcode(barcode);
+
+		if (o instanceof Entrant)
 		{
-			int carid = Integer.parseInt(barcode.substring(1));
-			if (Database.d.loadEntrant(carid, false) == null)
-				throw new BarcodeException("Unable to find a car with ID=" + carid);
-			event(MT.CAR_ADD, carid);
+			event(MT.CAR_ADD, ((Entrant)o).getCarId());
 			return;
 		}
 		
-		Driver d = findDriverByBarcode(barcode);
+		if (o == null) // membership not found (D and C barcodes will throw an exception)
+		{
+			if (JOptionPane.showConfirmDialog(this, "Unable to locate a driver using membership " + barcode + 
+					".  Do you want to create a placeholder with this membership value?", "Missing Driver",
+					JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION)
+				return;
+			
+			Driver d = new Driver("Placeholder", barcode);
+			d.setMembership(barcode);
+			Database.d.newDriver(d);
+			Car c = new Car();
+			c.setDriverId(d.getId());
+			c.setModel("Placeholder " + barcode);
+			c.setClassCode(ClassData.getMissing().getCode());
+			c.setNumber(0);
+			Database.d.newCar(c);
+			Database.d.registerCar(c.getId(), false, false);
+			o = d;
+		}
 		
+		Driver d = (Driver)o;
 		List<Car> available = Database.d.getRegisteredCars(d.getId());
 		Iterator<Car> iter = available.iterator();
+		
 		while (iter.hasNext()) {
 			Car c = iter.next();
 			if (Database.d.isInCurrentOrder(c.getId())) {
@@ -162,7 +134,7 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 		}
 
 		Messenger.sendEvent(MT.SHOW_ADD_PANE, d);
-		throw new BarcodeException("Unable to locate a registed car for " + d.getFullName() + " that isn't already used in this event on this course.  See left panel.");
+		throw new BarcodeLookup.LookupException("Unable to locate a registed car for " + d.getFullName() + " that isn't already used in this event on this course.  See left panel.");
 	}
 
 	

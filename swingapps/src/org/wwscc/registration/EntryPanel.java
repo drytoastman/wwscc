@@ -45,9 +45,12 @@ import org.wwscc.dialogs.CarDialog;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.registration.attendance.Name;
 import org.wwscc.registration.attendance.NameStorage;
+import org.wwscc.storage.BarcodeLookup;
+import org.wwscc.storage.BarcodeLookup.LookupException;
 import org.wwscc.storage.Car;
 import org.wwscc.storage.Driver;
 import org.wwscc.storage.Database;
+import org.wwscc.storage.Entrant;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.Prefs;
@@ -76,6 +79,7 @@ public class EntryPanel extends DriverCarPanel
 		setLayout(new MigLayout("fill", "[400, grow 25][150, grow 25][150, grow 25]"));
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.ATTENDANCE_SETUP_CHANGE, this);
+		Messenger.register(MT.BARCODE_SCANNED, this);
 
 		extraNames = names;
 		
@@ -367,6 +371,23 @@ public class EntryPanel extends DriverCarPanel
 				if (selectedDriver != null)
 					Messenger.sendEvent(MT.DRIVER_SELECTED, new Name(selectedDriver.getFirstName(), selectedDriver.getLastName()));
 				break;
+			
+			case BARCODE_SCANNED:
+				try {
+					Object found = BarcodeLookup.findObjectByBarcode((String)o);
+					if (found instanceof Driver) {
+						Driver d = (Driver)found;
+						focusOnDriver(d.getFirstName(), d.getLastName());
+					} else if (found instanceof Entrant) {
+						Entrant e = (Entrant)found;
+						focusOnDriver(e.getFirstName(), e.getLastName());
+						focusOnCar(e.getCarId());
+					} else {
+						throw new LookupException("No object found");
+					}
+				} catch (LookupException e) {
+					log.warning("Barcode lookup exception: " + e.getMessage());
+				}
 
 			default:
 				super.event(type, o);

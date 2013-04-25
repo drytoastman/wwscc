@@ -25,6 +25,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
+
+import org.wwscc.barcodes.BarcodeScannerOptionsAction;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.dialogs.GroupDialog;
 import org.wwscc.storage.Database;
@@ -92,7 +94,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		reorderMode.addActionListener(this);
 		event.add(reorderMode);
 		
-		event.add(createItem("Barcode Scanner Options", null));
+		event.add(new BarcodeScannerOptionsAction());
 
 
 		/* Results Menu */
@@ -197,10 +199,6 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		{
 			Prefs.setReorderingTable(reorderMode.getState());
 		}
-		else if (cmd.equals("Barcode Scanner Options"))
-		{
-			Messenger.sendEvent(MT.SCANNER_OPTIONS, null);			
-		}
 		else if (cmd.equals("Find"))
 		{
 			Messenger.sendEvent(MT.OPEN_FIND, null);
@@ -213,7 +211,6 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		{
 			Messenger.sendEvent(MT.OPEN_BARCODE_ENTRY, null);
 		}
-		
 		else if (cmd.equals("Start Fake User"))
 		{
 			Messenger.sendEvent(MT.START_FAKE_USER, null);
