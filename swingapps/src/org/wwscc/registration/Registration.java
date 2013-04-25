@@ -212,9 +212,6 @@ public class Registration extends JFrame implements ActionListener
 					log.log(Level.SEVERE, "Registration failed to start: " + ioe, ioe);
 				}
 			}});
-			
-			Thread.sleep(2000);
-			Messenger.sendEvent(MT.BARCODE_SCANNED, "C310");
 		}
 		catch (Throwable e)
 		{

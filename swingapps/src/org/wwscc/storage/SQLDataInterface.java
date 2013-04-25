@@ -25,6 +25,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.wwscc.util.MT;
+import org.wwscc.util.Messenger;
+
 /**
  *
  * @author bwilson
@@ -834,6 +837,7 @@ public abstract class SQLDataInterface extends DataInterface
 		executeUpdate("INSERTCAR", vals);
 		c.id = lastInsertId();
 		trackChange("INSERTCAR", c);
+		Messenger.sendEvent(MT.CAR_CREATED, c);
 	}
 
 

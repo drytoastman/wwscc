@@ -80,6 +80,7 @@ public class EntryPanel extends DriverCarPanel
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.ATTENDANCE_SETUP_CHANGE, this);
 		Messenger.register(MT.BARCODE_SCANNED, this);
+		Messenger.register(MT.CAR_CREATED, this);
 
 		extraNames = names;
 		
@@ -389,6 +390,20 @@ public class EntryPanel extends DriverCarPanel
 					log.warning("Barcode lookup exception: " + e.getMessage());
 				}
 
+			case CAR_CREATED:
+				Car c = (Car)o;
+				if (JOptionPane.showConfirmDialog(this, 
+										"Do you wish to mark this newly created car as registered and paid?",  
+										"Register Car",
+										JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+				{
+					try {
+						Database.d.registerCar(c.getId(), true, true);
+						reloadCars(c);
+					} catch (IOException e) {
+						log.log(Level.WARNING, "Hmm.  I wasn't able to register the car: " + e.getMessage(), e);
+					}
+				}
 			default:
 				super.event(type, o);
 		}
