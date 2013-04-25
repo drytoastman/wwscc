@@ -26,10 +26,6 @@ public abstract class DataInterface
 	int currentCourse;
 	int currentRunGroup;
 	int currentChallengeId;
-	boolean trackRegChangesFlag = false;
-
-	public boolean isTrackingRegChanges() { return trackRegChangesFlag; }
-	public void trackRegChanges(boolean b) { trackRegChangesFlag = b; }
 
 	public void setCurrentEvent(Event e) { currentEvent = e; }
 	public void setCurrentCourse(int course) { currentCourse = course; }
@@ -43,9 +39,10 @@ public abstract class DataInterface
 	public int getCurrentRunGroup() { return currentRunGroup; }
 	public int getCurrentChallenge() { return currentChallengeId; }
 
+	public abstract void close();
 
-	public abstract void close(); //
-
+	public abstract boolean isTrackingRegChanges();
+	public abstract void trackRegChanges(boolean track);
 	public abstract void clearChanges();
 	public abstract List<Change> getChanges();
 	public abstract int countChanges();

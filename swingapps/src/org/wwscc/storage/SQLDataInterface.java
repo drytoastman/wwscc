@@ -8,12 +8,7 @@
 
 package org.wwscc.storage;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,7 +29,7 @@ import org.wwscc.util.Messenger;
  */
 public abstract class SQLDataInterface extends DataInterface
 {
-	private static Logger log = Logger.getLogger("org.wwscc.storage.SqliteDatabase");
+	private static Logger log = Logger.getLogger(SQLDataInterface.class.getCanonicalName());
 
 	public static class ResultRow extends HashMap<String,Object>
 	{
@@ -150,7 +145,7 @@ public abstract class SQLDataInterface extends DataInterface
 	 * @param args list of objects to add to initially
 	 * @return the new List
 	 */
-	List<Object> newList(Object... args)
+	static List<Object> newList(Object... args)
 	{
 		List<Object> l = new ArrayList<Object>();
 		for (Object o : args)
@@ -158,34 +153,20 @@ public abstract class SQLDataInterface extends DataInterface
 		return l;
 	}
 
-	int oppositeCourse()
-	{
-		if (currentCourse == 1) return 2;
-		return 1;
-	}
-
-	void logError(String f, Exception e)
+	static void logError(String f, Exception e)
 	{
 		log.log(Level.SEVERE, f + " failed: " + e.getMessage() + "\nRefresh screen and try again", e);
 	}
 
+	// delegate tracker stuff to a separate class
+	protected ChangeTracker tracker = new ChangeTracker(this);
+	public boolean isTrackingRegChanges() { return tracker.isTracking(); }
+	public void trackRegChanges(boolean track) { tracker.trackRegChanges(track); }
+	public void clearChanges() { tracker.clearChanges(); }
+	public List<Change> getChanges() { return tracker.getChanges(); }
+	public int countChanges() { return tracker.countChanges(); }
 
-	byte[] serialize(Serializable o) throws IOException
-	{
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ObjectOutputStream writer = new ObjectOutputStream(out);
-		writer.writeObject(o);
-		return out.toByteArray();
-	}
-
-	Object unserialize(byte[] b) throws IOException, ClassNotFoundException
-	{
-		ByteArrayInputStream out = new ByteArrayInputStream(b);
-		ObjectInputStream reader = new ObjectInputStream(out);
-		Object o = reader.readObject();
-		return o;
-	}
-
+	
 	protected Map<String, String> settingsCache = new HashMap<String,String>();
 	@Override
 	public String getSetting(String key)
@@ -233,71 +214,12 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
-	@Override
-	public void clearChanges()
-	{
-		try {
-			executeUpdate("TRACKCLEAR", null);
-		} catch (Exception ioe) {
-			logError("getChanges", ioe);
-		}
-	}
-	
-	public int countChanges()
-	{
-		try {
-			ResultData data = executeSelect("TRACKCOUNT", null);
-			if (data.size() > 0)
-				return data.get(0).getInt("count(*)");
-		} catch (Exception ioe) {
-			logError("countChanges", ioe);
-		}
-		return -1;
-	}
-
-	public void trackChange(String type, Serializable o)
-	{
-		if (!trackRegChangesFlag)
-			return;
-		
-		try{
-			log.info("Track " + type + ", " + o);
-			executeUpdate("TRACK", newList(type, serialize(o)));
-		} catch (IOException ioe) {
-			logError("trackChange", ioe);
-		}
-	}
-
-	@Override
-	public List<Change> getChanges()
-	{
-		try
-		{
-			ResultData data = executeSelect("GETCHANGES", null);
-			List<Change> ret = new ArrayList<Change>();
-			for (ResultRow r : data)
-			{
-				Change c = new Change();
-				c.id = r.getInt("id");
-				c.type = r.getString("type");
-				c.arg = unserialize(r.getBlob("args"));
-				ret.add(c);
-			}
-			return ret;
-		}
-		catch (Exception ioe)
-		{
-			logError("getChanges", ioe);
-			return null;
-		}
-	}
-
 	
 	@Override
 	public void setCurrentEvent(Event e)
 	{
 		super.setCurrentEvent(e);
-		trackChange("SETEVENT", e);
+		tracker.trackChange("SETEVENT", e);
 	}
 
 
@@ -674,7 +596,7 @@ public abstract class SQLDataInterface extends DataInterface
 		d.id = lastInsertId();
 		for (String name : d.getExtraKeys())
 			executeUpdate("INSERTEXTRA", newList(d.id, name, d.getExtra(name)));
-		trackChange("INSERTDRIVER", d);
+		tracker.trackChange("INSERTDRIVER", d);
 	}
 
 	@Override
@@ -687,7 +609,7 @@ public abstract class SQLDataInterface extends DataInterface
 		executeUpdate("DELETEEXTRA", newList(d.id));
 		for (String name : d.getExtraKeys())
 			executeUpdate("INSERTEXTRA", newList(d.id, name, d.getExtra(name)));	
-		trackChange("UPDATEDRIVER", d);
+		tracker.trackChange("UPDATEDRIVER", d);
 	}
 
 	@Override
@@ -817,7 +739,7 @@ public abstract class SQLDataInterface extends DataInterface
 			executeUpdate("REGISTERCARFORCE", vals);
 		else
 			executeUpdate("REGISTERCAR", vals);
-		trackChange("REGISTERCAR", new Object[] { carid, paid });
+		tracker.trackChange("REGISTERCAR", new Object[] { carid, paid });
 	}
 
 	@Override
@@ -825,7 +747,7 @@ public abstract class SQLDataInterface extends DataInterface
 	{
 		List<Object> vals = newList(currentEvent.id, carid);
 		executeUpdate("UNREGISTERCAR", vals);
-		trackChange("UNREGISTERCAR", carid);
+		tracker.trackChange("UNREGISTERCAR", carid);
 	}
 
 
@@ -836,7 +758,7 @@ public abstract class SQLDataInterface extends DataInterface
 		AUTO.addCarValues(c, vals);
 		executeUpdate("INSERTCAR", vals);
 		c.id = lastInsertId();
-		trackChange("INSERTCAR", c);
+		tracker.trackChange("INSERTCAR", c);
 		Messenger.sendEvent(MT.CAR_CREATED, c);
 	}
 
@@ -848,14 +770,14 @@ public abstract class SQLDataInterface extends DataInterface
 		AUTO.addCarValues(c, vals);
 		vals.add(c.id);
 		executeUpdate("UPDATECAR", vals);
-		trackChange("UPDATECAR", c);
+		tracker.trackChange("UPDATECAR", c);
 	}
 
 	@Override
 	public void deleteCar(Car c) throws IOException
 	{
 		executeUpdate("DELETECAR", newList(c.id));
-		trackChange("DELETECAR", c);
+		tracker.trackChange("DELETECAR", c);
 	}
 
 	@Override
