@@ -10,7 +10,6 @@ package org.wwscc.dataentry;
 
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,7 +29,6 @@ import org.wwscc.dataentry.tables.DoubleTableContainer;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.Run;
-import org.wwscc.util.LastManEventQueue;
 import org.wwscc.util.Logging;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
@@ -170,7 +168,6 @@ public class DataEntry extends JFrame implements MessageListener
 			SwingUtilities.invokeLater(new Runnable() { public void run() {
 				try {
 					new DataEntry(title);
-					Toolkit.getDefaultToolkit().getSystemEventQueue().push(new LastManEventQueue());
 				} catch (Throwable e) {
 					log.log(Level.SEVERE, "DataEntry creation failed: " + e, e);
 				}
