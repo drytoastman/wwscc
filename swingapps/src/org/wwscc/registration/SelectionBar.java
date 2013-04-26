@@ -13,13 +13,17 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Logger;
+
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 import net.miginfocom.swing.MigLayout;
+
 import org.wwscc.components.CurrentDatabaseLabel;
+import org.wwscc.storage.ChangeTracker;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
 import org.wwscc.util.MT;
@@ -30,7 +34,7 @@ import org.wwscc.util.Prefs;
 
 class SelectionBar extends JPanel implements ActionListener, MessageListener
 {
-	//private static Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
+	private static Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
 
 	JComboBox<Event> eventSelect;
 	JLabel count;
@@ -56,7 +60,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		el.setFont(f);
 		JLabel cl = new JLabel("Changes:");
 		cl.setFont(f);
-		count = new JLabel(""+Database.d.countChanges());
+		count = new JLabel("");
 
 		add(dl, "");
 		add(new CurrentDatabaseLabel(), "");
@@ -68,9 +72,10 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 
 	private void updateCountLabel()
 	{
-		if (Database.d.isTrackingRegChanges())
+		ChangeTracker tracker = Database.d.getChangeTracker();
+		if (tracker != null)
 		{
-			count.setText("" + Database.d.countChanges());
+			count.setText("" + tracker.size());
 			count.setForeground(Color.BLACK);
 		}
 		else
@@ -86,7 +91,14 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		switch (type)
 		{
 			case DATABASE_CHANGED:
-				Database.d.trackRegChanges(true);
+				if (Database.file != null)
+				{
+					try {
+						Database.d.setChangeTracker(new ChangeTracker(Database.d.getCurrentSeries()));
+					} catch (Exception e) {
+						log.warning("Unabled to start change tracker: " + e);
+					}
+				}
 				eventSelect.setModel(new DefaultComboBoxModel<Event>(Database.d.getEvents().toArray(new Event[0])));
 				int select = Prefs.getEventId(0);
 				if (select < eventSelect.getItemCount())

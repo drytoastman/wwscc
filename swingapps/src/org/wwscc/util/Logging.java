@@ -32,33 +32,31 @@ import javax.swing.filechooser.FileSystemView;
  */
 public class Logging
 {
+	public static String getLogDir()
+	{
+		File[] roots = FileSystemView.getFileSystemView().getRoots();
+		String home = System.getProperty("user.home");
+		if (roots.length > 0)
+		{
+			String desktop = roots[0].getPath();
+			if (!desktop.equals("/"))
+				return desktop;
+		}
+		return home;
+	}
+	
 	public static void logSetup(String name) throws IOException
 	{
 		LogManager lm = LogManager.getLogManager();
 		Logger root = lm.getLogger("");
 		Logger wwscc = Logger.getLogger("org.wwscc");
-		//Logger apache = Logger.getLogger("org.apache.http.impl.client");
-		//Logger headers = Logger.getLogger("org.apache.http.headers");
 		SingleLineFormatter formatter = new SingleLineFormatter();
 
 		ConsoleHandler ch = new ConsoleHandler();
 		ch.setFormatter(formatter);
 		ch.setLevel(Level.ALL);
 
-		File[] roots = FileSystemView.getFileSystemView().getRoots();
-		String prefix;
-
-		if (roots.length > 0)
-		{
-			prefix = roots[0].getPath();
-			if (prefix.equals("/"))
-				prefix = "%h";
-		}
-		else
-			prefix = "%h";
-
-
-		FileHandler fh = new FileHandler(prefix+"/"+name+".%g.log", 1000000, 10, true);
+		FileHandler fh = new FileHandler(getLogDir()+"/"+name+".%g.log", 1000000, 10, true);
 		fh.setFormatter(formatter);
 		fh.setLevel(Level.ALL);
 
@@ -71,8 +69,6 @@ public class Logging
 
 		root.setLevel(Level.WARNING);
 		wwscc.setLevel(Level.FINER);
-		//apache.setLevel(Level.FINER);
-		//headers.setLevel(Level.FINER);
 	}
 
 	public static class AlertHandler extends Handler

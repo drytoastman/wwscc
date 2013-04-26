@@ -9,6 +9,7 @@
 package org.wwscc.storage;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -158,14 +159,10 @@ public abstract class SQLDataInterface extends DataInterface
 		log.log(Level.SEVERE, f + " failed: " + e.getMessage() + "\nRefresh screen and try again", e);
 	}
 
-	// delegate tracker stuff to a separate class
-	protected ChangeTracker tracker = new ChangeTracker(this);
-	public boolean isTrackingRegChanges() { return tracker.isTracking(); }
-	public void trackRegChanges(boolean track) { tracker.trackRegChanges(track); }
-	public void clearChanges() { tracker.clearChanges(); }
-	public List<Change> getChanges() { return tracker.getChanges(); }
-	public int countChanges() { return tracker.countChanges(); }
-
+	
+	protected ChangeTracker tracker = null;
+	public ChangeTracker getChangeTracker() { return tracker; }
+	public void setChangeTracker(ChangeTracker in) { tracker = in; }
 	
 	protected Map<String, String> settingsCache = new HashMap<String,String>();
 	@Override
@@ -219,7 +216,7 @@ public abstract class SQLDataInterface extends DataInterface
 	public void setCurrentEvent(Event e)
 	{
 		super.setCurrentEvent(e);
-		tracker.trackChange("SETEVENT", e);
+		if (tracker != null) tracker.trackChange("SETEVENT", new Serializable[] { e });
 	}
 
 
@@ -596,7 +593,7 @@ public abstract class SQLDataInterface extends DataInterface
 		d.id = lastInsertId();
 		for (String name : d.getExtraKeys())
 			executeUpdate("INSERTEXTRA", newList(d.id, name, d.getExtra(name)));
-		tracker.trackChange("INSERTDRIVER", d);
+		if (tracker != null) tracker.trackChange("INSERTDRIVER", new Serializable[] { d });
 	}
 
 	@Override
@@ -609,7 +606,7 @@ public abstract class SQLDataInterface extends DataInterface
 		executeUpdate("DELETEEXTRA", newList(d.id));
 		for (String name : d.getExtraKeys())
 			executeUpdate("INSERTEXTRA", newList(d.id, name, d.getExtra(name)));	
-		tracker.trackChange("UPDATEDRIVER", d);
+		if (tracker != null) tracker.trackChange("UPDATEDRIVER", new Serializable[] { d });
 	}
 
 	@Override
@@ -739,7 +736,7 @@ public abstract class SQLDataInterface extends DataInterface
 			executeUpdate("REGISTERCARFORCE", vals);
 		else
 			executeUpdate("REGISTERCAR", vals);
-		tracker.trackChange("REGISTERCAR", new Object[] { carid, paid });
+		if (tracker != null) tracker.trackChange("REGISTERCAR", new Serializable[] { carid, paid });
 	}
 
 	@Override
@@ -747,7 +744,7 @@ public abstract class SQLDataInterface extends DataInterface
 	{
 		List<Object> vals = newList(currentEvent.id, carid);
 		executeUpdate("UNREGISTERCAR", vals);
-		tracker.trackChange("UNREGISTERCAR", carid);
+		if (tracker != null) tracker.trackChange("UNREGISTERCAR", new Serializable[] { carid });
 	}
 
 
@@ -758,7 +755,7 @@ public abstract class SQLDataInterface extends DataInterface
 		AUTO.addCarValues(c, vals);
 		executeUpdate("INSERTCAR", vals);
 		c.id = lastInsertId();
-		tracker.trackChange("INSERTCAR", c);
+		if (tracker != null) tracker.trackChange("INSERTCAR", new Serializable[] { c });
 		Messenger.sendEvent(MT.CAR_CREATED, c);
 	}
 
@@ -770,14 +767,14 @@ public abstract class SQLDataInterface extends DataInterface
 		AUTO.addCarValues(c, vals);
 		vals.add(c.id);
 		executeUpdate("UPDATECAR", vals);
-		tracker.trackChange("UPDATECAR", c);
+		if (tracker != null) tracker.trackChange("UPDATECAR", new Serializable[] { c });
 	}
 
 	@Override
 	public void deleteCar(Car c) throws IOException
 	{
 		executeUpdate("DELETECAR", newList(c.id));
-		tracker.trackChange("DELETECAR", c);
+		if (tracker != null) tracker.trackChange("DELETECAR", new Serializable[] { c });
 	}
 
 	@Override
@@ -1545,5 +1542,96 @@ public abstract class SQLDataInterface extends DataInterface
 		if (classCache == null)
 			getClassData();
 		return classCache.getIndexStr(classcode, indexcode, tireindexed);
+	}
+	
+	
+	/**
+	 * Merge in the given Changes objects
+	 * @param changes a list of Changes to merge
+	 * @throws IOException 
+	 */
+	public void mergeChanges(List<Change> changes) throws IOException
+	{
+		Map<Integer, Integer> driveridmap = new HashMap<Integer,Integer>();
+		Map<Integer, Integer> caridmap = new HashMap<Integer,Integer>();
+
+		try
+		{
+			start();
+			for (Change change : changes)
+			{
+				String sqlmap = change.getType();
+				Serializable[] args = change.getArgs();
+				log.info("Merge "+sqlmap+": " + args);
+				
+				if (sqlmap.equals("SETEVENT"))
+				{
+					Event e = (Event)args[0];
+					setCurrentEvent(e);
+				}
+				else if (sqlmap.equals("INSERTDRIVER"))
+				{
+					Driver d = (Driver)args[0];
+					int usedid = d.id;
+					newDriver(d); // no mapping as all brand new
+					driveridmap.put(usedid, d.id);
+				}
+				else if (sqlmap.equals("UPDATEDRIVER"))
+				{
+					Driver d = (Driver)args[0];
+					if (driveridmap.containsKey(d.id)) // map driverid
+						d.id = driveridmap.get(d.id);
+					updateDriver(d);
+				}
+				else if (sqlmap.equals("INSERTCAR"))
+				{
+					Car c = (Car)args[0];
+					int usedid = c.id;
+					if (driveridmap.containsKey(c.driverid)) // map driverid
+						c.driverid = driveridmap.get(c.driverid);
+					newCar(c);
+					caridmap.put(usedid, c.id);
+				}
+				else if (sqlmap.equals("UPDATECAR"))
+				{
+					Car c = (Car)args[0];
+					if (caridmap.containsKey(c.id)) // map carid and driverid
+						c.id = caridmap.get(c.id);
+					if (driveridmap.containsKey(c.driverid))
+						c.driverid = driveridmap.get(c.driverid);
+					updateCar(c);
+				}
+				else if (sqlmap.equals("DELETECAR"))
+				{
+					Car c = (Car)args[0];
+					if (caridmap.containsKey(c.id)) // map carid
+						c.id = caridmap.get(c.id);
+					deleteCar(c);
+				}
+				else if (sqlmap.equals("UNREGISTERCAR"))
+				{
+					Integer carid = (Integer)args[0];
+					if (caridmap.containsKey(carid))
+						carid = caridmap.get(carid);
+					unregisterCar(carid);
+				}
+				else if (sqlmap.equals("REGISTERCAR"))
+				{
+					Integer carid = (Integer)args[0];
+					Boolean paid = (Boolean)args[1];
+					if (caridmap.containsKey(carid))
+						carid = caridmap.get(carid);
+					registerCar(carid, paid, true);
+				}
+			}
+
+			commit();
+		}
+		catch (IOException e)
+		{
+			rollback();
+			log.log(Level.SEVERE, "Unable to merge: " + e, e);
+			throw e;
+		}
 	}
 }

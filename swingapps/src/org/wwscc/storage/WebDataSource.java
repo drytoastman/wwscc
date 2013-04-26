@@ -62,6 +62,11 @@ public class WebDataSource extends SQLDataInterface
 		server = new RemoteHTTPConnection(host);
 	}
 
+	public RemoteHTTPConnection getConnection()
+	{
+		return server;
+	}
+	
 	protected byte[] encodeValues(List<Object> args) throws IOException
 	{
 		if (args == null)

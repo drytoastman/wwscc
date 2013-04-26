@@ -35,7 +35,7 @@ import org.wwscc.dialogs.DatabaseDialog;
 import org.wwscc.registration.attendance.Attendance;
 import org.wwscc.registration.attendance.AttendancePanel;
 import org.wwscc.storage.Database;
-import org.wwscc.storage.MergeProcess;
+import org.wwscc.storage.MergeDialog;
 import org.wwscc.util.CancelException;
 import org.wwscc.util.Logging;
 import org.wwscc.util.MT;
@@ -146,7 +146,7 @@ public class Registration extends JFrame implements ActionListener
 				}
 
 				Prefs.setMergeHost(sp[0]);
-				new Thread(new Runnable() { public void run() { MergeProcess.mergeTo(Registration.this, sp[0], sp[1]); }}).start();
+				new Thread(new Runnable() { public void run() { MergeDialog.mergeTo(sp[0], sp[1]); }}).start();
 			}
 		}
 		else if (cmd.equals("Download Attendance History"))

@@ -48,7 +48,6 @@ public class SQLMap
 		sql.put("GETCARIDSFORCOURSE", "select carid from runorder where eventid=? AND course=?");
 		sql.put("GETCARIDSFORGROUP", "select carid from runorder where eventid=? AND course=? AND rungroup=? order by row");
 		sql.put("GETCHALLENGESFOREVENT", "select * from challenges where eventid = ?");
-		sql.put("GETCHANGES", "select * from changes");
 		sql.put("GETCLASSES", "select * from classlist");
 		sql.put("GETCLASSRESULTS", "select r.carid as carid,SUM(r.net) as sum, COUNT(r.net) as coursecnt from runs as r, cars as c " +
 					"where r.norder=1 and r.carid=c.id and c.classcode=? and r.eventid=? " +
@@ -117,10 +116,6 @@ public class SQLMap
 
 		sql.put("SWAPRUNORDER", "update runorder set carid=? where eventid=? and course=? and rungroup=? and carid=?");
 		sql.put("SWAPRUNS", "update runs set carid=? where eventid=? and course=? and carid=?");
-
-		sql.put("TRACK", "insert into changes (type, args) values (?,?)");
-		sql.put("TRACKCLEAR", "delete from changes");
-		sql.put("TRACKCOUNT", "select count(*) from changes");
 		
 		sql.put("UNREGISTERCAR", "delete from registered where eventid=? and carid=?");
 		sql.put("UPDATEBOOLEANSETTING", "update settings set val=? where name=?");

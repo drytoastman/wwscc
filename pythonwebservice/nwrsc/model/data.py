@@ -102,14 +102,3 @@ class PrevEntry(object):
 mapper(PrevEntry, t_prevlist)
 
 
-## Changes Table
-t_changes = Table('changes', metadata,
-	Column('id', Integer, primary_key=True, autoincrement=True),
-	Column('type', String(32)),
-	Column('args', Binary)
-	)
-
-class Change(object):
-	pass
-
-mapper(Change, t_changes)

@@ -1,8 +1,9 @@
 package org.wwscc.storage;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,151 +13,144 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.wwscc.util.Logging;
+
 public class ChangeTracker
 {
 	private static Logger log = Logger.getLogger(ChangeTracker.class.getCanonicalName());
+	private static final int HISTORY = 10;
 	
-	protected boolean tracking = false;
-	protected SQLDataInterface dataSource;
-	protected FileWriter audit;
+	private List<Change> changes;
+	private String dbname;
 	
 	/**
 	 * Create a new change tracker
-	 * @param db a link to a SQLDataInterface for performing executeSelect and executeUpdate
+	 * @param db the string name of the database we are tracking, used to determine file name
 	 * @throws IOException 
+	 * @throws FileNotFoundException 
+	 * @throws ClassNotFoundException 
+	 * @throws Exception 
 	 */
-	public ChangeTracker(SQLDataInterface db)
+	public ChangeTracker(String db) throws FileNotFoundException, IOException, ClassNotFoundException
 	{
-		dataSource = db;
-	}
-	
-	/**
-	 * @return true if we are currently tracking changes
-	 */
-	public boolean isTracking()
-	{
-		return tracking;
-	}
-	
-	/**
-	 * User requests that we start/stop tracking
-	 * @param track true if tracking should be occuring
-	 */
-	public void trackRegChanges(boolean track)
-	{
-		tracking = track;
-		
-		try {
-			if (tracking && audit == null)
-				audit = new FileWriter("changesaudit.log", true);
-			if (!tracking && audit != null)
-				audit.close();
-		} catch (IOException ioe) {
-			log.log(Level.WARNING, "Error opening/closing audit log: {0}", ioe);
-		}
+		dbname = db;
+		changes = readInFile(generateFileName(0));
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() { public void run() { syncToFile(); }}));
 	}
 
 	/**
-	 * @param o an object to serialize
-	 * @return a byte array of serialized data
-	 * @throws IOException
+	 * @return a count of the current changes
 	 */
-	byte[] serialize(Serializable o) throws IOException
+	public int size()
 	{
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ObjectOutputStream writer = new ObjectOutputStream(out);
-		writer.writeObject(o);
-		return out.toByteArray();
+		return changes.size();
 	}
-
+	
+	
+	// #### public static methods ####
+	
 	/**
-	 * 
-	 * @param b a byte array of serialized data
-	 * @return the object that was serialized
+	 * Read a file containing serialized version of a List of changes.
+	 * @param f the file to read from
+	 * @return a list of changes, empty if the file doesn't exist yet
+	 * @throws FileNotFoundException
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	Object unserialize(byte[] b) throws IOException, ClassNotFoundException
+	@SuppressWarnings("unchecked")
+	public static List<Change> readInFile(File f) throws FileNotFoundException, IOException, ClassNotFoundException
 	{
-		ByteArrayInputStream out = new ByteArrayInputStream(b);
-		ObjectInputStream reader = new ObjectInputStream(out);
-		Object o = reader.readObject();
-		return o;
+		List<Change> ret = null; 
+		if (f.exists())
+		{
+			ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));;
+			ret = (List<Change>) in.readObject();
+			in.close();
+		}
+		
+		if (ret == null)
+			ret = new ArrayList<Change>();
+		return ret;
 	}
+	
+	
+	// ### Package private methods ###
 	
 	/**
 	 * Record the change for later use such as merging.
 	 * @param type the key for the change type
 	 * @param o the serializable object used
 	 */
-	public void trackChange(String type, Serializable o)
+	void trackChange(String type, Serializable o[])
 	{
-		if (!tracking)
-			return;
-		try{
-			audit.write(String.format("%s, %s\n", type, o));
-			audit.flush();
-			dataSource.executeUpdate("TRACK", SQLDataInterface.newList(type, serialize(o)));
-		} catch (IOException ioe) {
-			log.log(Level.WARNING, "Failed to track the last change to the database: {0}", ioe.getMessage());
-		}
-	}
-	
-	
-	/**
-	 * Get the list of changes that we've recorded so far
-	 * @return a List of Change objects, could be empty if nothing recorded
-	 */
-	public List<Change> getChanges()
-	{
-		try
-		{
-			SQLDataInterface.ResultData data = dataSource.executeSelect("GETCHANGES", null);
-			List<Change> ret = new ArrayList<Change>();
-			for (SQLDataInterface.ResultRow r : data)
-			{
-				Change c = new Change();
-				c.id = r.getInt("id");
-				c.type = r.getString("type");
-				c.arg = unserialize(r.getBlob("args"));
-				ret.add(c);
-			}
-			return ret;
-		}
-		catch (Exception ioe)
-		{
-			log.log(Level.WARNING, "Failed to get the list of changes from the database: {0}", ioe.getMessage());
-			return null;
-		}
+		changes.add(new Change(type, o));
+		syncToFile(); // not efficient but simple, easy to understand, and files are small enough that its a non-issue
 	}
 	
 
 	/**
-	 * Clear all the changes we have recorded.
+	 * Rotates the current list of changeset files. Package private.
+	 * @throws FileNotFoundException
+	 * @throws ClassNotFoundException
+	 * @throws IOException
 	 */
-	public void clearChanges()
+	void archiveChanges() throws FileNotFoundException, ClassNotFoundException, IOException
+	{
+		syncToFile(); // do I need this?
+		rotate();
+	}
+	
+	
+	/**
+	 * Get the list of changes that we've recorded so far.  Package private.
+	 * @return a List of Change objects, could be empty if nothing recorded
+	 */
+	List<Change> getChanges()
+	{
+		return changes;
+	}
+	
+
+	// #### Private methods ####
+	 
+	private File generateFileName(int counter)
+	{
+		if (counter > 0)
+			return new File(Logging.getLogDir(), dbname + "changes.log");
+		else
+			return new File(Logging.getLogDir(), dbname + "changes.log." + counter);
+	}
+
+	
+	private void syncToFile()
 	{
 		try {
-			audit.write("===========================\nCHANGES CLEARED\n===========================\n");
-			audit.flush();
-			dataSource.executeUpdate("TRACKCLEAR", null);
-		} catch (Exception ioe) {
-			log.log(Level.WARNING, "Failed to clear changes from the database: {0}", ioe.getMessage());
+			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(generateFileName(0)));
+			out.writeObject(changes);
+			out.close();
+		} catch (IOException ioe) {
+			log.log(Level.WARNING, "Failed to sync changes to disk: " + ioe.getMessage(), ioe);
 		}
 	}
 	
-	/**
-	 * @return a count of the current changes
-	 */
-	public int countChanges()
+	private void rotate()
 	{
-		try {
-			SQLDataInterface.ResultData data = dataSource.executeSelect("TRACKCOUNT", null);
-			if (data.size() > 0)
-				return data.get(0).getInt("count(*)");
-		} catch (Exception ioe) {
-			log.log(Level.INFO, "Unabled to count database changes: {0}", ioe.getMessage());
+		// rotate
+		File files[] = new File[HISTORY];
+		for (int ii = 0; ii < files.length; ii++)
+			files[ii] = generateFileName(ii);
+
+		for (int ii = HISTORY - 2; ii >= 0; ii--)
+		{
+			File f1 = files[ii];
+			File f2 = files[ii + 1];
+			if (f1.exists())
+			{
+				if (f2.exists())
+					f2.delete();
+				f1.renameTo(f2);
+			}
 		}
-		return -1;
 	}
+
 }

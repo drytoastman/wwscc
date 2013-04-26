@@ -184,7 +184,6 @@ public class Database
 			openDatabaseFile(out);
 			if (lockServerSide) // unlock on our side for admin site use at event
 				d.putBooleanSetting("locked", false);
-			d.clearChanges();
 			return out;
 		}
 		catch (CancelException ex)

@@ -41,11 +41,8 @@ public abstract class DataInterface
 
 	public abstract void close();
 
-	public abstract boolean isTrackingRegChanges();
-	public abstract void trackRegChanges(boolean track);
-	public abstract void clearChanges();
-	public abstract List<Change> getChanges();
-	public abstract int countChanges();
+	public abstract ChangeTracker getChangeTracker();
+	public abstract void setChangeTracker(ChangeTracker in);
 	
 	public abstract String getSetting(String key);
 	public abstract boolean getBooleanSetting(String key);
