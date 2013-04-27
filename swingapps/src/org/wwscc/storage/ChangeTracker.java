@@ -18,7 +18,6 @@ import org.wwscc.util.Logging;
 public class ChangeTracker
 {
 	private static Logger log = Logger.getLogger(ChangeTracker.class.getCanonicalName());
-	private static final int HISTORY = 10;
 	
 	private List<Change> changes;
 	private String dbname;
@@ -35,7 +34,6 @@ public class ChangeTracker
 	{
 		dbname = db;
 		changes = readInFile(generateFileName(0));
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() { public void run() { syncToFile(); }}));
 	}
 
 	/**
@@ -97,6 +95,7 @@ public class ChangeTracker
 	void archiveChanges() throws FileNotFoundException, ClassNotFoundException, IOException
 	{
 		syncToFile(); // do I need this?
+		changes.clear();
 		rotate();
 	}
 	
@@ -116,14 +115,17 @@ public class ChangeTracker
 	private File generateFileName(int counter)
 	{
 		if (counter > 0)
-			return new File(Logging.getLogDir(), dbname + "changes.log");
-		else
 			return new File(Logging.getLogDir(), dbname + "changes.log." + counter);
+		else
+			return new File(Logging.getLogDir(), dbname + "changes.log");
 	}
 
 	
 	private void syncToFile()
 	{
+		if (changes.isEmpty())
+			return;
+		
 		try {
 			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(generateFileName(0)));
 			out.writeObject(changes);
@@ -136,11 +138,11 @@ public class ChangeTracker
 	private void rotate()
 	{
 		// rotate
-		File files[] = new File[HISTORY];
+		File files[] = new File[10];
 		for (int ii = 0; ii < files.length; ii++)
 			files[ii] = generateFileName(ii);
 
-		for (int ii = HISTORY - 2; ii >= 0; ii--)
+		for (int ii = files.length - 2; ii >= 0; ii--)
 		{
 			File f1 = files[ii];
 			File f2 = files[ii + 1];

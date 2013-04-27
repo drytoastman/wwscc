@@ -10,9 +10,8 @@ import javax.swing.table.DefaultTableModel;
 import org.wwscc.util.Logging;
 import org.wwscc.util.TableUtilities;
 
-public class ChangeViewer extends JTable
+public class ChangeViewer
 {
-
 	public static void main(String args[]) throws Exception
 	{
 		JFrame f = new JFrame("Change Viewer");

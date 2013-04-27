@@ -43,6 +43,12 @@ public abstract class DataInterface
 
 	public abstract ChangeTracker getChangeTracker();
 	public abstract void setChangeTracker(ChangeTracker in);
+	/**
+	 * Merge the list of changes into the current database
+	 * @param changes a list of Change objects to merge
+	 * @throws IOException
+	 */
+	public abstract void mergeChanges(List<Change> changes) throws IOException;
 	
 	public abstract String getSetting(String key);
 	public abstract boolean getBooleanSetting(String key);
