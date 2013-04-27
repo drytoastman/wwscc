@@ -137,7 +137,7 @@ function eventPaneSetup(jqe)
 		$(this).blur();
 		$("#registercarform").RegEdit('registerCars', theevent, cars, limit, 
 			function() {
-				container = jqe.find('.carcontainer');
+				container = $('div.eventholder[data-eventid='+eventid+'] .carcontainer');
 				container.find('ul,button').remove();
 				container.append("<div class='strong'>registering cars ...</div>");
 			},
