@@ -26,23 +26,17 @@ import java.util.logging.SimpleFormatter;
 
 import javax.swing.FocusManager;
 import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileSystemView;
 
 /**
  */
 public class Logging
 {
-	public static String getLogDir()
+	public static File getLogDir()
 	{
-		File[] roots = FileSystemView.getFileSystemView().getRoots();
-		String home = System.getProperty("user.home");
-		if (roots.length > 0)
-		{
-			String desktop = roots[0].getPath();
-			if (!desktop.equals("/"))
-				return desktop;
-		}
-		return home;
+		File dir = new File(Prefs.getInstallRoot(), "logs");
+		if (!dir.exists())
+			dir.mkdirs();
+		return dir;
 	}
 	
 	public static void logSetup(String name) throws IOException
@@ -56,7 +50,7 @@ public class Logging
 		ch.setFormatter(formatter);
 		ch.setLevel(Level.ALL);
 
-		FileHandler fh = new FileHandler(getLogDir()+"/"+name+".%g.log", 1000000, 10, true);
+		FileHandler fh = new FileHandler(getLogDir().getAbsolutePath()+"/"+name+".%g.log", 1000000, 10, true);
 		fh.setFormatter(formatter);
 		fh.setLevel(Level.ALL);
 

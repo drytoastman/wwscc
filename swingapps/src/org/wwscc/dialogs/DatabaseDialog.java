@@ -20,7 +20,6 @@ import net.miginfocom.swing.MigLayout;
 import org.wwscc.services.FoundService;
 import org.wwscc.services.JServiceList;
 import org.wwscc.services.ServiceFinder;
-import org.wwscc.storage.Database;
 import org.wwscc.util.CancelException;
 import org.wwscc.util.FileChooser;
 import org.wwscc.util.Prefs;

@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
+import javax.swing.FocusManager;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -33,10 +34,12 @@ import org.wwscc.actions.DatabaseCopyAction;
 import org.wwscc.actions.DatabaseOpenAction;
 import org.wwscc.actions.QuitAction;
 import org.wwscc.barcodes.BarcodeScannerWatcher;
+import org.wwscc.dialogs.DatabaseDialog;
 import org.wwscc.registration.attendance.Attendance;
 import org.wwscc.registration.attendance.AttendancePanel;
 import org.wwscc.registration.changeviewer.ChangeViewer;
 import org.wwscc.storage.Database;
+import org.wwscc.storage.RemoteHTTPConnection;
 import org.wwscc.util.CancelException;
 import org.wwscc.util.Logging;
 import org.wwscc.util.MT;
@@ -86,6 +89,7 @@ public class Registration extends JFrame
 		
 		JMenu merge = new JMenu("Merge");
 		merge.add(new ChangeViewerAction());
+		merge.add(new LocalDatabaseCopyAction());
 		
 		JMenuBar bar = new JMenuBar();
 		bar.add(file);
@@ -161,6 +165,23 @@ public class Registration extends JFrame
 		}
 	}
 	
+	class LocalDatabaseCopyAction extends AbstractAction
+	{
+		public LocalDatabaseCopyAction() { super("Get Fresh Copy"); }
+		public void actionPerformed(ActionEvent e)
+		{
+			try
+			{
+				String spec[] = DatabaseDialog.netLookup("Get New Copy From Remote", Prefs.getMergeHost()+"/"+Database.d.getCurrentSeries());
+				Database.download(new RemoteHTTPConnection(spec[0]), spec[1], false);
+				JOptionPane.showMessageDialog(FocusManager.getCurrentManager().getActiveWindow(), "Copy complete");
+			} catch (CancelException ce) {
+				return;
+			} catch (Exception bige) {
+				log.log(Level.SEVERE, "Copy failed: " + bige.getMessage(), bige);
+			}
+		}
+	}
 			
 	/**
 	 * Main

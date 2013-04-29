@@ -54,7 +54,6 @@ public class ChangeViewer extends JFrame
 		add(new JScrollPane(list), "w 180!");
 		add(new JScrollPane(table), "wrap");
 		add(new JButton(new MergeAction()), "skip, split 2");
-		add(new JButton(new CopyAction()), "");
 		
 		pack();
 		loadFiles();
@@ -102,25 +101,6 @@ public class ChangeViewer extends JFrame
 				log.log(Level.SEVERE, "Merge failed: " + bige.getMessage(), bige);
 			}
 			JOptionPane.showMessageDialog(FocusManager.getCurrentManager().getActiveWindow(), "Merge complete");
-		}
-	}
-	
-	
-	class CopyAction extends AbstractAction
-	{
-		public CopyAction() { super("Get New Copy"); }
-		public void actionPerformed(ActionEvent e)
-		{
-			try
-			{
-				String spec[] = DatabaseDialog.netLookup("Get New Copy From Remote", Prefs.getMergeHost()+"/"+Database.d.getCurrentSeries());
-				Database.download(new RemoteHTTPConnection(spec[0]), spec[1], false);
-				JOptionPane.showMessageDialog(FocusManager.getCurrentManager().getActiveWindow(), "Copy complete");
-			} catch (CancelException ce) {
-				return;
-			} catch (Exception bige) {
-				log.log(Level.SEVERE, "Copy failed: " + bige.getMessage(), bige);
-			}
 		}
 	}
 }

@@ -78,7 +78,7 @@ class DbserveController(BaseController):
 		engine = create_engine('sqlite:///%s' % self.databasePath(self.database))
 		self.session.bind = engine
 		Registration.updateFromRuns(self.session)
-		self.session.sqlmap("TRACKCLEAR", [])
+
 		self.settings = Settings()
 		self.settings.load(self.session)
 		self.settings.locked = False
@@ -93,8 +93,6 @@ class DbserveController(BaseController):
 			ret = ""
 			while stream.dataAvailable() > 0:
 				(type, key, values) = Codec.decodeRequest(stream)
-				if key in ['TRACK']:
-					raise Exception("You are trying to track database changes over a web connection, switch to direct file\n\n")
 
 				log.debug("sqlmap request %s" % (key))
 				if type == Codec.SELECT:

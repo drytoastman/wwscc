@@ -94,9 +94,9 @@ public class ChangeTracker
 	public static File generateFileName(String database, int counter)
 	{
 		if (counter > 0)
-			return new File(Logging.getLogDir(), database + "changes.log." + counter);
+			return new File(Logging.getLogDir(), database + "changes.bin." + counter);
 		else
-			return new File(Logging.getLogDir(), database + "changes.log");
+			return new File(Logging.getLogDir(), database + "changes.bin");
 	}
 
 	

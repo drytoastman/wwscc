@@ -50,7 +50,7 @@ public class Launcher
 			for (String arg : args) {
 				if (arg.startsWith("prefs=")) {
 					String node = arg.substring(arg.indexOf('=')+1);
-					Prefs.setPrefsNode(node + "/" + app);
+					Prefs.setPrefsNode(node);
 				}
 			}
 			
