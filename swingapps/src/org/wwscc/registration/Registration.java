@@ -12,16 +12,15 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -29,13 +28,15 @@ import javax.swing.JSeparator;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
-import org.wwscc.barcodes.BarcodeScannerOptionsAction;
+import org.wwscc.actions.BarcodeScannerOptionsAction;
+import org.wwscc.actions.DatabaseCopyAction;
+import org.wwscc.actions.DatabaseOpenAction;
+import org.wwscc.actions.QuitAction;
 import org.wwscc.barcodes.BarcodeScannerWatcher;
-import org.wwscc.dialogs.DatabaseDialog;
 import org.wwscc.registration.attendance.Attendance;
 import org.wwscc.registration.attendance.AttendancePanel;
+import org.wwscc.registration.changeviewer.ChangeViewer;
 import org.wwscc.storage.Database;
-import org.wwscc.storage.MergeDialog;
 import org.wwscc.util.CancelException;
 import org.wwscc.util.Logging;
 import org.wwscc.util.MT;
@@ -43,7 +44,7 @@ import org.wwscc.util.Messenger;
 import org.wwscc.util.Prefs;
 
 
-public class Registration extends JFrame implements ActionListener
+public class Registration extends JFrame
 {
 	private static final Logger log = Logger.getLogger(Registration.class.getCanonicalName());
 
@@ -70,26 +71,27 @@ public class Registration extends JFrame implements ActionListener
 		log.log(Level.INFO, "Starting Registration: {0}", new java.util.Date());
 
 		JMenu file = new JMenu("File");
-		file.add(createItem("Open Database"));
-		file.add(createItem("Download Database Copy"));
+		file.add(new DatabaseOpenAction());
+		file.add(new DatabaseCopyAction());
 		file.add(new JSeparator());
-		file.add(createItem("Merge Database"));
-		file.add(createItem("Quit"));
+		file.add(new QuitAction());
 		
 		JMenu options = new JMenu("Options");
 		options.add(new BarcodeScannerOptionsAction());
 		
 		JMenu attendance = new JMenu("Attendance");
-		attendance.add(createItem("Download Attendance History"));
-		attendance.add(createItem("Configure Attendance Values"));
-		JCheckBoxMenuItem cb = new JCheckBoxMenuItem("Show Attendance Values");
-		cb.addActionListener(this);
-		attendance.add(cb);
+		attendance.add(new AttendanceDownloadAction());
+		attendance.add(new AttendanceConfigureAction());
+		attendance.add(new JCheckBoxMenuItem(new AttendanceShowAction()));
+		
+		JMenu merge = new JMenu("Merge");
+		merge.add(new ChangeViewerAction());
 		
 		JMenuBar bar = new JMenuBar();
 		bar.add(file);
 		bar.add(options);
 		bar.add(attendance);
+		bar.add(merge);
 		setJMenuBar(bar);
 
 		Database.openDefault();
@@ -97,73 +99,36 @@ public class Registration extends JFrame implements ActionListener
 		setVisible(true);
 	}
 
-	private JMenuItem createItem(String title)
+	class ChangeViewerAction extends AbstractAction
 	{
-		JMenuItem item = new JMenuItem(title);
-		item.addActionListener(this);
-		return item;
+		public ChangeViewerAction() { super("Open Change Viewer"); }
+		public void actionPerformed(ActionEvent e) {  new ChangeViewer(Database.d.getCurrentSeries()); }
 	}
-
-	@Override
-	public void actionPerformed(ActionEvent e)
+	
+	class AttendanceDownloadAction extends AbstractAction
 	{
-		String cmd = e.getActionCommand();
-		if (cmd.equals("Quit"))
-		{
-			System.exit(0);
-		}
-		else if (cmd.equals("Open Database"))
-		{
-			Database.open(true, true);
-		}
-		else if (cmd.equals("Download Database Copy"))
-		{
-			new Thread(new Runnable() {
-				public void run() {
-					Database.download(false);
-				}
-			}).start();
-		}
-		else if (cmd.equals("Merge Database"))
-		{
-			DatabaseDialog dd = new DatabaseDialog(null, Prefs.getMergeHost()+"/"+Database.d.getCurrentSeries(), true);
-			dd.doDialog("Merge Series", null);
-
-			if (dd.getResult() != null)
-			{
-				String spec = (String)dd.getResult();
-				final String sp[] = spec.split("/");
-				if (sp.length != 2)
-				{
-					log.log(Level.SEVERE, "Invalid network spec: {0}", spec);
-					return;
-				}
-
-				if (!sp[1].equals(Database.d.getCurrentSeries()))
-				{
-					if (JOptionPane.showConfirmDialog(this, "The series names are not the same, do you want to continue?", "Series Names Differ", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION)
-						return;
-				}
-
-				Prefs.setMergeHost(sp[0]);
-				new Thread(new Runnable() { public void run() { MergeDialog.mergeTo(sp[0], sp[1]); }}).start();
-			}
-		}
-		else if (cmd.equals("Download Attendance History"))
+		public AttendanceDownloadAction() { super("Download Attendance History"); }
+		@Override
+		public void actionPerformed(ActionEvent e)
 		{
 			new Thread(new Runnable() {
 				public void run() {
 					try {						
 						Attendance.getAttendance(Database.getHost());
 					} catch (CancelException ce) {
-						// pass
 					} catch (Exception e1) {
 						log.severe("Failed to download attendance: " + e1);
 					}
 				}
 			}).start();
 		}
-		else if (cmd.equals("Configure Attendance Values"))
+	}
+	
+	class AttendanceConfigureAction extends AbstractAction
+	{
+		public AttendanceConfigureAction() { super("Configure Attendance Values"); }
+		@Override
+		public void actionPerformed(ActionEvent e)
 		{
 			JTextPane p = new JTextPane();
 			p.setText(Prefs.getAttendanceCalculations());
@@ -174,7 +139,13 @@ public class Registration extends JFrame implements ActionListener
 				Messenger.sendEvent(MT.ATTENDANCE_SETUP_CHANGE, null);
 			}
 		}
-		else if (cmd.equals("Show Attendance Values"))
+	}
+	
+	class AttendanceShowAction extends AbstractAction
+	{
+		public AttendanceShowAction() { super("Show Attendance Values"); }
+		@Override
+		public void actionPerformed(ActionEvent e)
 		{
 			if (((JCheckBoxMenuItem)e.getSource()).isSelected())
 			{
@@ -188,11 +159,8 @@ public class Registration extends JFrame implements ActionListener
 				pack();
 			}
 		}
-		else
-		{
-			log.log(Level.INFO, "Unknown command from menubar: {0}", cmd);
-		}
 	}
+	
 			
 	/**
 	 * Main

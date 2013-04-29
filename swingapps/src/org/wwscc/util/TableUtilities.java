@@ -6,7 +6,6 @@ package org.wwscc.util;
 
 import java.awt.Component;
 import javax.swing.JTable;
-import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
 
 /**
@@ -15,63 +14,6 @@ import javax.swing.table.TableCellRenderer;
  * @author Jeanette Winzenburg, Berlin
  */
 public class TableUtilities {
-    
-    
-    /**
-     * Returns a boolean indication whether the event represents a
-     * dataChanged type.
-     * 
-     * @param e the event to examine.
-     * @return true if the event is of type dataChanged, false else.
-     */
-    public static boolean isDataChanged(TableModelEvent e) {
-        if (e == null)
-            return false;
-        return e.getType() == TableModelEvent.UPDATE && e.getFirstRow() == 0
-                && e.getLastRow() == Integer.MAX_VALUE;
-    }
-
-    /**
-     * Returns a boolean indication whether the event represents a
-     * update type.
-     * 
-     * @param e the event to examine.
-     * @return true if the event is a true update, false
-     *         otherwise.
-     */
-    public static boolean isUpdate(TableModelEvent e) {
-        if (isStructureChanged(e))
-            return false;
-        return e.getType() == TableModelEvent.UPDATE
-                && e.getLastRow() < Integer.MAX_VALUE;
-    }
-
-    /**
-     * Returns a boolean indication whether the event represents a
-     * insert type.
-     * 
-     * @param e the event to examine
-     * @return true if the event is of type insert, false otherwise.
-     */
-    public static boolean isInsert(TableModelEvent e) {
-        if (e == null) return false;
-        return TableModelEvent.INSERT == e.getType();
-    }
-
-
-    /**
-     * Returns a boolean indication whether the event represents a
-     * structureChanged type.
-     * 
-     * @param e the event to examine.
-     * @return true if the event is of type structureChanged or null, false
-     *         else.
-     */
-    public static boolean isStructureChanged(TableModelEvent e) {
-        return e == null || e.getFirstRow() == TableModelEvent.HEADER_ROW;
-    }
-
-
 
     /**
      * Returns the preferred height for the given row. It loops

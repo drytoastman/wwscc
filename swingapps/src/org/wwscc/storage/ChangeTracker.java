@@ -18,6 +18,7 @@ import org.wwscc.util.Logging;
 public class ChangeTracker
 {
 	private static Logger log = Logger.getLogger(ChangeTracker.class.getCanonicalName());
+	public static final int HISTORYLENGTH = 10;
 	
 	private List<Change> changes;
 	private String dbname;
@@ -33,7 +34,7 @@ public class ChangeTracker
 	public ChangeTracker(String db) throws FileNotFoundException, IOException, ClassNotFoundException
 	{
 		dbname = db;
-		changes = readInFile(generateFileName(0));
+		changes = readInFile(generateFileName(dbname, 0));
 	}
 
 	/**
@@ -43,6 +44,20 @@ public class ChangeTracker
 	{
 		return changes.size();
 	}
+
+	/**
+	 * Rotates the current list of changeset files. Package private.
+	 * @throws FileNotFoundException
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
+	public void archiveChanges() throws FileNotFoundException, ClassNotFoundException, IOException
+	{
+		syncToFile(); // do I need this?
+		changes.clear();
+		rotate();
+	}
+	
 	
 	
 	// #### public static methods ####
@@ -71,6 +86,15 @@ public class ChangeTracker
 		return ret;
 	}
 	
+	public static File generateFileName(String database, int counter)
+	{
+		if (counter > 0)
+			return new File(Logging.getLogDir(), database + "changes.log." + counter);
+		else
+			return new File(Logging.getLogDir(), database + "changes.log");
+	}
+
+	
 	
 	// ### Package private methods ###
 	
@@ -87,20 +111,6 @@ public class ChangeTracker
 	
 
 	/**
-	 * Rotates the current list of changeset files. Package private.
-	 * @throws FileNotFoundException
-	 * @throws ClassNotFoundException
-	 * @throws IOException
-	 */
-	void archiveChanges() throws FileNotFoundException, ClassNotFoundException, IOException
-	{
-		syncToFile(); // do I need this?
-		changes.clear();
-		rotate();
-	}
-	
-	
-	/**
 	 * Get the list of changes that we've recorded so far.  Package private.
 	 * @return a List of Change objects, could be empty if nothing recorded
 	 */
@@ -111,15 +121,6 @@ public class ChangeTracker
 	
 
 	// #### Private methods ####
-	 
-	private File generateFileName(int counter)
-	{
-		if (counter > 0)
-			return new File(Logging.getLogDir(), dbname + "changes.log." + counter);
-		else
-			return new File(Logging.getLogDir(), dbname + "changes.log");
-	}
-
 	
 	private void syncToFile()
 	{
@@ -127,7 +128,7 @@ public class ChangeTracker
 			return;
 		
 		try {
-			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(generateFileName(0)));
+			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(generateFileName(dbname, 0)));
 			out.writeObject(changes);
 			out.close();
 		} catch (IOException ioe) {
@@ -138,11 +139,11 @@ public class ChangeTracker
 	private void rotate()
 	{
 		// rotate
-		File files[] = new File[10];
-		for (int ii = 0; ii < files.length; ii++)
-			files[ii] = generateFileName(ii);
+		File files[] = new File[HISTORYLENGTH];
+		for (int ii = 0; ii < ChangeTracker.HISTORYLENGTH; ii++)
+			files[ii] = generateFileName(dbname, ii);
 
-		for (int ii = files.length - 2; ii >= 0; ii--)
+		for (int ii = ChangeTracker.HISTORYLENGTH - 2; ii >= 0; ii--)
 		{
 			File f1 = files[ii];
 			File f2 = files[ii + 1];

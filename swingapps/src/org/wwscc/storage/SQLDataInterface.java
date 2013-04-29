@@ -1561,7 +1561,7 @@ public abstract class SQLDataInterface extends DataInterface
 			start();
 			for (Change change : changes)
 			{
-				String sqlmap = change.getType();
+				String sqlmap = change.getSqlMap();
 				Serializable[] args = change.getArgs();
 				log.info("Merge "+sqlmap+": " + args);
 				

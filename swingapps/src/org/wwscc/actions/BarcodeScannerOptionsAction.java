@@ -1,8 +1,6 @@
-package org.wwscc.barcodes;
+package org.wwscc.actions;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
 import javax.swing.AbstractAction;
 
 import org.wwscc.util.MT;
@@ -13,7 +11,6 @@ public class BarcodeScannerOptionsAction extends AbstractAction
 	public BarcodeScannerOptionsAction()
 	{
 		super("Barcode Scanner Options");
-		putValue(MNEMONIC_KEY, KeyEvent.VK_I);
 	}
 	
 	@Override

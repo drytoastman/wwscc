@@ -21,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JTabbedPane;
 import javax.swing.event.ListSelectionEvent;
 import org.wwscc.components.DriverCarPanel;
 import org.wwscc.components.UnderlineBorder;
@@ -187,6 +188,9 @@ public class DriverEntry extends DriverCarPanel
 				{
 					Driver d = (Driver)o;
 					focusOnDriver(d.getFirstName(), d.getLastName());
+					if (getParent() instanceof JTabbedPane) {
+						((JTabbedPane)getParent()).setSelectedComponent(this);
+					}
 				}
 				break;
 				

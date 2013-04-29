@@ -26,7 +26,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 
-import org.wwscc.barcodes.BarcodeScannerOptionsAction;
+import org.wwscc.actions.BarcodeScannerOptionsAction;
+import org.wwscc.actions.DatabaseCheckinAction;
+import org.wwscc.actions.DatabaseCheckoutAction;
+import org.wwscc.actions.DatabaseOpenAction;
+import org.wwscc.actions.EventSendAction;
+import org.wwscc.actions.QuitAction;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.dialogs.GroupDialog;
 import org.wwscc.storage.Database;
@@ -51,24 +56,23 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 	public Menus()
 	{
 		items = new HashMap <String,JMenuItem>();
-		Messenger.register(MT.DATABASE_CHANGED, this);
 		Messenger.register(MT.EVENT_CHANGED, this);
 
 		/* File Menu */
 		JMenu file = new JMenu("File");
 		add(file);
 
-		file.add(createItem("Open Database", null));
-		file.add(createItem("Download and Lock Database", null));
-		file.add(createItem("Upload and Unlock Database", null));
-		file.add(createItem("Quit", null));
+		file.add(new DatabaseOpenAction());
+		file.add(new DatabaseCheckoutAction());
+		file.add(new DatabaseCheckinAction());
+		file.add(new QuitAction());
 
 		/* Edit Menu */
 		JMenu edit = new JMenu("Edit");
 		add(edit);
-		edit.add(createItem("Find", KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK)));
-		edit.add(createItem("Quick Add By CarId", KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK)));
-		edit.add(createItem("Manual Barcode Entry", KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK)));
+		edit.add(new EventSendAction("Find", MT.OPEN_FIND, KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK)));
+		edit.add(new EventSendAction("Quick Add By CarId", MT.OPEN_CARID_ENTRY, KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK)));
+		edit.add(new EventSendAction("Manual Barcode Entry", MT.OPEN_BARCODE_ENTRY, KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK)));
 
 		/* Event Menu */
 		JMenu event = new JMenu("Event Options");
@@ -113,9 +117,9 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 
 		JMenu debug = new JMenu("Debug");
 		add(debug);
-		debug.add(createItem("Start Fake User", null));
-		debug.add(createItem("Stop Fake User", null));
-		debug.add(createItem("Configure Fake User", null));
+		debug.add(new EventSendAction("Start Fake User", MT.START_FAKE_USER));
+		debug.add(new EventSendAction("Stop Fake User", MT.STOP_FAKE_USER));
+		debug.add(new EventSendAction("Configure Fake User", MT.CONFIGURE_FAKE_USER));
 	}
 
 	protected final JMenuItem createItem(String title, KeyStroke ks)
@@ -133,11 +137,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 	public void actionPerformed(ActionEvent e) 
 	{ 
 		String cmd = e.getActionCommand(); 
-		if (cmd.equals("Quit")) 
-		{ 
-			System.exit(0); 
-		} 
-		else if (cmd.equals("Multiple Group Results"))
+		if (cmd.equals("Multiple Group Results"))
 		{
 			new GroupDialog().doDialog("Select groups to print:", new DialogFinisher<int[]>() {
 				@Override
@@ -165,31 +165,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 				else
 					event.setRuns(save); // We bombed
 			}
-		}
-		else if (cmd.equals("Open Database"))
-		{
-			Database.open(true, true);
-		}
-
-		else if (cmd.equals("Download and Lock Database"))
-		{
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					Database.download(true);
-				}
-			}).start();
-		}
-		else if (cmd.equals("Upload and Unlock Database"))
-		{
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					Database.upload();
-				}
-			}).start();
-		}
-		
+		}		
 		else if (cmd.equals("Highlight Unpaid Entries"))
 		{
 			Prefs.setUsePaidFlag(paidInfoMode.getState());
@@ -199,31 +175,6 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		{
 			Prefs.setReorderingTable(reorderMode.getState());
 		}
-		else if (cmd.equals("Find"))
-		{
-			Messenger.sendEvent(MT.OPEN_FIND, null);
-		}
-		else if(cmd.equals("Quick Add By CarId"))
-		{
-			Messenger.sendEvent(MT.OPEN_CARID_ENTRY, null);
-		}
-		else if (cmd.equals("Manual Barcode Entry"))
-		{
-			Messenger.sendEvent(MT.OPEN_BARCODE_ENTRY, null);
-		}
-		else if (cmd.equals("Start Fake User"))
-		{
-			Messenger.sendEvent(MT.START_FAKE_USER, null);
-		}
-		else if (cmd.equals("Stop Fake User"))
-		{
-			Messenger.sendEvent(MT.STOP_FAKE_USER, null);
-		}
-		else if (cmd.equals("Configure Fake User"))
-		{
-			Messenger.sendEvent(MT.CONFIGURE_FAKE_USER, null);
-		}
-
 		else
 		{ 
 			log.log(Level.INFO, "Unknown command from menubar: {0}", cmd);
@@ -236,10 +187,6 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 	{
 		switch (type)
 		{
-			case DATABASE_CHANGED:
-				items.get("Upload and Unlock Database").setEnabled(Database.file != null);
-				break;
-
 			case EVENT_CHANGED:
 				/* when we first start or the a new event is selected, will also double when selecting via menu */
 				Enumeration<AbstractButton> e = runGrouping.getElements();

@@ -23,7 +23,7 @@ public class Change implements Serializable
 		 args = a; 
 	 }
 	 
-	 public String getType() 
+	 public String getSqlMap() 
 	 { 
 		 return sqlmap; 
 	 }
