@@ -10,6 +10,7 @@ package org.wwscc.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -153,38 +154,8 @@ public class Database
 						null);
 			if (dbname == null)
 				return null;
-
-			File outdir = new File(Prefs.getInstallRoot(), "series");
-			if (!outdir.exists())
-			{
-				if (JOptionPane.showConfirmDialog(null, outdir + " does not exist, create?", "Create Directory", JOptionPane.OK_CANCEL_OPTION)
-						!= JOptionPane.OK_OPTION)
-					return null;
-				outdir.mkdirs();
-			}
 			
-			File out = new File(outdir, dbname+".db");
-			if (out.exists())
-			{				
-				if (!lockServerSide)
-				{
-					if (JOptionPane.showConfirmDialog(null, out + " already exists, delete old?", "Delete File", JOptionPane.OK_CANCEL_OPTION)
-							!= JOptionPane.OK_OPTION)
-						return null;
-					if ((file != null) && file.equals(out))
-						d.close();
-					if (!out.delete())
-						throw new IOException("Unable to delete old version already on disk ("+out+")");
-				}
-				else
-					throw new IOException("Can't download file, already exists on local system ("+out+")");
-			}
-
-			conn.downloadDatabase(out, lockServerSide);
-			openDatabaseFile(out);
-			if (lockServerSide) // unlock on our side for admin site use at event
-				d.putBooleanSetting("locked", false);
-			return out;
+			return download(conn, dbname, lockServerSide);
 		}
 		catch (CancelException ex)
 		{
@@ -197,6 +168,51 @@ public class Database
 		}
 	}
 
+	/**
+	 * Internal version of download action that requires all the parameters provided, no dialog is presented to user.
+	 * @param conn the connection to download the database from
+	 * @param dbname the remote database name
+	 * @param lockServerSide true if server side should lock database
+	 * @return the File of the copied database
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public static File download(RemoteHTTPConnection conn, String dbname, boolean lockServerSide) throws IOException, URISyntaxException
+	{
+		File outdir = new File(Prefs.getInstallRoot(), "series");
+		if (!outdir.exists())
+		{
+			if (JOptionPane.showConfirmDialog(null, outdir + " does not exist, create?", "Create Directory", JOptionPane.OK_CANCEL_OPTION)
+					!= JOptionPane.OK_OPTION)
+				return null;
+			outdir.mkdirs();
+		}
+		
+		File out = new File(outdir, dbname+".db");
+		if (out.exists())
+		{				
+			if (!lockServerSide)
+			{
+				if (JOptionPane.showConfirmDialog(null, out + " already exists, delete old?", "Delete File", JOptionPane.OK_CANCEL_OPTION)
+						!= JOptionPane.OK_OPTION)
+					return null;
+				if ((file != null) && file.equals(out))
+					d.close();
+				if (!out.delete())
+					throw new IOException("Unable to delete old version already on disk ("+out+")");
+			}
+			else
+				throw new IOException("Can't download file, already exists on local system ("+out+")");
+		}
+
+		conn.downloadDatabase(out, lockServerSide);
+		openDatabaseFile(out);
+		if (lockServerSide) // unlock on our side for admin site use at event
+			d.putBooleanSetting("locked", false);
+		return out;
+	}
+
+	
 	public static void upload()
 	{
 		try

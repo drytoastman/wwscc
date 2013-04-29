@@ -1,5 +1,6 @@
 package org.wwscc.registration.changeviewer;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.io.Serializable;
@@ -22,6 +23,7 @@ class ChangeTable extends JTable
 	{
 		super();
 		setDefaultRenderer(Object.class, new TextAreaCellRenderer());
+		setBackground(new Color(235,235,245));
 	}
 
 	public void setData(List<Change> changes)
@@ -51,6 +53,9 @@ class ChangeTable extends JTable
 		}
 
 		setModel(model);
+		getColumnModel().getColumn(0).setPreferredWidth(50);
+		getColumnModel().getColumn(1).setPreferredWidth(180);
+		getColumnModel().getColumn(2).setPreferredWidth(700);
 		TableUtilities.setPreferredRowHeights(this);
 	}
 }

@@ -20,7 +20,10 @@ import net.miginfocom.swing.MigLayout;
 import org.wwscc.services.FoundService;
 import org.wwscc.services.JServiceList;
 import org.wwscc.services.ServiceFinder;
+import org.wwscc.storage.Database;
+import org.wwscc.util.CancelException;
 import org.wwscc.util.FileChooser;
+import org.wwscc.util.Prefs;
 
 
 /**
@@ -192,6 +195,25 @@ public class DatabaseDialog extends BaseDialog<Object> implements ListSelectionL
 	public Object getResult()
 	{
 		return result;
+	}
+	
+	
+	/**
+	 * Common call functionality in one place for looking up a network connected database
+	 * @param title the dialog title
+	 * @param defaultspec the default network spec "host/name"
+	 * @return null if cancelled, otherwise the string spec split by "/"
+	 * @throws CancelException 
+	 */
+	public static String[] netLookup(String title, String defaultspec) throws CancelException
+	{
+		DatabaseDialog dd = new DatabaseDialog(null, defaultspec, true);
+		dd.doDialog(title, null);
+		String ret = (String)dd.getResult();
+		if (ret == null) throw new CancelException();
+		String spec[] = ret.split("/");
+		Prefs.setMergeHost(spec[0]);
+		return spec;
 	}
 }
 

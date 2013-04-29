@@ -138,9 +138,11 @@ public class SqliteDatabase extends SQLDataInterface
 	public void close()
 	{
 		try	{
+			if (dbptr == 0)
+				throw new IOException("Trying to close fd 0, closing a closed file are you?");
 			close(dbptr);
 		} catch (IOException ioe) {
-			log.log(Level.SEVERE, "Problems closing sqlite file: {0}", ioe);
+			log.log(Level.SEVERE, "Problems closing sqlite file: {0}", ioe.getMessage());
 		}
 		dbptr = 0;
 	}

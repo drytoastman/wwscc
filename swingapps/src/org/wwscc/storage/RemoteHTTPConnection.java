@@ -211,6 +211,7 @@ public class RemoteHTTPConnection
 		HttpEntity resEntity = new CountingEntity("Download", execute(download, remotename).getEntity());
 		FileOutputStream output = new FileOutputStream(dst);
 		resEntity.writeTo(output);
+		output.close();
 	}
 
 	/**

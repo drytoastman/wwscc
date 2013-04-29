@@ -22,6 +22,7 @@ public class ChangeTracker
 	
 	private List<Change> changes;
 	private String dbname;
+	private int currentEventId = -1;
 	
 	/**
 	 * Create a new change tracker
@@ -35,6 +36,10 @@ public class ChangeTracker
 	{
 		dbname = db;
 		changes = readInFile(generateFileName(dbname, 0));
+		for (Change c : changes) {
+			if (c.sqlmap.equals("SETEVENT"))
+				currentEventId = ((Event)c.args[0]).id;
+		}
 	}
 
 	/**
@@ -100,12 +105,20 @@ public class ChangeTracker
 	
 	/**
 	 * Record the change for later use such as merging.
-	 * @param type the key for the change type
+	 * @param sqlmap the key for the change type
 	 * @param o the serializable object used
 	 */
-	void trackChange(String type, Serializable o[])
+	void trackChange(String sqlmap, Serializable o[])
 	{
-		changes.add(new Change(type, o));
+		if (sqlmap.equals("SETEVENT")) // filter out unnecessary event info if we already have the same id set
+		{
+			Event e = (Event)o[0];
+			if (e.id == currentEventId)
+				return;
+			currentEventId = e.id; 
+		}
+		
+		changes.add(new Change(sqlmap, o));
 		syncToFile(); // not efficient but simple, easy to understand, and files are small enough that its a non-issue
 	}
 	

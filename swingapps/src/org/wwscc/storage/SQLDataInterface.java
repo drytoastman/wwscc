@@ -160,6 +160,10 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	
+	protected boolean sendEvents = true;
+	public void sendEvents(boolean yes) { sendEvents = yes; }
+	public boolean isSendingEvents() { return sendEvents; }
+	
 	protected ChangeTracker tracker = null;
 	public ChangeTracker getChangeTracker() { return tracker; }
 	public void setChangeTracker(ChangeTracker in) { tracker = in; }
@@ -756,7 +760,7 @@ public abstract class SQLDataInterface extends DataInterface
 		executeUpdate("INSERTCAR", vals);
 		c.id = lastInsertId();
 		if (tracker != null) tracker.trackChange("INSERTCAR", new Serializable[] { c });
-		Messenger.sendEvent(MT.CAR_CREATED, c);
+		if (sendEvents) Messenger.sendEvent(MT.CAR_CREATED, c);
 	}
 
 
