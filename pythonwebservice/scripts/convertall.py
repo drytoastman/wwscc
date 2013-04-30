@@ -17,9 +17,12 @@ for dbfile in sys.argv[1:]:
 	if not dbfile.endswith('.db'):
 		continue
 
-	logging.info("converting %s", dbfile)
-	session = Session()
-	session.bind = create_engine('sqlite:///%s' % dbfile)
-	convert(session)
+	try:
+		logging.info("converting %s", dbfile)
+		session = Session()
+		session.bind = create_engine('sqlite:///%s' % dbfile)
+		convert(session)
+	except Exception, e:
+		print dbfile, e
 
 
