@@ -21,7 +21,6 @@ import net.miginfocom.swing.MigLayout;
 import org.wwscc.dialogs.DatabaseDialog;
 import org.wwscc.storage.ChangeTracker;
 import org.wwscc.storage.Database;
-import org.wwscc.storage.RemoteHTTPConnection;
 import org.wwscc.storage.WebDataSource;
 import org.wwscc.util.CancelException;
 import org.wwscc.util.Prefs;

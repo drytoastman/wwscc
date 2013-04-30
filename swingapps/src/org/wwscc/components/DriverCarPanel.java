@@ -241,6 +241,10 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 					try {
 						Database.d.updateDriver(d);
 						driverInfo.setText(driverDisplay(d));
+						// round about way to fire selected index
+						int ii = drivers.getSelectedIndex();
+						drivers.clearSelection();
+						drivers.setSelectedIndex(ii);
 					} catch (IOException ioe) {
 						log.log(Level.SEVERE, "Failed to update driver: " + ioe, ioe);
 					}

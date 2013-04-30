@@ -76,7 +76,7 @@ public class EntryPanel extends DriverCarPanel
 	public EntryPanel(NameStorage names)
 	{
 		super();
-		setLayout(new MigLayout("fill", "[400, grow 25][150, grow 25][150, grow 25]"));
+		setLayout(new MigLayout("fill", "[400, grow 25][:150:200, grow 25][:150:200, grow 25]"));
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.ATTENDANCE_SETUP_CHANGE, this);
 		Messenger.register(MT.BARCODE_SCANNED, this);
