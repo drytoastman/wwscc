@@ -85,7 +85,7 @@ public class ChangeViewer extends JFrame
 		{
 			try
 			{
-				String spec[] = DatabaseDialog.netLookup("Get New Copy From Remote", Prefs.getMergeHost()+"/"+Database.d.getCurrentSeries());				
+				String spec[] = DatabaseDialog.netLookup("Merge Copy To Remote", Prefs.getMergeHost()+"/"+Database.d.getCurrentSeries());				
 				WebDataSource dest = new WebDataSource(spec[0], spec[1]);
 				dest.sendEvents(false);
 				dest.mergeChanges(list.getSelectedValue().changes);
