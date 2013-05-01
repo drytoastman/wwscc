@@ -8,6 +8,7 @@
 
 package org.wwscc.registration;
 
+import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
@@ -27,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import org.wwscc.actions.BarcodeScannerOptionsAction;
@@ -79,6 +81,11 @@ public class Registration extends JFrame
 		file.add(new JSeparator());
 		file.add(new QuitAction());
 		
+		JMenu find = new JMenu("Find By...");
+		find.add(new FindByAction("Membership"));
+		find.add(new FindByAction("DriverId"));
+		find.add(new FindByAction("CarId"));
+		
 		JMenu options = new JMenu("Options");
 		options.add(new BarcodeScannerOptionsAction());
 		
@@ -93,6 +100,7 @@ public class Registration extends JFrame
 		
 		JMenuBar bar = new JMenuBar();
 		bar.add(file);
+		bar.add(find);
 		bar.add(options);
 		bar.add(attendance);
 		bar.add(merge);
@@ -103,6 +111,29 @@ public class Registration extends JFrame
 		setVisible(true);
 	}
 
+
+	class FindByAction extends AbstractAction
+	{
+		String type;
+		char prefix;
+		public FindByAction(String t) 
+		{ 
+			super();
+			type = t;
+			prefix = type.charAt(0);
+			putValue(NAME, type);
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(AWTKeyStroke.getAWTKeyStroke(prefix).getKeyChar(), ActionEvent.CTRL_MASK));				 
+		}
+		
+		public void actionPerformed(ActionEvent e) 
+		{
+			Object o = JOptionPane.showInputDialog("Enter " + type);
+			if (o != null)
+				Messenger.sendEvent(MT.BARCODE_SCANNED, (prefix != 'M') ? prefix+o.toString() : o);
+		}
+	}
+	
+	
 	class ChangeViewerAction extends AbstractAction
 	{
 		public ChangeViewerAction() { super("Open Change Viewer"); }

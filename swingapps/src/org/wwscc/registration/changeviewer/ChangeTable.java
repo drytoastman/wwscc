@@ -39,11 +39,11 @@ class ChangeTable extends JTable
 			Object data[] = new Object[] { ++row, type, null };
 			
 			if (type.equals("REGISTERCAR"))
-				data[2] = String.format("%d (paid=%b)", (Object[])args);
-			else if (type.equals("DELETECAR"))
-				data[2] = ((Car)args[0]).getId();
-			else if (type.equals("INSERTCAR") || type.equals("UPDATECAR"))
-				data[2] = DriverCarPanel.carDisplay((Car)args[0]);
+				data[2] = String.format("carid=%d paid=%b", (Object[])args);
+			else if (type.equals("UNREGISTERCAR"))
+				data[2] = String.format("carid=%d", args[0]);
+			else if (type.equals("INSERTCAR") || type.equals("UPDATECAR") || type.equals("DELETECAR"))
+				data[2] = String.format("%s\n[driverid=%d]", DriverCarPanel.carDisplay((Car)args[0]), ((Car)args[0]).getDriverId());
 			else if (type.equals("INSERTDRIVER") || type.equals("UPDATEDRIVER"))
 				data[2] = DriverCarPanel.driverDisplay((Driver)args[0]);
 			else

@@ -389,6 +389,7 @@ public class EntryPanel extends DriverCarPanel
 				} catch (LookupException e) {
 					log.warning("Barcode lookup exception: " + e.getMessage());
 				}
+				break;
 
 			case CAR_CREATED:
 				Car c = (Car)o;
@@ -404,6 +405,8 @@ public class EntryPanel extends DriverCarPanel
 						log.log(Level.WARNING, "Hmm.  I wasn't able to register the car: " + e.getMessage(), e);
 					}
 				}
+				break;
+				
 			default:
 				super.event(type, o);
 		}
