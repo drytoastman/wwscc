@@ -332,7 +332,7 @@ public class Timer extends JPanel implements ActionListener
 	}
 
 	
-	final class TimeRenderer extends DefaultTableCellRenderer
+	final static class TimeRenderer extends DefaultTableCellRenderer
 	{
 		Color bglist[] = new Color[2];
 		Color bg;

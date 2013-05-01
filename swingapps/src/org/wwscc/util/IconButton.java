@@ -16,9 +16,9 @@ import javax.swing.border.EmptyBorder;
  */
 public class IconButton extends JButton
 {
-	public static ImageIcon buttonIcon;
-	public static ImageIcon rolloverIcon;
-	public static ImageIcon pressedIcon;
+	static ImageIcon buttonIcon;
+	static ImageIcon rolloverIcon;
+	static ImageIcon pressedIcon;
 
 	public IconButton(Icon regular, Icon rollover, Icon pressed)
 	{

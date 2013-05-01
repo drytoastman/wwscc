@@ -112,7 +112,7 @@ public class Registration extends JFrame
 	}
 
 
-	class FindByAction extends AbstractAction
+	final static class FindByAction extends AbstractAction
 	{
 		String type;
 		char prefix;
@@ -134,13 +134,13 @@ public class Registration extends JFrame
 	}
 	
 	
-	class ChangeViewerAction extends AbstractAction
+	final static class ChangeViewerAction extends AbstractAction
 	{
 		public ChangeViewerAction() { super("Open Change Viewer"); }
 		public void actionPerformed(ActionEvent e) {  new ChangeViewer(Database.d.getCurrentSeries()); }
 	}
 	
-	class AttendanceDownloadAction extends AbstractAction
+	final static class AttendanceDownloadAction extends AbstractAction
 	{
 		public AttendanceDownloadAction() { super("Download Attendance History"); }
 		@Override
@@ -159,7 +159,7 @@ public class Registration extends JFrame
 		}
 	}
 	
-	class AttendanceConfigureAction extends AbstractAction
+	final static class AttendanceConfigureAction extends AbstractAction
 	{
 		public AttendanceConfigureAction() { super("Configure Attendance Values"); }
 		@Override
@@ -196,7 +196,7 @@ public class Registration extends JFrame
 		}
 	}
 	
-	class LocalDatabaseCopyAction extends AbstractAction
+	final static class LocalDatabaseCopyAction extends AbstractAction
 	{
 		public LocalDatabaseCopyAction() { super("Get Fresh Copy"); }
 		public void actionPerformed(ActionEvent e)

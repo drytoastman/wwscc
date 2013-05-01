@@ -57,16 +57,16 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 	private static final int initialSpacing = 36;
 
 	// these are the placements into the bracket as per SCCA rulebook
-    public static final int[] RANK4 =  new int[] { 3, 2, 4, 1 };
-    public static final int[] RANK8 =  new int[] { 6, 3, 7, 2, 5, 4, 8, 1 };
-    public static final int[] RANK16 = new int[] { 11, 6, 14, 3, 10, 7, 15, 2, 12, 5, 13, 4, 9, 8, 16, 1 };
-	public static final int[] RANK32 = new int[] { 22, 11, 27, 6, 19, 14, 30, 3, 23, 10, 26, 7, 18, 15, 31, 2, 21, 12, 28, 5, 20, 13, 29, 4, 24, 9, 25, 8, 17, 16, 32, 1 };
+    static final int[] RANK4 =  new int[] { 3, 2, 4, 1 };
+    static final int[] RANK8 =  new int[] { 6, 3, 7, 2, 5, 4, 8, 1 };
+    static final int[] RANK16 = new int[] { 11, 6, 14, 3, 10, 7, 15, 2, 12, 5, 13, 4, 9, 8, 16, 1 };
+	static final int[] RANK32 = new int[] { 22, 11, 27, 6, 19, 14, 30, 3, 23, 10, 26, 7, 18, 15, 31, 2, 21, 12, 28, 5, 20, 13, 29, 4, 24, 9, 25, 8, 17, 16, 32, 1 };
 
 	// these are the map from finishing place to first bracket indexes
-	public static final int[] POS4 = new int[4];  // i.e. becomes [ 3, 1, 0, 2], so person in top position, index 0 gets put in bracket position 3
-	public static final int[] POS8 = new int[8];
-	public static final int[] POS16 = new int[16];
-	public static final int[] POS32 = new int[32];
+	static final int[] POS4 = new int[4];  // i.e. becomes [ 3, 1, 0, 2], so person in top position, index 0 gets put in bracket position 3
+	static final int[] POS8 = new int[8];
+	static final int[] POS16 = new int[16];
+	static final int[] POS32 = new int[32];
 	
 	static
 	{ // Take the SCCA mapping and turn it into values we can use
@@ -206,7 +206,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 				{
 					int placement = pos[ii];
 					int rndidx = topround - placement/2;
-					Id.Entry.Level level = (placement%2==1) ? Id.Entry.Level.LOWER : Id.Entry.Level.UPPER;
+					Id.Entry.Level level = (placement%2 != 0) ? Id.Entry.Level.LOWER : Id.Entry.Level.UPPER;
 					Id.Entry entry = new Id.Entry(challenge.getId(), rndidx, level);
 					if (bys > 0)
 					{

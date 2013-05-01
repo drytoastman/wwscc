@@ -10,12 +10,15 @@
 package org.wwscc.util;
 
 import java.util.List;
+import java.util.logging.Logger;
+
 import javax.swing.JTextField;
 import javax.swing.text.*;
 
 
 public class AutoTextField extends JTextField 
 {
+	private static final Logger log = Logger.getLogger(AutoTextField.class.getCanonicalName());
 	private List<?> dataList;
 
 	class AutoDocument extends PlainDocument 
@@ -82,6 +85,9 @@ public class AutoTextField extends JTextField
 			int j = Math.max(getCaret().getDot(), getCaret().getMark());
 			doc.replace(i, j - i, s, null);
 		}
-		catch (Exception exception) {}
+		catch (Exception e) 
+		{
+			log.info("Error replacing selection: " + e.getMessage());
+		}
 	}
 }

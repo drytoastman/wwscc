@@ -66,8 +66,8 @@ class FocusButton extends JButton
 	
 	class ActivateDialog extends BaseDialog<Integer>
 	{
-		private final String deactive = "Deactivate";
-		private final String active = "Activate as next target";
+		private static final String deactive = "Deactivate";
+		private static final String active = "Activate as next target";
 		
 		public ActivateDialog()
 		{

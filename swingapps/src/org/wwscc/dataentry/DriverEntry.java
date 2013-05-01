@@ -200,7 +200,7 @@ public class DriverEntry extends DriverCarPanel
 	}
 	
 
-	class MyListRenderer extends DefaultListCellRenderer 
+	final static class MyListRenderer extends DefaultListCellRenderer 
 	{
 		private Color mygray = new Color(220,220,220);
 

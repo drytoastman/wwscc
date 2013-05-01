@@ -147,7 +147,7 @@ class D3Renderer extends DefaultTableCellRenderer
 class BracketingListModel extends AbstractTableModel
 {
 	List<Store> data;
-	class Store
+	final static class Store
 	{
 		Entrant entrant;
 		int netposition;

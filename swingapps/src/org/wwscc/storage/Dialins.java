@@ -28,8 +28,8 @@ public class Dialins
 	protected Map <Integer, Double> netTime;
 	protected Map <Integer, Double> classDiff;
 
-	protected List<Integer> netOrder;
-	protected List<Integer> diffOrder;
+	//protected List<Integer> netOrder;
+	//protected List<Integer> diffOrder;
 	
 	public Dialins()
 	{
@@ -39,8 +39,8 @@ public class Dialins
 		netTime = new HashMap<Integer, Double>();
 		classDiff = new HashMap<Integer, Double>();
 
-		netOrder = new ArrayList<Integer>();
-		diffOrder = new ArrayList<Integer>();
+		//netOrder = new ArrayList<Integer>();
+		//diffOrder = new ArrayList<Integer>();
 	}
 
 	public double getNet(int carid) { return netTime.get(carid); }

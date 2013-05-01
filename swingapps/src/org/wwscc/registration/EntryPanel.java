@@ -446,7 +446,7 @@ public class EntryPanel extends DriverCarPanel
 	}
 	
 	
-	class NameDriverComparator implements Comparator<Object> 
+	final static class NameDriverComparator implements Comparator<Object> 
 	{
 		public int compare(Object o1, Object o2)
 		{

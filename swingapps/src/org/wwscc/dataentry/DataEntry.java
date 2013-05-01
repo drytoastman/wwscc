@@ -47,7 +47,7 @@ public class DataEntry extends JFrame implements MessageListener
 	TimeEntry timeEntry;
 	JTabbedPane tabs;
 
-	class HelpPanel extends JLabel implements MessageListener
+	final static class HelpPanel extends JLabel implements MessageListener
 	{
 		private static final long serialVersionUID = -6376824946457087404L;
 

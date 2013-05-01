@@ -70,7 +70,7 @@ public class DebugPane extends JPanel implements ActionListener
 
 	public void log(String s)
 	{
-		try { file.write(s); file.flush(); } catch (Exception e) {}
+		try { file.write(s); file.flush(); } catch (Exception e) { log.info("Failed to write log: " + e.getMessage()); }
 		text.append(s);
 		text.setCaretPosition(text.getDocument().getLength());
 	}

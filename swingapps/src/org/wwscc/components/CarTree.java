@@ -35,7 +35,7 @@ public class CarTree extends JTree
 		setCellRenderer(new CarTreeRenderer());
 	}
 
-	class ClassNode
+	final static class ClassNode
 	{
 		public String name;
 		public String label;

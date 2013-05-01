@@ -115,6 +115,12 @@ public final class TimerClient implements RunServiceInterface, ThreadedClass
 				{
 					String line = in.readLine();
 					log.log(Level.INFO, "TimerClient reads: {0}", line);
+					if (line == null)
+					{
+						log.info("readLine returns null, closing connection");
+						return;
+					}
+					
 					if (line.startsWith("DIAL "))
 					{
 						LeftRightDialin d = new LeftRightDialin();

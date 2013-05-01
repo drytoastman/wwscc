@@ -72,7 +72,6 @@ public class ClassListTest {
 	@Test
 	public void testHalfInvalid() {
 		ClassData.Class cls = new ClassData.Class();
-		cls.caridxrestrict = "";
 		cls.caridxrestrict = "-SA, SB, STU,  -(MA, MB, AS)";
 		Set<String>[] ret = cls.restrictedIndexes(allindexes);
 

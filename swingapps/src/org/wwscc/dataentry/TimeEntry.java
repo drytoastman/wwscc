@@ -113,7 +113,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	/**
 	 * Special focus listener for cones and gates entry
 	 */
-	class SelectAllFocusListener implements FocusListener
+	final static class SelectAllFocusListener implements FocusListener
 	{
 		@Override
 		public void focusGained(FocusEvent e) {

@@ -11,6 +11,7 @@ package org.wwscc.storage;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1236,7 +1237,7 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
-	class Leader {  // I miss python
+	final static class Leader {  // I miss python
 		int carid; double basis; double net;
 		Leader(int i, double b, double n) { carid = i; basis = b; net = n; }
 	}
@@ -1567,7 +1568,7 @@ public abstract class SQLDataInterface extends DataInterface
 			{
 				String sqlmap = change.getSqlMap();
 				Serializable[] args = change.getArgs();
-				log.info("Merge "+sqlmap+": " + args);
+				log.info("Merge "+sqlmap+": " + Arrays.toString(args));
 				
 				if (sqlmap.equals("SETEVENT"))
 				{
