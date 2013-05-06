@@ -24,7 +24,7 @@ public class EventSendAction extends AbstractAction
 	
 	public EventSendAction(String title, MT tosend, Object o, KeyStroke ks)
 	{
-		super("Open Database");
+		super(title);
 		event = tosend;
 		arg = o;
 		if (ks != null) putValue(ACCELERATOR_KEY, ks);
