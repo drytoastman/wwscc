@@ -28,7 +28,11 @@ import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.print.SimpleDoc;
 import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Copies;
+import javax.print.attribute.standard.Media;
+import javax.print.attribute.standard.OrientationRequested;
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -108,8 +112,10 @@ public class EntryPanel extends DriverCarPanel
 		lastSearch.getDocument().removeDocumentListener(searchDrivers);
 		lastSearch.getDocument().addDocumentListener(searchDrivers2);
 
-		drivers.setCellRenderer(new DriverRenderer());		
+		drivers.setCellRenderer(new DriverRenderer());
+		driverInfo.setLineWrap(false);
 		cars.setCellRenderer(new CarRenderer());
+		carInfo.setLineWrap(false);
 
 		/* Buttons */
 		registeredandpaid = new JButton(REGISTERANDPAY);
@@ -127,12 +133,10 @@ public class EntryPanel extends DriverCarPanel
 		unregisterit.setEnabled(false);
 		unregisterit.setFont(unregisterit.getFont().deriveFont(12f));
 		
-		editcar = new JButton("Edit Car");
-		editcar.addActionListener(this);
+		editcar = new JButton(new EditCarAction());
 		editcar.setEnabled(false);
 		
-		deletecar = new JButton("Delete Car");
-		deletecar.addActionListener(this);
+		deletecar = new JButton(new DeleteCarAction());
 		deletecar.setEnabled(false);
 		
 		membershipwarning = new JLabel("");
@@ -140,6 +144,9 @@ public class EntryPanel extends DriverCarPanel
 		membershipwarning.setBackground(Color.RED);
 		
 		activeLabel = new Code39();
+		print = new JButton(new PrintLabelAction());
+		print.setFont(new Font(null, Font.PLAIN, 11));
+		print.setEnabled(false);
 
 		/* Delete button, row 0 */
 		add(createTitle("1. Search"), "spanx 3, growx, wrap");
@@ -154,22 +161,20 @@ public class EntryPanel extends DriverCarPanel
 		add(dscroll, "spany 6, grow");
 		add(smallButton("New Driver", true), "growx");
 		add(smallButton("Edit Driver", true), "growx, wrap");
-		driverInfo.setLineWrap(false);
+		
 		add(driverInfo, "spanx 2, growx, wrap");
 		add(membershipwarning, "spanx 2, growx, h 15, wrap");
 		add(activeLabel, "center, spanx 2, wrap");
 		add(printers, "center, spanx 2, wrap");
-		print = smallButton("Print Label", false);
 		add(print, "center, growx, spanx 2, wrap");
 
-		
 		add(createTitle("3. Car"), "spanx 3, growx, gaptop 4, wrap");
 		add(cscroll, "spany 3, hmin 130, grow");
 		add(smallButton("New Car", true), "growx");
 		add(smallButton("New From", true), "growx, wrap");
 		add(editcar, "growx"); 
 		add(deletecar, "growx, wrap");
-		carInfo.setLineWrap(false);
+		
 		add(carInfo, "spanx 2, growx, top, wrap");
 		
 		add(createTitle("4. Do it"), "spanx 3, growx, gaptop 4, wrap");
@@ -179,6 +184,80 @@ public class EntryPanel extends DriverCarPanel
 		
 		new Thread(new FindPrinters()).start();
 	}
+	
+	
+	class PrintLabelAction extends AbstractAction
+	{
+		public PrintLabelAction() { super("Print Label"); }
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			try {
+				if (selectedDriver == null)
+					return;
+				
+				PrintService ps = (PrintService)printers.getSelectedItem();					
+				PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
+				
+				attr.add(new Copies(1));
+				attr.add((Media)ps.getDefaultAttributeValue(Media.class)); // set to default paper from printer
+				attr.add(OrientationRequested.LANDSCAPE);
+				
+				SimpleDoc doc = new SimpleDoc(activeLabel, DocFlavor.SERVICE_FORMATTED.PRINTABLE, null);
+				ps.createPrintJob().print(doc, attr);
+			}  catch (PrintException ex) {
+				log.log(Level.SEVERE, "Barcode print failed: " + ex.getMessage(), ex);
+			}
+		}
+	}
+
+	
+	class EditCarAction extends AbstractAction
+	{
+		public EditCarAction() { super("Edit Car"); }
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			if (selectedCar == null) return;
+			final CarDialog cd = new CarDialog(selectedCar, Database.d.getClassData(), false);
+			cd.setOkButtonText("Edit");
+			cd.doDialog("Edit Car", new DialogFinisher<Car>() {
+				@Override
+				public void dialogFinished(Car c) {
+					if ((c == null) || (selectedDriver == null))
+						return;
+					try {
+						c.setDriverId(selectedDriver.getId());
+						Database.d.updateCar(c);
+						reloadCars(c);
+					} catch (IOException ioe) {
+						log.log(Level.SEVERE, "Failed to edit car: " + ioe.getMessage(), ioe);
+					}
+				}
+			});
+		}
+	}
+	
+	
+	class DeleteCarAction extends AbstractAction
+	{
+		public DeleteCarAction() { super("Delete Car"); }
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			if (selectedCar == null) return;
+			if (JOptionPane.showConfirmDialog(EntryPanel.this, "Are you sure you want to delete the selected car?", "Delete Car", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
+			{
+				try {
+					Database.d.deleteCar(selectedCar);
+					reloadCars(null);
+				} catch (IOException ioe) {
+					log.log(Level.SEVERE, "Failed to delete car: " + ioe, ioe);
+				}
+			}
+		}
+	}
+
 	
 	class FindPrinters implements Runnable
 	{
@@ -209,8 +288,8 @@ public class EntryPanel extends DriverCarPanel
 	{
 		JButton b = new JButton(text);
 		b.setFont(new Font(null, Font.PLAIN, 11));
-		b.addActionListener(this);
 		b.setEnabled(enabled);
+		b.addActionListener(this);
 		return b;
 	}
 
@@ -245,48 +324,12 @@ public class EntryPanel extends DriverCarPanel
 				Database.d.unregisterCar(selectedCar.getId());
 				reloadCars(selectedCar);
 			}
-			else if (cmd.equals("Delete Car") && (selectedCar != null))
-			{
-				if (JOptionPane.showConfirmDialog(this, "Are you sure you want to delete the selected car?", "Delete Car", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
-				{
-					Database.d.deleteCar(selectedCar);
-					reloadCars(null);
-				}
-			}
-			else if (cmd.equals("Edit Car") && (selectedCar != null))
-			{
-				final CarDialog cd = new CarDialog(selectedCar, Database.d.getClassData(), false);
-				cd.setOkButtonText("Edit");
-				cd.doDialog("Edit Car", new DialogFinisher<Car>() {
-					@Override
-					public void dialogFinished(Car c) {
-						if ((c == null) || (selectedDriver == null))
-							return;
-						try {
-							c.setDriverId(selectedDriver.getId());
-							Database.d.updateCar(c);
-							reloadCars(c);
-						} catch (IOException ioe) {
-							log.log(Level.SEVERE, "Failed to edit car: " + ioe, ioe);
-						}
-					}
-				});
-			}
-			else if (cmd.equals("Print Label") && (selectedDriver != null))
-			{
-				try {
-					PrintService ps = (PrintService)printers.getSelectedItem();
-					ps.createPrintJob().print(new SimpleDoc(activeLabel, DocFlavor.SERVICE_FORMATTED.PRINTABLE, null), null);
-				} catch (PrintException ex) {
-					log.log(Level.SEVERE, "Barcode print failed: " + ex.getMessage(), ex);
-				}
-			}
 			else
 				super.actionPerformed(e);
 		}
 		catch (IOException ioe)
 		{
-			log.log(Level.SEVERE, "Registation failed: " + ioe, ioe);
+			log.log(Level.SEVERE, "Registation action failed: " + ioe, ioe);
 		}
 		
 		Messenger.sendEvent(MT.TRACKING_CHANGE_MADE, null);

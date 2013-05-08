@@ -99,11 +99,24 @@ public class Code39 extends JComponent implements Printable
 	public int print(Graphics g, PageFormat pf, int i) throws PrinterException 
 	{
 		if (i > 0) return NO_SUCH_PAGE;
-
 		Graphics2D g2 = (Graphics2D)g;
+		
+		// translate to printable area
 		g2.translate(pf.getImageableX(), pf.getImageableY());
+		
+		// now attempt to scale if needed
 		double scale = Math.min(pf.getImageableWidth() / getWidth(), pf.getImageableHeight() / getHeight());
-		g2.scale(scale, scale);
+		int width = getWidth();
+		if ((scale > 1.05) || (scale < 0.95)) {
+			g2.scale(scale, scale);
+			width *= scale;
+		}
+		
+		// final translate to center of printable area after we know scaled size
+		if (width < pf.getImageableWidth()) {
+			int centerx = (int) ((pf.getImageableWidth() - width)/2.0);
+			g2.translate(centerx, 0);
+		}
 
 		paint(g);
 		return PAGE_EXISTS;
