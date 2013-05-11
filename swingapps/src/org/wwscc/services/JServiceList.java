@@ -92,12 +92,12 @@ class FoundServiceRenderer extends DefaultListCellRenderer
 			 if (iconMap.containsKey(f.getService()))
 			 {
 				setIcon(iconMap.get(f.getService()));
-				setText(String.format("%s (%s:%s)", f.getId(), f.getHost().getHostAddress(), f.getPort()));
+				setText(String.format("%s (%s:%s)", f.getId(), f.getHost().getHostName(), f.getPort()));
 			 }
 			else
 			{
 				setIcon(null);
-				setText(String.format("%s %s (%s:%s)", f.getService().toUpperCase(), f.getId(), f.getHost().getHostAddress(), f.getPort()));
+				setText(String.format("%s %s (%s:%s)", f.getService().toUpperCase(), f.getId(), f.getHost().getHostName(), f.getPort()));
 			}
 		 }
 		 return this;
