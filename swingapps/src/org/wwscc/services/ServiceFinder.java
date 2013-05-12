@@ -131,7 +131,7 @@ public class ServiceFinder implements ThreadedClass
 				if (announcement.isAnnouncement() && serviceNames.contains(announcement.getService()))
 				{
 					if (recv.getAddress().equals(InetAddress.getLocalHost()))
-						continue; // ignore myself, they should use direct connection
+						recv.setAddress(InetAddress.getLoopbackAddress()); // make sure it shows up as 127.0.0.1
 					FoundService decoded = new FoundService(recv.getAddress(), announcement);
 					if (!found.containsKey(decoded))
 						fireNewService(decoded);
