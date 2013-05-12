@@ -131,7 +131,7 @@ public class MergeTest
 		
 		Database.openDatabaseFile(new File("testhost.db"));
 		ChangeTracker tracker = new ChangeTracker("testclient");
-		Database.d.mergeChanges(tracker.getChanges());
+		Database.d.mergeChanges(tracker.getChanges(), null);
 		tracker.archiveChanges();
 		
 		Map<Integer, Driver> drivers = Database.d.getAllDrivers();
