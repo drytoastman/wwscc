@@ -1556,7 +1556,7 @@ public abstract class SQLDataInterface extends DataInterface
 	 * @throws IOException 
 	 */
 	@Override
-	public void mergeChanges(List<Change> changes) throws IOException
+	public void mergeChanges(List<Change> changes, ProgressInterface progress) throws IOException
 	{
 		Map<Integer, Integer> driveridmap = new HashMap<Integer,Integer>();
 		Map<Integer, Integer> caridmap = new HashMap<Integer,Integer>();
@@ -1629,6 +1629,9 @@ public abstract class SQLDataInterface extends DataInterface
 						carid = caridmap.get(carid);
 					registerCar(carid, paid, true);
 				}
+				
+				if (progress != null)
+					progress.step();
 			}
 
 			commit();

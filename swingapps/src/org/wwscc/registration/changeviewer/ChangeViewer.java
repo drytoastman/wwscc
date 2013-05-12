@@ -2,6 +2,7 @@ package org.wwscc.registration.changeviewer;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,7 +12,6 @@ import javax.swing.FocusManager;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -56,6 +56,7 @@ public class ChangeViewer extends JFrame
 		
 		pack();
 		loadFiles();
+		setLocationRelativeTo(FocusManager.getCurrentManager().getActiveWindow());
 		setVisible(true);
 	}
 
@@ -77,6 +78,18 @@ public class ChangeViewer extends JFrame
 		list.setSelectedIndex(0);
 	}
 	
+	protected void archive()
+	{
+		if (list.getSelectedValue().index == 0) // if merging active list, archive it now
+		{
+			try {
+				new ChangeTracker(dbname).archiveChanges();
+				loadFiles();
+			} catch (Exception e2) {
+				log.warning("Archive failed: " + e2.getMessage());
+			}
+		}
+	}
 	
 	class MergeAction extends AbstractAction
 	{
@@ -86,20 +99,14 @@ public class ChangeViewer extends JFrame
 			try
 			{
 				String spec[] = DatabaseDialog.netLookup("Merge Copy To Remote", Prefs.getMergeHost()+"/"+Database.d.getCurrentSeries());				
-				WebDataSource dest = new WebDataSource(spec[0], spec[1]);
-				dest.sendEvents(false);
-				dest.mergeChanges(list.getSelectedValue().changes);
-				if (list.getSelectedValue().index == 0)
-				{
-					new ChangeTracker(dbname).archiveChanges();
-					loadFiles();
-				}
+				final WebDataSource dest = new WebDataSource(spec[0], spec[1]);
+				dest.sendEvents(false); // don't want to know about inserts, etc
+				new MergeProcess(ChangeViewer.this, list.getSelectedValue().changes, dest).execute();
 			} catch (CancelException ce) {
 				return;
-			} catch (Exception bige) {
-				log.log(Level.SEVERE, "Merge failed: " + bige.getMessage(), bige);
+			} catch (IOException ioe) {
+				log.log(Level.SEVERE, "Merge host select failed: " + ioe.getMessage(), ioe);
 			}
-			JOptionPane.showMessageDialog(FocusManager.getCurrentManager().getActiveWindow(), "Merge complete");
 		}
 	}
 }

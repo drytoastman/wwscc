@@ -46,9 +46,10 @@ public abstract class DataInterface
 	/**
 	 * Merge the list of changes into the current database
 	 * @param changes a list of Change objects to merge
+	 * @param progress an optional watcher for progress updates
 	 * @throws IOException
 	 */
-	public abstract void mergeChanges(List<Change> changes) throws IOException;
+	public abstract void mergeChanges(List<Change> changes, ProgressInterface progress) throws IOException;
 	
 	public abstract String getSetting(String key);
 	public abstract boolean getBooleanSetting(String key);
