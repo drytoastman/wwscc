@@ -8,13 +8,20 @@
 package org.wwscc.services;
 
 import java.awt.Component;
+import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
+import javax.swing.SwingWorker;
+
 import org.wwscc.services.ServiceFinder.ServiceFinderListener;
 
 /**
@@ -22,6 +29,11 @@ import org.wwscc.services.ServiceFinder.ServiceFinderListener;
 @SuppressWarnings("serial")
 public class JServiceList extends JList<FoundService> implements ServiceFinderListener 
 {	
+	private static final Logger log = Logger.getLogger(JServiceList.class.getCanonicalName());
+	
+	private static Map<String, String> hostnames = new Hashtable<String, String>();  // map IP to name, need to do async to keep GUI lively
+	private static final Pattern lookslikeip = Pattern.compile("\\d+\\.\\d+\\.\\d+\\.\\d+");
+	
 	DefaultListModel<FoundService> serviceModel;
 	FoundServiceRenderer renderer;
 	
@@ -58,49 +70,83 @@ public class JServiceList extends JList<FoundService> implements ServiceFinderLi
 	{
 		renderer.mapIcon(service, icon);
 	}
-}
 
-class FoundServiceRenderer extends DefaultListCellRenderer
-{
-	Map<String, Icon> iconMap = new HashMap<String, Icon>();
-	
-	public FoundServiceRenderer()
+
+	/**
+	 * Renderer for displaying Icon and service information based on FoundService objects
+	 */
+	class FoundServiceRenderer extends DefaultListCellRenderer
 	{
-		// some defaults
-		iconMap.put("BWTimer", new ImageIcon(getClass().getResource("/org/wwscc/images/timer.gif")));
-		iconMap.put("ProTimer", new ImageIcon(getClass().getResource("/org/wwscc/images/draglight.gif")));
-		iconMap.put("RemoteDatabase", new ImageIcon(getClass().getResource("/org/wwscc/images/server.gif")));
-	}
-	
-	public void mapIcon(String service, Icon icon)
-	{
-		iconMap.put(service, icon);
-	}
-	
-	@Override
-	 public Component getListCellRendererComponent(
-        JList<?> list,
-        Object value,
-        int index,
-        boolean isSelected,
-        boolean cellHasFocus)
-	 {
-		 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		 if (value instanceof FoundService)
+		Map<String, Icon> iconMap;
+		
+		public FoundServiceRenderer()
+		{
+			// some defaults
+			iconMap = new HashMap<String, Icon>();
+			iconMap.put("BWTimer", new ImageIcon(getClass().getResource("/org/wwscc/images/timer.gif")));
+			iconMap.put("ProTimer", new ImageIcon(getClass().getResource("/org/wwscc/images/draglight.gif")));
+			iconMap.put("RemoteDatabase", new ImageIcon(getClass().getResource("/org/wwscc/images/server.gif")));
+		}
+		
+		public void mapIcon(String service, Icon icon)
+		{
+			iconMap.put(service, icon);
+		}
+		
+		@Override
+		 public Component getListCellRendererComponent(
+	        JList<?> list,
+	        Object value,
+	        int index,
+	        boolean isSelected,
+	        boolean cellHasFocus)
 		 {
-			 FoundService f = (FoundService)value;
-			 if (iconMap.containsKey(f.getService()))
+			 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			 if (value instanceof FoundService)
 			 {
-				setIcon(iconMap.get(f.getService()));
-				setText(String.format("%s (%s:%s)", f.getId(), f.getHost().getHostName(), f.getPort()));
+				 FoundService f = (FoundService)value;
+				 String name = f.getHost().getHostAddress();
+				 
+				 if (hostnames.containsKey(name))
+					 name = hostnames.get(name);
+				 else
+					 new Lookup(f.getHost()).execute();
+				 
+				 if (iconMap.containsKey(f.getService()))
+				 {
+					setIcon(iconMap.get(f.getService()));
+					setText(String.format("%s (%s:%s)", f.getId(), name, f.getPort()));
+				 }
+				else
+				{
+					setIcon(null);
+					setText(String.format("%s %s (%s:%s)", f.getService().toUpperCase(), f.getId(), name, f.getPort()));
+				}
 			 }
-			else
-			{
-				setIcon(null);
-				setText(String.format("%s %s (%s:%s)", f.getService().toUpperCase(), f.getId(), f.getHost().getHostName(), f.getPort()));
-			}
+			 return this;
 		 }
-		 return this;
-	 }
+	}
 	
+	/**
+	 * Use SwingWorker thread to do hostname lookup so we GUI remains responsive
+	 */
+	class Lookup extends SwingWorker<String, Object>
+	{
+		
+		InetAddress tofind;
+		public Lookup(InetAddress src) { tofind = src; }
+		@Override
+		protected String doInBackground() throws Exception { return tofind.getHostName(); }
+		@Override
+		protected void done()  {
+			try {
+				if (lookslikeip.matcher(get()).matches())
+					return;
+				hostnames.put(tofind.getHostAddress(), get());
+				repaint();
+			} catch (Exception e) {
+				log.info("Failed to process hostname lookup: " + e.getMessage());
+			}
+		}
+	}
 }

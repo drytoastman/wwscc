@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.wwscc.util.ThreadedClass;
 
 /**
@@ -53,6 +54,14 @@ public class ServiceFinder implements ThreadedClass
 		serviceNames = names;
 		group = InetAddress.getByName(ServiceAnnouncer.MDNSAddr);
 		listeners = new Vector<ServiceFinderListener>();
+	}
+	
+	protected void fireNewService(final FoundService service)
+	{
+		SwingUtilities.invokeLater(new Runnable() { public void run() {
+			for (ServiceFinderListener listener : listeners) {
+				listener.newService(service);	// new element, notify listeners
+		}}});
 	}
 	
 	public void addListener(ServiceFinderListener lis)
@@ -125,10 +134,7 @@ public class ServiceFinder implements ThreadedClass
 						continue; // ignore myself, they should use direct connection
 					FoundService decoded = new FoundService(recv.getAddress(), announcement);
 					if (!found.containsKey(decoded))
-					{
-						for (ServiceFinderListener listener : listeners)
-							listener.newService(decoded);	// new element, notify listeners
-					}
+						fireNewService(decoded);
 					// update timestamp regardless
 					found.put(decoded, System.currentTimeMillis());
 				}
