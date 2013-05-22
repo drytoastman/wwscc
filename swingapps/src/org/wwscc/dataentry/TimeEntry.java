@@ -596,7 +596,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				setValues((Run)o);
 				cones.requestFocusInWindow();
 			}
-			else
+			else if (o != null)  // null is passed in in some instances, do not clear values
 			{
 				clearValues();
 			}
