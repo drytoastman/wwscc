@@ -654,7 +654,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 
 			case TIMER_SERVICE_CONNECTION:
 				Object[] a = (Object[])o;
-				if ((a[0] == tclient) && ((Boolean)a[1]))
+				if ((a[0] == tclient) && (!(Boolean)a[1]))
 				{
 					connectionStatus.setForeground(Color.RED);
 					connectionStatus.setText("Not Connected");

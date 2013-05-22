@@ -145,9 +145,11 @@ public final class TimerClient implements RunServiceInterface, ThreadedClass
 			{
 				log.log(Level.INFO, "read failure: " + ex, ex);
 			}
-
-			try { sock.close(); } catch (IOException ioe)  {}
-			Messenger.sendEvent(MT.TIMER_SERVICE_CONNECTION, new Object[] { TimerClient.this, false });
+			finally
+			{
+				try { sock.close(); } catch (IOException ioe)  {}
+				Messenger.sendEvent(MT.TIMER_SERVICE_CONNECTION, new Object[] { TimerClient.this, false });
+			}
 		}
 	}
 }
