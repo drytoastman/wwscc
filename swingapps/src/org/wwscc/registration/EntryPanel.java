@@ -40,6 +40,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.barcodes.Code39;
@@ -55,6 +56,7 @@ import org.wwscc.storage.Car;
 import org.wwscc.storage.Driver;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
+import org.wwscc.storage.MetaCar;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.Prefs;
@@ -71,7 +73,7 @@ public class EntryPanel extends DriverCarPanel
 
 	JButton registeredandpaid, registerit, unregisterit;
 	JButton editcar, deletecar, print;
-	JLabel membershipwarning;
+	JLabel membershipwarning, paidwarning;
 	JComboBox<PrintService> printers;
 	Code39 activeLabel;
 	SearchDrivers2 searchDrivers2;
@@ -143,6 +145,12 @@ public class EntryPanel extends DriverCarPanel
 		membershipwarning.setForeground(Color.WHITE);
 		membershipwarning.setBackground(Color.RED);
 		
+		paidwarning = new JLabel("");
+		paidwarning.setForeground(Color.WHITE);
+		paidwarning.setBackground(Color.RED);
+		paidwarning.setFont(paidwarning.getFont().deriveFont(Font.BOLD, 13));
+		paidwarning.setHorizontalAlignment(JLabel.CENTER);
+		
 		activeLabel = new Code39();
 		print = new JButton(new PrintLabelAction());
 		print.setFont(new Font(null, Font.PLAIN, 11));
@@ -177,7 +185,8 @@ public class EntryPanel extends DriverCarPanel
 		
 		add(carInfo, "spanx 2, growx, top, wrap");
 		
-		add(createTitle("4. Do it"), "spanx 3, growx, gaptop 4, wrap");
+		add(paidwarning, "grow, h 15, wrap");
+		add(createTitle("4. Do it"), "spanx 3, growx, wrap");
 		add(registeredandpaid, "split 3, spanx 3, gapbottom 5");
 		add(registerit, "");
 		add(unregisterit, "wrap");
@@ -297,7 +306,27 @@ public class EntryPanel extends DriverCarPanel
 	{
 		super.reloadCars(select);
 		Messenger.sendEvent(MT.TRACKING_CHANGE_MADE, null);
+		setPaidWarning();
 	}
+	
+	protected void setPaidWarning()
+	{
+		paidwarning.setOpaque(false);
+		paidwarning.setText("");
+
+		ListModel<Car> m = cars.getModel();
+		if (m.getSize() == 0)
+			return;
+		for (int ii = 0; ii < m.getSize(); ii++)
+		{
+			MetaCar c = (MetaCar)m.getElementAt(ii);
+			if (c.isPaid()) return;
+		}
+		
+		paidwarning.setText("No paid cars are present");
+		paidwarning.setOpaque(true);
+	}
+	
 	
 	/**
 	 * Process events from the various buttons

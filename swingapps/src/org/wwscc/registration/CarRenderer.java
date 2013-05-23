@@ -17,7 +17,6 @@ import org.wwscc.storage.MetaCar;
 class CarRenderer extends DefaultListCellRenderer
 {
 	private MyPanel p = new MyPanel();
-	private Color superLightGray = new Color(180, 180, 180);
 	
 	@Override
 	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
@@ -45,11 +44,6 @@ class CarRenderer extends DefaultListCellRenderer
 				p.status.setText("Reg/Paid");
 			else
 				p.status.setText("Registered");
-		}
-		else if(c.hasActivity())
-		{
-			p.status.setText("Used");
-			p.status.setForeground(superLightGray);
 		}
 		else
 			p.status.setText("");
