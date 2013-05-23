@@ -165,7 +165,7 @@ public class EntryPanel extends DriverCarPanel
 		add(lastSearch, "grow, wrap");
 		add(smallButton("Clear", true), "right, wrap");
 
-		add(createTitle("2. Driver"), "spanx 3, growx, gaptop 4, wrap");
+		add(createTitle("2. Driver"), "spanx 3, growx, wrap");
 		add(dscroll, "spany 6, grow");
 		add(smallButton("New Driver", true), "growx");
 		add(smallButton("Edit Driver", true), "growx, wrap");
@@ -320,10 +320,10 @@ public class EntryPanel extends DriverCarPanel
 		for (int ii = 0; ii < m.getSize(); ii++)
 		{
 			MetaCar c = (MetaCar)m.getElementAt(ii);
-			if (c.isPaid()) return;
+			if (!c.isInRunOrder() && c.isPaid()) return;
 		}
 		
-		paidwarning.setText("No paid cars are present");
+		paidwarning.setText("No unused paid cars are present");
 		paidwarning.setOpaque(true);
 	}
 	
