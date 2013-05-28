@@ -18,6 +18,7 @@
 			$this.find('[name=phone]').val(driver.phone || "");
 			$this.find('[name=brag]').val(driver.brag || "");
 			$this.find('[name=sponsor]').val(driver.sponsor || "");
+			$this.find('[name=membership]').val(driver.membership || "");
 			$this.find("[data-extrafield=true]").each(function () {
 				var name = $(this).prop('name');
 				$(this).val(driver[name] || "");
