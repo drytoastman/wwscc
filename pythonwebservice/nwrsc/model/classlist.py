@@ -94,7 +94,12 @@ class Class(object):
 	@classmethod
 	def activeClasses(cls, session, eventid):
 		sql = "select distinct x.* from classlist as x, cars as c, runs as r where r.eventid=:id and r.carid=c.id and c.classcode=x.code"
-		return list(session.execute(sql, params={'id':eventid}, mapper=Class))
+		active = list(session.execute(sql, params={'id':eventid}, mapper=Class))
+		sql = "select c.classcode from cars as c, runs as r where r.eventid=:id and r.carid=c.id and c.classcode='UKNWN'"
+		for row in session.execute(sql, params={'id':eventid}):
+			active.append(PlaceHolder())
+			break
+		return active
 
 
 mapper(Class, t_classlist)
