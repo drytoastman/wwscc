@@ -30,12 +30,13 @@ for code in sorted(c.classdata.classlist):
 </select>
 </td></tr>
 
+<script>
+gIndexList = [ "${'","'.join(sorted(c.classdata.indexlist)) |n}" ];
+</script>
+
 <tr class='indexcodecontainer'><th>Index</th> <td>
 <select name='indexcode'>
 <option value=''></option>
-%for code in sorted(c.classdata.indexlist):
-	<option value='${code}'>${code}</option>
-%endfor
 </select>
 </td></tr>
 

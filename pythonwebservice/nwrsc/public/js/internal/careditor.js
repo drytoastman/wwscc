@@ -14,11 +14,12 @@
 				var restrict = currentclass.data('idxrestrict') || "";
 				restrict = restrict.split(',')
 				
-				indexselect.find("option").each(function()
-				{
-					var opt = $(this);
-					opt.toggle($.inArray(opt.val(), restrict) < 0);
-				});
+				indexselect.find("option").remove();
+				for (var ii = 0; ii < gIndexList.length; ii++) {
+					if ($.inArray(gIndexList[ii], restrict) < 0) {
+						indexselect.append(new Option(gIndexList[ii], gIndexList[ii], false, false));
+					}
+				}
 
 			} else {
 				indexselect.val(0);
@@ -104,9 +105,10 @@
 			myform.find('[name=model]').val(car.model || "");
 			myform.find('[name=color]').val(car.color || "");
 			myform.find('[name=classcode]').val(car.classcode || "");
-			myform.find('[name=indexcode]').val(car.indexcode || "");
-			myform.find('[name=tireindexed]').prop('checked', car.tireindexed);
 			methods.classchange.call(myform);
+			myform.find('[name=indexcode]').val(car.indexcode || "");
+			methods.indexchange.call(myform);
+			myform.find('[name=tireindexed]').prop('checked', car.tireindexed);
 			methods.setnum.call(myform, car.number || "");
 
 
