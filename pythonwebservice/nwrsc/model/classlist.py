@@ -143,6 +143,9 @@ class PlaceHolder(object):
 		self.countedruns = 0
 		self.usecarflag = False
 		self.caridxrestrict = ""
+
+	def restrictedIndexes(self):
+		return ([], [])
 	
 class ClassData(object):
 
