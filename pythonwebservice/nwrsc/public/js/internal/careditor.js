@@ -15,6 +15,7 @@
 				restrict = restrict.split(',')
 				
 				indexselect.find("option").remove();
+				indexselect.append(new Option("", "", false, false));
 				for (var ii = 0; ii < gIndexList.length; ii++) {
 					if ($.inArray(gIndexList[ii], restrict) < 0) {
 						indexselect.append(new Option(gIndexList[ii], gIndexList[ii], false, false));
