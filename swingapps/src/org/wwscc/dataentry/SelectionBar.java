@@ -150,7 +150,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		else if (cmd.endsWith("Print"))
 		{
 			if (cmd.startsWith("results"))
-				BrowserControl.openGroupResults(new int[] {Database.d.getCurrentRunGroup()});
+				BrowserControl.printGroupResults(new int[] {Database.d.getCurrentRunGroup()});
 		}
 	}
 }

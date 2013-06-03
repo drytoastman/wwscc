@@ -143,7 +143,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 				@Override
 				public void dialogFinished(int[] result) {
 					if (result != null)
-						BrowserControl.openGroupResults(result);
+						BrowserControl.printGroupResults(result);
 				}
 			});
 		}

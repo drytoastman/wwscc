@@ -8,7 +8,10 @@
 
 package org.wwscc.util;
 
-import java.util.logging.*;
+import java.awt.Desktop;
+import java.net.URI;
+import java.util.logging.Logger;
+
 import org.wwscc.storage.Database;
 
 public class BrowserControl
@@ -32,20 +35,6 @@ public class BrowserControl
 			openResults("dialins?filter=" + filter + "&order=" + order);
 	}
 
-	public static void openGroupResults(int[] groups)
-	{
-		if (groups.length == 0)
-			return;
-		
-		String g = new String();
-		int ii;
-		for (ii = 0; ii < groups.length-1; ii++)
-			g += groups[ii]+",";
-		g += groups[ii];
-
-		openResults("bygroup?course="+Database.d.getCurrentCourse()+"&list="+g);
-	}
-
 	public static void openResults(String selection)
 	{
 		openURL(String.format("http://%s/results/%s/%s/%s", Database.d.getCurrentHost(),
@@ -60,19 +49,42 @@ public class BrowserControl
 
 	public static void openURL(String url)
 	{
+		try{
+			Desktop.getDesktop().browse(new URI(url));
+		} catch (Exception ex) {
+			log.severe("Couldn't open default web browser:" + ex);
+		}
+	}
+	
+	
+	public static void printGroupResults(int[] groups)
+	{
+		if (groups.length == 0)
+			return;
+		
+		String g = new String();
+		int ii;
+		for (ii = 0; ii < groups.length-1; ii++)
+			g += groups[ii]+",";
+		g += groups[ii];
+
+		printURL(String.format("http://%s/results/%s/%s/bygroup?course=%s&list=%s", 
+				Database.d.getCurrentHost(),
+				Database.d.getCurrentSeries(), 
+				Database.d.getCurrentEvent().getId(), 
+				Database.d.getCurrentCourse(), g));
+	}
+	
+	public static void printURL(String url)
+	{
 		try
 		{
 			Runtime r = Runtime.getRuntime();
 			String os = System.getProperty("os.name");
-			if ((os != null) && (os.startsWith("Windows")))
-			{
-				log.info("Spawning Windows browser on " + url);
-				r.exec("rundll32 url.dll,FileProtocolHandler " + url).waitFor();
-			}
-			else
-			{
-				log.info("Spawning firefox on " + url);
-				r.exec("firefox " + url).waitFor();  // TBD, get the -remote command line for firefox
+			if ((os != null) && (os.startsWith("Windows"))) {
+				r.exec("rundll32.exe \"C:\\Windows\\system32\\mshtml.dll\",PrintHTML \"" + url + "\"").waitFor();
+			} else {
+				openURL(url);
 			}
 		}
 		catch (Exception ex)
@@ -80,5 +92,6 @@ public class BrowserControl
 			log.severe("Couldn't open web browser:" + ex);
 		}
 	}
+
 }
 
