@@ -480,16 +480,23 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		c.invalidnumber = []
 		c.invalidclass = []
 		c.invalidindex = []
+		c.unindexedclass = []
 		c.restrictedindex = []
 
 		for car in self.session.query(Car):
 			if car.number is None:
 				c.invalidnumber.append(car)
-			elif not car.classcode or car.classcode not in c.classdata.classlist:
+
+			if not car.classcode or car.classcode not in c.classdata.classlist:
 				c.invalidclass.append(car)
-			elif c.classdata.classlist[car.classcode].carindexed:
+
+			if c.classdata.classlist[car.classcode].carindexed:
 				if not car.indexcode or car.indexcode not in c.classdata.indexlist:
 					c.invalidindex.append(car)
+
+			if not c.classdata.classlist[car.classcode].carindexed:
+				if car.indexcode:
+					c.unindexedclass.append(car)
 
 			if car.classcode:
 				restrict = c.classdata.classlist[car.classcode].restrictedIndexes()
