@@ -9,14 +9,14 @@ from nwrsc.model import *
 from sqlalchemy import create_engine
 
 globaldrivers = list()
-globalmemberships = list()
+idmap = dict()
+globalmemberships = dict()
 globaldriverid = 1
 
-class Membership(object):
-	def __init__(self, driverid=0, club="", membership=""):
-		self.driverid = driverid
-		self.club = club
-		self.membership = membership
+class MyObj(object):
+	def __init__(self, **kwargs):
+		for k,v in kwargs.iteritems():
+			setattr(self, k, v)
 
 def objs2lists(objs, fields):
 	ret = list()
@@ -33,9 +33,10 @@ def writecsv(dirp, name, objs, fields, newfields = None):
 
 ONLYW = re.compile("^\w+$")
 MINDIG = re.compile("\d{4}")
+nummatch = re.compile('^(\d{6}_\d)|(\d{6})$')
 
 def convert(sourcefile, destdir):
-	global globaldriverid, globaldrivers, globalmemberships
+	global globaldriverid, idmap, globaldrivers, globalmemberships
 
 	try:
 		os.makedirs(destdir)
@@ -65,14 +66,23 @@ def convert(sourcefile, destdir):
 
 	#DRIVERS, add to global list and remap ids as necessary
 	for d in drivers:
-		remaplocal[d.id] = globaldriverid
-		d.id = globaldriverid
-		d.emergencyname = ""
-		d.emergencycontact = ""
-		globaldrivers.append(d)
-		if d.membership and ONLYW.search(d.membership) and MINDIG.search(d.membership):
-			globalmemberships.append(Membership(d.id, 'SCCA', d.membership))
-		globaldriverid += 1
+		key = d.firstname.strip().lower() + d.lastname.strip().lower() + d.email.strip().lower()
+		if key in idmap:
+			remaplocal[d.id] = idmap[key].id
+			d.id = idmap[key].id
+		else:
+			remaplocal[d.id] = globaldriverid
+			d.id = globaldriverid
+			d.emergencyname = ""
+			d.emergencycontact = ""
+			globaldrivers.append(d)
+			idmap[key] = d
+			globaldriverid += 1
+		if d.membership:
+			if nummatch.match(d.membership):
+				globalmemberships[d.id,"SCCA"] = MyObj(driverid=d.id, club='SCCA', membership=d.membership)
+			elif ONLYW.search(d.membership):
+				globalmemberships[d.id,"Other"] = MyObj(driverid=d.id, club='Other', membership=d.membership)
 
 	#CARS (all the same fields, need to remap driverid though)
 	validcars = list()
@@ -125,7 +135,8 @@ def convert(sourcefile, destdir):
 	regularruns = list()
 	challengeruns = list()
 	for r in runs:
-		if r.eventid > 100:
+		if r.eventid > 0x0FFFF:
+			r.roundentryid = -1
 			challengeruns.append(r)
 		else:
 			regularruns.append(r)
@@ -133,20 +144,36 @@ def convert(sourcefile, destdir):
 
 	#CHALLENGES
 	writecsv(destdir, 'challenges.csv', challenges, ['id', 'eventid', 'name', 'depth'])
-	
+
+	def rewriteruns(challengeid, round, carid, entryid):
+		for run in challengeruns:
+			run.side = run.course
+			if run.challengeid == challengeid and run.carid == carid and run.round == round:
+				run.roundentryid = entryid
+
 	#CHALLENGEROUNDS
+	entryid = 1
 	entries = list()
 	for r in challengerounds:
-		r.topcar = 'what'
-		r.bottomcar = 'who'
-	writecsv(destdir, 'challengerounds.csv', challengerounds, ['id', 'challengeid', 'round', 'swappedstart', 'topcar', 'bottomcar'])
+		if r.round == 0:  # convert round into a round location
+			upper = 1
+			lower = 101
+		elif r.round == 99:
+			upper = 103
+			lower = 102
+		else:
+			lower = r.round * 2
+			upper = lower + 1
+		entries.append(MyObj(id=entryid, challengeid=r.challengeid, location=upper, carid=r.car1id, indial=r.car1dial, result=r.car1result, outdial=r.car1newdial)) 
+		rewriteruns(r.challengeid, r.round, r.car1id, entryid)
+		entryid += 1
+		entries.append(MyObj(id=entryid, challengeid=r.challengeid, location=lower, carid=r.car2id, indial=r.car2dial, result=r.car2result, outdial=r.car2newdial)) 
+		rewriteruns(r.challengeid, r.round, r.car2id, entryid)
+		entryid += 1
 
-	writecsv(destdir, 'challengeroundentries.csv', entries, ['id', 'carid', 'indial', 'result', 'outdial'])
+	writecsv(destdir, 'challengeroundentries.csv', entries, ['id', 'challengeid', 'location', 'carid', 'indial', 'result', 'outdial'])
 
 	#CHALLENGRUNS
-	for r in challengeruns:
-		r.roundentryid = 'X'
-		r.side = r.course
 	writecsv(destdir, 'challengeruns.csv', challengeruns, ['roundentryid', 'side', 'reaction', 'sixty', 'raw', 'cones', 'gates', 'status'])
 	
 
@@ -165,5 +192,5 @@ for dbfile in os.listdir(sourcedir):
 	convert(os.path.join(sourcedir,dbfile), outdir)
 
 writecsv('.', 'drivers.csv', globaldrivers, ['id', 'firstname', 'lastname', 'alias', 'email', 'address', 'city', 'state', 'zip', 'phone', 'brag', 'sponsor', 'emergencyname', 'emergencycontact'])
-writecsv('.', 'memberships.csv', globalmemberships, ['driverid', 'club', 'membership'])
+writecsv('.', 'memberships.csv', globalmemberships.values(), ['driverid', 'club', 'membership'])
 
