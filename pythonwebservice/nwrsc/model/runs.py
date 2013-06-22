@@ -36,7 +36,7 @@ Index('runidx_2', t_runs.c.carid)
 
 class Run(object):
 	def getChallengeId(self): return self.eventid >> 16
-	def getChallengeRound(self): return eventid & 0x0FFF
+	def getChallengeRound(self): return self.eventid & 0x0FFF
 	challengeid = property(getChallengeId)
 	round = property(getChallengeRound)
 

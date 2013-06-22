@@ -164,7 +164,7 @@ public class ChallengeRound
 				newdial = 0.001;
 		}
 
-		public boolean breakout() { return Math.abs(newdial - dial) < .0001; }
+		public boolean breakout() { return Math.abs(newdial - dial) > .0001; }
 				
 		public int getCar() { return carid; }
 		public double getDial() { return dial; }
