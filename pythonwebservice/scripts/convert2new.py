@@ -5,6 +5,7 @@ import os
 import csv
 import datetime
 import re
+import uuid
 from nwrsc.model import *
 from sqlalchemy import create_engine
 
@@ -48,6 +49,12 @@ def convert(sourcefile, destdir):
 	print "Convert %s to %s" % (sourcefile, destdir)
 	metadata.bind = create_engine('sqlite:///%s' % sourcefile)
 	session = Session()
+	session.bind = metadata.bind
+
+	session.execute("delete from cars where id not in (select distinct carid from runs)")
+	session.execute("delete from drivers where id not in (select distinct driverid from cars)")
+	session.execute("delete from cars where driverid not in (select distinct id from drivers)")
+
 	drivers = session.query(Driver).all()
 	cars = session.query(Car).all()
 	settings = session.query(Setting).all()
@@ -66,6 +73,11 @@ def convert(sourcefile, destdir):
 
 	#DRIVERS, add to global list and remap ids as necessary
 	for d in drivers:
+		d.guid = uuid.uuid1()
+		d.phone = d.phone and d.phone[:16]
+		d.brag = d.brag and d.brag[:128]
+		d.sponsor = d.sponsor and d.sponsor[:128]
+
 		key = d.firstname.strip().lower() + d.lastname.strip().lower() + d.email.strip().lower()
 		if key in idmap:
 			remaplocal[d.id] = idmap[key].id
@@ -191,6 +203,10 @@ for dbfile in os.listdir(sourcedir):
 	outdir = os.path.join(destdir, os.path.basename(dbfile)[:-3])
 	convert(os.path.join(sourcedir,dbfile), outdir)
 
-writecsv('.', 'drivers.csv', globaldrivers, ['id', 'firstname', 'lastname', 'alias', 'email', 'address', 'city', 'state', 'zip', 'phone', 'brag', 'sponsor', 'emergencyname', 'emergencycontact'])
-writecsv('.', 'memberships.csv', globalmemberships.values(), ['driverid', 'club', 'membership'])
+writecsv(destdir, 'drivers.csv', globaldrivers, ['id', 'guid', 'firstname', 'lastname', 'alias', 'email', 'address', 'city', 'state', 'zip', 'phone', 'emergencyname', 'emergencycontact', 'sponsor', 'brag'])
+writecsv(destdir, 'memberships.csv', globalmemberships.values(), ['driverid', 'club', 'membership'])
+
+
+print "done."
+
 
