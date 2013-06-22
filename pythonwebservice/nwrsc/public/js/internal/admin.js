@@ -8,7 +8,7 @@ function newCountedRow(listform, listtemplate)
 	var ii = $(listform + ' tr:last').data('counter') + 1 || 1;
     var rowelem = $(listtemplate + ' tr').clone();
 	rowelem.data('counter', ii);
-    rowelem.find("input").attr("name", function(i, val) { return val.replace(/xxxxx/g, ii); });
+    rowelem.find("input,select").attr("name", function(i, val) { return val.replace(/xxxxx/g, ii); });
     rowelem.find(".deleterow").click(function () { rowelem.remove(); return false; });
     rowelem.appendTo(listform + ' tbody');
     return false;
