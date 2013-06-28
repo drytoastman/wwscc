@@ -43,15 +43,15 @@ public class ResultsPane extends JPanel
 		//tbl.setIntercellSpacing(new Dimension(8, 8));
 
 		TableColumnModel tcm = tbl.getColumnModel();
-		columnStyle(tcm, 0, 50,  70,  100, medium);
-		columnStyle(tcm, 1, 50,  70,  100, medium);
-		columnStyle(tcm, 2, 80,  110, 140, large);
+		columnStyle(tcm, 0, 50,  70,  200, medium);
+		columnStyle(tcm, 1, 50,  70,  200, medium);
+		columnStyle(tcm, 2, 80,  110, 280, large);
 
-		columnStyle(tcm, 3, 180, 230, 350, diff);
+		columnStyle(tcm, 3, 180, 230, 700, diff);
 
-		columnStyle(tcm, 4, 50,  70,  100, medium);
-		columnStyle(tcm, 5, 50,  70,  100, medium);
-		columnStyle(tcm, 6, 80,  110, 140, large);
+		columnStyle(tcm, 4, 50,  70,  200, medium);
+		columnStyle(tcm, 5, 50,  70,  200, medium);
+		columnStyle(tcm, 6, 80,  110, 280, large);
 
 		JScrollPane scroll = new JScrollPane(tbl, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		add(scroll);

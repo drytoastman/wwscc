@@ -60,7 +60,7 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 	{
 		super("NWR ProSolo Interface");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setLayout(new MigLayout("fill, ins 0", "fill", "[grow 0][fill][grow 0][grow 0]"));
+		setLayout(new MigLayout("fill, ins 0, debug", "fill", "[grow 0][fill][grow 0][grow 0]"));
 		Class.forName("org.wwscc.dataentry.Sounds");
 		
 		debug = new DebugPane();
@@ -85,7 +85,7 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 		JTabbedPane tp = new JTabbedPane();
 		tp.addTab("Results", null, results, "results interface");
 		tp.addTab("Debug", null, debug, "shows serial conversation");
-		add(tp, "wrap");
+		add(tp, "grow, wrap");
 
 		add(createButtonPanel(), "wrap");
 

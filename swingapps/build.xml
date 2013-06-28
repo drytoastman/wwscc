@@ -48,7 +48,6 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
-            <src path="tests"/>
             <classpath refid="Scorekeeper Java Apps.classpath"/>
         </javac>
     </target>
