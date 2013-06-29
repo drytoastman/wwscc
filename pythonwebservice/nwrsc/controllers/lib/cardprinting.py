@@ -65,6 +65,7 @@ class CardPrinting(object):
 		try:
 			from reportlab.pdfgen import canvas
 			from reportlab.lib.units import inch
+			from reportlab.lib.utils import ImageReader
 		except:
 			c.text = "<h4>PDFGen not installed, can't create timing card PDF files from this system</h4>"
 			return render_mako("/admin/simple.mako")
@@ -93,6 +94,8 @@ class CardPrinting(object):
 			cardimage = Image.new('RGB', (1,1))
 		else:
 			cardimage = Image.open(cStringIO.StringIO(carddata.data))
+
+		cardimage = ImageReader(cardimage)
 
 		while len(registered) > 0:
 			if page == 'letter':

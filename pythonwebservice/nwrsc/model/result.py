@@ -65,9 +65,9 @@ def getAuditResults(session, settings, event, course, rungroup):
 
 
 
-classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.indexcode, c.tireindexed, d.firstname, d.lastname, d.alias
-				from eventresults as r, cars as c, drivers as d 
-				where r.carid=c.id and c.driverid=d.id and r.eventid=%d and r.classcode in (%s)
+classResult = """select r.*, c.year, c.make, c.model, c.color, c.number, c.indexcode, c.tireindexed, d.firstname, d.lastname, d.alias, x.rungroup
+				from eventresults as r, cars as c, drivers as d, runorder as x 
+				where r.carid=c.id and c.driverid=d.id and r.eventid=%d and r.classcode in (%s) and x.eventid=r.eventid and x.carid=c.id
 				order by r.position"""
 
 def getClassResultsShort(session, settings, event, classdata, code):
