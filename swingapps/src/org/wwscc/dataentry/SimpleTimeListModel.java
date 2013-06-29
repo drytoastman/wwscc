@@ -46,6 +46,8 @@ public class SimpleTimeListModel extends AbstractListModel<Run> implements TimeS
 		Run r = (Run)o;
 		if ((forCourse > 0) && (r.course() != forCourse))
 			return;
+		if (Double.isNaN(r.getRaw()))
+			return;
 		if (r.getRaw() < 1)
 			return;
 

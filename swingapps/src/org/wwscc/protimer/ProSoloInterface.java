@@ -9,7 +9,6 @@
 
 package org.wwscc.protimer;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -60,7 +59,7 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 	{
 		super("NWR ProSolo Interface");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setLayout(new MigLayout("fill, ins 0, debug", "fill", "[grow 0][fill][grow 0][grow 0]"));
+		setLayout(new MigLayout("fill, ins 0", "fill", "[grow 0][fill][grow 0][grow 0]"));
 		Class.forName("org.wwscc.dataentry.Sounds");
 		
 		debug = new DebugPane();
@@ -214,11 +213,11 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 		{
 			case ALIGN_MODE:
 				remove(dialins);
-				add(alignModeLabel, BorderLayout.NORTH); 
+				add(alignModeLabel, "wrap", 0); 
 				break;
 			case RUN_MODE:
 				remove(alignModeLabel);
-				add(dialins, BorderLayout.NORTH); 
+				add(dialins, "wrap", 0); 
 				break;
 		}
 
