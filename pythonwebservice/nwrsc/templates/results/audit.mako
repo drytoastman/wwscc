@@ -32,7 +32,7 @@ table.auditreport .bold { font-weight: bold; }
 			%if run.status != "OK":
 				${run.status}
 			%else:
-				${"%0.3f " % (run.raw + (run.cones*2) + (run.gates*10))}
+				${"%0.3f " % run.raw}
 				${"(%d,%d)" % (run.cones, run.gates)}
 			%endif
 		%endif

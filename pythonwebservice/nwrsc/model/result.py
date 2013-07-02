@@ -59,6 +59,8 @@ def getAuditResults(session, settings, event, course, rungroup):
 
 	for run in session.query(Run).filter_by(eventid=event.id).filter(Run.course==course).filter(Run.carid.in_(reshold.iterkeys())):
 		r = reshold[run.carid]
+		if run.run > event.runs:
+			r.runs[:] =  r.runs + [None]*(run.run-event.runs)
 		r.runs[run.run-1] = run
 
 	return ret
