@@ -54,6 +54,7 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 
 	protected DialinPane dialins;
 	protected JLabel alignModeLabel;
+	protected JLabel openPort;
 
     public ProSoloInterface() throws Exception
 	{
@@ -76,6 +77,8 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 
 		Messenger.register(MT.RUN_MODE, this);
 		Messenger.register(MT.ALIGN_MODE, this);
+		Messenger.register(MT.SERIAL_PORT_OPEN, this);
+		Messenger.register(MT.SERIAL_PORT_CLOSED, this);
 
 		createMenus();
 		add(dialins, "wrap");
@@ -88,10 +91,11 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 
 		add(createButtonPanel(), "wrap");
 
-		JLabel openPort = new JLabel("Serial Port Not Connected");
+		openPort = new JLabel("Serial Port Not Connected");
 		openPort.setHorizontalAlignment(JLabel.CENTER);
-		MyServerLabel slbl = new MyServerLabel();
 		openPort.setBorder(BorderFactory.createLoweredBevelBorder());
+		
+		MyServerLabel slbl = new MyServerLabel();
 		slbl.setBorder(BorderFactory.createLoweredBevelBorder());
 		
 		JPanel bottom = new JPanel(new MigLayout("fill, ins 0", "[50%]0[50%]"));
@@ -218,6 +222,12 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 			case RUN_MODE:
 				remove(alignModeLabel);
 				add(dialins, "wrap", 0); 
+				break;
+			case SERIAL_PORT_OPEN:
+				openPort.setText("Connected to Port " + o);
+				break;
+			case SERIAL_PORT_CLOSED:
+				openPort.setText("Serial Port Not Connected");
 				break;
 		}
 

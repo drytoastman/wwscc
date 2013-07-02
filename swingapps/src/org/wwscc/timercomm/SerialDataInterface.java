@@ -244,7 +244,10 @@ public class SerialDataInterface implements SerialPortEventListener
 			else if (i.open)
 				log.warning(name + " already open");
 			else
+			{
 				i.open();
+				Messenger.sendEvent(MT.SERIAL_PORT_OPEN, name);
+			}
 			return i;
 		} 
 		catch (Exception e)
@@ -264,7 +267,11 @@ public class SerialDataInterface implements SerialPortEventListener
 			else if (!i.open)
 				log.warning(name + " already closed");
 			else
+			{
 				i.close();
+				Messenger.sendEvent(MT.SERIAL_PORT_CLOSED, name);
+			}
+			
 		} 
 		catch (Exception e)
 		{

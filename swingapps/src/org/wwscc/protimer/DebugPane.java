@@ -2,21 +2,34 @@
  * This software is licensed under the GPLv3 license, included as
  * ./GPLv3-LICENSE.txt in the source distribution.
  *
- * Portions created by Brett Wilson are Copyright 2008 Brett Wilson.
+ * Portions created by Brett Wilson are Copyright 2013 Brett Wilson.
  * All rights reserved.
  */
 
 
 package org.wwscc.protimer;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.logging.Logger;
-import javax.swing.*;
-import org.wwscc.util.*;
 
-public class DebugPane extends JPanel implements ActionListener
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+import org.wwscc.util.MT;
+import org.wwscc.util.MessageListener;
+import org.wwscc.util.Messenger;
+
+
+public class DebugPane extends JPanel implements ActionListener, MessageListener
 {
 	private static final Logger log = Logger.getLogger(DebugPane.class.getCanonicalName());
 	
@@ -24,8 +37,6 @@ public class DebugPane extends JPanel implements ActionListener
 	JTextField input;
 	JButton enter;
 	OutputStreamWriter file;
-
-	PrintStream aPrintStream;
 
 	public DebugPane() throws FileNotFoundException
 	{
@@ -35,10 +46,6 @@ public class DebugPane extends JPanel implements ActionListener
 		input = new JTextField(40);
 		enter = new JButton("Send");
 		enter.addActionListener(this);
-
-		aPrintStream  = new PrintStream( new FilteredStream( new FileOutputStream("NUL:")));
-		System.setOut(aPrintStream);
-		System.setErr(aPrintStream);
 
 		try {
 			file = new FileWriter("debug.log", true);
@@ -63,39 +70,25 @@ public class DebugPane extends JPanel implements ActionListener
 		String s = input.getText();
 		if (!s.equals(""))
 			Messenger.sendEvent(MT.INPUT_TEXT, s);
-
 		input.setText("");
 	}
 
-
+	@Override
+	public void event(MT type, Object o)
+	{
+		switch (type)
+		{
+			case SERIAL_GENERIC_DATA:
+				log(new String((byte[])o));
+				break;
+		}
+	}
+	
 	public void log(String s)
 	{
 		try { file.write(s); file.flush(); } catch (Exception e) { log.info("Failed to write log: " + e.getMessage()); }
 		text.append(s);
 		text.setCaretPosition(text.getDocument().getLength());
-	}
-
-
-	class FilteredStream extends FilterOutputStream
-	{
-		public FilteredStream(OutputStream aStream)
-		{ 
-			super(aStream);
-		}
-	
-		@Override
-		public void write(byte b[]) throws IOException
-		{
-			String aString = new String(b);
-			log(aString);
-		}
-		
-		@Override
-		public void write(byte b[], int off, int len) throws IOException
-		{
-			String aString = new String(b , off , len);
-			log(aString);
-		}
 	}
 }
 
