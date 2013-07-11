@@ -62,6 +62,8 @@ public class DebugPane extends JPanel implements ActionListener, MessageListener
 
 		add(p, BorderLayout.NORTH);
 		add(sp, BorderLayout.CENTER);
+		
+		Messenger.register(MT.SERIAL_GENERIC_DATA, this);
 	}
 
 	@Override
