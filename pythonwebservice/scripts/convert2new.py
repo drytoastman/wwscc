@@ -26,7 +26,7 @@ class Tables(object):
 		self.rungroups = []
 		self.runorder = []
 		self.runs = []
-		self.segments = []
+		self.segments = dict()
 		self.challenges = []
 		self.challengeroundentries = []
 		self.challengeruns = []
@@ -88,7 +88,6 @@ def convert(sourcefile):
 	global gTables, gMatchDrivers
 
 	remapdriver = dict()
-	remapcar = dict()
 	remapevent = dict()
 	remapchallenge = dict()
 
@@ -165,8 +164,6 @@ def convert(sourcefile):
 	#CARS (all the same fields, need to map carid, driverid and seriesid)
 	for c in cars:
 		try:
-			remapcar[c.id] = gTables.carId()
-			c.id = remapcar[c.id]
 			c.driverid = remapdriver[c.driverid]
 			c.seriesid = seriesid
 			gTables.cars.append(c)
@@ -210,7 +207,6 @@ def convert(sourcefile):
 			continue
 		try:
 			r.eventid = remapevent[r.eventid]
-			r.carid = remapcar[r.carid]
 			r.mod = "2000-01-01 00:00:00"
 			gTables.registered.append(r)
 		except:
@@ -226,7 +222,6 @@ def convert(sourcefile):
 	for r in runorder:
 		try:
 			r.eventid = remapevent[r.eventid]
-			r.carid = remapcar[r.carid]
 			gTables.runorder.append(r)
 		except:
 			print "missing carid %s for runorder, skipping" % r.carid
@@ -234,25 +229,25 @@ def convert(sourcefile):
 	#RUNS (map eventid, carid)
 	challengeruns = list()
 	for r in runs:
-		try:
-			r.carid = remapcar[r.carid]
-		except:
-			print "missing carid %s for run, skipping" % r.carid
-
-		for ii in range(1,6):
-			seg = getattr(r, 'seg%d'%ii)
-			if seg > 0:
-				segment = MyObj(**r.__dict__)
-				segment.segment = ii
-				segment.raw = seg
-				gTables.segments.append(segment)
-
 		if r.eventid > 0x0FFFF:
 			r.roundentryid = -1
 			challengeruns.append(r)
 		else:
 			r.eventid = remapevent[r.eventid]
 			gTables.runs.append(r)
+
+		for ii in range(1,6):
+			seg = getattr(r, 'seg%d'%ii)
+			if seg > 0:
+				sg = MyObj(**r.__dict__)
+				sg.segment = ii
+				sg.raw = seg
+				k = (sg.eventid, sg.carid, sg.course, sg.run, sg.segment)
+				if k in gTables.segments:
+					print "duplicate segment key: %s, would replace %.3f with %.3f" % (k, gTables.segments[k].raw, seg)
+				else:
+					gTables.segments[k] = sg
+
 
 	#CHALLENGES (remap challengeid, eventid)
 	for c in challenges:
@@ -264,7 +259,7 @@ def convert(sourcefile):
 	def rewriteruns(challengeid, round, carid, entryid):
 		for run in challengeruns:
 			run.side = run.course
-			if run.challengeid == challengeid and run.carid == carid and run.round == round:
+			if remapchallenge[run.challengeid] == challengeid and run.carid == carid and run.round == round:
 				run.roundentryid = entryid
 
 	#CHALLENGEROUNDS (remap roundid, challengeid, carid)
@@ -280,10 +275,6 @@ def convert(sourcefile):
 			upper = lower + 1
 
 		r.challengeid = remapchallenge[r.challengeid]
-		if r.car1id > 0:
-			r.car1id = remapcar[r.car1id]
-		if r.car2id > 0:
-			r.car2id = remapcar[r.car2id]
 
 		entryid = gTables.roundId()
 		gTables.challengeroundentries.append(MyObj(id=entryid, challengeid=r.challengeid, location=upper, carid=r.car1id, indial=r.car1dial, result=r.car1result, outdial=r.car1newdial)) 
@@ -323,7 +314,7 @@ writecsv(destdir, 'registered.csv', gTables.registered, ['eventid', 'carid', 'pa
 writecsv(destdir, 'rungroups.csv', gTables.rungroups, ['eventid', 'classcode', 'rungroup', 'position'])
 writecsv(destdir, 'runorder.csv', gTables.runorder, ['eventid', 'course', 'carid', 'rungroup', 'row'])
 writecsv(destdir, 'runs.csv', gTables.runs, ['eventid', 'carid', 'course', 'run', 'reaction', 'sixty', 'raw', 'cones', 'gates', 'status'])
-writecsv(destdir, 'segments.csv', gTables.segments, ['eventid', 'carid', 'course', 'run', 'segment', 'raw'])
+writecsv(destdir, 'segments.csv', gTables.segments.values(), ['eventid', 'carid', 'course', 'run', 'segment', 'raw'])
 writecsv(destdir, 'challenges.csv', gTables.challenges, ['id', 'eventid', 'name', 'depth'])
 writecsv(destdir, 'challengeroundentries.csv', gTables.challengeroundentries, ['id', 'challengeid', 'location', 'carid', 'indial', 'result', 'outdial'])
 writecsv(destdir, 'challengeruns.csv', gTables.challengeruns, ['roundentryid', 'side', 'reaction', 'sixty', 'raw', 'cones', 'gates', 'status'])
