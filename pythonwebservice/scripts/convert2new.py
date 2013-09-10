@@ -70,12 +70,22 @@ class MyObj(object):
 def objs2lists(objs, fields):
 	ret = list()
 	for o in objs:
-		ret.append([hasattr(o,f) and getattr(o,f) or "" for f in fields])
+		x = list()
+		for f in fields:
+			if hasattr(o,f):
+				x.append(getattr(o,f))
+			else:
+				x.append("")
+		ret.append(x)
 	return ret
+
+
+class MyDialect(csv.excel):
+	quoting = csv.QUOTE_NONNUMERIC
 
 def writecsv(dirp, name, objs, fields, newfields = None):
 	csvfile = open(os.path.join(dirp, name), 'w')
-	w = csv.writer(csvfile)
+	w = csv.writer(csvfile, dialect=MyDialect())
 	w.writerow(fields)
 	w.writerows(objs2lists(objs, fields))
 	csvfile.close()
@@ -101,7 +111,7 @@ def convertattendance(sourcefile):
 		if driverid < 0:
 			driverid = gTables.driverId()
 			d = Driver()
-			d.id = driverid
+			d.driverid = driverid
 			d.firstname = f
 			d.lastname = l
 			gTables.drivers.append(d)
@@ -159,8 +169,10 @@ def convert(sourcefile):
 	series.positionpoints = series.pospointlist
 	series.champuseevents = series.useevents
 	series.champminevents = series.minevents
-	series.active = False
+	series.active = 0
 	series.parentid = -1
+	series.conepen = 2
+	series.gatepen = 10
 	series.indexgroup = "%s%s PAX" % (series.prefix, series.year)
 	gTables.series.append(series)
 
@@ -196,6 +208,8 @@ def convert(sourcefile):
 			c.carid = c.id
 			c.driverid = remapdriver[c.driverid]
 			c.seriesid = seriesid
+			c.tireindexed = c.tireindexed or False
+			c.number = c.number and int(c.number) or 999
 			gTables.cars.append(c)
 		except:
 			print "invalid driverid %s, skipping" % c.driverid
@@ -210,13 +224,13 @@ def convert(sourcefile):
 	for e in events:
 		remapevent[e.id] = gTables.eventId()
 		e.id = remapevent[e.id]
-		e.evenetid = e.id
+		e.eventid = e.id
+		e.cost = e.cost and int(e.cost) or 0
+		e.countedruns = e.countedruns and int(e.countedruns) or 0
 		e.seriesid = seriesid
 		e.segmentsetup = e.segments
-		e.personallimit = e.perlimit
-		e.totallimit = e.totlimit
-		e.conepen = int(e.conepen)
-		e.gatepen = int(e.gatepen)
+		e.personallimit = e.perlimit and int(e.perlimit) or 0
+		e.totallimit = e.totlimit and int(e.totlimit) or 0
 		e.infopage = ""
 		gTables.events.append(e)
 
@@ -224,6 +238,8 @@ def convert(sourcefile):
 	for c in classes:
 		c.description = c.descrip
 		c.seriesid = seriesid
+		c.numorder = c.numorder and int(c.numorder) or 0
+		c.usecarflag = c.usecarflag or False
 		gTables.classlist.append(c)
 
 	#INDEXLIST (put into its own index group)
@@ -240,6 +256,7 @@ def convert(sourcefile):
 			continue
 		try:
 			r.eventid = remapevent[r.eventid]
+			r.paid = r.paid or False
 			r.mod = "2000-01-01 00:00:00"
 			gTables.registered.append(r)
 		except:
@@ -269,6 +286,8 @@ def convert(sourcefile):
 
 		r.mod = "2000-01-01 00:00:00"
 		r.decibel = 0
+		r.reaction = r.reaction and float(r.reaction) or 0.0
+		r.sixty = r.sixty and float(r.sixty) or 0.0
 		if r.eventid > 0x0FFFF:
 			r.roundentryid = -1
 			challengeruns.append(r)
@@ -316,6 +335,12 @@ def convert(sourcefile):
 			upper = lower + 1
 
 		r.challengeid = remapchallenge[r.challengeid]
+		r.car1dial = r.car1dial and float(r.car1dial) or 0.0
+		r.car2dial = r.car2dial and float(r.car2dial) or 0.0
+		r.car1newdial = r.car1newdial and float(r.car1newdial) or 0.0
+		r.car2newdial = r.car2newdial and float(r.car2newdial) or 0.0
+		r.car1result = r.car1result and float(r.car1result) or 0.0
+		r.car2result = r.car2result and float(r.car2result) or 0.0
 
 		entryid = gTables.roundId()
 		gTables.challengeroundentries.append(MyObj(roundentryid=entryid, challengeid=r.challengeid, location=upper, carid=r.car1id, indial=r.car1dial, result=r.car1result, outdial=r.car1newdial)) 
@@ -338,7 +363,7 @@ if len(sys.argv) < 3:
 sourcedir = sys.argv[1]
 destdir = sys.argv[2]
 
-for dbfile in sorted(os.listdir(sourcedir), key=lambda x: x[-7:-3], reverse=True):
+for dbfile in sorted(os.listdir(sourcedir), key=lambda x: x[-7:-3]):
 	if dbfile.endswith('.db'):
 		convert(os.path.join(sourcedir,dbfile))
 
@@ -349,13 +374,13 @@ for otherfile in os.listdir(sourcedir):
 
 print "generating csv"
 
-writecsv(destdir, 'series.csv', gTables.series, ['seriesid', 'prefix', 'year', 'name', 'locked', 'active', 'superuniquenumbers', 'indexafterpenalties', 'usepositionpoints', 'indexgroup', 'positionpoints', 'champsorting', 'sponsorlink', 'champuseevents', 'champminevents', 'largestcarnumber', 'parentid'])
-writecsv(destdir, 'drivers.csv', gTables.drivers, ['driveridid', 'firstname', 'lastname', 'alias', 'email', 'address', 'city', 'state', 'zip', 'phone', 'emergencyname', 'emergencycontact', 'sponsor', 'brag'])
+writecsv(destdir, 'series.csv', gTables.series, ['seriesid', 'prefix', 'year', 'name', 'locked', 'active', 'superuniquenumbers', 'indexafterpenalties', 'usepositionpoints', 'indexgroup', 'positionpoints', 'champsorting', 'sponsorlink', 'champuseevents', 'champminevents', 'largestcarnumber', 'parentid', 'conepen', 'gatepen'])
+writecsv(destdir, 'drivers.csv', gTables.drivers, ['driverid', 'firstname', 'lastname', 'alias', 'email', 'address', 'city', 'state', 'zip', 'phone', 'emergencyname', 'emergencycontact', 'sponsor', 'brag'])
 writecsv(destdir, 'history.csv', gTables.history.values(), ['driverid', 'prefix', 'year', 'attended', 'champ'])
 writecsv(destdir, 'memberships.csv', gTables.memberships.values(), ['driverid', 'club', 'membership'])
 writecsv(destdir, 'cars.csv', gTables.cars, ['seriesid', 'carid', 'driverid', 'year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode', 'tireindexed'])
 writecsv(destdir, 'data.csv', gTables.data.values(),  ['name', 'type', 'mime', 'mod', 'data'])
-writecsv(destdir, 'events.csv', gTables.events,  ['eventid', 'seriesid', 'name', 'date', 'location', 'sponsor', 'host', 'chair', 'designer', 'ispro', 'courses', 'runs', 'countedruns', 'conepen', 'gatepen', 'segmentsetup', 'regopened', 'regclosed', 'personallimit', 'totallimit', 'paypal', 'snail', 'cost', 'practice', 'doublespecial', 'infopage'])
+writecsv(destdir, 'events.csv', gTables.events,  ['eventid', 'seriesid', 'name', 'date', 'location', 'sponsor', 'host', 'chair', 'designer', 'ispro', 'courses', 'runs', 'countedruns', 'segmentsetup', 'regopened', 'regclosed', 'personallimit', 'totallimit', 'paypal', 'snail', 'cost', 'practice', 'doublespecial', 'infopage'])
 writecsv(destdir, 'classlist.csv', gTables.classlist, ['seriesid', 'code', 'description', 'carindexed', 'classindex', 'classmultiplier', 'eventtrophy', 'champtrophy', 'numorder', 'countedruns', 'usecarflag', 'caridxrestrict'])
 writecsv(destdir, 'indexlist.csv', gTables.indexlist, ['indexgroup', 'code', 'description', 'value'])
 writecsv(destdir, 'registered.csv', gTables.registered, ['eventid', 'carid', 'paid', 'mod'])
@@ -363,7 +388,7 @@ writecsv(destdir, 'rungroups.csv', gTables.rungroups, ['eventid', 'classcode', '
 writecsv(destdir, 'runorder.csv', gTables.runorder, ['eventid', 'course', 'carid', 'rungroup', 'row'])
 writecsv(destdir, 'runs.csv', gTables.runs, ['eventid', 'carid', 'course', 'run', 'reaction', 'sixty', 'raw', 'cones', 'gates', 'status', 'decibel', 'mod'])
 writecsv(destdir, 'segments.csv', gTables.segments.values(), ['eventid', 'carid', 'course', 'run', 'segment', 'raw'])
-writecsv(destdir, 'challenges.csv', gTables.challenges, ['challenegeid', 'eventid', 'name', 'depth'])
+writecsv(destdir, 'challenges.csv', gTables.challenges, ['challengeid', 'eventid', 'name', 'depth'])
 writecsv(destdir, 'challengeroundentries.csv', gTables.challengeroundentries, ['roundentryid', 'challengeid', 'location', 'carid', 'indial', 'result', 'outdial'])
 writecsv(destdir, 'challengeruns.csv', gTables.challengeruns, ['roundentryid', 'side', 'reaction', 'sixty', 'raw', 'cones', 'gates', 'status'])
 
