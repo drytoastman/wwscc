@@ -86,7 +86,7 @@
 
 			%if ev.doublespecial and ev.totlimit and ev.drivercount >= ev.totlimit and len(ev.regentries) == 0:
 				<span class='limit'>This event's single entry limit of ${ev.totlimit} has been met.</span>
-			%elif not ev.doublespecial and ev.totlimit and count >= ev.totlimit:
+			%elif not ev.doublespecial and ev.totlimit and ev.drivercount >= ev.totlimit:
 				<span class='limit'>This event's prereg limit of ${ev.totlimit} has been met.</span>
 			%elif len(ev.regentries) >= ev.perlimit:
 				<span class='limit'>You have reached this event's prereg limit of ${ev.perlimit} car(s).</span>
