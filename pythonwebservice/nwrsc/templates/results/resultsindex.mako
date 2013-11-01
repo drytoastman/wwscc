@@ -87,6 +87,7 @@ padding: 0;
 <li><a href='${h.url_for(action='all')}'>All Classes</a></li>
 <li><a href='${h.url_for(action='post')}'>Event Results For Posting</a></li>
 <li><a href='${h.url_for(action='champ')}'>Championship Results for Posting</a></li>
+<li><a href='${h.url_for(controller='xml', action='scca')}'>SCCA Report</a></li>
 %if c.event.ispro and config['nwrsc.private']:
 	<li><a href='${h.url_for(action='grid', order='number')}'>Grid By Number</a></li>
 	<li><a href='${h.url_for(action='grid', order='position')}'>Grid By Position</a></li>
