@@ -191,7 +191,7 @@ $(document).ready(function() {
 	$('.tablist .tab').click(function() { $(this).parent().find('ul').toggle('blind'); });
 
 	// layout page
-	$("#tabs").tabs({active: 1});
+	$("#tabs").tabs({active: 2});
 	$(".cartablink").click(function() { $("#tabs").tabs('option', 'active', 1); });
 
 });
