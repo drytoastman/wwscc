@@ -59,6 +59,175 @@ class Tables(object):
 		self.roundid += 1
 		return self.roundid
 
+defaulttemplate = """
+<div id="seriesimage"><img src="seriesimage.jpg" /></div>
+<div id="seriestitle">${series.name}</div>
+<div id="eventtitle">${event.name} - ${event.date}</div>
+<div id="hosttitle">Hosted By: <span class="host">${event.host}</span></div>
+<div id="entrantcount">(${entrantcount} Entrants)</div>
+<div class="info">For Indexed Classes Times in Brackets [] Is Raw Time</div> 
+<hr />
+<div id="classlinks">
+<#list active as code>
+<a href="#${code}">${code}</a>
+</#list>
+</div>
+
+<#include "results_basic/classtables.ftl">
+
+<br/><br/>
+
+<#include "results_basic/toptimes.ftl">
+
+<!--#include virtual="/wresfooter.html" -->
+
+"""
+
+resultscss = """
+
+/** post header **/
+#seriestitle { 
+	font-size: 1.5em;
+	font-weight: bold;
+}
+
+#eventtitle {
+	font-size: 1.5em;
+}
+
+#hosttitle {
+}
+
+#host {
+}
+
+#entrantcount {
+}
+
+div.info {
+	font-size: 0.9em;
+}
+
+#classlinks {
+}
+
+
+/** basic headers **/
+
+div, h1, h2, h3, h4 { text-align:center; }
+a img { border: none; }
+
+
+/** Center tables with collapsed borders **/
+
+table {
+	margin: 0px auto;
+	border-collapse: collapse;
+}
+
+table.centercols { 
+	margin-top: 20px;
+}
+
+table.classresults, table.toptimes, table.auditreport, table.champ {
+	font-size:0.9em; 
+}
+
+table.toptimes {
+	display: inline;
+}
+
+
+/** Various TD types and their span internals **/
+
+td {
+	text-align:left; 
+	padding: 5px 3px 3px;
+}
+
+td.run {
+	text-align:center;
+}
+
+td.drop {
+	color: #BBB;
+	text-decoration: line-through;
+}
+
+td.carnum, td.points {
+	text-align:right;
+}
+
+td.bestraw .net {
+	text-decoration: underline;
+}
+
+td.bestnet { 
+	font-weight: bold; 
+}
+
+td.bestnet .net {
+	text-decoration: underline;
+}
+
+td.attend {
+	text-align: center;
+}
+
+tr.entrantrow td {
+	border-top: 1px solid #999;
+}
+
+span { 
+	padding: 2px; 
+}
+
+span.net {
+	display: block;
+}
+
+span.raw {
+	display: block; 
+	font-size: 0.9em;
+}
+
+span.reaction {
+	display: block;
+	font-size: 0.8em;
+}
+
+/** toptimes columns */
+
+td.numcol { 
+	border-left: 1px solid #BBB; 
+	text-align: right; 
+}
+
+tr.brgrey { 
+	border-right: 1px solid #BBB 
+}
+
+/** Table header entries **/
+
+th { 
+	background-color: #dcdcdc; 
+	text-align: center;
+}
+
+th.classhead { 
+	text-align: left; 
+	background-color: #4682B4; 
+	color: white; 
+	border-top: 1px solid black;
+	padding-left: 6px;
+}
+
+table.champ th {
+	padding: 0px 5px;
+}
+
+"""
+
 
 gTables = Tables()
 gMatchDrivers = dict()
@@ -172,11 +341,16 @@ def convert(sourcefile):
 	series.positionpoints = series.pospointlist
 	series.champuseevents = series.useevents
 	series.champminevents = series.minevents
+	series.posttemplate = defaulttemplate
+	series.resultscss = resultscss
+	series.posttoptimes = True
+	series.postindextimes = True
 	series.active = 0
 	series.parentid = -1
 	series.conepen = 2
 	series.gatepen = 10
 	series.indexgroup = "%s%s PAX" % (series.prefix, series.year)
+	series.stylegroup = "basic"
 	gTables.series.append(series)
 
 
@@ -199,6 +373,8 @@ def convert(sourcefile):
 			gMatchDrivers[key] = d
 
 		d.driverid = d.id
+		d.username = d.driverid
+		d.password = d.username
 		if d.membership:
 			if nummatch.match(d.membership):
 				gTables.memberships[d.id,"SCCA"] = MyObj(driverid=d.id, club='SCCA', membership=d.membership)
@@ -393,18 +569,19 @@ for dbfile in sorted(os.listdir(sourcedir), key=lambda x: x[-7:-3]):
 		convert(os.path.join(sourcedir,dbfile))
 
 print "processing attendance files"
-for otherfile in os.listdir(sourcedir):
-	if otherfile.endswith('.attendance'):
-		convertattendance(os.path.join(sourcedir,otherfile))
+#for otherfile in os.listdir(sourcedir):
+#	if otherfile.endswith('.attendance'):
+#		convertattendance(os.path.join(sourcedir,otherfile))
 
 print "generating csv"
 
-writecsv(destdir, 'series.csv', gTables.series, ['seriesid', 'prefix', 'year', 'name', 'locked', 'active', 'superuniquenumbers', 'indexafterpenalties', 'usepositionpoints', 'indexgroup', 'positionpoints', 'champsorting', 'sponsorlink', 'champuseevents', 'champminevents', 'largestcarnumber', 'parentid', 'conepen', 'gatepen'])
-writecsv(destdir, 'drivers.csv', gTables.drivers, ['driverid', 'firstname', 'lastname', 'alias', 'email', 'address', 'city', 'state', 'zip', 'phone', 'emergencyname', 'emergencycontact', 'sponsor', 'brag'])
-writecsv(destdir, 'history.csv', gTables.history.values(), ['driverid', 'prefix', 'year', 'attended', 'champ'])
+writecsv(destdir, 'series.csv', gTables.series, ['seriesid', 'parentid', 'prefix', 'year', 'name', 'password', 'locked', 'active', 'superuniquenumbers', 'indexafterpenalties', 'usepositionpoints', 'indexgroup', 'stylegroup', 'positionpoints', 'sponsorlink', 'champuseevents', 'champminevents', 'largestcarnumber', 'conepen', 'gatepen', 'sponsorimage', 'seriesimage', 'posttemplate', 'resultscss', 'posttoptimes', 'postindextimes'])
+
+writecsv(destdir, 'drivers.csv', gTables.drivers, ['driverid', 'username', 'password', 'firstname', 'lastname', 'alias', 'email', 'address', 'city', 'state', 'zip', 'phone', 'emergencyname', 'emergencycontact', 'sponsor', 'brag'])
+#writecsv(destdir, 'history.csv', gTables.history.values(), ['driverid', 'prefix', 'year', 'attended', 'champ'])
 writecsv(destdir, 'memberships.csv', gTables.memberships.values(), ['driverid', 'club', 'membership'])
 writecsv(destdir, 'cars.csv', gTables.cars, ['carid', 'seriesid', 'driverid', 'year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode', 'tireindexed'])
-writecsv(destdir, 'data.csv', gTables.data.values(),  ['name', 'type', 'mime', 'mod', 'data'])
+#writecsv(destdir, 'data.csv', gTables.data.values(),  ['name', 'type', 'mime', 'mod', 'data'])
 writecsv(destdir, 'events.csv', gTables.events,  ['eventid', 'seriesid', 'name', 'date', 'location', 'sponsor', 'host', 'chair', 'designer', 'ispro', 'courses', 'runs', 'countedruns', 'segmentsetup', 'regopened', 'regclosed', 'personallimit', 'totallimit', 'paypal', 'snail', 'cost', 'practice', 'doublespecial', 'infopage'])
 writecsv(destdir, 'classlist.csv', gTables.classlist, ['seriesid', 'code', 'description', 'carindexed', 'classindex', 'classmultiplier', 'eventtrophy', 'champtrophy', 'numorder', 'countedruns', 'usecarflag', 'caridxrestrict'])
 writecsv(destdir, 'indexlist.csv', gTables.indexlist, ['indexgroup', 'code', 'description', 'value'])
