@@ -575,7 +575,7 @@ print "processing attendance files"
 
 print "generating csv"
 
-writecsv(destdir, 'series.csv', gTables.series, ['seriesid', 'parentid', 'prefix', 'year', 'name', 'password', 'locked', 'active', 'superuniquenumbers', 'indexafterpenalties', 'usepositionpoints', 'indexgroup', 'stylegroup', 'positionpoints', 'sponsorlink', 'champuseevents', 'champminevents', 'largestcarnumber', 'conepen', 'gatepen', 'sponsorimage', 'seriesimage', 'posttemplate', 'resultscss', 'posttoptimes', 'postindextimes'])
+writecsv(destdir, 'series.csv', gTables.series, ['seriesid', 'parentid', 'prefix', 'year', 'name', 'password', 'locked', 'active', 'superuniquenumbers', 'indexafterpenalties', 'usepositionpoints', 'indexgroup', 'stylegroup', 'positionpoints', 'sponsorlink', 'champuseevents', 'champminevents', 'largestcarnumber', 'conepen', 'gatepen', 'posttemplate', 'resultscss', 'posttoptimes', 'postindextimes'])
 
 writecsv(destdir, 'drivers.csv', gTables.drivers, ['driverid', 'username', 'password', 'firstname', 'lastname', 'alias', 'email', 'address', 'city', 'state', 'zip', 'phone', 'emergencyname', 'emergencycontact', 'sponsor', 'brag'])
 #writecsv(destdir, 'history.csv', gTables.history.values(), ['driverid', 'prefix', 'year', 'attended', 'champ'])
