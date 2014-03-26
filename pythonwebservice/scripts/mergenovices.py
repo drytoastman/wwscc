@@ -8,12 +8,13 @@ from nwrsc.model import *
 from sqlalchemy import create_engine
 
 if len(sys.argv) < 3:
-	print "\nUsage: %s <sourcefile> <databasefile>\n" % sys.argv[0]
-	print "\tMerges the data from <sourcefile> into <databasefile>\n\n"
+	print "\nUsage: %s <sourcefile> <databasefile> <eventid>\n" % sys.argv[0]
+	print "\tMerges the data from <sourcefile> into <databasefile> and registers for event <eventid>\n\n"
 	sys.exit(0)
 
 sourcecsv = sys.argv[1]
 metadata.bind = create_engine('sqlite:///%s' % sys.argv[2])
+eventid = int(sys.argv[3])
 session = Session()
 number = 500
 
@@ -67,6 +68,14 @@ with open(sys.argv[1], 'rb') as csvfp:
 			session.add(car)
 			session.commit()
 
+		reg = Registration(eventid, car.id)
+		try:
+			session.add(reg)
+			session.commit()
+			print "registered %d" % car.id
+		except:
+			session.rollback()
+			print "already registered"
 
 session.close()
 
