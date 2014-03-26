@@ -2,6 +2,8 @@ from pylons import request
 from nwrsc.model import *
 
 import logging
+import urllib
+import datetime
 log = logging.getLogger(__name__)
 
 class PayPalIPN(object):
