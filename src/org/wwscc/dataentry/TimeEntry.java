@@ -231,7 +231,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			switch (m)
 			{
 				case OFF: bm.setText("Off"); break;
-				case BASIC_SERIAL: bm.setText("RaceAmerica/JACircuits"); break;
+				case BASIC_SERIAL: bm.setText("FarmTek/RaceAmerica/JACircuits"); break;
 				case BWTIMER_SERIAL: bm.setText("BWTimer Serial"); break;
 				case BWTIMER_NETWORK: bm.setText("BWTimer Network"); break;
 				case PROTIMER_NETWORK: bm.setText("ProTimer Network"); break;
