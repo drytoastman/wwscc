@@ -125,8 +125,8 @@ class ResultsController(BaseController):
 
 
 	def grid(self):
-		if not config['nwrsc.private']:
-			raise BeforePage("Grid for onsite use only")
+		#if not config['nwrsc.private']:
+		#	raise BeforePage("Grid for onsite use only")
 
 		classmap = dict()
 		groups = [RunGroupList(0)]

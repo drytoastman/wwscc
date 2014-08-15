@@ -27,7 +27,10 @@ nummatch = re.compile('(\d{6}_\d)|(\d{6})')
 
 
 def _validateNumber(num):
-	obj = nummatch.search(num)
+	try:
+		obj = nummatch.search(num)
+	except:
+		raise Exception("_validateNumber failed on the value '%s'" % num)
 	if obj is not None:
 		return obj.group(1) or obj.group(2)
 	raise IndexError("nothing found")
@@ -185,6 +188,8 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 			report.membership = list()
 			report.invalid = list()
 			for d in report.drivers:
+				if d.membership is None:
+					d.membership = ""
 				try:
 					report.membership.append(_validateNumber(d.membership) or "")
 				except IndexError:

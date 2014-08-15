@@ -33,12 +33,6 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 		%endfor
 		</ul>
 		%endif
-
-		%if len(car.canregevents) > 0:
-		<button class='regbutton' data-carid='${car.id}'>Register For Events</button>
-		%else:
-		<span class='limit'>There are no more events that this car could be registered in</span>
-		%endif
 	</td>
 	</tr>
 %endfor

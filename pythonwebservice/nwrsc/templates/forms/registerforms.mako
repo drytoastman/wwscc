@@ -25,6 +25,7 @@
 
 <form id='registercarform' method='post' class='ui-helper-hidden'>
 <input name='eventid' type='hidden'/>
+<h3>Click on cars to register, then click OK</h3>
 <span class='statuslabel'>Default status</span>
 <ul class='selectablecars'>
 %for car in c.cars:
