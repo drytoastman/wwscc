@@ -14,7 +14,6 @@ class Tables(object):
 		self.drivers = []
 		self.passwords = []
 		self.roles = []	
-		self.memberships = dict()
 		self.series = []
 		self.data = dict()
 		self.events = []
@@ -306,12 +305,13 @@ def convert(sourcefile):
 	session.bind = metadata.bind
 
 	# Extra cleaning
-	session.execute("delete from cars where id not in (select distinct carid from runs)")
-	session.execute("delete from drivers where id not in (select distinct driverid from cars)")
-	session.execute("delete from cars where driverid not in (select distinct id from drivers)")
-	session.execute("delete from registered where carid not in (select distinct id from cars)")
-	session.execute("delete from runorder where carid not in (select distinct id from cars)")
-	session.execute("delete from challengerounds where challengeid not in (select distinct id from challenges)")
+	if not '2014' in sourcefile:
+		session.execute("delete from cars where id not in (select distinct carid from runs)")
+		session.execute("delete from drivers where id not in (select distinct driverid from cars)")
+		session.execute("delete from cars where driverid not in (select distinct id from drivers)")
+		session.execute("delete from registered where carid not in (select distinct id from cars)")
+		session.execute("delete from runorder where carid not in (select distinct id from cars)")
+		session.execute("delete from challengerounds where challengeid not in (select distinct id from challenges)")
 
 	# querys to get all the data
 	drivers = session.query(Driver).all()
@@ -375,11 +375,14 @@ def convert(sourcefile):
 		d.driverid = d.id
 		d.username = d.driverid
 		d.password = d.username
+		d.scca = ""
+		d.other = ""
+		d.other2 = ""
 		if d.membership:
 			if nummatch.match(d.membership):
-				gTables.memberships[d.id,"SCCA"] = MyObj(driverid=d.id, club='SCCA', membership=d.membership)
+				d.scca = d.membership
 			elif ONLYW.search(d.membership):
-				gTables.memberships[d.id,"Other"] = MyObj(driverid=d.id, club='Other', membership=d.membership)
+				d.other = d.membership
 
 	#CARS (all the same fields, need to map carid, driverid and seriesid)
 	for c in cars:
@@ -400,7 +403,7 @@ def convert(sourcefile):
 		d.type = "unknown"
 		gTables.data[d.name] = d
 
-	#EVENTS (all the same fields, change segments to segmentsetup, perlimit to personallimit, totlimit to totalimit, new blank field infopage, need to map eventid and seriesid)
+	#EVENTS (all the same fields, change segments, perlimit to personallimit, totlimit to totalimit, need to map eventid and seriesid)
 	for e in events:
 		remapevent[e.id] = gTables.eventId()
 		e.id = remapevent[e.id]
@@ -408,10 +411,12 @@ def convert(sourcefile):
 		e.cost = e.cost and int(e.cost) or 0
 		e.countedruns = e.countedruns and int(e.countedruns) or 0
 		e.seriesid = seriesid
-		e.segmentsetup = e.segments
+		if e.segments is not None and e.segments.strip() != "":
+			e.segments = 2
+		else:
+			e.segments = 0
 		e.personallimit = e.perlimit and int(e.perlimit) or 0
 		e.totallimit = e.totlimit and int(e.totlimit) or 0
-		e.infopage = ""
 		gTables.events.append(e)
 
 	#CLASSLIST (map seriesid)
@@ -577,12 +582,10 @@ print "generating csv"
 
 writecsv(destdir, 'series.csv', gTables.series, ['seriesid', 'parentid', 'prefix', 'year', 'name', 'password', 'locked', 'active', 'superuniquenumbers', 'indexafterpenalties', 'usepositionpoints', 'indexgroup', 'stylegroup', 'positionpoints', 'sponsorlink', 'champuseevents', 'champminevents', 'largestcarnumber', 'conepen', 'gatepen', 'posttemplate', 'resultscss', 'posttoptimes', 'postindextimes'])
 
-writecsv(destdir, 'drivers.csv', gTables.drivers, ['driverid', 'username', 'password', 'firstname', 'lastname', 'alias', 'email', 'address', 'city', 'state', 'zip', 'phone', 'emergencyname', 'emergencycontact', 'sponsor', 'brag'])
-#writecsv(destdir, 'history.csv', gTables.history.values(), ['driverid', 'prefix', 'year', 'attended', 'champ'])
-writecsv(destdir, 'memberships.csv', gTables.memberships.values(), ['driverid', 'club', 'membership'])
+writecsv(destdir, 'drivers.csv', gTables.drivers, ['driverid', 'username', 'password', 'firstname', 'lastname', 'alias', 'email', 'address', 'city', 'state', 'zip', 'phone', 'emergencyname', 'emergencycontact', 'sponsor', 'brag', 'scca', 'other', 'other2'])
 writecsv(destdir, 'cars.csv', gTables.cars, ['carid', 'seriesid', 'driverid', 'year', 'make', 'model', 'color', 'number', 'classcode', 'indexcode', 'tireindexed'])
-#writecsv(destdir, 'data.csv', gTables.data.values(),  ['name', 'type', 'mime', 'mod', 'data'])
-writecsv(destdir, 'events.csv', gTables.events,  ['eventid', 'seriesid', 'name', 'date', 'location', 'sponsor', 'host', 'chair', 'designer', 'ispro', 'courses', 'runs', 'countedruns', 'segmentsetup', 'regopened', 'regclosed', 'personallimit', 'totallimit', 'paypal', 'snail', 'cost', 'practice', 'doublespecial', 'infopage'])
+writecsv(destdir, 'events.csv', gTables.events,  ['eventid', 'seriesid', 'courses', 'runs', 'countedruns', 'segments', 'personallimit', 'totallimit', 'cost', 'name', 'location', 'sponsor', 'host', 'designer', 'paypal', 'notes', 'date', 'regopened', 'regclosed', 'ispro', 'practice', 'doublespecial' ])
+
 writecsv(destdir, 'classlist.csv', gTables.classlist, ['seriesid', 'code', 'description', 'carindexed', 'classindex', 'classmultiplier', 'eventtrophy', 'champtrophy', 'numorder', 'countedruns', 'usecarflag', 'caridxrestrict'])
 writecsv(destdir, 'indexlist.csv', gTables.indexlist, ['indexgroup', 'code', 'description', 'value'])
 writecsv(destdir, 'registered.csv', gTables.registered, ['eventid', 'carid', 'paid', 'mod'])
