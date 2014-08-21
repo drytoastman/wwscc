@@ -138,7 +138,10 @@ public class DatabaseDialog extends BaseDialog<Object> implements ListSelectionL
 		{
 			File res = FileChooser.open("Select Database", "Database", "db", new File(getEntryText("File")));
 			if (res != null)
+			{
 				setEntryText("File", res.getAbsolutePath());
+				setSelectedRadio("File");
+			}
 		}
 		else
 		{
