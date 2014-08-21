@@ -51,6 +51,10 @@ td.attend {
 	text-align: center;
 }
 
+td.drop {
+	text-decoration: line-through;
+}
+
 span { 
 	padding: 2px; 
 }

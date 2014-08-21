@@ -34,11 +34,11 @@ class PointStorage(object):
 		self.total = 0
 		self.drop = []
 		self.usingbest = bestof
-		for ii, points in enumerate(sorted(self.storage.values(), reverse=True)):
+		for ii, points in enumerate(sorted(self.storage.iteritems(), key=lambda x:x[1], reverse=True)):
 			if ii < bestof:
-				self.total += points  # Add to total points
+				self.total += points[1]  # Add to total points
 			else:
-				self.drop.append(points)  # Otherwise this is a drop event
+				self.drop.append(points[0])  # Otherwise this is a drop event, mark eventid
 
 	def __cmp__(self, other):
 		""" provides the comparison for sorting """
@@ -93,10 +93,15 @@ champResult = """select r.position,r.diffpoints,r.pospoints,r.eventid,r.classcod
 				where r.eventid=e.id and e.practice=0 and r.carid=c.id and c.driverid=d.id and r.classcode like :codeglob
 				order by r.classcode,d.firstname COLLATE NOCASE,d.lastname COLLATE NOCASE,r.eventid"""
 
+activeEvents = """select count(date) from events where date <= date('now') and practice=0"""
+
 def getChampResults(session, settings, codeglob = '%'):
 
 	try:
-		bestof = settings.useevents
+		todrop = settings.useevents # reusing old field for new purpose, can't rename in sqlite
+		eventcount = session.execute(activeEvents).fetchone()[0]
+		bestof = max(todrop, eventcount - todrop)
+
 		minevent = settings.minevents
 		if settings.usepospoints:
 			sortkeys = ['pospoints']
