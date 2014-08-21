@@ -15,7 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.JOptionPane;
+
+import org.apache.commons.io.FileUtils;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
 import org.wwscc.dialogs.DatabaseDialog;
 import org.wwscc.util.CancelException;
@@ -228,8 +231,12 @@ public class Database
 
 			String newname = save.getName() + "-" + (System.currentTimeMillis()/1000);
 			File back = new File (new File(Prefs.getInstallRoot(), "backup"), newname).getCanonicalFile();
-			if (!save.renameTo(back))
-				log.warning("backup/rename failed, old copy of series will remain in place for now");
+			FileUtils.copyFile(save, back);
+			if (!save.delete())
+			{
+				log.warning("Friendly note, upload was sucessful but the local copy couldn't be deleted, it should be deleted on exit");
+				save.deleteOnExit();
+			}
 
 			Messenger.sendEvent(MT.COURSE_CHANGED, null);
 			Messenger.sendEvent(MT.RUNGROUP_CHANGED, null);
