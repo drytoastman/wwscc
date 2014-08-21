@@ -33,8 +33,7 @@ avgentrants = float(totalentrants)/len(c.events)
 	<td class='name'>${e.firstname} ${e.lastname}</td>
 	<td class='attend'>${e.events}</td>
 	%for event in c.events:
-		<% value = e.points.get(event.id) %>
-		<td class='points ${event.id in e.points.drop and "drop" or ""}'>${h.t3(value)}</td>
+		<td class='points ${event.id in e.points.drop and "drop" or ""}'>${h.t3(e.points.get(event.id))}</td>
 	%endfor
 	<td class='points'>${h.t3(e.points.total)}</td>
 	</tr>
