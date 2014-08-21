@@ -19,8 +19,8 @@
 <span class='input'><input type="text" name="minevents" value="${c.settings.minevents}" size="4"/></span>
 </div>
 
-<div title="Use the best X events when calculating championship totals">
-<span class='title'>Best X Events</span>
+<div title="Drop X events when calculating championship totals">
+<span class='title'>Drop X Events</span>
 <span class='input'><input type="text" name="useevents" value="${c.settings.useevents}" size="4" /></span>
 </div>
 		
