@@ -9,6 +9,7 @@
 package org.wwscc.dataentry;
 
 import org.wwscc.dataentry.tables.RunsTable;
+
 import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -28,6 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
@@ -49,7 +51,9 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
 import net.miginfocom.swing.MigLayout;
+
 import org.wwscc.bwtimer.TimeStorage;
 import org.wwscc.bwtimer.TimerModel;
 import org.wwscc.dialogs.SimpleFinderDialog;
@@ -62,6 +66,7 @@ import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.NF;
+import org.wwscc.util.StupidSimpleDataService;
 import org.wwscc.util.TimeTextField;
 
 
@@ -109,6 +114,8 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 
 	JLabel connectionStatus;
 	ModeButtonGroup modeGroup;
+	
+	StupidSimpleDataService server;
 	
 	/**
 	 * Special focus listener for cones and gates entry
@@ -251,6 +258,9 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		sixty.addKeyListener(this);
 		enter.addKeyListener(this);
 		
+		server = new StupidSimpleDataService(8080);
+		new Thread(server).start();
+		server.setData("timer", "0.000");
 	}
 	/**
 
@@ -510,7 +520,14 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				compFocusOwner = compFocusOwner.getParent();
 			}
 		}
+		
+		// regardless, put the last value in the timer data service
+		if (s.getFinishedCount() > 0) // should always be true but just in case
+		{
+			server.setData("timer",  NF.format(s.getRun(s.getFinishedCount()-1).getRaw()));
+		}
 	}
+
 
 	@Override
     public void intervalRemoved(ListDataEvent e) {}

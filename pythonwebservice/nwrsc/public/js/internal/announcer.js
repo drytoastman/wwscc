@@ -62,12 +62,24 @@ function updateCheck()
 	$.getJSON($.nwr.url_for('last'), { time: lasttime }, processLast);
 }
 
+
+function timerUpdater(timer)
+{
+	$.ajax({
+			dataType: "json",
+			url: "/timer/"+timer,
+			success: function(data) { $('#timeroutput').text(data.timer); timerUpdater(data.timer) },
+			error: function() { timerUpdater("0.000") }
+			});
+}
+
 $(document).ready(function(){
 	$('#toptimetabs').tabs();
 	$('#entranttabs').tabs();
 	lasttime = 0;
 	updateCheck();
 	setInterval('updateCheck()', 2500);
+	setTimeout('timerUpdater("0.000")', 1000);
 });
 
 

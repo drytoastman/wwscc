@@ -10,7 +10,7 @@
   }
 }
 
-#entranttabs, #toptimetabs {
+#entranttabs, #toptimetabs, #lasttimebox {
   padding: 0px;
   background: none;
   border-width: 0px;
@@ -22,6 +22,12 @@
   }
 }
 
+#timeroutput {
+	font-size: 3em;
+	color: #444;
+	display: block;
+	text-align: center;
+}
 
 table {
   border-collapse: collapse;

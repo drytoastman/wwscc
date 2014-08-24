@@ -26,6 +26,7 @@ def make_map():
 	map.connect('/register/{database}/{action}/{other}', controller='register')
 	map.connect('/history', controller='history')
 	map.connect('/history/{action}', controller='history')
+	map.connect('/timer/{value}', controller='proxy', action='timer')
 
 	map.connect('/ical', controller='ical')
 	map.connect('/ical/{first}/{last}/{email}/registered', controller='ical', action='registered')

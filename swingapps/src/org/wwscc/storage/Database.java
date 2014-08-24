@@ -234,7 +234,7 @@ public class Database
 			FileUtils.copyFile(save, back);
 			if (!save.delete())
 			{
-				log.warning("Friendly note, upload was sucessful but the local copy couldn't be deleted, it should be deleted on exit");
+				log.warning("Friendly note, upload was sucessful, don't worry, but the local copy couldn't be deleted, it will be deleted on exit");
 				save.deleteOnExit();
 			}
 

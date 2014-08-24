@@ -2,6 +2,11 @@
 
 <table class='layout' id='mainlayout'><tr><td>
 
+<div id='lasttimebox' class='ui-widget'>
+<span class='header'>Timer</span>
+<span id='timeroutput'>0.000</span>
+</div>
+
 <div id='runorder' class='ui-widget'></div>
 
 <div id="entranttabs">
