@@ -1,7 +1,8 @@
 <%inherit file="/base.mako" />
 <% current = None; counter = 0 %>
 
-<h2>${c.event.name} - ${c.event.count} Entries</h2>
+<div style='margin:20px'>
+<h2>${c.event.name} - ${c.event.count} Entries (${c.event.drivercount} Unique)</h2>
 <table class='carlist'>
 %for driver,car,reg in c.reglist:
 %if car.classcode != current:
@@ -26,3 +27,5 @@
 
 %endfor
 </table>
+
+</div>
