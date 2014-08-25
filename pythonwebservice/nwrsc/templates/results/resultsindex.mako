@@ -28,7 +28,7 @@ padding: 0;
 
 <h3>Active Classes</h3>
 <ul class='classlist'>
-%for cls in c.active:
+%for cls in sorted(c.active, key=lambda x:x.code):
 	<li><a href='${h.url_for(action='byclass', list=cls.code)}'>${cls.code}</a></li>
 %endfor
 </ul>

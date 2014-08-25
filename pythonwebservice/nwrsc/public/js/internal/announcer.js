@@ -69,7 +69,7 @@ function timerUpdater(timer)
 			dataType: "json",
 			url: "/timer/"+timer,
 			success: function(data) { $('#timeroutput').text(data.timer); timerUpdater(data.timer) },
-			error: function() { timerUpdater("0.000") }
+			error: function(xhr) { if (xhr.status != 403) { setTimeout('timerUpdater("0.000")', 3000); } }
 			});
 }
 
