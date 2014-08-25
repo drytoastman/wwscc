@@ -91,6 +91,7 @@
 				var dodisable = (count >= limit);
 				me.find('ul.selectablecars input:unchecked').button({ disabled: dodisable });
 				me.find('.statuslabel').html( dodisable && "Entry Limit Reached" || ""); 
+				$('#registercarsok').button({disabled: count == 0});
 			});
 
 			me.find('ul.selectablecars input').RegEdit('checkbutton', watcher);
@@ -106,17 +107,24 @@
 				modal: true,
 				title: 'Register Cars for ' + theevent.name,
 				open: function() { me.find('input').blur(); },
-				buttons: {
-					'Ok': function() {
-						me.dialog('close');
-						okcallback();
-						$.post($.nwr.url_for('registerCarsForEvent'), me.serialize(), completecallback); 
+				buttons: [{
+						id: 'registercarsok',
+						text: 'Ok',
+						click: function() {
+							me.dialog('close');
+							okcallback();
+							$.post($.nwr.url_for('registerCarsForEvent'), me.serialize(), completecallback); 
+						}
 					},
-					Cancel: function() { me.dialog('close'); }
-				},
-				close: function() {
-				}
+					{
+						id: 'registercarscancel',
+						text: 'Cancel',
+						click: function() { me.dialog('close'); }
+					}],
+				close: function() { }
 			});
+
+			$('#registercarsok').button("disable");
 
 			return me;
 		}
