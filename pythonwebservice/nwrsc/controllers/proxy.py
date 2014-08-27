@@ -14,6 +14,7 @@ class ProxyController(WSGIController):
 	""" Skip any database stuff as this guy just forwards requests on """
 
 	def timer(self, value):
+		log.info("Proxy request: timer %s" % value)
 		try :
 			if config['nwrsc.onsite']:
 				f = urllib.urlopen("http://127.0.0.1:8080/timer/%s" % value);

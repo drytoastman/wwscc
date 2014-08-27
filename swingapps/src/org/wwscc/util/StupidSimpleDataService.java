@@ -37,7 +37,7 @@ public class StupidSimpleDataService implements Runnable
 	{
 		data.put(k, v);
 		synchronized (data) {
-			data.notify();
+			data.notifyAll();
 		}
 	}
 
