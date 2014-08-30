@@ -13,6 +13,8 @@ function processLast(json)
     {
         obj = json[index];
         match = views[obj.classcode]
+		if (obj.updated > lasttime)
+			lasttime = obj.updated
         if (obj.updated >  match.updated)
         {
             match.updated = obj.updated;
@@ -24,14 +26,19 @@ function processLast(json)
             }
         }
     }
-
 	updateCheck();
 }
 
 function updateCheck()
 {
 	var codes = $.map(views, function(v, k) { return k; });
-    $.getJSON($.nwr.url_for('last'), { classcodes: codes.join() }, processLast);
+	$.ajax({
+			dataType: "json",
+			url: $.nwr.url_for('last'),
+			data: { time: lasttime, classcodes: codes.join() },
+			success: processLast,
+			error: function(xhr) { if (xhr.status != 403) { setTimeout('updateCheck()', 3000); } }
+			});
 }
 
 
@@ -51,6 +58,7 @@ $(document).ready(function(){
 		views[code].pages.push(me.attr('id'));
 	});
 
+	lasttime = 0;
     updateCheck();
     $('#navbar a').first().click();
 });

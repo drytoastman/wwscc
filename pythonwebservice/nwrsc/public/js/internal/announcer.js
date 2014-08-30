@@ -55,13 +55,17 @@ function processLast(json)
 		$.getJSON($.nwr.url_for('toptimes'), data,  processTopTimes);
 		$.getJSON($.nwr.url_for('nexttofinish'), data,  processNext);
 	}
-
-	updateCheck();
 }
 
 function updateCheck()
 {
-	$.getJSON($.nwr.url_for('last'), { time: lasttime }, processLast);
+	$.ajax({
+			dataType: "json",
+			url: $.nwr.url_for('last'),
+			data: { time: lasttime },
+			success: function(data) { processLast(data); updateCheck(); },
+			error: function(xhr) { if (xhr.status != 403) { setTimeout('updateCheck()', 3000); } }
+			});
 }
 
 

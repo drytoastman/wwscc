@@ -67,27 +67,30 @@ class MobileController(BaseController):
 		query = query.filter(AnnouncerData.eventid==self.eventid)
 		query = query.order_by(AnnouncerData.updated.desc())
 
-		lasttime = int(request.GET.get('time',0))
-		time.sleep(0.5) # debug only
-		# Long polling, hold the connection until something is actually ready
-		while True:
-			row = query.first()
-			if time.mktime(row[0].timetuple()) > lasttime:
-				break
-			time.sleep(1)
-
 		classes = request.GET.get('classcodes', 'Any').split(',')
-		ret = []
-		for clazz in classes:
-			if clazz != 'Any':
-				row = query.join(Class).filter(Class.code == clazz).first()
-			else:
-				row = query.first()
+		lasttime = int(request.GET.get('time',0))
 
-			if row is None:
-				ret.append({'classcode':clazz, 'updated': 0})
-			else:
-				ret.append({'classcode':clazz, 'updated':time.mktime(row[0].timetuple()), 'carid':row[1]})
+		# Long polling, hold the connection until something is actually new
+		while True:
+			ret = []
+			newdata = False
+			for clazz in classes:
+				if clazz != 'Any':
+					row = query.join(Class).filter(Class.code == clazz).first()
+				else:
+					row = query.first()
+	
+				if row is None:
+					ret.append({'classcode':clazz, 'updated': 0})
+				else:
+					updated = time.mktime(row[0].timetuple())
+					if updated > lasttime:
+						newdata = True
+					ret.append({'classcode':clazz, 'updated':updated, 'carid':row[1]})
+
+			if newdata:
+				break
+			time.sleep(0.6)
 
 		return self._encode("last", ret)
 
