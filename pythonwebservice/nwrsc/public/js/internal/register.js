@@ -26,7 +26,9 @@ function unregButtons(jqe)
 		var regid = $this.data('regid');
 		var eventid = $this.data('eventid');
 
-		$this.parent().replaceWith("<div class='strong'>unregistering...</div>");
+		container = $('div.eventholder[data-eventid='+eventid+'] .carcontainer');
+		container.find('ul,button,span.limit').remove();
+		container.append("<div class='strong'>unregistering car ...</div>");
 		$.nwr.unRegisterCar(regid, function() {
 			updateCars();
 			updateEvent(eventid);
