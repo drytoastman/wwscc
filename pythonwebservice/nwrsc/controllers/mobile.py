@@ -6,6 +6,7 @@ from nwrsc.controllers.lib.base import BeforePage, BaseController
 from nwrsc.lib.helpers import t3
 from simplejson import JSONEncoder
 import time
+import datetime
 import operator
 
 CONVERT = {'old':'improvedon', 'raw':'couldhave', 'current':'highlight'}
@@ -66,10 +67,14 @@ class MobileController(BaseController):
 		query = query.filter(AnnouncerData.eventid==self.eventid)
 		query = query.order_by(AnnouncerData.updated.desc())
 
-		# This is where we would hold it on long polling
-		#if 'time' in request.GET:
-		#	query = query.filter(AnnouncerData.updated > datetime.fromtimestamp(int(request.GET['time'])))
-		#   if no result, pause for a bit
+		lasttime = int(request.GET.get('time',0))
+		time.sleep(0.5) # debug only
+		# Long polling, hold the connection until something is actually ready
+		while True:
+			row = query.first()
+			if time.mktime(row[0].timetuple()) > lasttime:
+				break
+			time.sleep(1)
 
 		classes = request.GET.get('classcodes', 'Any').split(',')
 		ret = []

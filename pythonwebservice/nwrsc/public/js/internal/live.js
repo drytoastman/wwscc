@@ -24,6 +24,8 @@ function processLast(json)
             }
         }
     }
+
+	updateCheck();
 }
 
 function updateCheck()
@@ -50,7 +52,6 @@ $(document).ready(function(){
 	});
 
     updateCheck();
-    setInterval('updateCheck()', 3000);
     $('#navbar a').first().click();
 });
 

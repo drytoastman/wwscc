@@ -55,6 +55,8 @@ function processLast(json)
 		$.getJSON($.nwr.url_for('toptimes'), data,  processTopTimes);
 		$.getJSON($.nwr.url_for('nexttofinish'), data,  processNext);
 	}
+
+	updateCheck();
 }
 
 function updateCheck()
@@ -78,7 +80,6 @@ $(document).ready(function(){
 	$('#entranttabs').tabs();
 	lasttime = 0;
 	updateCheck();
-	setInterval('updateCheck()', 2500);
 	setTimeout('timerUpdater("0.000")', 1000);
 });
 
