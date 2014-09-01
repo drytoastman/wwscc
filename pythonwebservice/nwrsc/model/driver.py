@@ -4,6 +4,17 @@ from sqlalchemy.types import Integer, SmallInteger, String, Boolean, Float, Date
 
 from meta import metadata
 
+t_drivernotes = Table('drivernotes', metadata,
+	Column('driverid', Integer, ForeignKey('drivers.id'), primary_key=True),
+	Column('notes', String(1024)),
+	)
+
+class DriverNote(object):
+	pass
+
+mapper(DriverNote, t_drivernotes)
+
+
 ## List of extra fields user wants
 t_driverfields = Table('driverfields', metadata,
 	Column('id', Integer, primary_key=True, autoincrement=True),

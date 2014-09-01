@@ -1,7 +1,7 @@
 
 from meta import metadata, Session
 from data import Data, EventResult, AnnouncerData, PrevEntry
-from driver import Driver, DriverExtra, DriverField
+from driver import Driver, DriverExtra, DriverField, DriverNote
 from runs import Run
 from cars import Car
 from settings import Settings, Setting
@@ -17,7 +17,7 @@ from registration import Registration
 from event import Event
 from dialin import Dialins
 
-SCHEMA_VERSION = '20135'
+SCHEMA_VERSION = '20141'
 
 __all__ = (
 'SCHEMA_VERSION',
@@ -33,6 +33,7 @@ __all__ = (
 'Driver',
 'DriverExtra',
 'DriverField',
+'DriverNote',
 'Car',
 'Run',
 'EventResult',

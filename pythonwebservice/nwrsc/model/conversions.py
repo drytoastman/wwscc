@@ -255,6 +255,20 @@ def convert20134(session):
 	session.commit()
 
 
+def convert20135(session):
+	# Create notes table
+	metadata.bind = session.bind
+	metadata.tables['drivernotes'].create()
+
+	log.info("update settings")
+	settings = Settings()
+	settings.load(session)
+	settings.schema = '20141'
+	settings.save(session)
+	session.commit()
+
+	
+
 converters = {
 	'20112': convert2011,
 	'20121': convert20121,
@@ -264,7 +278,8 @@ converters = {
 	'20131': convert20131,
 	'20132': convert20132,
 	'20133': convert20133,
-	'20134': convert20134
+	'20134': convert20134,
+	'20135': convert20135
 }
 
 

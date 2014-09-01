@@ -656,6 +656,37 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
+	public String getDriverNotes(int driverid)
+	{
+		try
+		{
+			ResultData d = executeSelect("GETNOTES", newList(driverid));
+			List<DriverField> ret = new ArrayList<DriverField>();
+			if (d.size() > 0)
+				return d.get(0).getString("notes");
+			return "";
+		}
+		catch (Exception ioe)
+		{
+			logError("getDriverNotes", ioe);
+			return null;
+		}
+	}
+	
+	public void setDriverNotes(int driverid, String notes)
+	{
+		try
+		{
+			executeUpdate("UPDATENOTES", newList(driverid, notes));
+			if (tracker != null) tracker.trackChange("UPDATENOTES", new Serializable[] { new DriverNote(driverid, notes) });
+		} 
+		catch (IOException ioe)
+		{
+			logError("setDriverNotes", ioe);
+		}
+	}
+	
+	
 	@Override
 	public Driver getDriver(int driverid)
 	{
@@ -1606,6 +1637,13 @@ public abstract class SQLDataInterface extends DataInterface
 					if (driveridmap.containsKey(c.driverid))
 						c.driverid = driveridmap.get(c.driverid);
 					updateCar(c);
+				}
+				else if (sqlmap.equals("UPDATENOTES"))
+				{
+					DriverNote n = (DriverNote)args[0];
+					if (driveridmap.containsKey(n.driverid))
+						n.driverid = driveridmap.get(n.driverid);
+					setDriverNotes(n.driverid, n.notes);
 				}
 				else if (sqlmap.equals("DELETECAR"))
 				{

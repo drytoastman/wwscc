@@ -161,6 +161,35 @@ public class AUTO
 		l.add(o.type);
 	}
 	
+	public static org.wwscc.storage.DriverNote loadDriverNote(ResultRow rs) throws IOException
+	{
+		org.wwscc.storage.DriverNote o = new org.wwscc.storage.DriverNote();
+		o.driverid = rs.getInt("driverid");
+		o.notes = rs.getString("notes");
+		return o;
+	}
+	
+	public static String getDriverNoteVarStr()
+	{
+		return "driverid,notes";
+	}
+	
+	public static String getDriverNoteArgStr()
+	{
+		return "?,?";
+	}
+	
+	public static String getDriverNoteSetStr()
+	{
+		return "driverid=?,notes=?";
+	}
+	
+	public static void addDriverNoteValues(org.wwscc.storage.DriverNote o, List<Object> l)
+	{
+		l.add(o.driverid);
+		l.add(o.notes);
+	}
+	
 	public static org.wwscc.storage.Car loadCar(ResultRow rs) throws IOException
 	{
 		org.wwscc.storage.Car o = new org.wwscc.storage.Car();

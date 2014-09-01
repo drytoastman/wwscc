@@ -203,7 +203,7 @@ public class GenerateAUTO
 	{
 		FileOutputStream fout = new FileOutputStream("src/org/wwscc/storage/AUTO.java");
 		GenerateAUTO cg = new GenerateAUTO(new PrintStream(fout));
-		cg.printFile(new Class[] { Event.class, Driver.class, DriverField.class, Car.class, Run.class,
+		cg.printFile(new Class[] { Event.class, Driver.class, DriverField.class, DriverNote.class, Car.class, Run.class,
 					Challenge.class, ChallengeRun.class,
 					ClassData.Class.class, ClassData.Index.class,
 					EventResult.class, AnnouncerData.class

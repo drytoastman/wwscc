@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.print.DocFlavor;
 import javax.print.PrintException;
 import javax.print.PrintService;
@@ -42,7 +43,9 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
+
 import net.miginfocom.swing.MigLayout;
+
 import org.wwscc.barcodes.Code39;
 import org.wwscc.components.DriverCarPanel;
 import org.wwscc.components.UnderlineBorder;
@@ -70,10 +73,11 @@ public class EntryPanel extends DriverCarPanel
 	public static final String REGISTERANDPAY = "Registered and Paid";
 	public static final String REGISTERONLY = "Registered Only";
 	public static final String UNREGISTER = "Unregister";
+	public static final String EDITNOTES = "Edit Notes";
 
 	JButton registeredandpaid, registerit, unregisterit;
 	JButton editcar, deletecar, print;
-	JLabel membershipwarning, paidwarning;
+	JLabel membershipwarning, noteswarning, paidwarning;
 	JComboBox<PrintService> printers;
 	Code39 activeLabel;
 	SearchDrivers2 searchDrivers2;
@@ -145,6 +149,10 @@ public class EntryPanel extends DriverCarPanel
 		membershipwarning.setForeground(Color.WHITE);
 		membershipwarning.setBackground(Color.RED);
 		
+		noteswarning = new JLabel("");
+		noteswarning.setForeground(Color.WHITE);
+		noteswarning.setBackground(Color.RED);
+		
 		paidwarning = new JLabel("");
 		paidwarning.setForeground(Color.WHITE);
 		paidwarning.setBackground(Color.RED);
@@ -166,12 +174,14 @@ public class EntryPanel extends DriverCarPanel
 		add(smallButton("Clear", true), "right, wrap");
 
 		add(createTitle("2. Driver"), "spanx 3, growx, wrap");
-		add(dscroll, "spany 6, grow");
-		add(smallButton("New Driver", true), "growx");
-		add(smallButton("Edit Driver", true), "growx, wrap");
+		add(dscroll, "spany 7, grow");
+		add(smallButton("New Driver", true), "growx, spanx 3, split");
+		add(smallButton("Edit Driver", true), "growx");
+		add(smallButton(EDITNOTES, true), "growx, wrap");
 		
 		add(driverInfo, "spanx 2, growx, wrap");
 		add(membershipwarning, "spanx 2, growx, h 15, wrap");
+		add(noteswarning, "spanx 2, growx, h 15, wrap");
 		add(activeLabel, "center, spanx 2, wrap");
 		add(printers, "center, spanx 2, wrap");
 		add(print, "center, growx, spanx 2, wrap");
@@ -353,6 +363,15 @@ public class EntryPanel extends DriverCarPanel
 				Database.d.unregisterCar(selectedCar.getId());
 				reloadCars(selectedCar);
 			}
+			else if (cmd.equals(EDITNOTES) && (selectedDriver != null))
+			{
+				String ret = (String)JOptionPane.showInputDialog(this, "Enter/Delete notes", noteswarning.getText());
+				if (ret != null)
+				{
+					Database.d.setDriverNotes(selectedDriver.getId(), ret);
+					valueChanged(new ListSelectionEvent(drivers, -1, -1, false));
+				}
+			}
 			else
 				super.actionPerformed(e);
 		}
@@ -378,13 +397,16 @@ public class EntryPanel extends DriverCarPanel
 		
 		if (e.getSource() == drivers)
 		{
+			membershipwarning.setText("");
+			membershipwarning.setOpaque(false);
+			noteswarning.setText("");
+			noteswarning.setOpaque(false);
+			
 			if (selectedDriver != null)
 			{
 				activeLabel.setValue(selectedDriver.getMembership(), String.format("%s - %s", selectedDriver.getMembership(), selectedDriver.getFullName()));
 				activeLabel.repaint();
-				membershipwarning.setText("");
-				membershipwarning.setOpaque(false);
-				
+
 				if (!selectedDriver.getMembership().trim().equals(""))
 				{
 					List<Driver> dups = Database.d.findDriverByMembership(selectedDriver.getMembership());
@@ -398,14 +420,20 @@ public class EntryPanel extends DriverCarPanel
 						membershipwarning.setOpaque(true);
 					}
 				}
+				
+				String notes = Database.d.getDriverNotes(selectedDriver.getId());
+				if (!notes.trim().equals(""))
+				{
+					noteswarning.setText(notes);
+					noteswarning.setOpaque(true);
+				}
+				
 				Messenger.sendEvent(MT.DRIVER_SELECTED, new Name(selectedDriver.getFirstName(), selectedDriver.getLastName()));
 			}
 			else
 			{
 				activeLabel.setValue("", "");
 				activeLabel.repaint();
-				membershipwarning.setText("");
-				membershipwarning.setOpaque(false);
 				Messenger.sendEvent(MT.DRIVER_SELECTED, drivers.getSelectedValue());
 			}
 		}
