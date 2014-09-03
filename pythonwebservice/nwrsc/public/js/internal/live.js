@@ -89,6 +89,13 @@ function processLast(json)
 
 function updateCheck()
 {
+	if (activerequest != null)
+	{
+		// don't allow multiple request loops to begin
+		activerequest.abort();
+		activerequest = null;
+	}
+
 	var codes = []
 	$("#main div").each(function() {
 		codes.push($(this).data('code'));
@@ -98,19 +105,22 @@ function updateCheck()
 		return;
 	}
 
-	$.ajax({
+	activerequest = $.ajax({
 			dataType: "json",
 			url: $.nwr.url_for('last'),
 			data: { time: lasttime, classcodes: codes.join() },
 			success: processLast,
-			error: function(xhr) { if (xhr.status != 403) { setTimeout('updateCheck()', 1000); } }
+			error: function(xhr, stat) { if ((xhr.status != 403) && (stat != "abort")) { setTimeout('updateCheck()', 1000); } }
 			});
 }
 
 
 var lasttime;
+var activerequest;
+
 $(document).ready(function(){
 	lasttime = 0;
+	activerequest = null;
     buildpage();
 
     $("#classpanel").panel({ close: function( event, ui ) {
