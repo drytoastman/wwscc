@@ -71,7 +71,7 @@ compile([
 compile([
 		'external/jquery-1.9.0.js',
 		'external/migrate.js',
-		'external/jquery.mobile-1.2.0.js',
+		'external/jquery.mobile-1.4.3.js',
 		'internal/nwr.js',
 		'internal/live.js',
 		], 'live.js')

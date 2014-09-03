@@ -71,6 +71,7 @@ class MobileController(BaseController):
 		lasttime = int(request.GET.get('time',0))
 
 		# Long polling, hold the connection until something is actually new
+		then = time.time()
 		while True:
 			ret = []
 			newdata = False
@@ -89,6 +90,8 @@ class MobileController(BaseController):
 					ret.append({'classcode':clazz, 'updated':updated, 'carid':row[1]})
 
 			if newdata:
+				break
+			if time.time() > then + 30:  # 30 second wait max to stop forever threads
 				break
 			time.sleep(0.6)
 

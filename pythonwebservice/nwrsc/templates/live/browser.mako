@@ -17,34 +17,50 @@ except:
 </script>
 </head> 
 
-<%
-codeset = set([v['code'] for v in c.views])
-def idfor(v):
-	return v['type']+v['code']
-def titlefor(v):
-	if (v['code'] == 'Any'):
-		return v['type'];
-	return "%s - %s" % (v['code'], v['type'])
-%>
-	
 <body> 
 
-<div data-role="page" data-theme="b">
-	<div data-role="header" data-id="header" data-position="fixed">
-		<h1>Browser</h1>
-		<div data-role="navbar" id="navbar">
-			<ul>
-				%for v in c.views:
-					<li><a onclick='switchto("${idfor(v)}");'>${titlefor(v)}</a></li>
+<div data-role="page" id="browserpage" data-theme="b">
+
+	<div data-role="panel" id="classpanel" data-display="overlay">
+
+		<a href="#my-header" data-rel="close" data-role='button'>Close</a>
+
+		<div data-role="fieldcontain" id='settingscheck'>
+			Other:
+		 	<fieldset data-role="controlgroup">
+				<label for="checkbox-pax">PAX Top Times</label> <input type="checkbox" name="pax" id="checkbox-pax"/>
+				<label for="checkbox-raw">Raw Top Times</label> <input type="checkbox" name="raw" id="checkbox-raw"/>
+				<label for="champflip">Include Champ</label>    <input type="checkbox" name="champon" id="champflip" />
+			</fieldset>
+		</div>
+
+		<div data-role="fieldcontain" id='classescheck'>
+			Classes:
+		 	<fieldset data-role="controlgroup">
+				%for code in c.classes:
+				<label for="checkbox-${code}">${code}</label>
+				<input type="checkbox" name="${code}" id="checkbox-${code}"/>
 				%endfor
+		    </fieldset>
+		</div>
+
+	</div>
+
+	<div data-role="header" data-id="header" data-position="fixed" id="header">
+		<h1>${c.event.name}</h1> 
+		<a href="#classpanel" data-icon="bars" data-iconpos="notext"></a>
+
+		<div data-role="navbar" id='navcontainer'>
+			<ul>
+				<li><a href='#'>D</a></li>
+				<li><a href='#'>E</a></li>
+				<li><a href='#'>F</a></li>
 			</ul>
 		</div>
 	</div>
 
-	<div data-role="content">
-		%for v in c.views:
-			<div id="${idfor(v)}" data-type='${v["type"]}' data-code='${v["code"]}' class='viewer' style='display:none;'></div>
-		%endfor
+	<div role="main" class="ui-content" id="main">
+		<div id='instructions'> If you are reading this, something hasn't loaded yet </div>
 	</div>
 
 </div>

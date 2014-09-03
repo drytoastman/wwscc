@@ -18,14 +18,17 @@ class LiveController(MobileController):
 			return self.databaseSelector()
 
 	def browser(self):
-		c.views = []
-		try:
-			args = request.GET.get('views', 'Any,PAX').split(',')
-		except:
-			redirect(url_for(action='index'))
+		#c.views = []
+		c.event = self.event
+		c.classes = [x[0] for x in self.session.query(Class.code).all()]
+		
+		#try:
+		#	args = request.GET.get('views', 'Any,PAX').split(',')
+		#except:
+		#	redirect(url_for(action='index'))
 
-		for v in zip(args[::2], args[1::2]):
-			c.views.append({'code':v[0], 'type':v[1]})
+		#for v in zip(args[::2], args[1::2]):
+		#	c.views.append({'code':v[0], 'type':v[1]})
 		return render_mako('/live/browser.mako')
 
 	def Event(self):

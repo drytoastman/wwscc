@@ -66,12 +66,16 @@ mobile/<seriesname>/indexes - returns a list of the indexes
 		}
 	]
 
-mobile/<seriesname>/<eventid>/last?classcodes=<classcode>[,<classcode>,...] - returns a the last finish time for the class codes, * means any class
+mobile/<seriesname>/<eventid>/last?class=<classcode>&time=<reference> - returns a the last finish time for the class
+	* means any class
+	can take multiple codes
+	call is long polling and will return only on error or when at least one class has a updated time > reference
+
 	[
 		{
-			classcode: string
 			updated: float
 			carid: int
+			classcode: string
 		}
 	]
 
