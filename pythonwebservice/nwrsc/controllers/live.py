@@ -8,28 +8,26 @@ class LiveController(MobileController):
 
 	def index(self):
 		if self.eventid:
-			c.event = self.event
-			c.classes = self.session.query(Class.code).all()
-			return render_mako('/live/selector.mako')
+			return self._browser()
 		elif self.database is not None:
-			c.events = self.session.query(Event).all()
-			return render_mako('/results/eventselect.mako')
+			return self._events()
 		else:
-			return self.databaseSelector()
+			return self._database()
 
-	def browser(self):
-		#c.views = []
+
+	def _database(self):
+		c.dblist = self._databaseList(archived=False)
+		return render_mako('/live/database.mako')
+
+	def _events(self):
+		c.events = self.session.query(Event).all()
+		return render_mako('/live/events.mako')
+
+	def _browser(self):
 		c.event = self.event
 		c.classes = [x[0] for x in self.session.query(Class.code).all()]
-		
-		#try:
-		#	args = request.GET.get('views', 'Any,PAX').split(',')
-		#except:
-		#	redirect(url_for(action='index'))
-
-		#for v in zip(args[::2], args[1::2]):
-		#	c.views.append({'code':v[0], 'type':v[1]})
 		return render_mako('/live/browser.mako')
+
 
 	def Event(self):
 		carid = int(self.routingargs.get('other', 0))
