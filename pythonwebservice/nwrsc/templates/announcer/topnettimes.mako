@@ -2,7 +2,8 @@
 <tr class='titles'>
 <th>#</th>
 <th>Name</th>
-<th>Index</th>
+<th>Class</th>
+<th colspan=2>Index</th>
 <th>Time</th>
 </tr>
 </tr>
@@ -11,6 +12,8 @@
 <tr class='${c.e2label(entry)}'> 
 <td>${entry.position}</td>
 <td>${entry.name}</td>
+<td>${entry.classcode}</td>
+<td>${entry.indexcode}</td>
 <td>${entry.indexvalue}</td>
 <td>${entry.toptime}</td>
 </tr>
