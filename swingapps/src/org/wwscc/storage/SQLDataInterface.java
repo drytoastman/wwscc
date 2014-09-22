@@ -558,7 +558,7 @@ public abstract class SQLDataInterface extends DataInterface
 			cr = executeSelect("HASANYRUNS", newList(c.getId()));
 			mc.hasActivity = !cr.isEmpty();
 			
-			cr = executeSelect("ISINEVENT", newList(c.getId(), currentEvent.id));
+			cr = executeSelect("ISINCOURSE", newList(c.getId(), currentEvent.id, currentCourse));
 			mc.isInRunOrder = !cr.isEmpty();
 
 			return mc;

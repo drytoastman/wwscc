@@ -38,9 +38,16 @@ public class TextRunsDialog extends BaseDialog<List<Run>>
 		if (Character.isDigit(data.charAt(0)))
 		{
 			String p[] = data.split("[()]+");
-			int cones = (p.length>1)?Integer.parseInt(p[1]):0;
-			double raw = Double.parseDouble(p[0]) - (2.0 * cones);  // remove penalty from time
-			return new Run(raw, cones, 0, "OK");
+			int cones = 0, gates = 0;
+			if (p.length > 1)
+			{
+				String pen[] = p[1].split(",");
+				cones = Integer.parseInt(pen[0]);
+				if (pen.length > 1)
+					gates = Integer.parseInt(pen[1]);
+			}
+			double raw = Double.parseDouble(p[0]) - (2.0 * cones) - (10.0 * gates);  // remove penalty from time
+			return new Run(raw, cones, gates, "OK");
 		}
 		else
 		{

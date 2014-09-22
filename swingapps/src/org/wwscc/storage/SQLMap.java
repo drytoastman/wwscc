@@ -103,7 +103,7 @@ public class SQLMap
 		sql.put("INSERTCLASSGROUPMAPPING", "insert into rungroups (eventid, classcode, rungroup) values (?,?,?)");
 		sql.put("INSERTRUNORDER", "insert into runorder values (NULL, ?,?,?,?,?)");
 		sql.put("ISREGISTERED", "select paid from registered where carid=? and eventid=?");
-		sql.put("ISINEVENT", "select row from runorder where carid=? and eventid=? limit 1");
+		sql.put("ISINCOURSE", "select row from runorder where carid=? and eventid=? and course=? limit 1");
 
 		sql.put("LOADDRIVERCARS", "select * from cars where driverid = ? order by classcode, number");
 		sql.put("LOADENTRANT", "select d.firstname,d.lastname,c.*,r.paid from drivers as d, cars as c LEFT JOIN registered as r on r.carid=c.id and r.eventid=?  " +

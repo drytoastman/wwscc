@@ -55,7 +55,7 @@ sqlmap = {
 'INSERTEXTRA':'insert into driverextra (driverid, name, value) values (:h1,:h2,:h3)',
 'INSERTRUN':'insert into runs (carid,eventid,course,run,cones,gates,status,rorder,norder,brorder,bnorder,reaction,sixty,seg1,seg2,seg3,seg4,seg5,raw,net) values (:h1,:h2,:h3,:h4,:h5,:h6,:h7,:h8,:h9,:h10,:h11,:h12,:h13,:h14,:h15,:h16,:h17,:h18,:h19,:h20)',
 'INSERTRUNORDER':'insert into runorder values (NULL, :h1,:h2,:h3,:h4,:h5)',
-'ISINEVENT':'select row from runorder where carid=:h1 and eventid=:h2 limit 1',
+'ISINCOURSE':'select row from runorder where carid=:h1 and eventid=:h2 and course=:h3 limit 1',
 'ISREGISTERED':'select paid from registered where carid=:h1 and eventid=:h2',
 'LOADDRIVERCARS':'select * from cars where driverid = :h1 order by classcode, number',
 'LOADENTRANT':'select d.firstname,d.lastname,c.*,r.paid from drivers as d, cars as c LEFT JOIN registered as r on r.carid=c.id and r.eventid=:h1  where c.driverid=d.id and c.id=:h2 ',

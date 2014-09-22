@@ -50,6 +50,7 @@ public class DriverEntry extends DriverCarPanel
 		Messenger.register(MT.OBJECT_DCLICKED, this);
 		Messenger.register(MT.ENTRANTS_CHANGED, this);
 		Messenger.register(MT.SHOW_ADD_PANE, this);
+		Messenger.register(MT.COURSE_CHANGED, this);
 
 		MyListRenderer listRenderer = new MyListRenderer();
 		drivers.setCellRenderer(listRenderer);
@@ -180,6 +181,7 @@ public class DriverEntry extends DriverCarPanel
 				break;
 
 			case ENTRANTS_CHANGED: // resync loaded cars to check status
+			case COURSE_CHANGED:
 				reloadCars(selectedCar);
 				break;
 			
