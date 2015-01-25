@@ -169,6 +169,7 @@ class PurgeCopy(object):
 				cur.execute("insert into new.drivers select * from old.drivers")
 				cur.execute("insert into new.driverextra select * from old.driverextra")
 				cur.execute("insert into new.driverfields select * from old.driverfields")
+				cur.execute("insert into new.drivernotes select * from old.drivernotes")
 
 			if self.form_result['cars']:
 				cur.execute("insert into new.cars select * from old.cars")

@@ -98,6 +98,8 @@ public abstract class DataInterface
 	public abstract void deleteDrivers(Collection<Driver> d) throws IOException;
 	public abstract List<DriverField> getDriverFields() throws IOException;
 	public abstract Driver getDriver(int driverid);
+	public abstract String getDriverNotes(int driverid);
+	public abstract void setDriverNotes(int driverid, String notes);
 	public abstract List<Driver> findDriverByMembership(String membership);
 
 	public abstract List<Car> getCarsForDriver(int driverid); // get all cars for this driverid

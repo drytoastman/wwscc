@@ -21,7 +21,7 @@ public class SqliteDatabase extends SQLDataInterface
 {
 	private static final Logger log = Logger.getLogger(SqliteDatabase.class.getCanonicalName());
 
-	public static final String SCHEMA_VERSION = "20135";
+	public static final String SCHEMA_VERSION = "20141";
 	public static final int SQLITE_OK		= 0;
 	public static final int SQLITE_BUSY		= 5;
 	public static final int SQLITE_ROW		= 100;

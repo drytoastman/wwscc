@@ -71,6 +71,7 @@ public class SQLMap
 		sql.put("GETEVENTS", "select * from events order by date");
 		sql.put("GETEXTRA", "select name,value from driverextra where driverid=?");
 		sql.put("GETINDEXES", "select * from indexlist");
+		sql.put("GETNOTES", "select notes from drivernotes where driverid=?");
 		sql.put("GETREGISTEREDENTRANTS", "select distinct d.firstname as firstname,d.lastname as lastname,c.* from registered as x, cars as c, drivers as d " +
 						"where x.carid=c.id AND c.driverid=d.id and x.eventid=?");
 		sql.put("GETREGISTEREDCARS", "select c.* from registered as x, cars as c, drivers as d " +
@@ -128,6 +129,7 @@ public class SQLMap
 		sql.put("UPDATEDRIVER", "update drivers set "+ AUTO.getDriverSetStr() + " where id=?");
 		sql.put("UPDATEEVENTS", "update events set "+AUTO.getEventSetStr()+" where id=?");
 		sql.put("UPDATERUN", "update runs set "+ AUTO.getRunSetStr() + " where id=?");
+		sql.put("UPDATENOTES", "insert or replace into drivernotes values (?, ?)");
 	}
 
 	/**

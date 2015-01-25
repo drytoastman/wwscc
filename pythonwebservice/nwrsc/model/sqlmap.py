@@ -33,6 +33,7 @@ sqlmap = {
 'GETEVENTS':'select * from events order by date',
 'GETEXTRA':'select name,value from driverextra where driverid=:h1',
 'GETINDEXES':'select * from indexlist',
+'GETNOTES':'select notes from drivernotes where driverid=:h1',
 'GETREGISTEREDCARS':'select c.* from registered as x, cars as c, drivers as d where x.carid=c.id AND c.driverid=d.id and x.eventid=:h1 and d.id=:h2',
 'GETREGISTEREDENTRANTS':'select distinct d.firstname as firstname,d.lastname as lastname,c.* from registered as x, cars as c, drivers as d where x.carid=c.id AND c.driverid=d.id and x.eventid=:h1',
 'GETROUNDSFORCHALLENGE':'select * from challengerounds where challengeid=:h1',
@@ -72,5 +73,6 @@ sqlmap = {
 'UPDATECHALLENGEROUND':'update challengerounds set challengeid=:h1,round=:h2,swappedstart=:h3,car1id=:h4,car1dial=:h5,car1result=:h6,car1newdial=:h7,car2id=:h8,car2dial=:h9,car2result=:h10,car2newdial=:h11 where id=:h12',
 'UPDATEDRIVER':'update drivers set firstname=:h1,lastname=:h2,alias=:h3,email=:h4,address=:h5,city=:h6,state=:h7,zip=:h8,phone=:h9,brag=:h10,sponsor=:h11,membership=:h12 where id=:h13',
 'UPDATEEVENTS':'update events set ispro=:h1,practice=:h2,courses=:h3,runs=:h4,countedruns=:h5,conepen=:h6,gatepen=:h7,segments=:h8,name=:h9,date=:h10,location=:h11,sponsor=:h12,host=:h13,designer=:h14,regopened=:h15,regclosed=:h16,perlimit=:h17,totlimit=:h18,doublespecial=:h19,cost=:h20,paypal=:h21,snail=:h22,notes=:h23 where id=:h24',
+'UPDATENOTES':'insert or replace into drivernotes values (:h1, :h2)',
 'UPDATERUN':'update runs set carid=:h1,eventid=:h2,course=:h3,run=:h4,cones=:h5,gates=:h6,status=:h7,rorder=:h8,norder=:h9,brorder=:h10,bnorder=:h11,reaction=:h12,sixty=:h13,seg1=:h14,seg2=:h15,seg3=:h16,seg4=:h17,seg5=:h18,raw=:h19,net=:h20 where id=:h21',
 }
