@@ -1,6 +1,12 @@
 RewriteEngine On
 RewriteBase /
-RewriteRule ^dreamhost\.fcgi/ - [L]
+RewriteRule ^coneheads.* - [L]
+RewriteRule ^downloads/.* - [L]
+RewriteRule ^doc/.* - [L]
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteRule ^dreamhost.fcgi/ - [L]
 RewriteRule ^(.*)$ dreamhost.fcgi/$1 [L]
-Options +ExecCGI
-AddHandler fastcgi-script .fcgi
+#RewriteRule ^(.*)$ down.html [L]
+Options +ExecCGI +FollowSymLinks
+SetEnv no-gzip
+
