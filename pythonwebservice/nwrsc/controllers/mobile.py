@@ -1,12 +1,10 @@
-from pylons import request, response, tmpl_context as c
-from pylons.templating import render_mako, render_mako_def
-from pylons.decorators import jsonify
+from pylons import request, response
 from nwrsc.model import *
 from nwrsc.controllers.lib.base import BeforePage, BaseController
 from nwrsc.lib.helpers import t3
 from simplejson import JSONEncoder
 import time
-import datetime
+from decimal import Decimal
 import operator
 
 CONVERT = {'old':'improvedon', 'raw':'couldhave', 'current':'highlight'}
@@ -109,7 +107,6 @@ class MobileController(BaseController):
 
 
 	def _loadTopTimes(self, carid, raw=False):
-		ret = {}
 		classdata = ClassData(self.session)
 		car = self.session.query(Car).get(carid)
 		self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
@@ -138,21 +135,23 @@ class MobileController(BaseController):
 					additions.append(entry.copyWith(position='old', toptime=t3(oldsum), label='old'))
 				if rawsum is not None and rawsum > 0:
 					additions.append(entry.copyWith(position='raw', toptime=t3(rawsum), label='raw'))
-	
+
 		if additions:
+			comp_fnc = lambda x, y:\
+				1 if Decimal(x) > Decimal(y) else (0 if x == y else -1)
 			tts.rows.extend(additions)
-			tts.rows.sort(key=operator.attrgetter('toptime'))
+			tts.rows.sort(key=operator.attrgetter('toptime'), cmp=comp_fnc)
 			tts.rows.sort(key=operator.attrgetter('courses'), reverse=True)
 
 		return tts.rows
 
 
 	def _entrant(self, carid):
-		ret = {}
-		ret['runlist'] = self._runlist(carid)
-		ret['classlist'] = self._classlist(carid)
-		ret['champlist'] = self._champlist(carid)
-		return ret
+		return {
+			'runlist': self._runlist(carid),
+			'classlist': self._classlist(carid),
+			'champlist': self._champlist(carid)
+		}
 		
 
 	def runlist(self):

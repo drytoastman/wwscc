@@ -2,6 +2,8 @@
 *.o
 *.log*
 *.version
+*.DS_Store
+*/.idea
 .sass-cache
 wwjarsigner.key
 wwsccapps*.jar
