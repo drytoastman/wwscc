@@ -16,10 +16,12 @@ import java.awt.event.ActionListener;
 import java.util.logging.Logger;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
+
 import net.miginfocom.swing.MigLayout;
 
 import org.wwscc.components.CurrentDatabaseLabel;
@@ -37,6 +39,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 	private static Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
 
 	JComboBox<Event> eventSelect;
+	JCheckBox lock;
 	JLabel count;
 	
 	public SelectionBar()
@@ -53,6 +56,13 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		eventSelect = new JComboBox<Event>();
 		eventSelect.setActionCommand("eventChange");
 		eventSelect.addActionListener(this);
+		
+		lock = new JCheckBox("Lock");
+		lock.setActionCommand("lockEvent");
+		lock.addActionListener(this);
+
+		count = new JLabel("");
+		count.setFont(new Font(Font.DIALOG, Font.BOLD, 14));
 
 		JLabel dl = new JLabel("Database:");
 		dl.setFont(f);
@@ -60,12 +70,12 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		el.setFont(f);
 		JLabel cl = new JLabel("Changes:");
 		cl.setFont(f);
-		count = new JLabel("");
 
 		add(dl, "");
 		add(new CurrentDatabaseLabel(), "");
 		add(el, "gap left 25");
 		add(eventSelect, "");
+		add(lock, "");
 		add(cl, "gap left 25");
 		add(count, "");
 	}
@@ -128,6 +138,11 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 			Database.d.setCurrentCourse(1);
 			Messenger.sendEvent(MT.EVENT_CHANGED, null);
 			Prefs.setEventId(eventSelect.getSelectedIndex());
+		}
+		else if (e.getActionCommand().equals("lockEvent"))
+		{
+			JCheckBox cb = (JCheckBox)e.getSource();
+			eventSelect.setEnabled(!cb.isSelected());
 		}
 	}
 }

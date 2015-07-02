@@ -47,7 +47,12 @@ public class ChangeTracker
 	 */
 	public int size()
 	{
-		return changes.size();
+		int ret = 0;
+		for (Change c : changes) {
+			if (!c.sqlmap.equals("SETEVENT"))
+				ret++;
+		}
+		return ret;
 	}
 
 	/**
