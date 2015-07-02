@@ -137,11 +137,9 @@ class MobileController(BaseController):
 					additions.append(entry.copyWith(position='raw', toptime=t3(rawsum), label='raw'))
 
 		if additions:
-			comp_fnc = lambda x, y:\
-				1 if Decimal(x) > Decimal(y) else (0 if x == y else -1)
 			tts.rows.extend(additions)
-			tts.rows.sort(key=operator.attrgetter('toptime'), cmp=comp_fnc)
-			tts.rows.sort(key=operator.attrgetter('courses'), reverse=True)
+			tts.rows.sort(key=lambda x: float(x.toptime))
+			tts.rows.sort(key=lambda x: int(x.courses), reverse=True)
 
 		return tts.rows
 
@@ -205,8 +203,8 @@ class MobileController(BaseController):
 			ret.append({'sum': t3(self.announcer.oldsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'old', 'label':'old', 'courses':savecourses})
 		if self.announcer.potentialsum > 0:
 			ret.append({'sum': t3(self.announcer.potentialsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'raw', 'label':'raw', 'courses':savecourses})
-		ret.sort(key=operator.itemgetter('sum'))
-		ret.sort(key=operator.itemgetter('courses'), reverse=True)
+		ret.sort(key=lambda x: float(x['sum']))
+		ret.sort(key=lambda x: int(x['courses']), reverse=True)
 		return ret
 
 
