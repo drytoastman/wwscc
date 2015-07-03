@@ -1,5 +1,6 @@
 package org.wwscc.registration.changeviewer;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -38,14 +39,18 @@ class MergeProcess extends SwingWorker<Void,Void> implements ProgressInterface
 	@Override
 	protected Void doInBackground() throws Exception
 	{
-		dest.mergeChanges(changes, this);
-		JOptionPane.showMessageDialog(source, "Merge complete");
+		try {
+			dest.mergeChanges(changes, this);
+		} finally {
+			monitor.close();
+		}
 		return null;
 	}
 	
 	@Override
 	public void done() 
 	{
+		JOptionPane.showMessageDialog(source, String.format("Merged %d changes", counter));
 		source.archive();
 	}
 }

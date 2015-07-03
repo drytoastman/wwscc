@@ -1605,6 +1605,7 @@ public abstract class SQLDataInterface extends DataInterface
 				{
 					Event e = (Event)args[0];
 					setCurrentEvent(e);
+					continue;
 				}
 				else if (sqlmap.equals("INSERTDRIVER"))
 				{
@@ -1677,7 +1678,7 @@ public abstract class SQLDataInterface extends DataInterface
 		catch (IOException e)
 		{
 			rollback();
-			log.log(Level.SEVERE, "Unable to merge: " + e, e);
+			log.log(Level.SEVERE, "Exception during merge: " + e, e);
 			throw e;
 		}
 	}
