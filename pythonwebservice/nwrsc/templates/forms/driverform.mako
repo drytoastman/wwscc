@@ -64,7 +64,7 @@
 </tr>
 
 <tr>
-<th>Membership</th>
+<th>Membership #</th>
 <td colspan='6'><input name='membership' type='text' value='${driver.membership}'/></td>
 </tr>
 
