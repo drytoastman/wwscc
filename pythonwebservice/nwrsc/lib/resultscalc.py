@@ -153,14 +153,14 @@ def RecalculateResults(session, settings):
 				val = classdata.getEffectiveIndex(codes) 
 				counted = min(classdata.getCountedRuns(codes.classcode), event.getCountedRuns())
 				istr = classdata.getIndexStr(codes)
-				yield "\tId: %s (%s, %s, %s)\n" % (car.carid, val, istr, (counted < 100 and counted or "all"))
+				yield str("\tId: %s (%s, %s, %s)\n" % (car.carid, val, istr, (counted < 100 and counted or "all")))
 
 				for course in range(1, event.courses+1):
 					UpdateRunTotals(session, event, car.carid, course, val, counted, settings.indexafterpenalties)
 			session.commit()
 
 			for cls in session.query(Car.classcode).distinct().join(Run).filter(Run.eventid==event.id):
-				yield "\tCls: %s\n" % (cls)
+				yield "\tCls: %s\n" % str(cls.classcode)
 				UpdateClassResults(session, event.id, 0, cls.classcode, 0)
 
 		session.commit()
