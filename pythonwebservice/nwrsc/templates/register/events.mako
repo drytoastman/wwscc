@@ -26,7 +26,10 @@
     <div class='detailscontainer'>
 	<span class='header'>Details</span>
 	<table class='eventdetails'>
-		<tr><th>Closes</th><td>${ev.opened and ev.regclosed.strftime('%a %b %d at %I:%M%p') or 'Has not opened yet'}</td></tr>
+	%if not ev.opened and not ev.closed:
+		<tr><th>Opens</th><td>${ev.regopened.strftime('%a %b %d at %I:%M%p')}</td></tr>
+	%endif
+		<tr><th>Closes</th><td>${ev.regclosed.strftime('%a %b %d at %I:%M%p')}</td></tr>
 	%if ev.host:
 		<tr><th>Host</th><td>${ev.host}</td></tr>
 	%endif
