@@ -29,6 +29,11 @@
 <span class='input'><input type="text" name="sponsorlink" value="${c.settings.sponsorlink}" size="40" /></span>
 </div>
 
+<div title="URL link for car classing help">
+<span class='title'>Classing Help Link</span>
+<span class='input'><input type="text" name="classinglink" value="${c.settings.classinglink}" size="40" /></span>
+</div>
+
 <div title="Additional sorting options for determing championship in case of tie, comma separated list of (firsts, seconds, thirds, fourths, attended)">
 <span class='title'>Championship TieBreakers</span>
 <span class='input'><input type="text" name="champsorting" value="${c.settings.champsorting}" size="40" /></span>

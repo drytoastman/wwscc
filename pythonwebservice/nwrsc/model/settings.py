@@ -22,7 +22,7 @@ class Settings(object):
 
 	INTS = ["largestcarnumber", "useevents", "minevents"]
 	BOOLS = ["locked", "superuniquenumbers", "indexafterpenalties", "usepospoints"]
-	STRS = ["pospointlist", "champsorting", "seriesname", "sponsorlink", "schema", "parentseries"]
+	STRS = ["pospointlist", "champsorting", "seriesname", "sponsorlink", "schema", "parentseries", "classinglink"]
 	FLOATS = []
 
 	def __init__(self):
@@ -37,6 +37,7 @@ class Settings(object):
 		self.sponsorlink = ""
 		self.schema = "missing"
 		self.parentseries = ""
+		self.classinglink = ""
 
 		self.largestcarnumber = 1999
 		self.useevents = 6

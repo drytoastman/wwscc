@@ -29,6 +29,11 @@ for code in sorted(c.classdata.classlist):
 %>
 </select>
 </td></tr>
+<tr><th></th><td colspan="2">
+%if c.settings.classinglink:
+<a target='classinghelp' href='${c.settings.classinglink}'>Click Here for Classing Help</a>
+%endif
+</td></tr>
 
 <script>
 gIndexList = [ "${'","'.join(sorted(c.classdata.indexlist)) |n}" ];
