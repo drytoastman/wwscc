@@ -312,7 +312,7 @@ def loadTopNetTimes(session, event, classdata, allruns=False):
 		sql = topNet
 		title = "Top Index Times (Counted)"
 
-	ttl = TopTimesList(title, ['Name', 'Index', '', 'Time'], ['name', 'indexstr', 'indexvalue', 'toptime'])
+	ttl = TopTimesList(title, ['Name', 'Class', 'Index', '', 'Time'], ['name', 'classcode', 'indexstr', 'indexvalue', 'toptime'])
 	for row in session.execute(sql, params={'eventid':event.id}):
 		entry = TopTimeEntry(row)
 		entry.indexstr = classdata.getIndexStr(row)
