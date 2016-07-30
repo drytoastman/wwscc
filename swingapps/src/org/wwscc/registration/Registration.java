@@ -8,7 +8,6 @@
 
 package org.wwscc.registration;
 
-import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
@@ -82,9 +81,9 @@ public class Registration extends JFrame
 		file.add(new QuitAction());
 		
 		JMenu find = new JMenu("Find By...");
-		find.add(new FindByAction("Membership"));
-		find.add(new FindByAction("DriverId"));
-		find.add(new FindByAction("CarId"));
+		find.add(new FindByAction("Membership", 'M'));
+		find.add(new FindByAction("DriverId", 'D'));
+		find.add(new FindByAction("CarId", 'Q'));
 		
 		JMenu options = new JMenu("Options");
 		options.add(new BarcodeScannerOptionsAction());
@@ -94,7 +93,10 @@ public class Registration extends JFrame
 		attendance.add(new AttendanceConfigureAction());
 		attendance.add(new JCheckBoxMenuItem(new AttendanceShowAction()));
 		
-		JMenu merge = new JMenu("Merge");
+		JMenu tools = new JMenu("Tools");
+//		tools.add(new DriverMergingAction());
+
+		JMenu merge = new JMenu("Database Merging");
 		merge.add(new ChangeViewerAction());
 		merge.add(new LocalDatabaseCopyAction());
 		
@@ -103,6 +105,7 @@ public class Registration extends JFrame
 		bar.add(find);
 		bar.add(options);
 		bar.add(attendance);
+		bar.add(tools);
 		bar.add(merge);
 		setJMenuBar(bar);
 
@@ -116,20 +119,20 @@ public class Registration extends JFrame
 	{
 		String type;
 		char prefix;
-		public FindByAction(String t) 
+		public FindByAction(String t, char key) 
 		{ 
 			super();
 			type = t;
-			prefix = type.charAt(0);
+			prefix = key;
 			putValue(NAME, type);
-			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(AWTKeyStroke.getAWTKeyStroke(prefix).getKeyChar(), ActionEvent.CTRL_MASK));				 
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyStroke.getAWTKeyStroke(prefix).getKeyChar(), ActionEvent.CTRL_MASK));
 		}
 		
 		public void actionPerformed(ActionEvent e) 
 		{
 			Object o = JOptionPane.showInputDialog("Enter " + type);
 			if (o != null)
-				Messenger.sendEvent(MT.BARCODE_SCANNED, (prefix != 'M') ? prefix+o.toString() : o);
+				Messenger.sendEvent(MT.BARCODE_SCANNED, (prefix != 'B') ? prefix+o.toString() : o);
 		}
 	}
 	
@@ -139,6 +142,14 @@ public class Registration extends JFrame
 		public ChangeViewerAction() { super("Open Change Viewer"); }
 		public void actionPerformed(ActionEvent e) {  new ChangeViewer(Database.d.getCurrentSeries()); }
 	}
+
+/*
+	final static class DriverMergingAction extends AbstractAction
+	{
+		public DriverMergingAction() { super("Open Driver Merging Window"); }
+		public void actionPerformed(ActionEvent e) {  new DriverMerger(); }
+	}
+*/
 	
 	final static class AttendanceDownloadAction extends AbstractAction
 	{
