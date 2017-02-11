@@ -11,10 +11,13 @@ package org.wwscc.dataentry.tables;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.table.AbstractTableModel;
+
+import org.wwscc.dataentry.DataEntry;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.Run;
@@ -49,11 +52,11 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		Messenger.register(MT.STOP_FAKE_USER, this);
 	}
 
-	public void addCar(int carid)
+	public void addCar(UUID carid)
 	{
 		if (tableData == null) return;
 
-		Entrant e = Database.d.loadEntrant(carid, true);
+		Entrant e = Database.d.loadEntrant(DataEntry.state.getCurrentEventId(), carid, DataEntry.state.getCurrentCourse(), true);
 		if (e == null)
 		{
 			log.warning("Failed to fetch entrant data, perhaps try again");
@@ -64,21 +67,21 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		{
 			if (!Prefs.useReorderingTable())
 			{
-				log.log(Level.WARNING, "Carid {0} already in table, perhaps you want to enable constant staging mode", Integer.toString(carid));
+				log.log(Level.WARNING, "Carid {0} already in table, perhaps you want to enable constant staging mode", carid);
 				return;
 			}
 			tableData.remove(e); // remove it from position and following will readd at the end
 		}
-		else if (Database.d.isInOrder(carid))
+		else if (Database.d.isInOrder(DataEntry.state.getCurrentEventId(), carid, DataEntry.state.getCurrentCourse()))
 		{
-			log.log(Level.SEVERE, "Carid {0} already in use in another rungroup", Integer.toString(carid));
+			log.log(Level.SEVERE, "Carid {0} already in use in another rungroup", carid);
 			return;
 		}
 		
 		tableData.add(e);
 
 		try {
-			Database.d.registerCar(carid, false, false);
+			Database.d.registerCar(null, carid, false, false);
 		} catch (IOException ioe) {
 			log.log(Level.INFO, "Registration during car add failed: {0}" + ioe.getMessage(), ioe);
 		}
@@ -88,18 +91,23 @@ public class EntryModel extends AbstractTableModel implements MessageListener
     	fireEntrantsChanged();
 	}
 
-	public void replaceCar(int carid, int row)
+	public void replaceCar(UUID carid, int row)
 	{
 		/* We are being asked to swap an entrant */
 		Entrant old = tableData.get(row);
-		Entrant newe = Database.d.loadEntrant(carid, true);
+		Entrant newe = Database.d.loadEntrant(DataEntry.state.getCurrentEventId(), carid, DataEntry.state.getCurrentCourse(), true);
 		if (newe == null)
 		{
 			log.warning("Failed to fetch entrant data, perhaps try again");
 			return;
 		}
-		newe.setRuns(old.removeRuns());
-
+		
+		for (Run r : old.getRuns()) {
+			r.updateTo(DataEntry.state.getCurrentEvent().getEventId(), newe.getCarId(), DataEntry.state.getCurrentCourse(), r.run());
+			newe.setRun(r);
+			Database.d.setRun(r); // insert or update 
+		}
+		
 		tableData.set(row, newe);
 		fireRunsChanged(newe);
 		fireEntrantsChanged();
@@ -163,7 +171,22 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 	{
 		Entrant e = tableData.get(row);
 		if (e == null) return true;  // ????
-		return (e.runCount() >= Database.d.getCurrentEvent().getRuns());
+		return (e.runCount() >= DataEntry.state.getCurrentEvent().getRuns());
+	}
+	
+	public boolean isBest(int row, Run x)
+	{
+		Entrant e = tableData.get(row);
+		if (e == null) return false;
+
+		// check if anyone is better
+		Run.NetOrder no = new Run.NetOrder(DataEntry.state.getCurrentEvent());
+		for (Run r : e.getRuns())
+		{
+			if (r == x) continue;
+			if (no.compare(x, r) > 0) return false;
+		}
+		return true;
 	}
 
 	/**
@@ -232,13 +255,14 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		// Setting a run
 		else 
 		{
-			if (aValue instanceof Run)
-			{
-				e.setRun((Run)aValue, col-runoffset);
-			}
-			else if (aValue == null)
-			{
+			if (aValue instanceof Run) {
+				Run r = (Run)aValue;
+				r.updateTo(DataEntry.state.getCurrentEvent().getEventId(), e.getCarId(), DataEntry.state.getCurrentCourse(), col-runoffset);
+				e.setRun(r);
+				Database.d.setRun(r);
+			} else if (aValue == null){
 				e.deleteRun(col-runoffset);
+				Database.d.deleteRun(DataEntry.state.getCurrentEvent().getEventId(), e.getCarId(), DataEntry.state.getCurrentCourse(), col-runoffset);
 			}
 
 			fireRunsChanged(e);
@@ -247,6 +271,63 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 
 	}
 
+
+	/*
+	public void compute(double index)
+	{
+		if (status.equals("OK"))		
+		{
+			String idap = Database.d.getSetting("indexafterpenalties");
+			if (idap.equalsIgnoreCase("true") || idap.equals("1"))
+				net = (raw + (Database.d.currentEvent.conepen * cones) + (Database.d.currentEvent.gatepen * gates)) * index;
+			else
+				net = (raw * index) + (Database.d.currentEvent.conepen * cones) + (Database.d.currentEvent.gatepen * gates);
+		}
+		else if (status.equals("RL") || status.equals("NS"))
+			net = 1999.999;
+		else
+			net = 999.999;
+	}
+	
+	protected void sortRuns(Map<Integer, Run> theruns)
+	{
+		List<Run> list = new ArrayList<Run>(theruns.values());
+		if (list.size() == 0) return;
+
+		Collections.sort(list, rorder);
+		for (int ii = 0; ii < list.size(); ii++)
+		{
+			list.get(ii).brorder = ii+1;
+			list.get(ii).rorder = -1;
+		}
+
+		Collections.sort(list, norder);
+		for (int ii = 0; ii < list.size(); ii++)
+		{
+			list.get(ii).bnorder = ii+1;
+			list.get(ii).norder = -1;
+		}
+
+		// reduce list to first x runs
+		int cnt = Math.min(DataEntry.state.getCurrentEvent().getCountedRuns(), Database.d.getClassData().getClass(car.classcode).getCountedRuns());
+		Iterator<Run> iter = list.iterator();
+		while (iter.hasNext())
+		{
+			Run r = iter.next();
+			if (r.run > cnt)
+				iter.remove();
+		}
+
+		Collections.sort(list, rorder);
+		for (int ii = 0; ii < list.size(); ii++)
+			list.get(ii).rorder = ii+1;
+
+		Collections.sort(list, norder);
+		for (int ii = 0; ii < list.size(); ii++)
+			list.get(ii).norder = ii+1;
+	}
+
+	*/
 
 	/* This will only effect the 'runorder' table and nothing else */
 	public void moveRow(int start, int end, int to)
@@ -298,12 +379,12 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		switch (type)
 		{
 			case EVENT_CHANGED:
-				colCount = Database.d.getCurrentEvent().getRuns() + 2;
+				colCount = DataEntry.state.getCurrentEvent().getRuns() + 2;
 				fireTableStructureChanged();
 				break;
 
 			case RUNGROUP_CHANGED:
-				tableData = Database.d.getEntrantsByRunOrder();
+				tableData = Database.d.getEntrantsByRunOrder(DataEntry.state.getCurrentEventId(), DataEntry.state.getCurrentCourse(), DataEntry.state.getCurrentRunGroup());
 				fireTableDataChanged();
 				break;
 		}
@@ -313,10 +394,10 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 	/* Notifying Listeners, committing */
     public void fireEntrantsChanged()
 	{
-		ArrayList<Integer> ids = new ArrayList<Integer>();
+		ArrayList<UUID> ids = new ArrayList<UUID>();
 		for (Entrant e : tableData)
 			ids.add(e.getCarId());
-		Database.d.setRunOrder(ids);
+		Database.d.setRunOrder(DataEntry.state.getCurrentEventId(), DataEntry.state.getCurrentCourse(), DataEntry.state.getCurrentRunGroup(), ids);
 		Messenger.sendEvent(MT.ENTRANTS_CHANGED, null);
 	}
 

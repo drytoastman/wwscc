@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -79,16 +80,16 @@ public class Menus extends JMenuBar implements ActionListener
 		if (!d.isValid())
 			return;
 		
-		Database.d.newChallenge(d.getChallengeName(), d.getChallengeSize());
+		Database.d.newChallenge(null, d.getChallengeName(), d.getChallengeSize());
 		Messenger.sendEvent(MT.NEW_CHALLENGE, null);
 	}
 	
 	protected void editChallenge()
 	{
-		int curid = Database.d.getCurrentChallenge();
-		for (Challenge c : Database.d.getChallengesForEvent())
+		UUID curid = ChallengeGUI.state.getCurrentChallengeId();
+		for (Challenge c : Database.d.getChallengesForEvent(null))
 		{
-			if (c.getId() == curid)
+			if (c.getChallengeId() == curid)
 			{
 				String response = (String)JOptionPane.showInputDialog(null, "Edit Challenge", c.getName());
 				if (response != null)
@@ -103,7 +104,7 @@ public class Menus extends JMenuBar implements ActionListener
 	
 	protected void deleteChallenge()
 	{
-		List<Challenge> current = Database.d.getChallengesForEvent();
+		List<Challenge> current = Database.d.getChallengesForEvent(ChallengeGUI.state.getCurrentEventId());
 		Challenge response = (Challenge)JOptionPane.showInputDialog(null, "Delete which challenge?", "Delete Challenge", JOptionPane.QUESTION_MESSAGE, null, current.toArray(), null);
 		if (response == null)
 			return;
@@ -111,7 +112,7 @@ public class Menus extends JMenuBar implements ActionListener
 		int answer = JOptionPane.showConfirmDialog(this, "Are you sure you with to delete " + response + ".  All current activity will be 'lost'", "Confirm Delete", JOptionPane.WARNING_MESSAGE);
 		if (answer == JOptionPane.OK_OPTION)
 		{
-			Database.d.deleteChallenge(response.getId());
+			Database.d.deleteChallenge(response.getChallengeId());
 			Messenger.sendEvent(MT.CHALLENGE_DELETED, null);
 		}
 	}
@@ -127,7 +128,7 @@ public class Menus extends JMenuBar implements ActionListener
 		} 
 		else if (cmd.equals("Open Database"))
 		{
-			Database.open(true, true);
+			Database.openDefault();
 		}
 		else if (cmd.equals("Print Bracket"))
 		{

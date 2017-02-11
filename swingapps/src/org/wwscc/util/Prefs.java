@@ -87,7 +87,6 @@ public class Prefs
 	public static void setMergeHost(String h) { prefs.put("mergehost", h); }
 	public static void setPasswordFor(String db, String s) { prefs.put("password-"+db, s); }
 	public static void setInstallRoot(String s) { prefs.put("installroot", s); }
-	public static void setSeriesFile(String s) { prefs.put("seriesfile", s); }
 	public static void setSeriesURL(String s) { prefs.put("seriesurl", s); }
 	public static void setUseSeriesURL(boolean b) { prefs.putBoolean("useurl", b); }
 	public static void setEventId(int i) { prefs.putInt("eventid", i); }

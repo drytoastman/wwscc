@@ -8,11 +8,12 @@
 
 package org.wwscc.storage;
 
+import java.util.UUID;
+
 public class EventResult implements Comparable<EventResult>
 {
-	protected int id;
-	protected int eventid;
-	protected int carid;
+	protected UUID eventid;
+	protected UUID carid;
 	protected String classcode;
 	protected int position;
 	protected int courses; /* How many courses in the calculation */
@@ -28,7 +29,7 @@ public class EventResult implements Comparable<EventResult>
 	private double indexvalue;
 
 	public String getFullName() { return firstname + " " + lastname; }
-	public int getCarId() { return carid; }
+	public UUID getCarId() { return carid; }
 	public double getSum() { return sum; }
 	public double getDiff() { return diff; }
 	public String getIndexStr() { return indexstr; }

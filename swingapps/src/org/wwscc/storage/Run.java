@@ -9,26 +9,29 @@
 package org.wwscc.storage;
 
 import java.util.Comparator;
-import java.util.logging.Logger;
+import java.util.UUID;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.wwscc.util.IdGenerator;
 
 
 /**
  * This represents a single run in an event.  Note that for simplicity we represent a ProSolo
  * run as default (reaction, sixty) and then use it for regular runs as well
  */
+@SuppressWarnings("unchecked")
 public class Run implements Serial, Cloneable
 {
-	private static Logger log = Logger.getLogger(Run.class.getCanonicalName());
 	public static final int LEFT = 1;
 	public static final int RIGHT = 2;
-	public static final int SEGMENTS = 5;
 
-	protected int id;
-	protected int carid, eventid, course, run; 
+	protected UUID eventid, carid;
+	protected int course, run; 
 	protected int cones, gates;
 	protected String status;
-	protected int rorder, norder, brorder, bnorder;
-	protected double reaction, sixty, seg1, seg2, seg3, seg4, seg5, raw, net;
+	protected double raw;
+	protected JSONObject attr;
 
 	public static class RawOrder implements Comparator<Run>
 	{
@@ -43,10 +46,23 @@ public class Run implements Serial, Cloneable
 			return (int)(a.raw*1000 - b.raw*1000);
 		}
 	}
+	
 	public static class NetOrder implements Comparator<Run>
 	{
-		// net time already incorporates non-OK status 
-		public int compare(Run o1, Run o2) { return (int)(o1.net*1000 - o2.net*1000);}
+		Event e;
+		public NetOrder(Event e)
+		{
+			this.e = e;
+		}
+		// Take cone/gate/status into account
+		public int compare(Run o1, Run o2) 
+		{
+			if (!o1.isOK() && !o2.isOK()) return 0;
+			if (!o2.isOK()) return -1;
+			if (!o1.isOK()) return  1;
+			return (int)((o1.raw+(e.conepen*o1.cones)+(e.gatepen*o1.gates))*1000 
+						- (o2.raw+(e.conepen*o2.cones)+(e.gatepen*o2.gates))*1000);
+		}
 	}
 
 	public Run()
@@ -59,7 +75,6 @@ public class Run implements Serial, Cloneable
 		this(raw, 0, 0, "OK");
 	}
 	
-
 	public Run(double raw, int cones, int gates, String status)
 	{
 		if (Double.isNaN(raw))
@@ -71,25 +86,19 @@ public class Run implements Serial, Cloneable
 		this.gates	= gates;
 		this.status	= status;
 
-		this.carid = -1;
-		this.eventid = -1;
-		this.course = -1;
-		this.run = -1;
-		this.rorder = -1;
-		this.norder = -1;
-		this.brorder = -1;
-		this.bnorder = -1;
-
-		/* Just assume 1.000 index for now */
-		compute(1.0);
+		this.carid   = IdGenerator.nullid;
+		this.eventid = IdGenerator.nullid;
+		this.course  = -1;
+		this.run     = -1;
+		this.attr    = new JSONObject();
 	}
 
 
 	public Run(double reaction, double sixty , double time, int cones, int gates, String status)
 	{
 		this(time, cones, gates, status);
-		this.reaction = reaction;
-		this.sixty = sixty;
+		attr.put("reaction", reaction);
+		attr.put("sixty", sixty);
 	}
 
 	@Override
@@ -98,81 +107,43 @@ public class Run implements Serial, Cloneable
 		return super.clone();
 	}
 
-	public int getId() { return id; }
 	public int run() { return run; }
 	public int course() { return course; }
-	public int getCarId() { return carid; }
+	public UUID getCarId() { return carid; }
 	public int getCones() { return cones; }
 	public int getGates() { return gates; }
 	public String getStatus() { return status; }
 	public boolean validRun() { return !Double.isNaN(raw); }
 
-	public double getReaction() { return reaction; }
-	public double getSixty() { return sixty; }
-	public double getRaw() { return raw; }
-	public double getNet() { return net; }
+	public double getReaction()     { return (double)attr.getOrDefault("reaction", -1.0);}
+	public double getSixty()        { return (double)attr.getOrDefault("sixty", -1.0); }
+	public double getSegment(int s) { return (double)attr.getOrDefault("seg"+s, -1.0); }
+	public double getRaw()          { return raw; }
 
-	public int getNetOrder() { return norder; }
-	public int getRawOrder() { return rorder; }
-	public int getBestRawOrder() { return brorder; }
-	public int getBestNetOrder() { return bnorder; }
+	public void setRunNumber(int r)         { run = r; }
+	public void setCourse(int c)            { course = c; }
+	public void setReaction(double d)       { attr.put("reaction", d); }
+	public void setSixty(double d)          { attr.put("sixty", d); }
+	public void setSegment(int s, double d) { attr.put("seg"+s, d); }
+	public void setRaw(double d)            { raw = d; }
+	public void setCones(int c)             { cones = c; }
+	public void setGates(int g)             { gates = g; }
+	public void setStatus(String s)         { status = s; }
+	public void setCarId(UUID cid)          { carid = cid; }
 
-	public void setCourse(int c) { course = c; }
-	
-	public void setReaction(double d) { reaction = d; }
-	public void setSixty(double d) { sixty = d; }
-	public void setRaw(double d) { raw = d; compute(1.0); }
-	public void setCones(int c) { cones = c; compute(1.0); }
-	public void setGates(int g) { gates = g; compute(1.0); }
-	public void setStatus(String s) { status = s; compute(1.0); }
-
-	public double getSegment(int s)
-	{
-		switch (s)
-		{
-			case 1: return seg1;
-			case 2: return seg2;
-			case 3: return seg3;
-			case 4: return seg4;
-			case 5: return seg5;
-		}
-		return Double.NaN;
-	}
-
-	public void setSegment(int s, double d)
-	{
-		switch (s)
-		{
-			case 1: seg1 = d; break;
-			case 2: seg2 = d; break;
-			case 3: seg3 = d; break;
-			case 4: seg4 = d; break;
-			case 5: seg5 = d; break;
-			default: log.warning("Invalid segmen to set: " + s); break;
-		}
-	}
-
-	public void setCarId(int carid)
-	{
-		this.carid = carid;
-	}
-
-
-	public void setId(int eventid, int course, int run)
+	public void setId(UUID eventid, int course, int run)
 	{
 		this.eventid = eventid;
 		this.course = course;
 		this.run = run;
 	}
 
-	@SuppressWarnings("hiding")
-	public void updateTo(int eventid, int course, int run, int carid, double index)
+	public void updateTo(UUID inEventid, UUID inCarid, int inCourse, int inRun)
 	{
-		this.eventid = eventid;
-		this.course = course;
-		this.run = run;
-		this.carid = carid;
-		compute(index);
+		this.eventid = inEventid;
+		this.carid = inCarid;
+		this.course = inCourse;
+		this.run = inRun;
 	}
 
 	public boolean isOK()
@@ -181,25 +152,10 @@ public class Run implements Serial, Cloneable
 		return status.equals("OK");
 	}
 
-	public void compute(double index)
-	{
-		if (status.equals("OK"))		
-		{
-			if (Database.d.getBooleanSetting("indexafterpenalties"))
-				net = (raw + (Database.d.currentEvent.conepen * cones) + (Database.d.currentEvent.gatepen * gates)) * index;
-			else
-				net = (raw * index) + (Database.d.currentEvent.conepen * cones) + (Database.d.currentEvent.gatepen * gates);
-		}
-		else if (status.equals("RL") || status.equals("NS"))
-			net = 1999.999;
-		else
-			net = 999.999;
-	}
-
 	@Override
 	public String toString()
 	{
-		return "<"+carid+","+eventid+","+course+","+run+","+raw+","+status+" ("+cones+","+gates+") N:"+net+">";
+		return "<"+carid+","+eventid+","+course+","+run+","+raw+","+status+" ("+cones+","+gates+")>";
 	}
 
 	@Override
@@ -209,8 +165,7 @@ public class Run implements Serial, Cloneable
 		Run r = (Run)o;
 		
 		return ((r.course == course) && (r.run == run) && (r.status.equals(status)) &&
-			(r.raw == raw) && (r.reaction == reaction) && (r.sixty == sixty) && (r.seg1 == seg1) &&
-			(r.seg2 == seg2) && (r.seg3 == seg3) && (r.seg4 == seg4) && (r.seg5 == seg5));
+				(r.raw == raw) && (r.attr.equals(attr)));	
 	}
 
 	@Override
@@ -222,26 +177,23 @@ public class Run implements Serial, Cloneable
 	@Override
 	public String encode()
 	{
-		return String.format("%d %d %s %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f",
-			course, run, status, raw, reaction, sixty, seg1, seg2, seg3, seg4, seg5);
+		JSONObject out = new JSONObject();
+		out.put("course", course);
+		out.put("run", run);
+		out.put("status", status);
+		out.put("raw", raw);
+		out.put("attr", attr);
+		return out.toJSONString();
 	}
 
 	@Override
-	public void decode(String in)
+	public void decode(String str) throws ParseException
 	{
-		String s[] = in.trim().split("\\s+");
-
-		int ii = 0;
-		course = Integer.parseInt(s[ii++]);
-		run = Integer.parseInt(s[ii++]);
-		status = s[ii++];
-		raw = Double.parseDouble(s[ii++]);
-		reaction = Double.parseDouble(s[ii++]);
-		sixty = Double.parseDouble(s[ii++]);
-		seg1 = Double.parseDouble(s[ii++]);
-		seg2 = Double.parseDouble(s[ii++]);
-		seg3 = Double.parseDouble(s[ii++]);
-		seg4 = Double.parseDouble(s[ii++]);
-		seg5 = Double.parseDouble(s[ii++]);
+		JSONObject in = (JSONObject)(new JSONParser().parse(str));
+		course = (Integer)in.getOrDefault("course", -1);
+		run    = (Integer)in.getOrDefault("run", -1);
+		raw    = (Double)in.getOrDefault("raw", -1);
+		status = (String)in.getOrDefault("status", "OK");
+		attr   = (JSONObject)in.getOrDefault("attr", new JSONObject());
 	}
 }

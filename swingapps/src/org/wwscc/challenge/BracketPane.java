@@ -102,8 +102,8 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		public RoundGroup(int rnd)
 		{
 			round = rnd;
-			upper = new EntrantLabel(new Id.Entry(challenge.getId(), round, Id.Entry.Level.UPPER));
-			lower = new EntrantLabel(new Id.Entry(challenge.getId(), round, Id.Entry.Level.LOWER));
+			upper = new EntrantLabel(new Id.Entry(challenge.getChallengeId(), round, Id.Entry.Level.UPPER));
+			lower = new EntrantLabel(new Id.Entry(challenge.getChallengeId(), round, Id.Entry.Level.LOWER));
 			open = new JButton("Open " + round);
 			
 			open.addMouseMotionListener(new MouseAdapter() {
@@ -121,7 +121,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 				@Override
 				public void actionPerformed(ActionEvent e)
 				{
-					RoundViewer v = new RoundViewer(model, new Id.Round(challenge.getId(), round));
+					RoundViewer v = new RoundViewer(model, new Id.Round(challenge.getChallengeId(), round));
 					v.addInternalFrameListener(new InternalFrameAdapter() {
 						@Override
 						public void internalFrameClosed(InternalFrameEvent ife) {
@@ -207,7 +207,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 					int placement = pos[ii];
 					int rndidx = topround - placement/2;
 					Id.Entry.Level level = (placement%2 != 0) ? Id.Entry.Level.LOWER : Id.Entry.Level.UPPER;
-					Id.Entry entry = new Id.Entry(challenge.getId(), rndidx, level);
+					Id.Entry entry = new Id.Entry(challenge.getChallengeId(), rndidx, level);
 					if (bys > 0)
 					{
 						entry = entry.advancesTo();
@@ -227,7 +227,7 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 
 			case ENTRANT_CHANGED:
 				Id.Entry eid = (Id.Entry)data;
-				if (eid.challengeid == challenge.getId())
+				if (eid.challengeid == challenge.getChallengeId())
 				{
 					if (eid.round == 0)
 					{
@@ -321,8 +321,8 @@ public final class BracketPane extends JLayeredPane implements MessageListener, 
 		for (int ii = rounds.size(); ii < cnt; ii++)
 			rounds.add(new RoundGroup(ii));			
 
-		winner1 = new EntrantLabel(new Id.Entry(challenge.getId(), 0, Id.Entry.Level.UPPER));
-		winner3 = new EntrantLabel(new Id.Entry(challenge.getId(), 0, Id.Entry.Level.LOWER));
+		winner1 = new EntrantLabel(new Id.Entry(challenge.getChallengeId(), 0, Id.Entry.Level.UPPER));
+		winner3 = new EntrantLabel(new Id.Entry(challenge.getChallengeId(), 0, Id.Entry.Level.LOWER));
 		thirdPRound = new RoundGroup(99);
 		rounds.add(thirdPRound);
 		

@@ -7,36 +7,6 @@ import org.wwscc.storage.SQLDataInterface.ResultRow;
 
 public class AUTO
 {
-	public static org.wwscc.storage.Event loadEvent(ResultRow rs) throws IOException
-	{
-		org.wwscc.storage.Event o = new org.wwscc.storage.Event();
-		o.id = rs.getInt("id");
-		o.ispro = rs.getBoolean("ispro");
-		o.practice = rs.getBoolean("practice");
-		o.courses = rs.getInt("courses");
-		o.runs = rs.getInt("runs");
-		o.countedruns = rs.getInt("countedruns");
-		o.conepen = rs.getDouble("conepen");
-		o.gatepen = rs.getDouble("gatepen");
-		o.segments = rs.getString("segments");
-		o.name = rs.getString("name");
-		o.date = rs.getSADate("date");
-		o.location = rs.getString("location");
-		o.sponsor = rs.getString("sponsor");
-		o.host = rs.getString("host");
-		o.designer = rs.getString("designer");
-		o.regopened = rs.getSADateTime("regopened");
-		o.regclosed = rs.getSADateTime("regclosed");
-		o.perlimit = rs.getInt("perlimit");
-		o.totlimit = rs.getInt("totlimit");
-		o.doublespecial = rs.getBoolean("doublespecial");
-		o.cost = rs.getInt("cost");
-		o.paypal = rs.getString("paypal");
-		o.snail = rs.getString("snail");
-		o.notes = rs.getString("notes");
-		return o;
-	}
-	
 	public static String getEventVarStr()
 	{
 		return "ispro,practice,courses,runs,countedruns,conepen,gatepen,segments,name,date,location,sponsor,host,designer,regopened,regclosed,perlimit,totlimit,doublespecial,cost,paypal,snail,notes";
@@ -55,34 +25,24 @@ public class AUTO
 	public static void addEventValues(org.wwscc.storage.Event o, List<Object> l)
 	{
 		l.add(o.ispro);
-		l.add(o.practice);
+		l.add(o.ispractice);
 		l.add(o.courses);
 		l.add(o.runs);
 		l.add(o.countedruns);
 		l.add(o.conepen);
 		l.add(o.gatepen);
-		l.add(o.segments);
 		l.add(o.name);
 		l.add(o.date);
-		l.add(o.location);
-		l.add(o.sponsor);
-		l.add(o.host);
-		l.add(o.designer);
 		l.add(o.regopened);
 		l.add(o.regclosed);
 		l.add(o.perlimit);
 		l.add(o.totlimit);
-		l.add(o.doublespecial);
-		l.add(o.cost);
-		l.add(o.paypal);
-		l.add(o.snail);
-		l.add(o.notes);
 	}
 	
 	public static org.wwscc.storage.Driver loadDriver(ResultRow rs) throws IOException
 	{
 		org.wwscc.storage.Driver o = new org.wwscc.storage.Driver();
-		o.id = rs.getInt("id");
+		o.driverid = rs.getUUID("driverid");
 		o.firstname = rs.getString("firstname");
 		o.lastname = rs.getString("lastname");
 		o.alias = rs.getString("alias");
@@ -129,38 +89,6 @@ public class AUTO
 		l.add(o.membership);
 	}
 	
-	public static org.wwscc.storage.DriverField loadDriverField(ResultRow rs) throws IOException
-	{
-		org.wwscc.storage.DriverField o = new org.wwscc.storage.DriverField();
-		o.id = rs.getInt("id");
-		o.name = rs.getString("name");
-		o.title = rs.getString("title");
-		o.type = rs.getString("type");
-		return o;
-	}
-	
-	public static String getDriverFieldVarStr()
-	{
-		return "name,title,type";
-	}
-	
-	public static String getDriverFieldArgStr()
-	{
-		return "?,?,?";
-	}
-	
-	public static String getDriverFieldSetStr()
-	{
-		return "name=?,title=?,type=?";
-	}
-	
-	public static void addDriverFieldValues(org.wwscc.storage.DriverField o, List<Object> l)
-	{
-		l.add(o.name);
-		l.add(o.title);
-		l.add(o.type);
-	}
-	
 	public static org.wwscc.storage.DriverNote loadDriverNote(ResultRow rs) throws IOException
 	{
 		org.wwscc.storage.DriverNote o = new org.wwscc.storage.DriverNote();
@@ -188,22 +116,6 @@ public class AUTO
 	{
 		l.add(o.driverid);
 		l.add(o.notes);
-	}
-	
-	public static org.wwscc.storage.Car loadCar(ResultRow rs) throws IOException
-	{
-		org.wwscc.storage.Car o = new org.wwscc.storage.Car();
-		o.id = rs.getInt("id");
-		o.driverid = rs.getInt("driverid");
-		o.year = rs.getString("year");
-		o.make = rs.getString("make");
-		o.model = rs.getString("model");
-		o.color = rs.getString("color");
-		o.number = rs.getInt("number");
-		o.classcode = rs.getString("classcode");
-		o.indexcode = rs.getString("indexcode");
-		o.tireindexed = rs.getBoolean("tireindexed");
-		return o;
 	}
 	
 	public static String getCarVarStr()
@@ -237,73 +149,22 @@ public class AUTO
 	public static org.wwscc.storage.Run loadRun(ResultRow rs) throws IOException
 	{
 		org.wwscc.storage.Run o = new org.wwscc.storage.Run();
-		o.id = rs.getInt("id");
-		o.carid = rs.getInt("carid");
-		o.eventid = rs.getInt("eventid");
+		o.carid = rs.getUUID("carid");
+		o.eventid = rs.getUUID("eventid");
 		o.course = rs.getInt("course");
 		o.run = rs.getInt("run");
 		o.cones = rs.getInt("cones");
 		o.gates = rs.getInt("gates");
 		o.status = rs.getString("status");
-		o.rorder = rs.getInt("rorder");
-		o.norder = rs.getInt("norder");
-		o.brorder = rs.getInt("brorder");
-		o.bnorder = rs.getInt("bnorder");
-		o.reaction = rs.getDouble("reaction");
-		o.sixty = rs.getDouble("sixty");
-		o.seg1 = rs.getDouble("seg1");
-		o.seg2 = rs.getDouble("seg2");
-		o.seg3 = rs.getDouble("seg3");
-		o.seg4 = rs.getDouble("seg4");
-		o.seg5 = rs.getDouble("seg5");
 		o.raw = rs.getDouble("raw");
-		o.net = rs.getDouble("net");
+		o.attr = rs.getJSON("attr");
 		return o;
 	}
-	
-	public static String getRunVarStr()
-	{
-		return "carid,eventid,course,run,cones,gates,status,rorder,norder,brorder,bnorder,reaction,sixty,seg1,seg2,seg3,seg4,seg5,raw,net";
-	}
-	
-	public static String getRunArgStr()
-	{
-		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
-	}
-	
-	public static String getRunSetStr()
-	{
-		return "carid=?,eventid=?,course=?,run=?,cones=?,gates=?,status=?,rorder=?,norder=?,brorder=?,bnorder=?,reaction=?,sixty=?,seg1=?,seg2=?,seg3=?,seg4=?,seg5=?,raw=?,net=?";
-	}
-	
-	public static void addRunValues(org.wwscc.storage.Run o, List<Object> l)
-	{
-		l.add(o.carid);
-		l.add(o.eventid);
-		l.add(o.course);
-		l.add(o.run);
-		l.add(o.cones);
-		l.add(o.gates);
-		l.add(o.status);
-		l.add(o.rorder);
-		l.add(o.norder);
-		l.add(o.brorder);
-		l.add(o.bnorder);
-		l.add(o.reaction);
-		l.add(o.sixty);
-		l.add(o.seg1);
-		l.add(o.seg2);
-		l.add(o.seg3);
-		l.add(o.seg4);
-		l.add(o.seg5);
-		l.add(o.raw);
-		l.add(o.net);
-	}
-	
+		
 	public static org.wwscc.storage.Challenge loadChallenge(ResultRow rs) throws IOException
 	{
 		org.wwscc.storage.Challenge o = new org.wwscc.storage.Challenge();
-		o.id = rs.getInt("id");
+		o.challengeid = rs.getUUID("challengeid");
 		o.eventid = rs.getInt("eventid");
 		o.name = rs.getString("name");
 		o.depth = rs.getInt("depth");
@@ -330,73 +191,7 @@ public class AUTO
 		l.add(o.eventid);
 		l.add(o.name);
 		l.add(o.depth);
-	}
-	
-	public static org.wwscc.storage.ChallengeRun loadChallengeRun(ResultRow rs) throws IOException
-	{
-		org.wwscc.storage.ChallengeRun o = new org.wwscc.storage.ChallengeRun();
-		o.id = rs.getInt("id");
-		o.carid = rs.getInt("carid");
-		o.eventid = rs.getInt("eventid");
-		o.course = rs.getInt("course");
-		o.run = rs.getInt("run");
-		o.cones = rs.getInt("cones");
-		o.gates = rs.getInt("gates");
-		o.status = rs.getString("status");
-		o.rorder = rs.getInt("rorder");
-		o.norder = rs.getInt("norder");
-		o.brorder = rs.getInt("brorder");
-		o.bnorder = rs.getInt("bnorder");
-		o.reaction = rs.getDouble("reaction");
-		o.sixty = rs.getDouble("sixty");
-		o.seg1 = rs.getDouble("seg1");
-		o.seg2 = rs.getDouble("seg2");
-		o.seg3 = rs.getDouble("seg3");
-		o.seg4 = rs.getDouble("seg4");
-		o.seg5 = rs.getDouble("seg5");
-		o.raw = rs.getDouble("raw");
-		o.net = rs.getDouble("net");
-		return o;
-	}
-	
-	public static String getChallengeRunVarStr()
-	{
-		return "carid,eventid,course,run,cones,gates,status,rorder,norder,brorder,bnorder,reaction,sixty,seg1,seg2,seg3,seg4,seg5,raw,net";
-	}
-	
-	public static String getChallengeRunArgStr()
-	{
-		return "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
-	}
-	
-	public static String getChallengeRunSetStr()
-	{
-		return "carid=?,eventid=?,course=?,run=?,cones=?,gates=?,status=?,rorder=?,norder=?,brorder=?,bnorder=?,reaction=?,sixty=?,seg1=?,seg2=?,seg3=?,seg4=?,seg5=?,raw=?,net=?";
-	}
-	
-	public static void addChallengeRunValues(org.wwscc.storage.ChallengeRun o, List<Object> l)
-	{
-		l.add(o.carid);
-		l.add(o.eventid);
-		l.add(o.course);
-		l.add(o.run);
-		l.add(o.cones);
-		l.add(o.gates);
-		l.add(o.status);
-		l.add(o.rorder);
-		l.add(o.norder);
-		l.add(o.brorder);
-		l.add(o.bnorder);
-		l.add(o.reaction);
-		l.add(o.sixty);
-		l.add(o.seg1);
-		l.add(o.seg2);
-		l.add(o.seg3);
-		l.add(o.seg4);
-		l.add(o.seg5);
-		l.add(o.raw);
-		l.add(o.net);
-	}
+	}	
 	
 	public static org.wwscc.storage.ClassData.Class loadClass(ResultRow rs) throws IOException
 	{
@@ -476,100 +271,6 @@ public class AUTO
 		l.add(o.value);
 	}
 	
-	public static org.wwscc.storage.EventResult loadEventResult(ResultRow rs) throws IOException
-	{
-		org.wwscc.storage.EventResult o = new org.wwscc.storage.EventResult();
-		o.id = rs.getInt("id");
-		o.eventid = rs.getInt("eventid");
-		o.carid = rs.getInt("carid");
-		o.classcode = rs.getString("classcode");
-		o.position = rs.getInt("position");
-		o.courses = rs.getInt("courses");
-		o.sum = rs.getDouble("sum");
-		o.diff = rs.getDouble("diff");
-		o.diffpoints = rs.getDouble("diffpoints");
-		o.pospoints = rs.getInt("pospoints");
-		return o;
-	}
-	
-	public static String getEventResultVarStr()
-	{
-		return "eventid,carid,classcode,position,courses,sum,diff,diffpoints,pospoints";
-	}
-	
-	public static String getEventResultArgStr()
-	{
-		return "?,?,?,?,?,?,?,?,?";
-	}
-	
-	public static String getEventResultSetStr()
-	{
-		return "eventid=?,carid=?,classcode=?,position=?,courses=?,sum=?,diff=?,diffpoints=?,pospoints=?";
-	}
-	
-	public static void addEventResultValues(org.wwscc.storage.EventResult o, List<Object> l)
-	{
-		l.add(o.eventid);
-		l.add(o.carid);
-		l.add(o.classcode);
-		l.add(o.position);
-		l.add(o.courses);
-		l.add(o.sum);
-		l.add(o.diff);
-		l.add(o.diffpoints);
-		l.add(o.pospoints);
-	}
-	
-	public static org.wwscc.storage.AnnouncerData loadAnnouncerData(ResultRow rs) throws IOException
-	{
-		org.wwscc.storage.AnnouncerData o = new org.wwscc.storage.AnnouncerData();
-		o.id = rs.getInt("id");
-		o.eventid = rs.getInt("eventid");
-		o.carid = rs.getInt("carid");
-		o.classcode = rs.getString("classcode");
-		o.lastcourse = rs.getInt("lastcourse");
-		o.rawdiff = rs.getDouble("rawdiff");
-		o.netdiff = rs.getDouble("netdiff");
-		o.oldsum = rs.getDouble("oldsum");
-		o.potentialsum = rs.getDouble("potentialsum");
-		o.olddiffpoints = rs.getDouble("olddiffpoints");
-		o.potentialdiffpoints = rs.getDouble("potentialdiffpoints");
-		o.oldpospoints = rs.getInt("oldpospoints");
-		o.potentialpospoints = rs.getInt("potentialpospoints");
-		o.updated = rs.getSADateTime("updated");
-		return o;
-	}
-	
-	public static String getAnnouncerDataVarStr()
-	{
-		return "eventid,carid,classcode,lastcourse,rawdiff,netdiff,oldsum,potentialsum,olddiffpoints,potentialdiffpoints,oldpospoints,potentialpospoints,updated";
-	}
-	
-	public static String getAnnouncerDataArgStr()
-	{
-		return "?,?,?,?,?,?,?,?,?,?,?,?,?";
-	}
-	
-	public static String getAnnouncerDataSetStr()
-	{
-		return "eventid=?,carid=?,classcode=?,lastcourse=?,rawdiff=?,netdiff=?,oldsum=?,potentialsum=?,olddiffpoints=?,potentialdiffpoints=?,oldpospoints=?,potentialpospoints=?,updated=?";
-	}
-	
-	public static void addAnnouncerDataValues(org.wwscc.storage.AnnouncerData o, List<Object> l)
-	{
-		l.add(o.eventid);
-		l.add(o.carid);
-		l.add(o.classcode);
-		l.add(o.lastcourse);
-		l.add(o.rawdiff);
-		l.add(o.netdiff);
-		l.add(o.oldsum);
-		l.add(o.potentialsum);
-		l.add(o.olddiffpoints);
-		l.add(o.potentialdiffpoints);
-		l.add(o.oldpospoints);
-		l.add(o.potentialpospoints);
-		l.add(o.updated);
-	}
-	
+	// EventResult	return "eventid,carid,classcode,position,courses,sum,diff,diffpoints,pospoints";
+	// AnnouncerResult return "eventid,carid,classcode,lastcourse,rawdiff,netdiff,oldsum,potentialsum,olddiffpoints,potentialdiffpoints,oldpospoints,potentialpospoints,updated";	
 }

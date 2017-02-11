@@ -180,7 +180,7 @@ class TimeRenderer extends DefaultTableCellRenderer
 
 			if (!isSelected)
 			{
-				if (r.getNetOrder() == 1)
+				if (m.isBest(row, r))
 					setBackground(backgroundBest);
 				else if (m.rowIsFull(row))
 					setBackground(backgroundDone);

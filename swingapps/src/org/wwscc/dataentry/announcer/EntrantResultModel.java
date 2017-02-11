@@ -22,6 +22,7 @@ public class EntrantResultModel extends AbstractTableModel
 
 	public void setData(Entrant e, AnnouncerData a)
 	{
+		/* FINISH ME
 		runs = e.getRuns();
 		labels = new String[runs.length];
 		
@@ -37,7 +38,7 @@ public class EntrantResultModel extends AbstractTableModel
         
         if (runs[runs.length-1].getNetOrder() != 1 && a.getPotentialSum() > 0)
         	labels[runs.length-1] = "raw";
-
+		*/
 		fireTableDataChanged();
 	}
 
@@ -83,7 +84,7 @@ public class EntrantResultModel extends AbstractTableModel
 			case 0: return NF.format(r.getRaw());
 			case 1: return r.getCones();
 			case 2: return r.getGates();
-			case 3: return NF.format(r.getNet());
+			case 3: return 0; // FINISH ME return NF.format(r.getNet());
 		}
 		return null;
 	}

@@ -13,6 +13,7 @@ import java.awt.Dimension;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,6 +25,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.JTableHeader;
 
+import org.wwscc.dataentry.DataEntry;
 import org.wwscc.dataentry.Sounds;
 import org.wwscc.storage.BarcodeLookup;
 import org.wwscc.storage.Car;
@@ -99,37 +101,37 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 			d.setMembership(barcode);
 			Database.d.newDriver(d);
 			Car c = new Car();
-			c.setDriverId(d.getId());
+			c.setDriverId(d.getDriverId());
 			c.setModel("Placeholder " + barcode);
 			c.setClassCode(ClassData.getMissing().getCode());
 			c.setNumber(0);
 			Database.d.newCar(c);
-			Database.d.registerCar(c.getId(), false, false);
+			Database.d.registerCar(DataEntry.state.getCurrentEventId(), c.getCarId(), false, false);
 			o = d;
 		}
 		
 		Driver d = (Driver)o;
-		List<Car> available = Database.d.getRegisteredCars(d.getId());
+		List<Car> available = Database.d.getRegisteredCars(d.getDriverId(), null);
 		Iterator<Car> iter = available.iterator();
 		
 		while (iter.hasNext()) {
 			Car c = iter.next();
-			if (Database.d.isInCurrentOrder(c.getId())) {
-				event(MT.CAR_ADD, c.getId()); // if there is something in this run order, just go with it and return
+			if (Database.d.isInCurrentOrder(DataEntry.state.getCurrentEventId(), c.getCarId(), DataEntry.state.getCurrentCourse(), DataEntry.state.getCurrentRunGroup())) {
+				event(MT.CAR_ADD, c.getCarId()); // if there is something in this run order, just go with it and return
 				return;
 			}
-			if (Database.d.isInOrder(c.getId()))
+			if (Database.d.isInOrder(DataEntry.state.getCurrentEventId(), c.getCarId(), DataEntry.state.getCurrentCourse()))
 				iter.remove(); // otherwise, remove those active in another run order (same course/event)
 		}
 		
 		if (available.size() == 1) { // pick only one available
-			event(MT.CAR_ADD, available.get(0).getId());
+			event(MT.CAR_ADD, available.get(0).getCarId());
 			return;
 		}
 
 		for (Car c : available) {  // multiple available, skip TOPM, pick whatever else
 			if (c.getClassCode().equals("TOPM")) continue;
-			event(MT.CAR_ADD, c.getId());
+			event(MT.CAR_ADD, c.getCarId());
 			return;
 		}
 
@@ -147,7 +149,7 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 				Sounds.playBlocked();
 				int savecol = runsTable.getSelectedColumn();
 				Entrant selected = (Entrant)dataModel.getValueAt(runsTable.getSelectedRow(), 0);
-				dataModel.addCar((Integer)o);
+				dataModel.addCar((UUID)o);
 				driverTable.scrollTable(dataModel.getRowCount(), 0);
 				if ((savecol >= 0) && (selected != null))
 				{ // update selection
@@ -170,7 +172,7 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 			case CAR_CHANGE:
 				int row = driverTable.getSelectedRow();
 				if ((row >= 0) && (row < driverTable.getRowCount()))
-					dataModel.replaceCar((Integer)o, row);
+					dataModel.replaceCar((UUID)o, row);
 				break;
 
 			case FIND_ENTRANT:
@@ -181,7 +183,7 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 			case COURSE_CHANGED:
 				JTableHeader dh = driverTable.getTableHeader();
 				JTableHeader rh = runsTable.getTableHeader();
-				if (Database.d.getCurrentCourse() > 1)
+				if (DataEntry.state.getCurrentCourse() > 1)
 				{
 					dh.setForeground(Color.BLUE);
 					dh.setBorder(new LineBorder(Color.BLUE));

@@ -31,6 +31,7 @@ CREATE INDEX ON driverslog(time);
 COMMENT ON TABLE driverslog IS 'Change logs that are specific to this local database';
  
 
+CREATE EXTENSION hstore;
 CREATE OR REPLACE FUNCTION logdrivermods() RETURNS TRIGGER AS $body$
 DECLARE
     audit_row driverslog;

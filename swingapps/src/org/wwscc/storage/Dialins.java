@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  */
@@ -23,10 +24,10 @@ public class Dialins
 	//private static Logger log = Logger.getLogger(Dialins.class.getCanonicalName());
 
 	//protected Map <String, Double> leaderNet;
-	protected Map <Integer, Double> classDial;
-	protected Map <Integer, Double> bonusDial;
-	protected Map <Integer, Double> netTime;
-	protected Map <Integer, Double> classDiff;
+	protected Map <UUID, Double> classDial;
+	protected Map <UUID, Double> bonusDial;
+	protected Map <UUID, Double> netTime;
+	protected Map <UUID, Double> classDiff;
 
 	//protected List<Integer> netOrder;
 	//protected List<Integer> diffOrder;
@@ -34,18 +35,18 @@ public class Dialins
 	public Dialins()
 	{
 		//leaderNet = new HashMap<String, Double>();
-		classDial = new HashMap<Integer, Double>();
-		bonusDial = new HashMap<Integer, Double>();
-		netTime = new HashMap<Integer, Double>();
-		classDiff = new HashMap<Integer, Double>();
+		classDial = new HashMap<UUID, Double>();
+		bonusDial = new HashMap<UUID, Double>();
+		netTime = new HashMap<UUID, Double>();
+		classDiff = new HashMap<UUID, Double>();
 
 		//netOrder = new ArrayList<Integer>();
 		//diffOrder = new ArrayList<Integer>();
 	}
 
-	public double getNet(int carid) { return netTime.get(carid); }
-	public double getDiff(int carid) { return classDiff.get(carid); }
-	public double getDial(int carid, boolean bonus)
+	public double getNet(UUID carid) { return netTime.get(carid); }
+	public double getDiff(UUID carid) { return classDiff.get(carid); }
+	public double getDial(UUID carid, boolean bonus)
 	{
 		double ret;
 		if (bonus)
@@ -56,27 +57,27 @@ public class Dialins
 		return (Math.round(ret * 1000.0))/1000.0;
 	}
 
-	public List<Integer> getNetOrder()
+	public List<UUID> getNetOrder()
 	{
 		return mapSort(netTime);
 	}
 
-	public List<Integer> getDiffOrder()
+	public List<UUID> getDiffOrder()
 	{
 		return mapSort(classDiff);
 	}
 
-	public List<Integer> mapSort(Map<Integer, Double> map)
+	public List<UUID> mapSort(Map<UUID, Double> map)
 	{
-		List<Map.Entry<Integer,Double>> torder = new LinkedList<Map.Entry<Integer,Double>>(map.entrySet());
-		Collections.sort(torder,  new Comparator<Map.Entry<Integer,Double>>() {
-			public int compare(Map.Entry<Integer,Double> o1, Map.Entry<Integer,Double> o2) {
+		List<Map.Entry<UUID,Double>> torder = new LinkedList<Map.Entry<UUID,Double>>(map.entrySet());
+		Collections.sort(torder,  new Comparator<Map.Entry<UUID,Double>>() {
+			public int compare(Map.Entry<UUID,Double> o1, Map.Entry<UUID,Double> o2) {
 				return (o1.getValue().compareTo(o2.getValue()));
 			}
 		});
 
-		List<Integer> ids = new ArrayList<Integer>();
-		for (Map.Entry<Integer,Double> e : torder)
+		List<UUID> ids = new ArrayList<UUID>();
+		for (Map.Entry<UUID,Double> e : torder)
 			ids.add(e.getKey());
 
 		return ids;

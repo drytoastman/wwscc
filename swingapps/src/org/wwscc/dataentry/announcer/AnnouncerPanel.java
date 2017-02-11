@@ -209,7 +209,7 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 		{
 			case RUN_CHANGED:
 				last = (Entrant)o;
-				updateDisplayData(last, true);
+				// FINISH ME updateDisplayData(last, true);
 				lastToFinish.setSelected(true);
 				break;
 				
@@ -239,8 +239,8 @@ public class AnnouncerPanel extends JPanel implements MessageListener, ActionLis
 	public void updateDisplayData(Entrant entrant, boolean showLast)
 	{
 		String classcode = entrant.getClassCode();
-		List<EventResult> erlist = Database.d.getResultsForClass(classcode);
-		AnnouncerData announcer = Database.d.getAnnouncerDataForCar(entrant.getCarId());
+		List<EventResult> erlist = Database.d.getResultsForClass(null, classcode);
+		AnnouncerData announcer = Database.d.getAnnouncerDataForCar(null, entrant.getCarId());
 		EventResult myresult = null;
 		
 		for (EventResult er : erlist) {

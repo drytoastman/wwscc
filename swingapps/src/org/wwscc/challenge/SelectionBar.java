@@ -23,6 +23,7 @@ import org.wwscc.components.CurrentDatabaseLabel;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
+import org.wwscc.util.IdGenerator;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -112,7 +113,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				break;
 				
 			case DATABASE_CHANGED:
-				seriesLabel.setText(Database.d.getCurrentSeries());
+				seriesLabel.setText(ChallengeGUI.state.getCurrentSeries());
 				eventSelect.setModel(new DefaultComboBoxModel<Event>(Database.d.getEvents().toArray(new Event[0])));
 
 				int select = Prefs.getEventId(0);
@@ -124,10 +125,10 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				
 			case NEW_CHALLENGE:
 			case CHALLENGE_DELETED:
-				List<Challenge> challenges = Database.d.getChallengesForEvent();
+				List<Challenge> challenges = Database.d.getChallengesForEvent(null);
 				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(challenges.toArray(new Challenge[0])));
 				for (Challenge c : challenges) {
-					if (c.getId() == Database.d.getCurrentChallenge()) {
+					if (c.getChallengeId() == ChallengeGUI.state.getCurrentChallengeId()) {
 						challengeSelect.setSelectedItem(c);
 						return;
 					}
@@ -152,10 +153,10 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 
 			if (cmd.startsWith("event"))
 			{
-				Database.d.setCurrentEvent((Event)o);
+				ChallengeGUI.state.setCurrentEvent((Event)o);
 				Messenger.sendEvent(MT.EVENT_CHANGED, null);
 				Prefs.setEventId(eventSelect.getSelectedIndex());
-				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(Database.d.getChallengesForEvent().toArray(new Challenge[0])));
+				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(Database.d.getChallengesForEvent(null).toArray(new Challenge[0])));
 				
 				int select = Prefs.getChallengeId(0);
 				if (select < challengeSelect.getItemCount())
@@ -164,13 +165,13 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 					challengeSelect.setSelectedIndex(0);
 				else
 				{
-					Database.d.setCurrentChallenge(0);
+					ChallengeGUI.state.setCurrentChallengeId(IdGenerator.nullid);
 					Messenger.sendEvent(MT.CHALLENGE_CHANGED, null);
 				}
 			}
 			else if (cmd.startsWith("challenge"))
 			{
-				Database.d.setCurrentChallenge(((Challenge)o).getId());
+				ChallengeGUI.state.setCurrentChallengeId(((Challenge)o).getChallengeId());
 				Messenger.sendEvent(MT.CHALLENGE_CHANGED, (Challenge)o);
 				Prefs.setChallengeId(challengeSelect.getSelectedIndex());
 			}

@@ -41,6 +41,7 @@ public class StupidSimpleDataService implements Runnable
 		}
 	}
 
+	@SuppressWarnings("resource")
 	@Override
     public void run() 
     {        

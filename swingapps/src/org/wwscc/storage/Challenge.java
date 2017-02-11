@@ -8,6 +8,9 @@
 
 package org.wwscc.storage;
 
+import java.util.UUID;
+
+import org.wwscc.util.IdGenerator;
 
 /**
  */
@@ -15,26 +18,26 @@ public class Challenge
 {
 	//private static final Logger log = Logger.getLogger("org.wwscc.storage.Challenge");
 
-	protected int id;
+	protected UUID challengeid;
 	protected int eventid;
 	protected String name;
 	protected int depth;
 
 	public Challenge()
 	{
-		id = -1;
+		challengeid = IdGenerator.generateId();
 		eventid = -1;
 	}
 
 	public Challenge(int inEvent, String inName, int inDepth)
 	{
-		id = -1;
+		challengeid = IdGenerator.generateId();
 		eventid = inEvent;
 		name = inName;
 		depth = inDepth;
 	}
 
-	public int getId() { return id; }
+	public UUID getChallengeId() { return challengeid; }
 	public int getEventId() { return eventid; }
 	public String getName() { return name; }
 	public int getDepth() { return depth; }

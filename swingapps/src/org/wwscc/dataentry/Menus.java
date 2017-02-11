@@ -27,8 +27,6 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 
 import org.wwscc.actions.BarcodeScannerOptionsAction;
-import org.wwscc.actions.DatabaseCheckinAction;
-import org.wwscc.actions.DatabaseCheckoutAction;
 import org.wwscc.actions.DatabaseOpenAction;
 import org.wwscc.actions.EventSendAction;
 import org.wwscc.actions.QuitAction;
@@ -63,8 +61,6 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		add(file);
 
 		file.add(new DatabaseOpenAction());
-		file.add(new DatabaseCheckoutAction());
-		file.add(new DatabaseCheckinAction());
 		file.add(new QuitAction());
 
 		/* Edit Menu */
@@ -143,24 +139,24 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 				@Override
 				public void dialogFinished(int[] result) {
 					if (result != null)
-						BrowserControl.printGroupResults(result);
+						BrowserControl.printGroupResults(DataEntry.state, result);
 				}
 			});
 		}
-		else if (cmd.startsWith("Order By First Name")) BrowserControl.openAuditReport("firstname");
-		else if (cmd.startsWith("Order By Last Name")) BrowserControl.openAuditReport("lastname");
-		else if (cmd.startsWith("In Run Order")) BrowserControl.openAuditReport("runorder");
-		else if (cmd.startsWith("Results Page")) BrowserControl.openResults("");
-		else if (cmd.startsWith("Admin Page")) BrowserControl.openAdmin("");
+		else if (cmd.startsWith("Order By First Name")) BrowserControl.openAuditReport(DataEntry.state, "firstname");
+		else if (cmd.startsWith("Order By Last Name")) BrowserControl.openAuditReport(DataEntry.state, "lastname");
+		else if (cmd.startsWith("In Run Order")) BrowserControl.openAuditReport(DataEntry.state, "runorder");
+		else if (cmd.startsWith("Results Page")) BrowserControl.openResults(DataEntry.state, "");
+		else if (cmd.startsWith("Admin Page")) BrowserControl.openAdmin(DataEntry.state, "");
 		else if (cmd.endsWith("Runs"))
 		{
 			int runs = Integer.parseInt(cmd.split(" ")[0]);
 			if ((runs > 1) && (runs < 100))
 			{
-				Event event = Database.d.getCurrentEvent();
+				Event event = DataEntry.state.getCurrentEvent();
 				int save = event.getRuns();
 				event.setRuns(runs);
-				if (Database.d.updateEvent())
+				if (Database.d.updateEventRuns(event.getEventId(), runs))
 					Messenger.sendEvent(MT.EVENT_CHANGED, null);
 				else
 					event.setRuns(save); // We bombed
@@ -194,7 +190,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 				{
 					AbstractButton b = e.nextElement();
 					int run = Integer.parseInt(b.getActionCommand().split(" ")[0]);
-					if (run == Database.d.getCurrentEvent().getRuns())
+					if (run == DataEntry.state.getCurrentEvent().getRuns())
 						b.setSelected(true);
 				}
 		}

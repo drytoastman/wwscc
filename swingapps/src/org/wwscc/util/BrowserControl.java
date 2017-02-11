@@ -12,39 +12,31 @@ import java.awt.Desktop;
 import java.net.URI;
 import java.util.logging.Logger;
 
-import org.wwscc.storage.Database;
-
 public class BrowserControl
 {
 	private static Logger log = Logger.getLogger("org.wwscc.util.Web");
 
-	public static void openAuditReport(String order)
+	public static void openAuditReport(ApplicationState state, String order)
 	{
-		for (int ii = 1; ii <= Database.d.getCurrentEvent().getCourses(); ii++)
-		{
-			openResults(String.format("audit?course=%d&group=%d&order=%s",
-				ii, Database.d.getCurrentRunGroup(), order));
-		}
+		openResults(state, String.format("audit?order=%s", order));
 	}
 
-	public static void openDialinReport(String filter, String order)
+	public static void openDialinReport(ApplicationState state, String filter, String order)
 	{
 		if (filter == null)
-			openResults("dialins?order=" + order);
+			openResults(state, "dialins?order=" + order);
 		else
-			openResults("dialins?filter=" + filter + "&order=" + order);
+			openResults(state, "dialins?filter=" + filter + "&order=" + order);
 	}
 
-	public static void openResults(String selection)
+	public static void openResults(ApplicationState state, String selection)
 	{
-		openURL(String.format("http://%s/results/%s/%s/%s", Database.d.getCurrentHost(),
-				Database.d.getCurrentSeries(), Database.d.getCurrentEvent().getId(), selection));
+		openURL(String.format("http://127.0.0.1/results/%s/%s/%s", state.getCurrentSeries(), state.getCurrentEventId(), selection));
 	}
 
-	public static void openAdmin(String selection)
+	public static void openAdmin(ApplicationState state, String selection)
 	{
-		openURL(String.format("http://%s/admin/%s/%s/%s", Database.d.getCurrentHost(),
-				Database.d.getCurrentSeries(), Database.d.getCurrentEvent().getId(), selection));
+		openURL(String.format("http://127.0.0.1/admin/%s/%s/%s", state.getCurrentSeries(), state.getCurrentEventId(), selection));
 	}
 
 	public static void openURL(String url)
@@ -56,8 +48,7 @@ public class BrowserControl
 		}
 	}
 	
-	
-	public static void printGroupResults(int[] groups)
+	public static void printGroupResults(ApplicationState state, int[] groups)
 	{
 		if (groups.length == 0)
 			return;
@@ -68,11 +59,7 @@ public class BrowserControl
 			g += groups[ii]+",";
 		g += groups[ii];
 
-		printURL(String.format("http://%s/results/%s/%s/bygroup?course=%s&list=%s", 
-				Database.d.getCurrentHost(),
-				Database.d.getCurrentSeries(), 
-				Database.d.getCurrentEvent().getId(), 
-				Database.d.getCurrentCourse(), g));
+		printURL(String.format("http://127.0.0.1/results/%s/%s/bygroup?course=%s&list=%s", state.getCurrentSeries(), state.getCurrentEventId(), state.getCurrentCourse(), g));
 	}
 	
 	public static void printURL(String url)

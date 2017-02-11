@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.wwscc.dialogs.SimpleFinderDialog;
@@ -26,6 +27,7 @@ import org.wwscc.storage.Entrant;
 import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.storage.Run;
 import org.wwscc.timercomm.TimerClient;
+import org.wwscc.util.IdGenerator;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -37,9 +39,9 @@ public class ChallengeModel implements MessageListener
 {
 	private static final Logger log = Logger.getLogger(ChallengeModel.class.getCanonicalName());
 
-	Map<Integer, Map<Integer, ChallengeRound>> rounds;
-	Map<Integer, Challenge> challenges;
-	Map<Integer, Entrant> entrantcache;
+	Map<UUID, Map<Integer, ChallengeRound>> rounds;
+	Map<UUID, Challenge> challenges;
+	Map<UUID, Entrant> entrantcache;
 	LinkedList<Id.Run> leftTargets;
 	LinkedList<Id.Run> rightTargets;
 	TimerClient client;
@@ -49,9 +51,9 @@ public class ChallengeModel implements MessageListener
 	 */
 	public ChallengeModel()
 	{
-		entrantcache = new HashMap<Integer,Entrant>();
-		challenges = new HashMap<Integer, Challenge>();
-		rounds = new HashMap<Integer, Map<Integer,ChallengeRound>>();
+		entrantcache = new HashMap<UUID,Entrant>();
+		challenges = new HashMap<UUID, Challenge>();
+		rounds = new HashMap<UUID, Map<Integer,ChallengeRound>>();
 		leftTargets = new LinkedList<Id.Run>();
 		rightTargets = new LinkedList<Id.Run>();
 		client = null;
@@ -170,6 +172,7 @@ public class ChallengeModel implements MessageListener
 	public void setTime(Id.Run rid, double time)
 	{
 		ChallengeRun r = getRun(rid);
+		/* FINISH ME
 		if (r != null)
 		{
 			r.setRaw(time);
@@ -188,7 +191,7 @@ public class ChallengeModel implements MessageListener
 			round.applyRun(r);
 			Database.d.insertRun(r);
 		}
-
+		*/
 		checkForWinner(rid);
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
@@ -202,12 +205,13 @@ public class ChallengeModel implements MessageListener
 	public void setCones(Id.Run rid, int cones)
 	{
 		ChallengeRun r = getRun(rid);
+		/* FINISH ME
 		if (r != null)
 		{
 			r.setCones(cones);
 			Database.d.updateRun(r);
 		}
-		
+		*/
 		checkForWinner(rid);
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
@@ -220,12 +224,13 @@ public class ChallengeModel implements MessageListener
 	public void setGates(Id.Run rid, int gates)
 	{
 		ChallengeRun r = getRun(rid);
+		/* FINISH ME
 		if (r != null)
 		{
 			r.setGates(gates);
 			Database.d.updateRun(r);
 		}
-		
+		*/
 		checkForWinner(rid);
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
@@ -239,12 +244,13 @@ public class ChallengeModel implements MessageListener
 	public void setStatus(Id.Run rid, String status)
 	{
 		ChallengeRun r = getRun(rid);
+		/* FINISH ME
 		if (r != null)
 		{
 			r.setStatus(status);
 			Database.d.updateRun(r);
 		}
-		
+		*/
 		checkForWinner(rid);
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
@@ -266,7 +272,7 @@ public class ChallengeModel implements MessageListener
 		}
 		else
 		{
-			re.setCar(-1);
+			re.setCar(IdGenerator.nullid);
 			re.setDial(0.0);
 		}
 		
@@ -293,7 +299,7 @@ public class ChallengeModel implements MessageListener
 			}
 			else
 			{
-				re.setCar(-1);
+				re.setCar(IdGenerator.nullid);
 				re.setDial(0.0);
 			}
 			
@@ -318,9 +324,9 @@ public class ChallengeModel implements MessageListener
 		
 		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 		Entrant e = entrantcache.get(re.getCar());
-		if ((e == null) && (re.getCar() > 0))
+		if ((e == null) && (re.getCar() != IdGenerator.nullid))
 		{
-			e = Database.d.loadEntrant(re.getCar(), false);  // TODO: Don't need runs per say
+			e = Database.d.loadEntrant(ChallengeGUI.state.getCurrentEventId(), re.getCar(), 1, false);
 			entrantcache.put(re.getCar(), e);
 		}		
 		return e;
@@ -373,27 +379,30 @@ public class ChallengeModel implements MessageListener
 	{
 		ChallengeRound r = getRound(rid);
 		
+		/*** FINISH ME, deleteRun with ChallengeId?  That couldn't have been correct
 		RoundEntrant top = r.getTopCar();
 		RoundEntrant bottom = r.getBottomCar();
 		
+
 		if (top != null)
 		{
 			if (top.getLeft() != null)
-				Database.d.deleteRun(top.getLeft().getId());
+				Database.d.deleteRun(top.getLeft().getChallengeId());
 			if (top.getRight() != null)
-				Database.d.deleteRun(top.getRight().getId());
+				Database.d.deleteRun(top.getRight().getChallengeId());
 			top.reset();
 		}
 		
 		if (bottom != null)
 		{
 			if (bottom.getLeft() != null)
-				Database.d.deleteRun(bottom.getLeft().getId());
+				Database.d.deleteRun(bottom.getLeft().getChallengeId());
 			if (bottom.getRight() != null)
-				Database.d.deleteRun(bottom.getRight().getId());
+				Database.d.deleteRun(bottom.getRight().getChallengeId());
 			bottom.reset();
 		}
-
+		***/
+		
 		Database.d.updateChallengeRound(r);
 	}
 
@@ -410,6 +419,7 @@ public class ChallengeModel implements MessageListener
 		RoundEntrant re = (rid.isUpper()) ? rnd.getTopCar() : rnd.getBottomCar();
 		ChallengeRun cr = (rid.isLeft()) ? re.getLeft() : re.getRight();
 		
+		/* FINISH ME
 		if (cr == null)
 		{
 			cr = new ChallengeRun(run);
@@ -427,7 +437,8 @@ public class ChallengeModel implements MessageListener
 			cr.setStatus(run.getStatus());
 			Database.d.updateRun(cr);
 		}
-
+		*/
+		
 		Double raw = cr.getRaw();
 		if (raw.isNaN() || (raw == 0))
 		{
@@ -531,18 +542,18 @@ public class ChallengeModel implements MessageListener
 		rounds.clear();
 		entrantcache.clear();
 		
-		for (Challenge c : Database.d.getChallengesForEvent())
+		for (Challenge c : Database.d.getChallengesForEvent(null))
 		{
-			challenges.put(c.getId(), c);
+			challenges.put(c.getChallengeId(), c);
 			
 			HashMap <Integer, ChallengeRound> map = new HashMap <Integer, ChallengeRound>();
-			rounds.put(c.getId(), map);
+			rounds.put(c.getChallengeId(), map);
 			
-			for (ChallengeRound r : Database.d.getRoundsForChallenge(c.getId()))
+			for (ChallengeRound r : Database.d.getRoundsForChallenge(c.getChallengeId()))
 				map.put(r.getRound(), r);
 
 			/* Load all the runs and link them in the appropriate rounds. */
-			for (ChallengeRun run : Database.d.getRunsForChallenge(c.getId()))
+			for (ChallengeRun run : Database.d.getRunsForChallenge(c.getChallengeId()))
 			{
 				Id.Round rid = new Id.Round(run.getChallengeId(), run.getRound());
 				ChallengeRound round = getRound(rid);

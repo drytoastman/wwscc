@@ -9,8 +9,6 @@
 package org.wwscc.components;
 
 import javax.swing.JLabel;
-import org.wwscc.storage.Database;
-import org.wwscc.storage.WebDataSource;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -33,12 +31,7 @@ public class CurrentDatabaseLabel extends JLabel implements MessageListener
 		switch (type)
 		{
 			case DATABASE_CHANGED:
-				if (Database.d instanceof WebDataSource)
-					setText(Database.d.getCurrentHost()+"/"+Database.d.getCurrentSeries());
-				else if (Database.file != null)
-					setText(Database.file.getName());
-				else
-					setText("No database");
+				setText((String)o);
 				break;
 		}
 	}

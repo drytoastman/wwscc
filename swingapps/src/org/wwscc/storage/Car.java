@@ -9,14 +9,20 @@
 package org.wwscc.storage;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.Comparator;
+import java.util.UUID;
+
+import org.json.simple.JSONObject;
+import org.wwscc.storage.SQLDataInterface.ResultRow;
+import org.wwscc.util.IdGenerator;
 
 public class Car implements Serializable
 {
 	private static final long serialVersionUID = -4356095380991113575L;
 	
-	protected int id;
-	protected int driverid;
+	protected UUID carid;
+	protected UUID driverid;
 
 	protected String year;
 	protected String make;
@@ -43,8 +49,8 @@ public class Car implements Serializable
 	 */
 	public Car()
 	{
-		id = -1;
-		driverid = -1;
+		carid = IdGenerator.generateId();
+		driverid = IdGenerator.nullid;
 		year = "";
 		make = "";
 		model = "";
@@ -58,7 +64,7 @@ public class Car implements Serializable
 	
 	public Car(Car other)
 	{
-		id = other.id;
+		carid = other.carid;
 		driverid = other.driverid;
 		year = other.year;
 		make = other.make;
@@ -71,8 +77,24 @@ public class Car implements Serializable
 		indexstr = other.indexstr;
 	}
 
-	public int getId() { return id; }
-	public int getDriverId() { return driverid; }
+	public Car(ResultRow rs) throws SQLException
+	{
+		carid       = rs.getUUID("carid");
+		driverid    = rs.getUUID("driverid");
+		classcode   = rs.getString("classcode");
+		indexcode   = rs.getString("indexcode");
+		number      = rs.getInt("number");
+		
+		JSONObject o = rs.getJSON("attr");
+		year        = (String)o.get("year");
+		make        = (String)o.get("make");
+		model       = (String)o.get("model");
+		color       = (String)o.get("color");
+		tireindexed = ((Long)o.get("tireindexed")) > 0;		
+	}
+
+	public UUID getCarId() { return carid; }
+	public UUID getDriverId() { return driverid; }
 	public String getClassCode() { return classcode; }
 	public String getIndexCode() { return indexcode; }
 	public String getIndexStr() { return (indexstr != null) ? indexstr: indexcode; } 
@@ -83,7 +105,7 @@ public class Car implements Serializable
 	public String getColor() { return color; }
 	public boolean isTireIndexed() { return tireindexed;}
 	
-	public void setDriverId(int id) { driverid = id; }
+	public void setDriverId(UUID id) { driverid = id; }
 	public void setNumber(int n) { number = n; }
 	public void setYear(String s) { year = s; }
 	public void setMake(String s) { make = s; }
@@ -100,13 +122,11 @@ public class Car implements Serializable
 	{
 		if (!(o instanceof Car))
 			return false;
-		return ((Car)o).id == id;
+		return ((Car)o).carid == carid;
 	}
 
 	@Override
 	public int hashCode() {
-		int hash = 3;
-		hash = 59 * hash + this.id;
-		return hash;
+		return carid.hashCode();
 	}
 }

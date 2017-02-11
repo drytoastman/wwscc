@@ -9,19 +9,24 @@
 package org.wwscc.storage;
 
 import java.io.IOException;
-import java.io.Serializable;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.postgresql.util.PGobject;
+import org.wwscc.util.IdGenerator;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 
@@ -116,17 +121,30 @@ public abstract class SQLDataInterface extends DataInterface
 			return get(key).toString();
 		}
 
-		public SADateTime getSADateTime(String key)
+		public UUID getUUID(String key)
 		{
-			return new SADateTime(getString(key));
+			return (UUID)get(key);
 		}
-		public SADateTime.SADate getSADate(String key)
+		
+		public JSONObject getJSON(String key)
 		{
-			return new SADateTime.SADate(getString(key));
+			try {
+				PGobject o = (PGobject)get(key);
+				return (JSONObject)(new JSONParser().parse(o.getValue()));
+			} catch (Exception e) {
+				log.warning(String.format("Failed to parse JSON block ({0})", e));
+				return new JSONObject();
+			}
 		}
-		public SADateTime.SATime getSATime(String key)
+		
+		public Timestamp getTimestamp(String key)
 		{
-			return new SADateTime.SATime(getString(key));
+			return (Timestamp)get(key);
+		}
+		
+		public Date getDate(String key)
+		{
+			return (Date)get(key);
 		}
 	}
 
@@ -141,6 +159,8 @@ public abstract class SQLDataInterface extends DataInterface
 	public abstract void executeUpdate(String sql, List<Object> args) throws IOException;
 	public abstract void executeGroupUpdate(String sql, List<List<Object>> args) throws IOException;
 	public abstract ResultData executeSelect(String sql, List<Object> args) throws IOException;
+	//public abstract <T> List<T> executeSelect(String key, List<Object> args, Constructor<T> objc) throws SQLException;
+
 
 	/**
 	 * Utility function to create a list for passing args
@@ -165,65 +185,22 @@ public abstract class SQLDataInterface extends DataInterface
 	public void sendEvents(boolean yes) { sendEvents = yes; }
 	public boolean isSendingEvents() { return sendEvents; }
 	
-	protected ChangeTracker tracker = null;
-	public ChangeTracker getChangeTracker() { return tracker; }
-	public void setChangeTracker(ChangeTracker in) { tracker = in; }
-	
-	protected Map<String, String> settingsCache = new HashMap<String,String>();
 	@Override
 	public String getSetting(String key)
 	{
 		try
 		{
-			if (!settingsCache.containsKey(key))
-			{
-				ResultData setting = executeSelect("GETSETTING", newList(key));
-				if (setting.size() > 0)
-					settingsCache.put(key, setting.get(0).getString("val"));
-				else
-					settingsCache.put(key, "");
+			ResultData setting = executeSelect("GETSETTING", newList(key));
+			if (setting.size() > 0) {
+				return setting.get(0).getString("val");
+			} else {
+				return "";
 			}
-
-			return settingsCache.get(key);
 		} catch (IOException ioe) {
 			logError("getSetting", ioe);
 			return "";
 		}
 	}
-	
-	protected Map<String, Boolean> booleanCache = new HashMap<String, Boolean>();
-	@Override
-	public boolean getBooleanSetting(String key)
-	{
-		if (!booleanCache.containsKey(key))
-		{
-			String dbvalue = getSetting(key);
-			if (dbvalue.equals("1") || dbvalue.equals("true"))
-				booleanCache.put(key, true);
-			else
-				booleanCache.put(key, false);
-		}
-		return booleanCache.get(key);
-	}
-	
-	@Override
-	public void putBooleanSetting(String key, boolean val)
-	{
-		try {
-			executeUpdate("UPDATEBOOLEANSETTING", newList(val, key));
-		} catch (Exception ioe) {
-			logError("putBooleanSetting", ioe);
-		}
-	}
-
-	
-	@Override
-	public void setCurrentEvent(Event e)
-	{
-		super.setCurrentEvent(e);
-		if (tracker != null) tracker.trackChange("SETEVENT", new Serializable[] { e });
-	}
-
 
 	@Override
 	public List<Event> getEvents()
@@ -234,7 +211,7 @@ public abstract class SQLDataInterface extends DataInterface
 			List<Event> ret = new ArrayList<Event>();
 			for (ResultRow r : data)
 			{
-				Event e = AUTO.loadEvent(r);
+				Event e = new Event(r);
 				ret.add(e);
 			}
 			return ret;
@@ -247,19 +224,16 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public boolean updateEvent()
+	public boolean updateEventRuns(UUID eventid, int runs)
 	{
 		try
 		{
-			List<Object> vals = newList();
-			AUTO.addEventValues(currentEvent, vals);
-			vals.add(currentEvent.id);
-			executeUpdate("UPDATEEVENTS", vals);
+			executeUpdate("update events set runs=? where id=?", newList(runs, eventid));
 			return true;
 		}
 		catch (Exception ioe)
 		{
-			logError("updateEvent", ioe);
+			logError("updateEventRuns", ioe);
 			return false;
 		}
 	}
@@ -288,17 +262,17 @@ public abstract class SQLDataInterface extends DataInterface
 		{
 			Entrant e = new Entrant();
 			e.car = loadCar(erow);
-			e.driverid = erow.getInt("driverid");
+			e.driverid = erow.getUUID("driverid");
 			e.firstname = erow.getString("firstname");
 			e.lastname = erow.getString("lastname");
-			e.index = getEffectiveIndex(e.car.classcode, e.car.indexcode, e.car.tireindexed);
+			//e.index = getEffectiveIndex(e.car.classcode, e.car.indexcode, e.car.tireindexed);
 			e.paid = erow.getBoolean("paid");
 
 			if (runs != null)
 			{
 				for (Run rx : runs)
 				{
-					if (rx.getCarId() == e.getCarId())
+					if (rx.getCarId().equals(e.getCarId()))
 						e.runs.put(rx.run, rx);
 				}
 			}
@@ -317,9 +291,14 @@ public abstract class SQLDataInterface extends DataInterface
 	 */
 	Car loadCar(ResultRow r) throws IOException
 	{
-		Car c = AUTO.loadCar(r);
-		c.setIndexStr(getIndexStr(c.classcode, c.indexcode, c.tireindexed));
-		return c;
+		// FINISH ME, make this part of Car.java?
+		try {
+			Car c = new Car(r);
+			c.setIndexStr(getIndexStr(c.classcode, c.indexcode, c.tireindexed));
+			return c;
+		} catch (SQLException sqle) {
+			throw new IOException(sqle);
+		}
 	}
 	
 	/**
@@ -331,18 +310,18 @@ public abstract class SQLDataInterface extends DataInterface
 	Driver loadDriver(ResultRow res) throws IOException
 	{
 		Driver d = AUTO.loadDriver(res);
-		for (ResultRow r : executeSelect("GETEXTRA", newList(d.id))) { d.setExtra(r.getString("name"), r.getString("value")); }
+		for (ResultRow r : executeSelect("GETEXTRA", newList(d.driverid))) { d.setExtra(r.getString("name"), r.getString("value")); }
 		return d;
 	}
 
 	
 	
 	@Override
-	public List<Entrant> getEntrantsByEvent()
+	public List<Entrant> getEntrantsByEvent(UUID eventid)
 	{
 		try
 		{
-			return loadEntrants(executeSelect("GETEVENTENTRANTS", newList(currentEvent.id)), null);
+			return loadEntrants(executeSelect("GETEVENTENTRANTS", newList(eventid)), null);
 		}
 		catch (Exception ioe)
 		{
@@ -353,11 +332,11 @@ public abstract class SQLDataInterface extends DataInterface
 
 
 	@Override
-	public List<Entrant> getRegisteredEntrants()
+	public List<Entrant> getRegisteredEntrants(UUID eventid)
 	{
 		try
 		{
-			return loadEntrants(executeSelect("GETREGISTEREDENTRANTS", newList(currentEvent.id)), null);
+			return loadEntrants(executeSelect("GETREGISTEREDENTRANTS", newList(eventid)), null);
 		}
 		catch (Exception ioe)
 		{
@@ -368,12 +347,12 @@ public abstract class SQLDataInterface extends DataInterface
 	
 	
 	@Override
-	public List<Car> getRegisteredCars(int driverid)
+	public List<Car> getRegisteredCars(UUID driverid, UUID eventid)
 	{
 		List<Car> ret = null;
 		try
 		{
-			ResultData data = executeSelect("GETREGISTEREDCARS", newList(currentEvent.id, driverid));
+			ResultData data = executeSelect("GETREGISTEREDCARS", newList(eventid, driverid));
 			ret = new ArrayList<Car>();
 			for (ResultRow r : data)
 				ret.add(loadCar(r));
@@ -394,14 +373,14 @@ public abstract class SQLDataInterface extends DataInterface
 	 * @return the list of entrants in the current run order
 	 */
 	@Override
-	public List<Entrant> getEntrantsByRunOrder()
+	public List<Entrant> getEntrantsByRunOrder(UUID eventid, int course, int rungroup)
 	{
 		try
 		{
-			ResultData d = executeSelect("GETRUNORDERENTRANTS", newList(currentEvent.id, currentCourse, currentRunGroup));
+			ResultData d = executeSelect("GETRUNORDERENTRANTS", newList(eventid, course, rungroup));
 			if (d == null)
 				return new ArrayList<Entrant>();
-			ResultData runs = executeSelect("GETRUNSBYGROUP", newList(currentEvent.id, currentCourse, currentEvent.id, currentCourse, currentRunGroup));
+			ResultData runs = executeSelect("GETRUNSBYGROUP", newList(eventid, course, eventid, course, rungroup));
 			return loadEntrants(d, runs);
 		}
 		catch (Exception ioe)
@@ -411,15 +390,16 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
-
-	protected Entrant loadEntrant(int course, int carid, boolean loadruns)
+	
+	@Override
+	public Entrant loadEntrant(UUID eventid, UUID carid, int course, boolean loadruns)
 	{
 		try
 		{
-			ResultData d = executeSelect("LOADENTRANT", newList(currentEvent.id, carid));
+			ResultData d = executeSelect("LOADENTRANT", newList(eventid, carid));
 			ResultData runs = null;
 			if (loadruns)
-				runs = executeSelect("GETRUNSBYCARID", newList(carid, currentEvent.id, course));
+				runs = executeSelect("GETRUNSBYCARID", newList(carid, eventid, course));
 			List<Entrant> e = loadEntrants(d, runs);
 			if (e.size() > 0)
 				return e.get(0);
@@ -432,22 +412,16 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
-	@Override
-	public Entrant loadEntrant(int carid, boolean loadruns)
-	{
-		return loadEntrant(currentCourse, carid, loadruns);
-	}
-
 
 	@Override
-	public Set<Integer> getCarIdsForCourse()
+	public Set<UUID> getCarIdsForCourse(UUID eventid, int course)
 	{
 		try
 		{
-			ResultData d = executeSelect("GETCARIDSFORCOURSE", newList(currentEvent.id, currentCourse));
-			HashSet<Integer> ret = new HashSet<Integer>();
+			ResultData d = executeSelect("GETCARIDSFORCOURSE", newList(eventid, course));
+			HashSet<UUID> ret = new HashSet<UUID>();
 			for (ResultRow r : d)
-				ret.add(r.getInt("carid"));
+				ret.add(r.getUUID("carid"));
 			return ret;
 		}
 		catch (Exception ioe)
@@ -458,14 +432,14 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public List<Integer> getCarIdsForRunGroup()
+	public List<UUID> getCarIdsForRunGroup(UUID eventid, int course, int rungroup)
 	{
 		try
 		{
-			ResultData d = executeSelect("GETCARIDSFORGROUP", newList(currentEvent.id, currentCourse, currentRunGroup));
-			List<Integer> ret = new ArrayList<Integer>();
+			ResultData d = executeSelect("GETCARIDSFORGROUP", newList(eventid, course, rungroup));
+			List<UUID> ret = new ArrayList<UUID>();
 			for (ResultRow r : d)
-				ret.add(r.getInt("carid"));
+				ret.add(r.getUUID("carid"));
 			return ret;
 		}
 		catch (Exception ioe)
@@ -476,17 +450,17 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void setRunOrder(List<Integer> carids) 
+	public void setRunOrder(UUID eventid, int course, int rungroup, List<UUID> carids) 
 	{
 		try
 		{
-			if (currentRunGroup <= 0) return; // Shouldn't be doing this if rungroup isn't valid
+			if (rungroup <= 0) return; // Shouldn't be doing this if rungroup isn't valid
 
 			/* Start transaction */
 			start();
 
 			/* Delete the old */
-			List<Object> vals = newList(currentEvent.id, currentCourse, currentRunGroup);
+			List<Object> vals = newList(eventid, course, rungroup);
 			executeUpdate("DELETERUNORDER", vals);
 
 			/* Reinsert all */
@@ -495,12 +469,12 @@ public abstract class SQLDataInterface extends DataInterface
 			List<List<Object>> lists = new ArrayList<List<Object>>(carids.size());
 
 			int ii = 0;
-			for (Integer carid : carids)
+			for (UUID carid : carids)
 			{
 				List<Object> items = new ArrayList<Object>(5);
-				items.add(currentEvent.id);
-				items.add(currentCourse);
-				items.add(currentRunGroup);
+				items.add(eventid);
+				items.add(course);
+				items.add(rungroup);
 				items.add(carid);
 				items.add(++ii);
 				lists.add(items);
@@ -518,20 +492,20 @@ public abstract class SQLDataInterface extends DataInterface
 
 	//****************************************************/
 
-	protected List<Integer> loadRunOrder() throws IOException
+	protected List<Integer> loadRunOrder(UUID eventid, int course, int rungroup) throws IOException
 	{
 		List<Integer> ret = new ArrayList<Integer>();
-		ResultData d = executeSelect("LOADRUNORDER", newList(currentEvent.id, currentCourse, currentRunGroup));
+		ResultData d = executeSelect("LOADRUNORDER", newList(eventid, course, rungroup));
 		for (ResultRow r : d)
 			ret.add(r.getInt("carid"));
 		return ret;
 	}
 
-	protected boolean hasRuns(int carid, int course)
+	protected boolean hasRuns(UUID eventid, int carid, int course)
 	{
 		try
 		{
-			List<Object> vals = newList(carid, currentEvent.id, course);
+			List<Object> vals = newList(carid, eventid, course);
 			ResultData d = executeSelect("GETRUNCOUNT", vals);
 			return (d.get(0).getInt("count") > 0);
 		}
@@ -544,21 +518,21 @@ public abstract class SQLDataInterface extends DataInterface
 
 
 	@Override
-	public MetaCar loadMetaCar(Car c)
+	public MetaCar loadMetaCar(Car c, UUID eventid, int course)
 	{
 		try
 		{
 			MetaCar mc = new MetaCar(c);
-			ResultData cr = executeSelect("ISREGISTERED", newList(c.getId(), currentEvent.id));
+			ResultData cr = executeSelect("ISREGISTERED", newList(c.getCarId(), eventid));
 			mc.isPaid = false;
 			mc.isRegistered = !cr.isEmpty();
 			if (mc.isRegistered)
 				mc.isPaid = cr.get(0).getBoolean("paid");
 			
-			cr = executeSelect("HASANYRUNS", newList(c.getId()));
+			cr = executeSelect("HASANYRUNS", newList(c.getCarId()));
 			mc.hasActivity = !cr.isEmpty();
 			
-			cr = executeSelect("ISINCOURSE", newList(c.getId(), currentEvent.id, currentCourse));
+			cr = executeSelect("ISINCOURSE", newList(c.getCarId(), eventid, course));
 			mc.isInRunOrder = !cr.isEmpty();
 
 			return mc;
@@ -570,13 +544,13 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
-	
+	/*
 	@Override
 	public List<String> getRunGroupMapping() // return the class codes assigned to the current event
 	{
 		try
 		{
-			ResultData d = executeSelect("GETRUNGROUPMAPPING", newList(currentEvent.id, currentRunGroup));
+			ResultData d = executeSelect("GETRUNGROUPMAPPING", newList(eventid, rungroup));
 			List<String> ret = new ArrayList<String>();
 			for (ResultRow r : d)
 				ret.add(r.getString("classcode"));
@@ -588,6 +562,7 @@ public abstract class SQLDataInterface extends DataInterface
 			return null;
 		}
 	}
+	*/
 
 	@Override
 	public void newDriver(Driver d) throws IOException
@@ -595,10 +570,6 @@ public abstract class SQLDataInterface extends DataInterface
 		List<Object> vals = newList();
 		AUTO.addDriverValues(d, vals);
 		executeUpdate("INSERTDRIVER", vals);
-		d.id = lastInsertId();
-		for (String name : d.getExtraKeys())
-			executeUpdate("INSERTEXTRA", newList(d.id, name, d.getExtra(name)));
-		if (tracker != null) tracker.trackChange("INSERTDRIVER", new Serializable[] { d });
 	}
 
 	@Override
@@ -606,19 +577,15 @@ public abstract class SQLDataInterface extends DataInterface
 	{
 		List<Object> vals = new ArrayList<Object>();
 		AUTO.addDriverValues(d, vals);
-		vals.add(d.id);
+		vals.add(d.driverid);
 		executeUpdate("UPDATEDRIVER", vals);
-		executeUpdate("DELETEEXTRA", newList(d.id));
-		for (String name : d.getExtraKeys())
-			executeUpdate("INSERTEXTRA", newList(d.id, name, d.getExtra(name)));	
-		if (tracker != null) tracker.trackChange("UPDATEDRIVER", new Serializable[] { d });
 	}
 
 	@Override
 	public void deleteDriver(Driver d) throws IOException
 	{
-		executeUpdate("DELETEDRIVER", newList(d.id));
-		executeUpdate("DELETEEXTRA", newList(d.id));
+		executeUpdate("DELETEDRIVER", newList(d.driverid));
+		executeUpdate("DELETEEXTRA", newList(d.driverid));
 	}
 
 	@Override
@@ -628,7 +595,7 @@ public abstract class SQLDataInterface extends DataInterface
 		{
 			start();
 			for (Driver d : list)
-				executeUpdate("DELETEDRIVER", newList(d.id));
+				executeUpdate("DELETEDRIVER", newList(d.driverid));
 			commit();
 		}
 		catch (IOException ioe)
@@ -637,31 +604,13 @@ public abstract class SQLDataInterface extends DataInterface
 			throw ioe;
 		}
 	}
-	
-	@Override
-	public List<DriverField> getDriverFields() throws IOException
-	{
-		try
-		{
-			ResultData d = executeSelect("GETALLFIELDS", null);
-			List<DriverField> ret = new ArrayList<DriverField>();
-			for (ResultRow r : d)
-				ret.add(AUTO.loadDriverField(r));
-			return ret;
-		}
-		catch (Exception ioe)
-		{
-			logError("getDriverFields", ioe);
-			return null;
-		}
-	}
 
-	public String getDriverNotes(int driverid)
+	public String getDriverNotes(UUID driverid)
 	{
 		try
 		{
 			ResultData d = executeSelect("GETNOTES", newList(driverid));
-			List<DriverField> ret = new ArrayList<DriverField>();
+			//List<DriverField> ret = new ArrayList<DriverField>();
 			if (d.size() > 0)
 				return d.get(0).getString("notes");
 			return "";
@@ -673,12 +622,11 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 	
-	public void setDriverNotes(int driverid, String notes)
+	public void setDriverNotes(UUID driverid, String notes)
 	{
 		try
 		{
 			executeUpdate("UPDATENOTES", newList(driverid, notes));
-			if (tracker != null) tracker.trackChange("UPDATENOTES", new Serializable[] { new DriverNote(driverid, notes) });
 		} 
 		catch (IOException ioe)
 		{
@@ -688,7 +636,7 @@ public abstract class SQLDataInterface extends DataInterface
 	
 	
 	@Override
-	public Driver getDriver(int driverid)
+	public Driver getDriver(UUID driverid)
 	{
 		try
 		{
@@ -721,7 +669,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 	
 	@Override
-	public List<Car> getCarsForDriver(int driverid)
+	public List<Car> getCarsForDriver(UUID driverid)
 	{
 		try
 		{
@@ -765,22 +713,20 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void registerCar(int carid, boolean paid, boolean overwrite) throws IOException
+	public void registerCar(UUID eventid, UUID carid, boolean paid, boolean overwrite) throws IOException
 	{
-		List<Object> vals = newList(currentEvent.id, carid, paid);
+		List<Object> vals = newList(eventid, carid, paid);
 		if (overwrite)
 			executeUpdate("REGISTERCARFORCE", vals);
 		else
 			executeUpdate("REGISTERCAR", vals);
-		if (tracker != null) tracker.trackChange("REGISTERCAR", new Serializable[] { carid, paid });
 	}
 
 	@Override
-	public void unregisterCar(int carid) throws IOException
+	public void unregisterCar(UUID eventid, UUID carid) throws IOException
 	{
-		List<Object> vals = newList(currentEvent.id, carid);
+		List<Object> vals = newList(eventid, carid);
 		executeUpdate("UNREGISTERCAR", vals);
-		if (tracker != null) tracker.trackChange("UNREGISTERCAR", new Serializable[] { carid });
 	}
 
 
@@ -790,8 +736,6 @@ public abstract class SQLDataInterface extends DataInterface
 		List<Object> vals = newList();
 		AUTO.addCarValues(c, vals);
 		executeUpdate("INSERTCAR", vals);
-		c.id = lastInsertId();
-		if (tracker != null) tracker.trackChange("INSERTCAR", new Serializable[] { c });
 		if (sendEvents) Messenger.sendEvent(MT.CAR_CREATED, c);
 	}
 
@@ -801,16 +745,14 @@ public abstract class SQLDataInterface extends DataInterface
 	{
 		List<Object> vals = new ArrayList<Object>();
 		AUTO.addCarValues(c, vals);
-		vals.add(c.id);
+		vals.add(c.carid);
 		executeUpdate("UPDATECAR", vals);
-		if (tracker != null) tracker.trackChange("UPDATECAR", new Serializable[] { c });
 	}
 
 	@Override
 	public void deleteCar(Car c) throws IOException
 	{
-		executeUpdate("DELETECAR", newList(c.id));
-		if (tracker != null) tracker.trackChange("DELETECAR", new Serializable[] { c });
+		executeUpdate("DELETECAR", newList(c.carid));
 	}
 
 	@Override
@@ -820,7 +762,7 @@ public abstract class SQLDataInterface extends DataInterface
 		{
 			start();
 			for (Car c : list)
-				executeUpdate("DELETECAR", newList(c.id));
+				executeUpdate("DELETECAR", newList(c.carid));
 			commit();
 		}
 		catch (IOException ioe)
@@ -832,11 +774,11 @@ public abstract class SQLDataInterface extends DataInterface
 
 	
 	@Override
-	public boolean isRegistered(int carid)
+	public boolean isRegistered(UUID eventid, UUID carid)
 	{
 		try
 		{
-			ResultData cr = executeSelect("ISREGISTERED", newList(carid, currentEvent.id));
+			ResultData cr = executeSelect("ISREGISTERED", newList(carid, eventid));
 			return (cr.size() > 0);
 		}
 		catch (Exception ioe)
@@ -845,64 +787,43 @@ public abstract class SQLDataInterface extends DataInterface
 			return false;
 		}
 	}
-
+	
 	@Override
-	public void insertRun(Run r)
+	public void setRun(Run r)
 	{
-		try
-		{
-			List<Object> list = newList();
-			AUTO.addRunValues(r, list);
-			executeUpdate("INSERTRUN", list);
-			r.id = lastInsertId();
-		}
-		catch (Exception ioe)
-		{
-			logError("insertRun", ioe);
-		}
-	}
-
-
-	@Override
-	public void updateRun(Run r)
-	{
-		try
-		{
-			List<Object> vals = new ArrayList<Object>();
-			AUTO.addRunValues(r, vals);
-			vals.add(r.id);
-			executeUpdate("UPDATERUN", vals);
-		}
-		catch (Exception ioe)
-		{
+		try{
+			executeUpdate("insert into runs (eventid, carid, course, run, cones, gates, raw, status, attr, modified) " +
+						"values (?,?,?,?,?,?,?,?,?,now()) ON CONFLICT (eventid, carid, course, run) DO UPDATE " +
+						"SET cones=?,gates=?,raw=?,status=?,attr=?,modified=now()", 
+						newList(r.eventid, r.carid, r.course, r.run, r.cones, r.gates, r.raw, r.status, r.attr,
+								r.cones, r.gates, r.raw, r.status, r.attr));
+		} catch (Exception ioe){
 			logError("updateRun", ioe);
 		}
 	}
 
 	@Override
-	public void deleteRun(int id)
+	public void deleteRun(UUID eventid, UUID carid, int course, int run)
 	{
-		try
-		{
-			executeUpdate("DELETERUN", newList(id));
-		}
-		catch (Exception ioe)
-		{
+		try {
+			executeUpdate("DELETE FROM runs WHERE eventid=? AND carid=? AND course=? AND run=?", newList(eventid, carid, course, run));
+		} catch (Exception ioe){
 			logError("deleteRun", ioe);
 		}
 	}
 	
+	/*
 	@Override
 	public boolean setEntrantRuns(Car c, Collection<Run> runs)
 	{
 		try
 		{
 			for (Run r : runs)
-				if ((r.eventid != currentEvent.id) || (r.course != currentCourse))
+				if ((!r.eventid.equals(eventid)) || (r.course != course))
 					throw new IllegalArgumentException(String.format("Invalid run id portion (%s,%s)", r.eventid, r.course));
 
 			start();
-			executeUpdate("DELETERUNSBYCOURSE", newList(c.id, currentCourse, currentEvent.id));
+			executeUpdate("DELETERUNSBYCOURSE", newList(c.carid, course, eventid));
 			
 			List<List<Object>> lists = new ArrayList<List<Object>>();
 			for (Run r : runs)
@@ -915,7 +836,7 @@ public abstract class SQLDataInterface extends DataInterface
 			if (lists.size() > 0)
 				executeGroupUpdate("INSERTRUN", lists);
 
-			updateClassResults(c.classcode, c.id);
+			updateClassResults(c.classcode, c.carid);
 			commit();
 			return true;
 		}
@@ -926,17 +847,17 @@ public abstract class SQLDataInterface extends DataInterface
 			return false;
 		}
 	}
-
+	*/
 
 	/*
  	 * Separate to be overriden by remote access classes that call a function rather than perform lots of SQL over the wire
  	 */
-	protected void updateClassResults(String classcode, int carid) throws IOException
+	protected void updateClassResults(UUID eventid, String classcode, UUID carid) throws IOException
 	{
 		log.fine("Update event for class " + classcode);
 
 		/* Delete current event results for the same event/class, then query runs table for new results */
-		List<Object> cevals = newList(classcode, currentEvent.id);
+		List<Object> cevals = newList(classcode, eventid);
 		executeUpdate("DELETECLASSRESULTS", cevals);
 		ResultData results = executeSelect("GETCLASSRESULTS", cevals);
 
@@ -967,8 +888,8 @@ public abstract class SQLDataInterface extends DataInterface
 			}
 
 			List<Object> rvals = newList();
-			int insertcarid = r.getInt("carid");
-			rvals.add(currentEvent.id);
+			UUID insertcarid = r.getUUID("carid");
+			rvals.add(eventid);
 			rvals.add(insertcarid);
 			rvals.add(classcode); // classcode doesn't change
 			rvals.add(position);
@@ -1001,7 +922,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}	
 
 	/**
-	 * Calculate from other sums based on old runs or clean runs, based on runs on currentCourse
+	 * Calculate from other sums based on old runs or clean runs, based on runs on course
 	 * @param carid  id of car that just finished
 	 * @param classcode classcode of car that just finished
 	 * @param mysum the sum of the entrant that just finished
@@ -1009,20 +930,24 @@ public abstract class SQLDataInterface extends DataInterface
 	 * @param ppoints the ppoints object for assigned position based pooints
 	 * @throws IOException
 	 */
-	protected void UpdateAnnouncerDetails(int carid, String classcode, double mysum, List<Double> sums, PositionPoints ppoints) throws IOException
+	@SuppressWarnings("unchecked")
+	protected void UpdateAnnouncerDetails(UUID carid, String classcode, double mysum, List<Double> sums, PositionPoints ppoints) throws IOException
 	{
-    	AnnouncerData data = new AnnouncerData();
-    	data.eventid = currentEvent.id;
-    	data.carid = carid;
-    	data.classcode = classcode;
-    	data.lastcourse = currentCourse;
-    	data.updated = new SADateTime();
+		//double oldsum = -1;
+		//double potentialsum = -1;
+    	JSONObject data = new JSONObject();
+    	//data.put("eventid", eventid);
+    	data.put("carid", carid);
+    	data.put("classcode", classcode);
+    	//data.put("lastcourse", course);
+    	data.put("updated", new Timestamp(System.currentTimeMillis()));
     	
-    	Entrant entrant = loadEntrant(currentCourse, carid, true);
-		Run runs[] = entrant.getRuns();
+    	/*
+    	Entrant entrant = loadEntrant(course, carid, true);
+		Run runs[] = new Run[0]; // FINISH ME entrant.getRuns();
 		if (runs.length == 0)
 		{
-			executeUpdate("DELETEANNOUNCERDATA", newList(currentEvent.id, carid));
+	    	//DELETE ANNOUNCER DATA HERE  newList(eventid, carid));
 			return;
 		}
 		
@@ -1042,9 +967,10 @@ public abstract class SQLDataInterface extends DataInterface
 		{
 	        if (lastrun.getNetOrder() == 1)  // we improved our position
 	        {
-	            data.oldsum = mysum - lastrun.getNet() + prevbest.getNet();
-	            data.rawdiff = lastrun.getRaw() - prevbest.getRaw();
-	            data.netdiff = lastrun.getNet() - prevbest.getNet();
+	        	oldsum = mysum - lastrun.getNet() + prevbest.getNet();
+	            data.put("oldsum", oldsum);
+	            data.put("rawdiff", lastrun.getRaw() - prevbest.getRaw());
+	            data.put("netdiff", lastrun.getNet() - prevbest.getNet());
 	        }
 	        
 	        if (lastrun.getCones() != 0 || lastrun.getGates() != 0)
@@ -1052,47 +978,46 @@ public abstract class SQLDataInterface extends DataInterface
 	            double theory = mysum - curbest.getNet() + ( lastrun.getRaw() * entrant.index );
 	            if (theory < mysum) // raw was an improvement
 	            {
-	            	data.potentialsum = theory;
-	            	data.rawdiff = lastrun.getRaw() - curbest.getRaw();
-	            	data.netdiff = lastrun.getNet() - curbest.getNet();
+	            	potentialsum = theory;
+	            	data.put("potentialsum", potentialsum);
+	            	data.put("rawdiff", lastrun.getRaw() - curbest.getRaw());
+	            	data.put("netdiff", lastrun.getNet() - curbest.getNet());
 	            }
 	        }
 		}
         
 		double firstplace = sums.get(0);
 		sums.remove(mysum);
-    	if (data.oldsum > 0)
+    	if (oldsum > 0)
     	{
-    		sums.add(data.oldsum);
+    		sums.add(oldsum);
     		Collections.sort(sums);
-    		data.oldpospoints = ppoints.get(sums.indexOf(data.oldsum)+1);
-	    	data.olddiffpoints = Math.min(100, firstplace/data.oldsum*100);
-    		sums.remove(data.oldsum);
+    		data.put("oldpospoints", ppoints.get(sums.indexOf(oldsum)+1));
+	    	data.put("olddiffpoints", Math.min(100, firstplace/oldsum*100));
+    		sums.remove(oldsum);
     	}    	
     	
-    	if (data.potentialsum > 0)
+    	if (potentialsum > 0)
     	{
-	    	sums.add(data.potentialsum);
+	    	sums.add(potentialsum);
 	    	Collections.sort(sums);
-	    	data.potentialpospoints = ppoints.get(sums.indexOf(data.potentialsum)+1);
-	    	data.potentialdiffpoints = Math.min(100, firstplace/data.potentialsum*100);
-    		sums.remove(data.potentialsum);
+	    	data.put("potentialpospoints", ppoints.get(sums.indexOf(potentialsum)+1));
+	    	data.put("potentialdiffpoints", Math.min(100, firstplace/potentialsum*100));
+    		sums.remove(potentialsum);
     	}
-    	
-        List<Object> vals = newList();
-		AUTO.addAnnouncerDataValues(data, vals);
-		executeUpdate("REPLACEANNOUNCERDATA", vals);
+    	*/
+    	// FINISH ME, REPLACE ANNOUNCER DATA HERE
 	}
 
 	
 	@Override
-	public AnnouncerData getAnnouncerDataForCar(int carid)
+	public AnnouncerData getAnnouncerDataForCar(UUID eventid, UUID carid)
 	{
 		try
 		{
-			ResultData d = executeSelect("GETANNOUNCERDATABYENTRANT", newList(currentEvent.id, carid));
+			ResultData d = executeSelect("GETANNOUNCERDATABYENTRANT", newList(eventid, carid));
 			if (d.size() == 0) return null;
-			return AUTO.loadAnnouncerData(d.get(0));
+			return null; //AUTO.loadAnnouncerData(d.get(0));
 		}
 		catch (Exception ioe)
 		{
@@ -1103,12 +1028,13 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 	
 	@Override
-	public List<EventResult> getResultsForClass(String classcode) 
+	public List<EventResult> getResultsForClass(UUID eventid, String classcode) 
 	{
 		try
 		{
-			ResultData d = executeSelect("GETEVENTRESULTSBYCLASS", newList(classcode, currentEvent.id));
+			ResultData d = executeSelect("GETEVENTRESULTSBYCLASS", newList(classcode, eventid));
 			List<EventResult> ret = new ArrayList<EventResult>(d.size());
+			/*
 			for (ResultRow r : d)
 			{
 				EventResult er = AUTO.loadEventResult(r);
@@ -1119,6 +1045,7 @@ public abstract class SQLDataInterface extends DataInterface
 				er.setName(r.getString("firstname"), r.getString("lastname"));
 				ret.add(er);
 			}
+			*/
 			return ret;
 		}
 		catch (Exception ioe)
@@ -1129,17 +1056,17 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public Set<Integer> getCarIdsByChallenge(int challengeid)
+	public Set<UUID> getCarIdsByChallenge(UUID challengeid)
 	{
 		try
 		{
 			
 			ResultData d = executeSelect("GETCARIDSBYCHALLENGE", newList(challengeid));
-			HashSet<Integer> ret = new HashSet<Integer>();
+			HashSet<UUID> ret = new HashSet<UUID>();
 			for (ResultRow r : d)
 			{
-				ret.add(r.getInt("car1id"));
-				ret.add(r.getInt("car2id"));
+				ret.add(r.getUUID("car1id"));
+				ret.add(r.getUUID("car2id"));
 			}
 			return ret;
 		}
@@ -1151,7 +1078,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void newChallenge(String name, int size)
+	public void newChallenge(UUID eventid, String name, int size)
 	{
 		try
 		{
@@ -1159,10 +1086,10 @@ public abstract class SQLDataInterface extends DataInterface
 			int depth = (int)(Math.log(size)/Math.log(2));
 			start();
 
-			executeUpdate("INSERTCHALLENGE", newList(currentEvent.id, name, depth));
-			currentChallengeId = lastInsertId();
+			UUID next = IdGenerator.generateId();
+			executeUpdate("INSERTCHALLENGE", newList(next, eventid, name, depth));
 
-			List<Object> rargs = newList(currentChallengeId, 0, false, -1, -1);
+			List<Object> rargs = newList(next, 0, false, -1, -1);
 			for (int ii = 0; ii <= rounds; ii++)
 			{
 				rargs.set(1, ii);
@@ -1181,7 +1108,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void deleteChallenge(int challengeid)
+	public void deleteChallenge(UUID challengeid)
 	{
 		try
 		{
@@ -1195,11 +1122,11 @@ public abstract class SQLDataInterface extends DataInterface
 	
 	
 	@Override
-	public List<Challenge> getChallengesForEvent()
+	public List<Challenge> getChallengesForEvent(UUID eventid)
 	{
 		try
 		{
-			ResultData d = executeSelect("GETCHALLENGESFOREVENT", newList(currentEvent.id));
+			ResultData d = executeSelect("GETCHALLENGESFOREVENT", newList(eventid));
 			List<Challenge> ret = new ArrayList<Challenge>();
 			for (ResultRow r : d)
 				ret.add(AUTO.loadChallenge(r));
@@ -1213,7 +1140,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public List<ChallengeRound> getRoundsForChallenge(int challengeid) 
+	public List<ChallengeRound> getRoundsForChallenge(UUID challengeid) 
 	{
 		try
 		{
@@ -1223,16 +1150,15 @@ public abstract class SQLDataInterface extends DataInterface
 			{
 				/* Not a standard class to table layout so write the load manually */
 				ChallengeRound rnd = new ChallengeRound();
-				rnd.id = r.getInt("id");
-				rnd.challengeid = r.getInt("challengeid");
+				rnd.challengeid = r.getUUID("challengeid");
 				rnd.round = r.getInt("round");
 				rnd.car1 = new ChallengeRound.RoundEntrant();
-				rnd.car1.carid = r.getInt("car1id");
+				rnd.car1.carid = r.getUUID("car1id");
 				rnd.car1.dial = r.getDouble("car1dial");
 				rnd.car1.result = r.getDouble("car1result");
 				rnd.car1.newdial = r.getDouble("car1newdial");
 				rnd.car2 = new ChallengeRound.RoundEntrant();
-				rnd.car2.carid = r.getInt("car2id");
+				rnd.car2.carid = r.getUUID("car2id");
 				rnd.car2.dial = r.getDouble("car2dial");
 				rnd.car2.result = r.getDouble("car2result");
 				rnd.car2.newdial = r.getDouble("car2newdial");
@@ -1248,17 +1174,19 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public List<ChallengeRun> getRunsForChallenge(int challengeid)
+	public List<ChallengeRun> getRunsForChallenge(UUID challengeid)
 	{
 		try
 		{
-			ResultData d = executeSelect("GETRUNSFORCHALLENGE", newList(challengeid));
+			//ResultData d = executeSelect("GETRUNSFORCHALLENGE", newList(challengeid));
 			List<ChallengeRun> ret = new ArrayList<ChallengeRun>();
+			/* FINISH ME
 			for (ResultRow r : d)
 			{
-				ChallengeRun cr = AUTO.loadChallengeRun(r); cr.fixids();
+				ChallengeRun cr = AUTO.loadChallengeRun(r);
 				ret.add(cr);
 			}
+			*/
 			return ret;
 		}
 		catch (Exception ioe)
@@ -1269,17 +1197,17 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	final static class Leader {  // I miss python
-		int carid; double basis; double net;
-		Leader(int i, double b, double n) { carid = i; basis = b; net = n; }
+		UUID carid; double basis; double net;
+		Leader(UUID i, double b, double n) { carid = i; basis = b; net = n; }
 	}
 	
 	@Override
-	public Dialins loadDialins() 
+	public Dialins loadDialins(UUID eventid) 
 	{
 		try
 		{
 			HashMap <String, Leader> leaders = new HashMap<String, Leader>();
-			ResultData d = executeSelect("GETDIALINS", newList(currentEvent.id, currentEvent.id));
+			ResultData d = executeSelect("GETDIALINS", newList(eventid, eventid));
 			Dialins ret = new Dialins();
 			for (ResultRow r : d)
 			{
@@ -1287,7 +1215,7 @@ public abstract class SQLDataInterface extends DataInterface
 				String indexcode = r.getString("indexcode");
 				boolean tireindexed = r.getBoolean("tireindexed");
 				int position = r.getInt("position");
-				int carid = r.getInt("carid");
+				UUID carid = r.getUUID("carid");
 				double myraw = r.getDouble("myraw");
 				double mynet = r.getDouble("mynet");
 				double index = getEffectiveIndex(classcode, indexcode, tireindexed);
@@ -1330,7 +1258,7 @@ public abstract class SQLDataInterface extends DataInterface
 		{
 			List<Object> vals = new ArrayList<Object>();
 			AUTO.addChallengeValues(c, vals);
-			vals.add(c.id);
+			vals.add(c.challengeid);
 			executeUpdate("UPDATECHALLENGE", vals);
 		}
 		catch (IOException ioe)
@@ -1354,7 +1282,6 @@ public abstract class SQLDataInterface extends DataInterface
 		list.add(r.car2.dial);
 		list.add(r.car2.result);
 		list.add(r.car2.newdial);
-		list.add(r.id);
 		executeUpdate("UPDATECHALLENGEROUND", list);
 	}
 	
@@ -1410,15 +1337,7 @@ public abstract class SQLDataInterface extends DataInterface
 			ret = new ArrayList<Driver>();
 			for (ResultRow r : data)
 				ret.add(AUTO.loadDriver(r));
-			
-			for (Driver d : ret)
-			{
-				for (ResultRow r : executeSelect("GETEXTRA", newList(d.id)))
-				{
-					d.setExtra(r.getString("name"), r.getString("value"));
-				}
-			}
-			
+
 			return ret;
 		}
 		catch (Exception ioe)
@@ -1429,19 +1348,19 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public Map<Integer, Driver> getAllDrivers()
+	public Map<UUID, Driver> getAllDrivers()
 	{
-		Map<Integer, Driver> ret = null;
+		Map<UUID, Driver> ret = null;
 		try
 		{
 			ResultData data;
 			
 			data = executeSelect("GETALLDRIVERS", null);
-			ret = new HashMap<Integer, Driver>();
+			ret = new HashMap<UUID, Driver>();
 			for (ResultRow r : data)
 			{
 				Driver driver = AUTO.loadDriver(r);
-				ret.put(driver.id, driver);
+				ret.put(driver.driverid, driver);
 			}
 			
 			data = executeSelect("GETALLEXTRA", null);
@@ -1463,17 +1382,17 @@ public abstract class SQLDataInterface extends DataInterface
 
 	
 	@Override
-	public Map<Integer, Car> getAllCars()
+	public Map<UUID, Car> getAllCars()
 	{
-		Map<Integer, Car> ret = null;
+		Map<UUID, Car> ret = null;
 		try
 		{
 			ResultData d = executeSelect("GETALLCARS", null);
-			ret = new HashMap<Integer, Car>();
+			ret = new HashMap<UUID, Car>();
 			for (ResultRow r : d)
 			{
 				Car car = loadCar(r);
-				ret.put(car.id, car);
+				ret.put(car.carid, car);
 			}
 			return ret;
 		}
@@ -1484,6 +1403,7 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
+	/*
 	@Override
 	public Map<Integer, Run> getAllRuns()
 	{
@@ -1505,14 +1425,15 @@ public abstract class SQLDataInterface extends DataInterface
 			return null;
 		}
 	}
+	*/
 
 
 	@Override
-	public boolean isInOrder(int carid) 
+	public boolean isInOrder(UUID eventid, UUID carid, int course) 
 	{
 		try
 		{
-			ResultData d = executeSelect("GETRUNORDERROWS", newList(currentEvent.id, currentCourse, carid));
+			ResultData d = executeSelect("GETRUNORDERROWS", newList(eventid, course, carid));
 			return !d.isEmpty();
 		}
 		catch (Exception ioe)
@@ -1523,11 +1444,11 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 	
 	@Override
-	public boolean isInCurrentOrder(int carid) 
+	public boolean isInCurrentOrder(UUID eventid, UUID carid, int course, int rungroup) 
 	{
 		try
 		{
-			ResultData d = executeSelect("GETRUNORDERROWSCURRENT", newList(currentEvent.id, currentCourse, currentRunGroup, carid));
+			ResultData d = executeSelect("GETRUNORDERROWSCURRENT", newList(eventid, course, rungroup, carid));
 			return !d.isEmpty();
 		}
 		catch (Exception ioe)
@@ -1578,108 +1499,5 @@ public abstract class SQLDataInterface extends DataInterface
 		if (classCache == null)
 			getClassData();
 		return classCache.getIndexStr(classcode, indexcode, tireindexed);
-	}
-	
-	
-	/**
-	 * Merge in the given Changes objects
-	 * @param changes a list of Changes to merge
-	 * @throws IOException 
-	 */
-	@Override
-	public void mergeChanges(List<Change> changes, ProgressInterface progress) throws IOException
-	{
-		Map<Integer, Integer> driveridmap = new HashMap<Integer,Integer>();
-		Map<Integer, Integer> caridmap = new HashMap<Integer,Integer>();
-
-		try
-		{
-			start();
-			for (Change change : changes)
-			{
-				String sqlmap = change.getSqlMap();
-				Serializable[] args = change.getArgs();
-				log.info("Merge "+sqlmap+": " + Arrays.toString(args));
-				
-				if (sqlmap.equals("SETEVENT"))
-				{
-					Event e = (Event)args[0];
-					setCurrentEvent(e);
-					continue;
-				}
-				else if (sqlmap.equals("INSERTDRIVER"))
-				{
-					Driver d = (Driver)args[0];
-					int usedid = d.id;
-					newDriver(d); // no mapping as all brand new
-					driveridmap.put(usedid, d.id);
-				}
-				else if (sqlmap.equals("UPDATEDRIVER"))
-				{
-					Driver d = (Driver)args[0];
-					if (driveridmap.containsKey(d.id)) // map driverid
-						d.id = driveridmap.get(d.id);
-					updateDriver(d);
-				}
-				else if (sqlmap.equals("INSERTCAR"))
-				{
-					Car c = (Car)args[0];
-					int usedid = c.id;
-					if (driveridmap.containsKey(c.driverid)) // map driverid
-						c.driverid = driveridmap.get(c.driverid);
-					newCar(c);
-					caridmap.put(usedid, c.id);
-				}
-				else if (sqlmap.equals("UPDATECAR"))
-				{
-					Car c = (Car)args[0];
-					if (caridmap.containsKey(c.id)) // map carid and driverid
-						c.id = caridmap.get(c.id);
-					if (driveridmap.containsKey(c.driverid))
-						c.driverid = driveridmap.get(c.driverid);
-					updateCar(c);
-				}
-				else if (sqlmap.equals("UPDATENOTES"))
-				{
-					DriverNote n = (DriverNote)args[0];
-					if (driveridmap.containsKey(n.driverid))
-						n.driverid = driveridmap.get(n.driverid);
-					setDriverNotes(n.driverid, n.notes);
-				}
-				else if (sqlmap.equals("DELETECAR"))
-				{
-					Car c = (Car)args[0];
-					if (caridmap.containsKey(c.id)) // map carid
-						c.id = caridmap.get(c.id);
-					deleteCar(c);
-				}
-				else if (sqlmap.equals("UNREGISTERCAR"))
-				{
-					Integer carid = (Integer)args[0];
-					if (caridmap.containsKey(carid))
-						carid = caridmap.get(carid);
-					unregisterCar(carid);
-				}
-				else if (sqlmap.equals("REGISTERCAR"))
-				{
-					Integer carid = (Integer)args[0];
-					Boolean paid = (Boolean)args[1];
-					if (caridmap.containsKey(carid))
-						carid = caridmap.get(carid);
-					registerCar(carid, paid, true);
-				}
-				
-				if (progress != null)
-					progress.step();
-			}
-
-			commit();
-		}
-		catch (IOException e)
-		{
-			rollback();
-			log.log(Level.SEVERE, "Exception during merge: " + e, e);
-			throw e;
-		}
-	}
+	}	
 }

@@ -16,6 +16,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.json.simple.parser.ParseException;
 import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
@@ -113,31 +115,39 @@ public final class TimerClient implements RunServiceInterface, ThreadedClass
 
 				while (!done)
 				{
-					String line = in.readLine();
-					log.log(Level.INFO, "TimerClient reads: {0}", line);
-					if (line == null)
+					String line = "";
+					try 
 					{
-						log.info("readLine returns null, closing connection");
-						return;
+						line = in.readLine();
+						log.log(Level.INFO, "TimerClient reads: {0}", line);
+						if (line == null)
+						{
+							log.info("readLine returns null, closing connection");
+							return;
+						}
+						
+						if (line.startsWith("DIAL "))
+						{
+							LeftRightDialin d = new LeftRightDialin();
+							d.decode(line.substring(5));
+							Messenger.sendEvent(MT.TIMER_SERVICE_DIALIN, d);
+						}
+						else if (line.startsWith("RUN "))
+						{
+							Run r = new Run();
+							r.decode(line.substring(4));
+							Messenger.sendEvent(MT.TIMER_SERVICE_RUN, r);
+						}
+						else if (line.startsWith("DELETE "))
+						{
+							Run r = new Run();
+							r.decode(line.substring(7));
+							Messenger.sendEvent(MT.TIMER_SERVICE_DELETE, r);
+						}
 					}
-					
-					if (line.startsWith("DIAL "))
+					catch (ParseException pe)
 					{
-						LeftRightDialin d = new LeftRightDialin();
-						d.decode(line.substring(5));
-						Messenger.sendEvent(MT.TIMER_SERVICE_DIALIN, d);
-					}
-					else if (line.startsWith("RUN "))
-					{
-						Run r = new Run();
-						r.decode(line.substring(4));
-						Messenger.sendEvent(MT.TIMER_SERVICE_RUN, r);
-					}
-					else if (line.startsWith("DELETE "))
-					{
-						Run r = new Run();
-						r.decode(line.substring(7));
-						Messenger.sendEvent(MT.TIMER_SERVICE_DELETE, r);
+						log.warning(String.format("TimerClient got bad data: %s (%s)", line, pe));
 					}
 				}
 			}

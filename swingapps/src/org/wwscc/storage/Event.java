@@ -9,6 +9,13 @@
 package org.wwscc.storage;
 
 import java.io.Serializable;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.UUID;
+
+import org.json.simple.JSONObject;
+import org.wwscc.storage.SQLDataInterface.ResultRow;
 
 /**
  * Represents a single event from the database.
@@ -16,35 +23,36 @@ import java.io.Serializable;
 public class Event implements Serializable
 {
 	private static final long serialVersionUID = 3721488283732959966L;
-	
-	protected int id;
-	protected boolean ispro;
-	protected boolean practice;
-	protected int courses;
-	protected int runs;
-	protected int countedruns;
-	protected double conepen;
-	protected double gatepen;
-	protected String segments;
 
-	protected String name;
-	protected SADateTime.SADate date;
+	protected UUID      eventid;
+	protected String    name;
+	protected Date      date;
+	protected Timestamp regopened;
+	protected Timestamp regclosed;
+	protected int       courses;
+	protected int       runs;
+	protected int       countedruns;
+	protected int       perlimit; // per person
+	protected int       totlimit; // for whole event
+	protected double    conepen;
+	protected double    gatepen;
+	protected boolean   ispro;
+	protected boolean   ispractice;
+	protected JSONObject attr;
+	
+	/*
+	protected String segments;
 	protected String location;
 	protected String sponsor;
 	protected String host;
 	protected String designer;
-
-	protected SADateTime regopened;
-	protected SADateTime regclosed;
-
-	protected int perlimit; // per person
-	protected int totlimit; // for whole event
 	protected boolean doublespecial; // special double entry handling for registration
 	protected int cost;
 	protected String paypal;
 	protected String snail;
 	protected String notes;
-
+	*/
+	
 	@Override
 	public String toString()
 	{
@@ -54,8 +62,27 @@ public class Event implements Serializable
 	public Event()
 	{
 	}
+	
+	public Event(ResultRow rs) throws SQLException
+	{
+		eventid     = rs.getUUID("eventid");
+		name        = rs.getString("name");
+		date        = rs.getDate("date");
+		regopened   = rs.getTimestamp("regopened");
+		regclosed   = rs.getTimestamp("regclosed");
+		courses     = rs.getInt("courses");
+		runs		= rs.getInt("runs");
+		countedruns = rs.getInt("countedruns");
+		perlimit 	= rs.getInt("perlimit");
+		totlimit 	= rs.getInt("totlimit");
+		conepen     = rs.getDouble("conepen");
+		gatepen 	= rs.getDouble("gatepen");
+		ispro       = rs.getBoolean("ispro");
+		ispractice  = rs.getBoolean("ispractice");
+		attr        = rs.getJSON("attr");
+	}
 
-	public int getId() { return id; }
+	public UUID getEventId() { return eventid; }
 	public int getRuns() { return runs; }
 	public int getCountedRuns()
 	{

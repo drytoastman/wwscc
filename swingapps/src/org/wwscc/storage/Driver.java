@@ -12,12 +12,15 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+
+import org.wwscc.util.IdGenerator;
 
 public class Driver implements Serializable
 {
 	private static final long serialVersionUID = -5960219850370470938L;
 	
-	protected int id;
+	protected UUID driverid;
 	protected String firstname;
 	protected String lastname;
 	protected String alias;
@@ -42,6 +45,7 @@ public class Driver implements Serializable
 
 	public Driver(String f, String l)
 	{
+		driverid = IdGenerator.generateId();
 		firstname = f;
 		lastname = l;
 		alias = "";
@@ -58,7 +62,7 @@ public class Driver implements Serializable
 	}
 
 	public String getFullName() { return firstname + " " + lastname; }
-	public int getId() { return id; }
+	public UUID getDriverId() { return driverid; }
 	public String getFirstName() { return firstname; }
 	public String getLastName() { return lastname; }
 	public String getEmail() { return email; }
@@ -106,13 +110,13 @@ public class Driver implements Serializable
 	@Override
 	public boolean equals(Object o)
 	{
-		return ((o instanceof Driver) && ((Driver)o).id == id);
+		return ((o instanceof Driver) && ((Driver)o).driverid == driverid);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return id;
+		return driverid.hashCode();
 	}
 	
 }

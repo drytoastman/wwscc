@@ -11,30 +11,25 @@ package org.wwscc.dialogs;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.util.List;
 import javax.swing.Box;
 import javax.swing.JPanel;
 import org.wwscc.storage.Driver;
-import org.wwscc.storage.DriverField;
 
 /**
  * Core functions for all dialogs.
  */
 public class DriverDialog extends BaseDialog<Driver>
 {
-	List<DriverField> xfields;
-	
 	/**
 	 * Create the dialog.
 	 * @param d the driver data to source initially
 	 * @param f the extra driver fields for display
 	 */
-    public DriverDialog(Driver d, List<DriverField> f)
+    public DriverDialog(Driver d)
 	{
         super(new GridBagLayout(), true);
 
 		if (d == null) d = new Driver();
-		xfields = f;
 
 		GridBagConstraints c = new GridBagConstraints();
 
@@ -86,12 +81,14 @@ public class DriverDialog extends BaseDialog<Driver>
 		c.gridx = 1; c.gridy = 7; c.gridwidth = 3; c.weightx = 1; mainPanel.add(entry("membership", d.getMembership()), c);
 
 		int row = 8;
+		/*
 		for (DriverField field : xfields)
 		{
 			c.gridx = 0; c.gridy = row; c.gridwidth = 1; c.weightx = 0; mainPanel.add(label(field.getTitle(), false), c);
 			c.gridx = 1; c.gridy = row; c.gridwidth = 3; c.weightx = 1; mainPanel.add(entry(field.getName(), d.getExtra(field.getName())), c);
 			row++;
 		}
+		*/
 
 		/* row 7 (vertical filler) */
 		c.gridx = 0; c.gridy = row; c.gridwidth = 4; c.weightx = 0; c.weighty = 1; mainPanel.add(Box.createHorizontalStrut(450), c);
@@ -132,10 +129,11 @@ public class DriverDialog extends BaseDialog<Driver>
 		result.setBrag(getEntryText("brag"));
 		result.setSponsor(getEntryText("sponsor"));
 		result.setMembership(getEntryText("membership"));
+		/*
 		for (DriverField field : xfields)
 		{
 			result.setExtra(field.getName(), getEntryText(field.getName()));
-		}
+		} */
 		return result;
 	}
 

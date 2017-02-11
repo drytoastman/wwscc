@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.JTree;
@@ -106,7 +107,7 @@ public class CarTree extends JTree
 	}
 
 	
-	protected void makeTree(Collection<Entrant> reg, Collection<Integer> exclude)
+	protected void makeTree(Collection<Entrant> reg, Collection<UUID> exclude)
 	{
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("");
 		Hashtable <String,Vector<Entrant>> classes = new Hashtable<String,Vector<Entrant>>();

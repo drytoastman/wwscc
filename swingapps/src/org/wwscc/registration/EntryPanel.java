@@ -85,7 +85,7 @@ public class EntryPanel extends DriverCarPanel
 	
 	public EntryPanel(NameStorage names)
 	{
-		super();
+		super(Registration.state);
 		setLayout(new MigLayout("fill", "[400, grow 25][:150:200, grow 25][:150:200, grow 25]"));
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.ATTENDANCE_SETUP_CHANGE, this);
@@ -246,7 +246,7 @@ public class EntryPanel extends DriverCarPanel
 					if ((c == null) || (selectedDriver == null))
 						return;
 					try {
-						c.setDriverId(selectedDriver.getId());
+						c.setDriverId(selectedDriver.getDriverId());
 						Database.d.updateCar(c);
 						reloadCars(c);
 					} catch (IOException ioe) {
@@ -315,7 +315,6 @@ public class EntryPanel extends DriverCarPanel
 	public void reloadCars(Car select)
 	{
 		super.reloadCars(select);
-		Messenger.sendEvent(MT.TRACKING_CHANGE_MADE, null);
 		setPaidWarning();
 	}
 	
@@ -350,17 +349,17 @@ public class EntryPanel extends DriverCarPanel
 		{
 			if (cmd.equals(REGISTERONLY) && (selectedCar != null))
 			{
-				Database.d.registerCar(selectedCar.getId(), false, true);
+				Database.d.registerCar(null, selectedCar.getCarId(), false, true);
 				reloadCars(selectedCar);
 			}
 			else if (cmd.equals(REGISTERANDPAY) && (selectedCar != null))
 			{
-				Database.d.registerCar(selectedCar.getId(), true, true);
+				Database.d.registerCar(null, selectedCar.getCarId(), true, true);
 				reloadCars(selectedCar);
 			}
 			else if (cmd.equals(UNREGISTER) && (selectedCar != null))
 			{
-				Database.d.unregisterCar(selectedCar.getId());
+				Database.d.unregisterCar(null, selectedCar.getCarId());
 				reloadCars(selectedCar);
 			}
 			else if (cmd.equals(EDITNOTES) && (selectedDriver != null))
@@ -368,7 +367,7 @@ public class EntryPanel extends DriverCarPanel
 				String ret = (String)JOptionPane.showInputDialog(this, "Enter/Delete notes", noteswarning.getText());
 				if (ret != null)
 				{
-					Database.d.setDriverNotes(selectedDriver.getId(), ret);
+					Database.d.setDriverNotes(selectedDriver.getDriverId(), ret);
 					valueChanged(new ListSelectionEvent(drivers, -1, -1, false));
 				}
 			}
@@ -379,8 +378,6 @@ public class EntryPanel extends DriverCarPanel
 		{
 			log.log(Level.SEVERE, "Registation action failed: " + ioe, ioe);
 		}
-		
-		Messenger.sendEvent(MT.TRACKING_CHANGE_MADE, null);
 	}
 
 
@@ -421,7 +418,7 @@ public class EntryPanel extends DriverCarPanel
 					}
 				}
 				
-				String notes = Database.d.getDriverNotes(selectedDriver.getId());
+				String notes = Database.d.getDriverNotes(selectedDriver.getDriverId());
 				if (!notes.trim().equals(""))
 				{
 					noteswarning.setText(notes);
@@ -499,7 +496,7 @@ public class EntryPanel extends DriverCarPanel
 										JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
 				{
 					try {
-						Database.d.registerCar(c.getId(), true, true);
+						Database.d.registerCar(null, c.getCarId(), true, true);
 						reloadCars(c);
 					} catch (IOException e) {
 						log.log(Level.WARNING, "Hmm.  I wasn't able to register the car: " + e.getMessage(), e);

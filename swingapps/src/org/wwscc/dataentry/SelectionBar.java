@@ -129,28 +129,28 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 
 			if (cmd.startsWith("event"))
 			{
-				Database.d.setCurrentEvent((Event)o);
+				DataEntry.state.setCurrentEvent((Event)o);
 				Messenger.sendEvent(MT.EVENT_CHANGED, null);
 				Prefs.setEventId(eventSelect.getSelectedIndex());
-				setCourseList(Database.d.getCurrentEvent().getCourses());
+				setCourseList(DataEntry.state.getCurrentEvent().getCourses());
 				courseSelect.setSelectedIndex(0);
 			}
 			else if (cmd.startsWith("course"))
 			{
-				Database.d.setCurrentCourse((Integer)o);
+				DataEntry.state.setCurrentCourse((Integer)o);
 				Messenger.sendEvent(MT.COURSE_CHANGED, null);
 				groupSelect.setSelectedIndex(groupSelect.getSelectedIndex());
 			}
 			else if (cmd.startsWith("group"))
 			{
-				Database.d.setCurrentRunGroup((Integer)o);
+				DataEntry.state.setCurrentRunGroup((Integer)o);
 				Messenger.sendEvent(MT.RUNGROUP_CHANGED, null);
 			}
 		}
 		else if (cmd.endsWith("Print"))
 		{
 			if (cmd.startsWith("results"))
-				BrowserControl.printGroupResults(new int[] {Database.d.getCurrentRunGroup()});
+				BrowserControl.printGroupResults(DataEntry.state, new int[] {DataEntry.state.getCurrentRunGroup()});
 		}
 	}
 }

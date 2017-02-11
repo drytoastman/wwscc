@@ -8,11 +8,14 @@
 
 package org.wwscc.storage;
 
+import java.sql.Timestamp;
+import java.util.UUID;
+
 public class AnnouncerData
 {
-	protected int id;
-	protected int eventid;
-	protected int carid;
+	//protected int id;
+	protected UUID eventid;
+	protected UUID carid;
 	protected String classcode;
 	protected int lastcourse;
 	protected double rawdiff;
@@ -23,7 +26,7 @@ public class AnnouncerData
 	protected double potentialdiffpoints;
 	protected int oldpospoints;
 	protected int potentialpospoints;
-	protected SADateTime updated;
+	protected Timestamp updated;
 	
 	public AnnouncerData()
 	{

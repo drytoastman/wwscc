@@ -48,12 +48,13 @@ LANGUAGE plpgsql;
 
 
 CREATE TABLE settings (
-    entry      JSONB       NOT NULL,   
+    name       VARCHAR     NOT NULL,
+    val        VARCHAR     NOT NULL,
     modified   TIMESTAMP   NOT NULL DEFAULT now()
 );
 REVOKE ALL ON settings FROM public;
 CREATE TRIGGER settingsmod AFTER INSERT OR UPDATE OR DELETE ON settings FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
-COMMENT ON TABLE settings IS 'settings includes any boolean, integer, double preferences for the series, this is a single table entry with a JSON object';
+COMMENT ON TABLE settings IS 'settings includes any boolean, integer, double preferences for the series, sql keeps us in string format';
 
 
 CREATE TABLE indexlist (
@@ -141,7 +142,7 @@ CREATE TABLE runs (
     PRIMARY KEY (eventid, carid, course, run)
 );
 CREATE INDEX ON runs(eventid);
-CREATE INDEX ON runs(carid);
+CREATE INDEX ON runs(eventid, carid, course, run);
 REVOKE ALL ON runs FROM public;
 CREATE TRIGGER runmod AFTER INSERT OR UPDATE OR DELETE ON runs FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE runs IS 'The runs in this series. Attr includes reaction, sixty, segments[n] (What about net, ordering values?)';
