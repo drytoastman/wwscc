@@ -8,65 +8,84 @@
 
 package org.wwscc.storage;
 
+import java.util.UUID;
+
 import org.wwscc.challenge.Id;
+import org.wwscc.util.IdGenerator;
 
 /**
  * Represents the 'regular' run data for a single side run taken during
  * a challenge run
  */
-public class ChallengeRun extends Run
+public class ChallengeRun
 {
-	private int challengeid; // comes from eventid mux
-	private int round;  // comes from eventid mux
+	protected UUID   challengeid, carid; 
+	protected double reaction, sixty, raw;
+	protected int    round, course, cones, gates;
+	protected String status;
 
 	public ChallengeRun()
 	{
-		super();
-		challengeid = 0;
-		round = 0;
+		challengeid = IdGenerator.nullid;
+		carid = IdGenerator.nullid;
+		reaction = -1;
+		sixty = -1;
+		raw = -1;
+		round = -1;
+		course = -1;
+		cones = 0;
+		gates = 0;
+		status = "";
 	}
 
 	public ChallengeRun(Run r)
 	{
 		this();
-		id = r.id;
-		carid = r.carid;
-		eventid = r.eventid;
-		course = r.course;
-		run = r.run;
-		cones = r.cones;
-		status = r.status;
-		reaction = r.reaction;
-		sixty = r.sixty;
-		raw = r.raw;
-		net = r.net;
-		fixids();
-		compute(1.0);
+		carid    = r.carid;
+		reaction = r.getReaction();
+		sixty    = r.getSixty();
+		raw      = r.getRaw();
+		course   = r.course;
+		cones    = r.cones;
+		gates    = r.gates;
+		status   = r.status;
 	}
 
 	public ChallengeRun(double reaction, double sixty , double time, int cones, int gates, String status)
 	{
-		super(reaction, sixty, time, cones, gates, status);
-		fixids();
+		this();
+		this.reaction = reaction;
+		this.sixty    = sixty;
+		this.raw      = time;
+		this.cones    = cones;
+		this.gates    = gates;
+		this.status   = status;
 	}
 
-	protected void fixids()
-	{
-		challengeid = (eventid >> 16) & 0x0FFFF;
-		round = eventid & 0x0FFF;
-	}
 
 	public void setChallengeRound(Id.Run id)
 	{
 		challengeid = id.challengeid;
 		round = id.round;
 		course = id.isLeft() ? Run.LEFT : Run.RIGHT;
-		eventid = ((challengeid & 0x0FFFF) << 16) + (round & 0x0FFFF);
 	}
 	
-	public int getChallengeId() { return challengeid; }
+	public UUID getChallengeId() { return challengeid; }
 	public int getRound() { return round; }
+	public int getCones() { return cones; }
+	public int getGates() { return gates; }
+	public double getRaw() { return raw; }
+	public double getReaction() { return reaction; }
+	public double getSixty() { return sixty; }
+	public String getStatus() { return status; }
+	public double getNet() { return Double.NaN; } // FINISH ME
 	
+	public boolean isOK()
+	{
+		if (status == null) return false;
+		return status.equals("OK");
+	}
+
 	public int statusLevel()
 	{
 		if (status.equals("RL") || status.equals("NS")) return 2;

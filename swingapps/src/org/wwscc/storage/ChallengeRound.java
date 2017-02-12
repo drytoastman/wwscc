@@ -8,8 +8,11 @@
 
 package org.wwscc.storage;
 
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.wwscc.util.IdGenerator;
 
 /**
  *
@@ -18,8 +21,7 @@ public class ChallengeRound
 {
 	private static Logger log = Logger.getLogger("org.wwscc.storage.ChallengeRound");
 
-	protected int id;
-	protected int challengeid;
+	protected UUID challengeid;
 	protected int round;
 	protected boolean swappedstart;
 	protected RoundEntrant car1;
@@ -27,12 +29,12 @@ public class ChallengeRound
 
 	public ChallengeRound()
 	{
-		challengeid = -1;
+		challengeid = IdGenerator.generateId();
 		round = -1;
 		swappedstart = false;
 	}
 
-	public ChallengeRound(int challenge, int rnd)
+	public ChallengeRound(UUID challenge, int rnd)
 	{
 		challengeid = challenge;
 		round = rnd;
@@ -41,8 +43,7 @@ public class ChallengeRound
 		car2 = new RoundEntrant();
 	}
 
-	public int getId() { return id; }
-	public int getChallengeId() { return challengeid; }
+	public UUID getChallengeId() { return challengeid; }
 	public int getRound() { return round; }
 	public RoundEntrant getTopCar() { return car1; }
 	public RoundEntrant getBottomCar() { return car2; }
@@ -104,13 +105,13 @@ public class ChallengeRound
 	 */
 	public static class RoundEntrant
 	{
-		protected int carid;
+		protected UUID carid;
 		protected double dial, result, newdial;
 		private ChallengeRun left, right;
 
 		public RoundEntrant()
 		{
-			carid = -1;
+			carid = new UUID(0,0);
 			left = null;
 			right = null;
 			dial = 0.0;
@@ -118,7 +119,7 @@ public class ChallengeRound
 			newdial = 0.0;
 		}
 		
-		public void setCar(int i) { carid = i; }
+		public void setCar(UUID i) { carid = i; }
 		public void setDial(double d) { dial = d; }
 		public void setNewDial(double d) { newdial = d; }
 		
@@ -166,7 +167,7 @@ public class ChallengeRound
 
 		public boolean breakout() { return Math.abs(newdial - dial) > .0001; }
 				
-		public int getCar() { return carid; }
+		public UUID getCar() { return carid; }
 		public double getDial() { return dial; }
 		public double getResult() { return result; }
 		public double getNewDial() { return newdial; }

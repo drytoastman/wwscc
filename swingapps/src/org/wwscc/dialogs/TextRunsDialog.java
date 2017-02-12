@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import javax.swing.JTextArea;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.storage.Run;
+import org.wwscc.util.IdGenerator;
 
 /**
  * Core functions for all dialogs.
@@ -72,7 +73,7 @@ public class TextRunsDialog extends BaseDialog<List<Run>>
 				for (String rdata : line.split("\\s+"))
 				{
 					Run r = txtToRun(rdata);
-					r.updateTo(0, course, run, 0, 1.0);
+					r.updateTo(IdGenerator.nullid, IdGenerator.nullid, course, run);
 					result.add(r);
 					run++;
 				}

@@ -19,6 +19,6 @@ public class DatabaseOpenAction extends AbstractAction
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		Database.open(true, true);
+		Database.openDefault();
 	}
 }

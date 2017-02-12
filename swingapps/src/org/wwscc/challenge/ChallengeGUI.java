@@ -22,6 +22,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.storage.Database;
+import org.wwscc.util.ApplicationState;
 import org.wwscc.util.BetterViewportLayout;
 import org.wwscc.util.Logging;
 
@@ -31,6 +32,7 @@ import org.wwscc.util.Logging;
 public class ChallengeGUI extends JFrame
 {
 	private static Logger log = Logger.getLogger(BracketPane.class.getCanonicalName());
+	public static ApplicationState state = new ApplicationState();
 
 	ChallengeModel model;
 	JScrollPane bracketScroll;

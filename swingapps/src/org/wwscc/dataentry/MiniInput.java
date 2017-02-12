@@ -14,7 +14,6 @@ import javax.swing.KeyStroke;
 
 import net.miginfocom.swing.MigLayout;
 
-import org.wwscc.storage.Database;
 import org.wwscc.util.IconButton;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
@@ -138,6 +137,7 @@ public abstract class MiniInput extends JPanel implements ActionListener
 					if (carText.startsWith("C")) // filter out C if they put it in the carid field, used for barcode directly
 						carText = carText.substring(1);
 					
+					/** FINISH ME, need to deal with quick entry id somehow 
 					int carID = Integer.parseInt(carText);
 					if(!Database.d.isRegistered(carID))
 					{
@@ -152,6 +152,7 @@ public abstract class MiniInput extends JPanel implements ActionListener
 					{
 						Messenger.sendEvent(MT.CAR_ADD, carID);
 					}
+					*/
 				}
 				catch(NumberFormatException fe)
 				{

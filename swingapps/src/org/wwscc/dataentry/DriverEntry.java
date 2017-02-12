@@ -42,7 +42,7 @@ public class DriverEntry extends DriverCarPanel
 
 	public DriverEntry()
 	{
-		super();
+		super(DataEntry.state);
 		setLayout(new GridBagLayout());
 		carAddOption = true;
 
@@ -133,13 +133,13 @@ public class DriverEntry extends DriverCarPanel
 		if (cmd.equals("Add Entrant"))
 		{
 			if (selectedCar != null)
-				Messenger.sendEvent(MT.CAR_ADD, selectedCar.getId());
+				Messenger.sendEvent(MT.CAR_ADD, selectedCar.getCarId());
 		}
 
 		else if (cmd.equals("Swap Entrant"))
 		{
 			if (selectedCar != null)
-				Messenger.sendEvent(MT.CAR_CHANGE, selectedCar.getId());
+				Messenger.sendEvent(MT.CAR_CHANGE, selectedCar.getCarId());
 		}
 
 		else
@@ -228,7 +228,7 @@ public class DriverEntry extends DriverCarPanel
 			else if (value instanceof Driver)
 			{
 				Driver d = (Driver)value;
-				setText(d.getId() + ": " + d.getFullName());
+				setText(d.getDriverId() + ": " + d.getFullName());
 			}
 
 			return this;

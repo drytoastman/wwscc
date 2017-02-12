@@ -17,7 +17,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.IOException;
-import java.util.List;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,8 +37,8 @@ import org.wwscc.dialogs.DriverDialog;
 import org.wwscc.storage.Car;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Driver;
-import org.wwscc.storage.DriverField;
 import org.wwscc.storage.MetaCar;
+import org.wwscc.util.ApplicationState;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -64,12 +64,13 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	protected Driver selectedDriver;
 	protected MetaCar selectedCar;
 	
-	protected List<DriverField> driverFields;
 	protected SearchDrivers searchDrivers = new SearchDrivers();
-
-	public DriverCarPanel()
+	protected ApplicationState state;
+	
+	public DriverCarPanel(ApplicationState s)
 	{
 		super();
+		state = s;
 		setLayout(new MigLayout("", "fill"));
 
 		Messenger.register(MT.DATABASE_CHANGED, this);
@@ -122,12 +123,15 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		switch (type)
 		{
 			case DATABASE_CHANGED:
+				log.info("Finish extra fields bit\n");
+				break;
+				/*
 				try {
 					driverFields = Database.d.getDriverFields();
 				} catch (IOException ex) {
 					log.log(Level.WARNING, "Can''t load extra driver fields, editor will be hamstrung: {0}", ex);
 				}
-				break;
+				break; */
 		}
 	}
 				
@@ -163,13 +167,13 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	 * Set the car list to select a particular carid if its in the list.
 	 * @param carid  the id of the car to select
 	 */
-	public void focusOnCar(int carid)
+	public void focusOnCar(UUID carid)
 	{
 		ListModel<Car> lm = cars.getModel();
 		for (int ii = 0; ii < lm.getSize(); ii++)
 		{
 			Car c = (Car)lm.getElementAt(ii);
-			if (c.getId() == carid)
+			if (c.getCarId() == carid)
 			{
 				cars.setSelectedIndex(ii);
 				cars.ensureIndexIsVisible(ii);
@@ -192,13 +196,13 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 			return;
 
 		Vector<MetaCar> touse = new Vector<MetaCar>();
-		for (Car c : Database.d.getCarsForDriver(d.getId())) {
-			touse.add(Database.d.loadMetaCar(c));
+		for (Car c : Database.d.getCarsForDriver(d.getDriverId())) {
+			touse.add(Database.d.loadMetaCar(c, state.getCurrentEventId(), state.getCurrentCourse()));
 		}
 
 		cars.setListData(touse);
 		if (select != null)
-			focusOnCar(select.getId());
+			focusOnCar(select.getCarId());
 		else
 			cars.setSelectedIndex(0);
 	}
@@ -216,7 +220,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 
 		if (cmd.equals("New Driver"))
 		{
-			DriverDialog dd = new DriverDialog(new Driver(firstSearch.getText(), lastSearch.getText()), driverFields);
+			DriverDialog dd = new DriverDialog(new Driver(firstSearch.getText(), lastSearch.getText()));
 			dd.doDialog("New Driver", new DialogFinisher<Driver>() {
 				@Override
 				public void dialogFinished(Driver d) {
@@ -233,7 +237,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 
 		else if (cmd.equals("Edit Driver"))
 		{
-			DriverDialog dd = new DriverDialog(selectedDriver, driverFields);
+			DriverDialog dd = new DriverDialog(selectedDriver);
 			dd.doDialog("Edit Driver", new DialogFinisher<Driver>() {
 				@Override
 				public void dialogFinished(Driver d) {
@@ -269,11 +273,11 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 					{
 						if (selectedDriver != null)
 						{
-							c.setDriverId(selectedDriver.getId());
+							c.setDriverId(selectedDriver.getDriverId());
 							Database.d.newCar(c);
 							reloadCars(c);
 							if (cd.getAddToRunOrder())
-								Messenger.sendEvent(MT.CAR_ADD, c.getId());
+								Messenger.sendEvent(MT.CAR_ADD, c.getCarId());
 						}
 					}
 					catch (IOException ioe)
@@ -346,7 +350,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	public static String driverDisplay(Driver d)
 	{
 		StringBuilder ret = new StringBuilder();
-		ret.append(d.getFullName()).append("  (driverid=").append(d.getId()).append(")\n");
+		ret.append(d.getFullName()).append("  (driverid=").append(d.getDriverId()).append(")\n");
 		ret.append(d.getAddress()).append("\n");
 		ret.append(String.format("%s, %s %s\n", d.getCity(), d.getState(), d.getZip()));
 		ret.append(d.getEmail()).append("\n");
@@ -360,7 +364,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	{
 		StringBuilder ret = new StringBuilder();
 		ret.append(c.getClassCode()).append(" ").append(c.getIndexStr()).append(" #").append(c.getNumber());
-		ret.append("  (carid=").append(c.getId()).append(")\n");
+		ret.append("  (carid=").append(c.getCarId()).append(")\n");
 		ret.append(c.getYear() + " " + c.getMake() + " " + c.getModel() + " " + c.getColor());
 		return ret.toString();
 	}

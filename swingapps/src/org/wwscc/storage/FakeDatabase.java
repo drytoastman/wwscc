@@ -18,20 +18,10 @@ import java.util.List;
 public class FakeDatabase extends SQLDataInterface
 {
 	ResultData fakedata = new ResultData();
-	public FakeDatabase()
-	{
-		host = "127.0.0.1";
-		seriesName = "none";
-		currentEvent = new Event();
-		currentCourse = 1;
-		currentRunGroup = 1;
-		currentChallengeId = 1;
-	}
+	public FakeDatabase() {}
 
 	@Override
 	public void close() {}
-	@Override
-	public void setCurrentEvent(Event e) {};
 	@Override
 	public void start() throws IOException {}
 	@Override
@@ -46,6 +36,8 @@ public class FakeDatabase extends SQLDataInterface
 	public void executeGroupUpdate(String sql, List<List<Object>> args) throws IOException {}
 	@Override
 	public ResultData executeSelect(String sql, List<Object> args) throws IOException { return fakedata; }
+	//@Override
+	//public <T> List<T> executeSelect(String key, List<Object> args, Constructor<T> objc) throws SQLException { return new ArrayList<T>(); }
 	@Override
 	protected ResultData getCarAttributesImpl(String attr) throws IOException { return fakedata; }
 }

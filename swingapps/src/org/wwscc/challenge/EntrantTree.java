@@ -10,6 +10,7 @@ package org.wwscc.challenge;
 
 import java.awt.datatransfer.Transferable;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,18 +57,18 @@ public class EntrantTree extends CarTree implements MessageListener
 		{
 			case CHALLENGE_CHANGED:
 			case ENTRANTS_CHANGED:
-				int challengeid = Database.d.getCurrentChallenge();
-				Collection<Integer> exclude;
+				UUID challengeid = ChallengeGUI.state.getCurrentChallengeId();
+				Collection<UUID> exclude;
 				Collection<Entrant> reg;
-				if (challengeid > 0)
+				if (challengeid != new UUID(0,0))
 				{
-					reg = Database.d.getEntrantsByEvent();
+					reg = Database.d.getEntrantsByEvent(null);
 					exclude = Database.d.getCarIdsByChallenge(challengeid);
 				}
 				else
 				{
 					reg = new Vector<Entrant>();
-					exclude = new Vector<Integer>();
+					exclude = new Vector<UUID>();
 				}
 
 				makeTree(reg, exclude);
@@ -106,7 +107,7 @@ public class EntrantTree extends CarTree implements MessageListener
 				if (o instanceof DefaultMutableTreeNode)
 				{
 					Entrant e = (Entrant)((DefaultMutableTreeNode)o).getUserObject();
-					Dialins dial = Database.d.loadDialins();
+					Dialins dial = Database.d.loadDialins(null);
 					return new BracketEntry.Transfer(new BracketEntry(null, e, dial.getDial(e.getCarId(), useBonusDialins)));
 				}
 			}

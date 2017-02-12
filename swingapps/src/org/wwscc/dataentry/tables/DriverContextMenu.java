@@ -15,9 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
@@ -25,6 +23,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import org.wwscc.components.UnderlineBorder;
+import org.wwscc.dataentry.DataEntry;
 import org.wwscc.dialogs.TextRunsDialog;
 import org.wwscc.storage.Car;
 import org.wwscc.storage.Database;
@@ -77,7 +76,7 @@ class DriverContextMenu extends MouseAdapter
 		if (target.getSelectedColumn() != col) return;
 
 		Entrant selectedE = (Entrant)target.getValueAt(row, col);			
-		List<Car> registered = Database.d.getRegisteredCars(selectedE.getDriverId());
+		List<Car> registered = Database.d.getRegisteredCars(selectedE.getDriverId(), null);
 		List<Car> allcars = Database.d.getCarsForDriver(selectedE.getDriverId());
 
 		menu = new JPopupMenu("");
@@ -88,7 +87,7 @@ class DriverContextMenu extends MouseAdapter
 		addTitle("Swap to Unregistered Car");
 		boolean removelast = true;
 		for (Car c : allcars) {
-			if (!registered.contains(c) && !Database.d.isInOrder(c.getId())) {
+			if (!registered.contains(c) && !Database.d.isInOrder(DataEntry.state.getCurrentEventId(), c.getCarId(), DataEntry.state.getCurrentCourse())) {
 				addCarAction(c);
 				removelast = false;
 			}
@@ -122,10 +121,10 @@ class DriverContextMenu extends MouseAdapter
 		lbl.setFont(itemFont);
 		lbl.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Messenger.sendEvent(MT.CAR_CHANGE, c.getId());
+				Messenger.sendEvent(MT.CAR_CHANGE, c.getCarId());
 		}});
 		
-		if (Database.d.isInOrder(c.getId()))
+		if (Database.d.isInOrder(DataEntry.state.getCurrentEventId(), c.getCarId(), DataEntry.state.getCurrentCourse()))
 		{
 			lbl.setEnabled(false);
 			lbl.setForeground(superLightGray);
@@ -151,7 +150,7 @@ class PaidAction extends AbstractAction
 	public void actionPerformed(ActionEvent e)
 	{
 		try {
-			Database.d.registerCar(entrant.getCarId(), true, true);
+			Database.d.registerCar(null, entrant.getCarId(), true, true);
 			Messenger.sendEvent(MT.RUNGROUP_CHANGED, null);
 		} catch (IOException ioe) {
 			log.severe("Failed to mark driver paid: " + ioe.getMessage());
@@ -162,7 +161,7 @@ class PaidAction extends AbstractAction
 
 class TextRunAction extends AbstractAction
 {
-	Entrant entrant;	
+	Entrant entrant;
 	public TextRunAction(Entrant e)
 	{
 		super("Add Text Runs");
@@ -176,27 +175,12 @@ class TextRunAction extends AbstractAction
 		trd.doDialog("Textual Run Input", null);
 		List<Run> runs = trd.getResult();
 		if (runs == null) return;
-		Map<Integer, Run> course1, course2;
-		course1 = new HashMap<Integer,Run>();
-		course2 = new HashMap<Integer,Run>();
 
-		Database.d.setCurrentCourse(1);
-		Entrant ent = Database.d.loadEntrant(entrant.getCarId(), false);
 		for (Run r : trd.getResult())
 		{
-			r.updateTo(Database.d.getCurrentEvent().getId(), r.course(), r.run(), entrant.getCarId(), ent.getIndex());
-			if (r.course() == 2) course2.put(r.run(), r); else course1.put(r.run(), r);
+			r.updateTo(DataEntry.state.getCurrentEventId(), entrant.getCarId(), r.course(), r.run());
+			Database.d.setRun(r);
 		}
-
-		ent.setRuns(course1);
-		if (course2.size() > 0)
-		{
-			Database.d.setCurrentCourse(2);
-			ent = Database.d.loadEntrant(entrant.getCarId(), false);
-			ent.setRuns(course2);
-		}
-
-		Database.d.setCurrentCourse(1);
 		Messenger.sendEvent(MT.RUNGROUP_CHANGED, 1);
 	}
 }

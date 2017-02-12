@@ -15,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,12 +85,12 @@ public class ClassTree extends CarTree implements MessageListener, ActionListene
 		{
 			case COURSE_CHANGED:
 			case ENTRANTS_CHANGED:
-				List<Entrant> reg = Database.d.getRegisteredEntrants();
-				Set<Integer> runorder = Database.d.getCarIdsForCourse();
+				List<Entrant> reg = Database.d.getRegisteredEntrants(DataEntry.state.getCurrentEventId());
+				Set<UUID> runorder = Database.d.getCarIdsForCourse(DataEntry.state.getCurrentEventId(), DataEntry.state.getCurrentCourse());
 				makeTree(reg, runorder);
 				break;
 			case RUNGROUP_CHANGED:
-				log.log(Level.FINE, "group changed: {0}", Database.d.getRunGroupMapping());
+				log.log(Level.FINE, "group changed: {0}", o);
 				break;
 		}
 	}

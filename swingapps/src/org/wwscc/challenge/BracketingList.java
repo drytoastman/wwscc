@@ -15,6 +15,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -109,7 +111,7 @@ public class BracketingList extends BaseDialog<List<BracketEntry>> implements Ch
 			ret.add(model.getBracketEntry(table.convertRowIndexToModel(index)));
 
 		// sort by their net times
-		final Dialins dial = Database.d.loadDialins();
+		final Dialins dial = Database.d.loadDialins(null);
 		Collections.sort(ret, new Comparator<BracketEntry>() {
 			public int compare(BracketEntry o1, BracketEntry o2) {
 				return Double.compare(dial.getNet(o1.entrant.getCarId()), dial.getNet(o2.entrant.getCarId()));
@@ -162,8 +164,8 @@ class BracketingListModel extends AbstractTableModel
 	
 	public void reload(boolean useOpen, boolean useLadies, boolean bonusStyle)
 	{
-		Map<Integer, Entrant> entrants = new HashMap<Integer, Entrant>();
-		for (Entrant e : Database.d.getEntrantsByEvent())
+		Map<UUID, Entrant> entrants = new HashMap<UUID, Entrant>();
+		for (Entrant e : Database.d.getEntrantsByEvent(null))
 		{
 			if ((useLadies && (e.getClassCode().startsWith("L"))) ||
 				(useOpen && (!e.getClassCode().startsWith("L"))))
@@ -171,9 +173,9 @@ class BracketingListModel extends AbstractTableModel
 		}
 
 		data = new ArrayList<Store>();
-		Dialins d = Database.d.loadDialins();
+		Dialins d = Database.d.loadDialins(null);
 		int pos = 1;
-		for (Integer id : d.getNetOrder())
+		for (UUID id : d.getNetOrder())
 		{
 			Store s = new Store();
 			if (!entrants.containsKey(id))

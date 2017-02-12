@@ -5,6 +5,8 @@
 
 package org.wwscc.storage;
 
+import org.json.simple.parser.ParseException;
+
 /**
  *
  * @author bwilson
@@ -12,5 +14,5 @@ package org.wwscc.storage;
 public interface Serial
 {
 	public String encode();
-	public void decode(String s);
+	public void decode(String s) throws ParseException;
 }

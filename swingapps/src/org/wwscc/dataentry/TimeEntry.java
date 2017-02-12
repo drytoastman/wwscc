@@ -57,7 +57,6 @@ import net.miginfocom.swing.MigLayout;
 import org.wwscc.bwtimer.TimeStorage;
 import org.wwscc.bwtimer.TimerModel;
 import org.wwscc.dialogs.SimpleFinderDialog;
-import org.wwscc.storage.Database;
 import org.wwscc.storage.Run;
 import org.wwscc.timercomm.SerialDataInterface;
 import org.wwscc.timercomm.TimerClient;
@@ -77,6 +76,7 @@ import org.wwscc.util.TimeTextField;
 public class TimeEntry extends JPanel implements ActionListener, ListSelectionListener, ListDataListener, MessageListener, KeyListener
 {
 	private static final Logger log = Logger.getLogger(TimeEntry.class.getCanonicalName());
+	public static final int SEGMENTS = 5;
 
 	/**
 	 * The timer input mode
@@ -170,9 +170,9 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 
 		reaction = new TimeTextField("", 6);
 		sixty = new TimeTextField("", 6);
-		segVal = new TimeTextField[Run.SEGMENTS];
-		segLabel = new JLabel[Run.SEGMENTS];
-		for (int ii = 0; ii < Run.SEGMENTS; ii++)
+		segVal = new TimeTextField[SEGMENTS];
+		segLabel = new JLabel[SEGMENTS];
+		for (int ii = 0; ii < SEGMENTS; ii++)
 		{
 			segVal[ii] = new TimeTextField("", 6);
 			segLabel[ii] = new JLabel("Seg" + (ii+1));
@@ -192,7 +192,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 
 		for (JComponent c : new JComponent[] { reaction, sixty, time, cones, gates })
 			c.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, s);
-		for (int ii = 0; ii < Run.SEGMENTS; ii++)
+		for (int ii = 0; ii < SEGMENTS; ii++)
 			segVal[ii].setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, s);
 		
 		registerKeyboardAction(
@@ -233,7 +233,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		add(reaction, "wrap");
 		add(sixtyLabel, "");
 		add(sixty, "wrap");
-		for (int ii = 0; ii < Run.SEGMENTS; ii++)
+		for (int ii = 0; ii < SEGMENTS; ii++)
 		{
 			add(segLabel[ii], "");
 			add(segVal[ii], "wrap");
@@ -359,7 +359,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			}
 
 			/* Reset switchable components */
-			for (int ii = 0; ii < Run.SEGMENTS; ii++)
+			for (int ii = 0; ii < SEGMENTS; ii++)
 			{
 				segVal[ii].setVisible(false);
 				segLabel[ii].setVisible(false);
@@ -443,7 +443,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 
 			/* Create a run from the text boxes and send */
 			Run val = new Run(reaction.getTime(), sixty.getTime(), dTime, cones.getInt(), gates.getInt(), sStatus);
-			for (int ii = 0; ii < Run.SEGMENTS; ii++)
+			for (int ii = 0; ii < SEGMENTS; ii++)
 				val.setSegment(ii+1, segVal[ii].getTime());
 
 			Messenger.sendEventNow(MT.TIME_ENTERED, val);
@@ -567,7 +567,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	{
 		reaction.setTime(0);
 		sixty.setTime(0);
-		for (int ii = 0; ii < Run.SEGMENTS; ii++)
+		for (int ii = 0; ii < SEGMENTS; ii++)
 			segVal[ii].setTime(0);
 		time.setText("");
 		cones.setInt(0);
@@ -585,7 +585,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	{
 		reaction.setTime(r.getReaction());
 		sixty.setTime(r.getSixty());
-		for (int ii = 0; ii < Run.SEGMENTS; ii++)
+		for (int ii = 0; ii < SEGMENTS; ii++)
 		{
 			double d = r.getSegment(ii+1);
 			if (d > 0)
@@ -643,7 +643,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				break;
 				
 			case EVENT_CHANGED:
-				if (Database.d.getCurrentEvent().isPro())
+				if (DataEntry.state.getCurrentEvent().isPro())
 				{
 					reaction.setVisible(true);
 					reactionLabel.setVisible(true);
@@ -662,7 +662,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 			case COURSE_CHANGED:
 				if (activeModel != null)
 					activeModel.removeListDataListener(this);
-				if (Database.d.getCurrentCourse() == 2)
+				if (DataEntry.state.getCurrentCourse() == 2)
 					activeModel = course2Model;
 				else
 					activeModel = defaultModel;

@@ -9,12 +9,9 @@
 
 package org.wwscc.registration;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Logger;
-
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -25,7 +22,6 @@ import javax.swing.border.BevelBorder;
 import net.miginfocom.swing.MigLayout;
 
 import org.wwscc.components.CurrentDatabaseLabel;
-import org.wwscc.storage.ChangeTracker;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
 import org.wwscc.util.MT;
@@ -36,8 +32,6 @@ import org.wwscc.util.Prefs;
 
 class SelectionBar extends JPanel implements ActionListener, MessageListener
 {
-	private static Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
-
 	JComboBox<Event> eventSelect;
 	JCheckBox lock;
 	JLabel count;
@@ -47,7 +41,6 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		super();
 
 		Messenger.register(MT.DATABASE_CHANGED, this);
-		Messenger.register(MT.TRACKING_CHANGE_MADE, this);
 		
 		setLayout(new MigLayout("ins 2, center, gap 4"));
 		setBorder(new BevelBorder(0));
@@ -79,21 +72,6 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		add(cl, "gap left 25");
 		add(count, "");
 	}
-
-	private void updateCountLabel()
-	{
-		ChangeTracker tracker = Database.d.getChangeTracker();
-		if (tracker != null)
-		{
-			count.setText("" + tracker.size());
-			count.setForeground(Color.BLACK);
-		}
-		else
-		{
-			count.setText("Not Tracking");
-			count.setForeground(Color.RED);
-		}
-	}
 	
 	@Override
 	public void event(MT type, Object o)
@@ -101,14 +79,6 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		switch (type)
 		{
 			case DATABASE_CHANGED:
-				if (Database.file != null)
-				{
-					try {
-						Database.d.setChangeTracker(new ChangeTracker(Database.d.getCurrentSeries()));
-					} catch (Exception e) {
-						log.warning("Unabled to start change tracker: " + e);
-					}
-				}
 				eventSelect.setModel(new DefaultComboBoxModel<Event>(Database.d.getEvents().toArray(new Event[0])));
 				int select = Prefs.getEventId(0);
 				if (select < eventSelect.getItemCount())
@@ -116,11 +86,6 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				else if (eventSelect.getItemCount() > 0)
 					eventSelect.setSelectedIndex(0);
 				
-				updateCountLabel();
-				break;
-				
-			case TRACKING_CHANGE_MADE:
-				updateCountLabel();
 				break;
 		}
 	}
@@ -134,8 +99,8 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		if (e.getActionCommand().equals("eventChange"))
 		{
 			JComboBox<?> cb = (JComboBox<?>)e.getSource();
-			Database.d.setCurrentEvent((Event)cb.getSelectedItem());
-			Database.d.setCurrentCourse(1);
+			Registration.state.setCurrentEvent((Event)cb.getSelectedItem());
+			Registration.state.setCurrentCourse(1);
 			Messenger.sendEvent(MT.EVENT_CHANGED, null);
 			Prefs.setEventId(eventSelect.getSelectedIndex());
 		}

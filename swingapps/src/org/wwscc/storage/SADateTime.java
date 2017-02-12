@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * reading/writing of the SQLAlchmey formatting via a wrapper around
  * Calendar.
  */
-public class SADateTime implements Serializable
+class SADateTime implements Serializable
 {
 	private static final long serialVersionUID = -4131991807546111988L;
 

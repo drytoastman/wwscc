@@ -17,7 +17,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
-import javax.swing.FocusManager;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -31,17 +30,12 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import org.wwscc.actions.BarcodeScannerOptionsAction;
-import org.wwscc.actions.DatabaseCopyAction;
 import org.wwscc.actions.DatabaseOpenAction;
 import org.wwscc.actions.QuitAction;
 import org.wwscc.barcodes.BarcodeScannerWatcher;
-import org.wwscc.dialogs.DatabaseDialog;
-import org.wwscc.registration.attendance.Attendance;
 import org.wwscc.registration.attendance.AttendancePanel;
-import org.wwscc.registration.changeviewer.ChangeViewer;
 import org.wwscc.storage.Database;
-import org.wwscc.storage.RemoteHTTPConnection;
-import org.wwscc.util.CancelException;
+import org.wwscc.util.ApplicationState;
 import org.wwscc.util.Logging;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
@@ -51,6 +45,7 @@ import org.wwscc.util.Prefs;
 public class Registration extends JFrame
 {
 	private static final Logger log = Logger.getLogger(Registration.class.getCanonicalName());
+	public static final ApplicationState state = new ApplicationState();
 
 	SelectionBar setupBar;
 	EntryPanel driverEntry;
@@ -76,7 +71,6 @@ public class Registration extends JFrame
 
 		JMenu file = new JMenu("File");
 		file.add(new DatabaseOpenAction());
-		file.add(new DatabaseCopyAction());
 		file.add(new JSeparator());
 		file.add(new QuitAction());
 		
@@ -89,7 +83,6 @@ public class Registration extends JFrame
 		options.add(new BarcodeScannerOptionsAction());
 		
 		JMenu attendance = new JMenu("Attendance");
-		attendance.add(new AttendanceDownloadAction());
 		attendance.add(new AttendanceConfigureAction());
 		attendance.add(new JCheckBoxMenuItem(new AttendanceShowAction()));
 		
@@ -97,8 +90,6 @@ public class Registration extends JFrame
 //		tools.add(new DriverMergingAction());
 
 		JMenu merge = new JMenu("Database Merging");
-		merge.add(new ChangeViewerAction());
-		merge.add(new LocalDatabaseCopyAction());
 		
 		JMenuBar bar = new JMenuBar();
 		bar.add(file);
@@ -136,13 +127,6 @@ public class Registration extends JFrame
 		}
 	}
 	
-	
-	final static class ChangeViewerAction extends AbstractAction
-	{
-		public ChangeViewerAction() { super("Open Change Viewer"); }
-		public void actionPerformed(ActionEvent e) {  new ChangeViewer(Database.d.getCurrentSeries()); }
-	}
-
 /*
 	final static class DriverMergingAction extends AbstractAction
 	{
@@ -150,25 +134,6 @@ public class Registration extends JFrame
 		public void actionPerformed(ActionEvent e) {  new DriverMerger(); }
 	}
 */
-	
-	final static class AttendanceDownloadAction extends AbstractAction
-	{
-		public AttendanceDownloadAction() { super("Download Attendance History"); }
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			new Thread(new Runnable() {
-				public void run() {
-					try {						
-						Attendance.getAttendance(Database.getHost());
-					} catch (CancelException ce) {
-					} catch (Exception e1) {
-						log.severe("Failed to download attendance: " + e1);
-					}
-				}
-			}).start();
-		}
-	}
 	
 	final static class AttendanceConfigureAction extends AbstractAction
 	{
@@ -206,25 +171,7 @@ public class Registration extends JFrame
 			}
 		}
 	}
-	
-	final static class LocalDatabaseCopyAction extends AbstractAction
-	{
-		public LocalDatabaseCopyAction() { super("Get Fresh Copy"); }
-		public void actionPerformed(ActionEvent e)
-		{
-			try
-			{
-				String spec[] = DatabaseDialog.netLookup("Get New Copy From Remote", Prefs.getMergeHost()+"/"+Database.d.getCurrentSeries());
-				Database.download(new RemoteHTTPConnection(spec[0]), spec[1], false);
-				JOptionPane.showMessageDialog(FocusManager.getCurrentManager().getActiveWindow(), "Copy complete");
-			} catch (CancelException ce) {
-				return;
-			} catch (Exception bige) {
-				log.log(Level.SEVERE, "Copy failed: " + bige.getMessage(), bige);
-			}
-		}
-	}
-			
+				
 	/**
 	 * Main
 	 *
