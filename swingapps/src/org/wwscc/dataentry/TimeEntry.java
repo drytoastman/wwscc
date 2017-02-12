@@ -251,6 +251,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 
 		switchTimerMode(Mode.OFF);
 		
+		timeList.addKeyListener(this);
 		time.addKeyListener(this);
 		cones.addKeyListener(this);
 		gates.addKeyListener(this);
@@ -688,7 +689,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	public void keyTyped(KeyEvent e)
 	{
 		Object o = e.getSource();
-		if(o instanceof JTextField || o == enter)
+		if(o instanceof JTextField || o == enter || o == timeList)
 		{
 			int increment = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == ActionEvent.SHIFT_MASK) ? -1 : 1;
 			
