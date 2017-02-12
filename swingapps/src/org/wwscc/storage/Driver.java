@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class Driver implements Serializable
+public class Driver implements Serializable, Comparable<Driver>
 {
 	private static final long serialVersionUID = -5960219850370470938L;
 	
@@ -113,6 +113,17 @@ public class Driver implements Serializable
 	public int hashCode()
 	{
 		return id;
+	}
+
+	@Override
+	public int compareTo(Driver d)
+	{
+		return (firstname + lastname).toLowerCase().compareTo((d.firstname + d.lastname).toLowerCase());
+	}
+	
+	public String toString()
+	{
+		return firstname + " " + lastname;
 	}
 	
 }
