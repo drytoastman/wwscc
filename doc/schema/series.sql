@@ -1,8 +1,9 @@
 
-CREATE USER <seriesname> PASSWORD '<password>';
+CREATE USER <seriesname> PASSWORD '<seriesname>';
 CREATE SCHEMA <seriesname> AUTHORIZATION <seriesname>;
 GRANT scorekeeper to <seriesname>;
 GRANT <seriesname> to wwwuser;
+SET search_path='<seriesname>','public';
 
 
 CREATE TABLE serieslog (
@@ -60,6 +61,7 @@ CREATE TABLE settings (
     modified   TIMESTAMP   NOT NULL DEFAULT now()
 );
 REVOKE ALL ON settings FROM public;
+GRANT  ALL ON settings TO <seriesname>;
 CREATE TRIGGER settingsmod AFTER INSERT OR UPDATE OR DELETE ON settings FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE settings IS 'settings includes any boolean, integer, double preferences for the series, sql keeps us in string format';
 
@@ -71,6 +73,7 @@ CREATE TABLE indexlist (
     modified    TIMESTAMP    NOT NULL DEFAULT now()
 );
 REVOKE ALL ON indexlist FROM public;
+GRANT  ALL ON indexlist TO <seriesname>;
 CREATE TRIGGER indexmod AFTER INSERT OR UPDATE OR DELETE ON indexlist FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE indexlist IS 'The list of indexes for this series';
 
@@ -91,6 +94,7 @@ CREATE TABLE classlist (
 );
 CREATE INDEX ON classlist(classcode);
 REVOKE ALL ON classlist FROM public;
+GRANT  ALL ON classlist TO <seriesname>;
 CREATE TRIGGER classmod AFTER INSERT OR UPDATE OR DELETE ON classlist FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE classlist IS 'The list of classes for this series';
 
@@ -114,6 +118,7 @@ CREATE TABLE events (
     modified      TIMESTAMP   NOT NULL DEFAULT now()
 );
 REVOKE ALL ON events FROM public;
+GRANT  ALL ON events TO <seriesname>;
 CREATE TRIGGER eventmod AFTER INSERT OR UPDATE OR DELETE ON events FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE events IS 'The list of events for this series, attr includes location, sponsor, host, chair, designer, segments, paypal, snail, cost, notes, doublespecial, etc';
 
@@ -131,6 +136,7 @@ CREATE INDEX ON cars(driverid);
 CREATE INDEX ON cars(classcode);
 CREATE INDEX ON cars(indexcode);
 REVOKE ALL ON cars FROM public;
+GRANT  ALL ON cars TO <seriesname>;
 CREATE TRIGGER carmod AFTER INSERT OR UPDATE OR DELETE ON cars FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE cars IS 'The cars in this series.  Attr includes year, make, model, color, tireindexed';
 
@@ -144,13 +150,14 @@ CREATE TABLE runs (
     gates    INTEGER    NOT NULL DEFAULT 0, 
     raw      FLOAT      NOT NULL, 
     status   VARCHAR(8) NOT NULL DEFAULT 'DNS', 
-	attr     JSONB      NOT NULL,
+    attr     JSONB      NOT NULL,
     modified TIMESTAMP  NOT NULL DEFAULT now(),
     PRIMARY KEY (eventid, carid, course, run)
 );
 CREATE INDEX ON runs(eventid);
 CREATE INDEX ON runs(eventid, carid, course, run);
 REVOKE ALL ON runs FROM public;
+GRANT  ALL ON runs TO <seriesname>;
 CREATE TRIGGER runmod AFTER INSERT OR UPDATE OR DELETE ON runs FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE runs IS 'The runs in this series. Attr includes reaction, sixty, segments[n] (What about net, ordering values?)';
 
@@ -164,6 +171,7 @@ CREATE TABLE registered (
 );
 CREATE INDEX ON registered(eventid);
 REVOKE ALL ON registered FROM public;
+GRANT  ALL ON registered TO <seriesname>;
 CREATE TRIGGER regmod AFTER INSERT OR UPDATE OR DELETE ON registered FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE registered IS 'The list of cars registered for events';
 
@@ -180,6 +188,7 @@ CREATE TABLE runorder (
 CREATE INDEX getgroup ON runorder(eventid, course, rungroup);
 CREATE UNIQUE INDEX onecarpercourse ON runorder(eventid, course, carid);
 REVOKE ALL ON runorder FROM public;
+GRANT  ALL ON runorder TO <seriesname>;
 CREATE TRIGGER ordermod AFTER INSERT OR UPDATE OR DELETE ON runorder FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE runorder IS 'the ordering of cars in each runorder';
 
@@ -197,6 +206,7 @@ CREATE TABLE payments (
 CREATE INDEX ON payments(driverid);
 CREATE INDEX ON payments(eventid);
 REVOKE ALL ON payments FROM public;
+GRANT  ALL ON payments TO <seriesname>;
 CREATE TRIGGER paymentmod AFTER INSERT OR UPDATE OR DELETE ON payments FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE payments IS 'the payments that have been made online';
 
@@ -212,6 +222,7 @@ CREATE TABLE classorder (
 CREATE INDEX ON classorder(eventid);
 CREATE INDEX ON classorder(classcode);
 REVOKE ALL ON classorder FROM public;
+GRANT  ALL ON classorder TO <seriesname>;
 CREATE TRIGGER classordermod AFTER INSERT OR UPDATE OR DELETE ON classorder FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE classorder IS 'the ordering of classes in a runorder, generally only used in the Pro event for grid ordering';
 
@@ -225,6 +236,7 @@ CREATE TABLE challenges (
 );
 CREATE INDEX ON challenges(eventid);
 REVOKE ALL ON challenges FROM public;
+GRANT  ALL ON challenges TO <seriesname>;
 CREATE TRIGGER challengemod AFTER INSERT OR UPDATE OR DELETE ON challenges FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE challenges is 'The list of challenges for each ProSolo event';
 
@@ -233,19 +245,20 @@ CREATE TABLE challengerounds (
     challengeid  UUID      NOT NULL REFERENCES challenges, 
     round        INTEGER   NOT NULL,
     swappedstart BOOLEAN   NOT NULL DEFAULT FALSE, 
-    car1id       UUID      NOT NULL REFERENCES cars(carid), 
+    car1id       UUID      REFERENCES cars(carid), 
     car1dial     FLOAT     NOT NULL, 
-    car2id       UUID      NOT NULL REFERENCES cars(carid), 
+    car2id       UUID      REFERENCES cars(carid), 
     car2dial     FLOAT     NOT NULL, 
     modified     TIMESTAMP NOT NULL DEFAULT now(),
     PRIMARY KEY (challengeid, round)
 );
 CREATE INDEX ON challengerounds(challengeid);
-CREATE INDEX ON challengerounds(car1id);
-CREATE INDEX ON challengerounds(car2id);
+--CREATE INDEX ON challengerounds(car1id);
+--CREATE INDEX ON challengerounds(car2id);
 REVOKE ALL ON challengerounds FROM public;
+GRANT  ALL ON challengerounds TO <seriesname>;
 CREATE TRIGGER roundmod AFTER INSERT OR UPDATE OR DELETE ON challengerounds FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
-COMMENT ON TABLE challengerounds IS 'the list of rounds (carids, input dialin, etc) for each challenge';
+COMMENT ON TABLE challengerounds IS 'the list of rounds (carids, input dialin, etc) for each challenge, carid can be null';
 
 
 CREATE TABLE challengeruns (
@@ -265,6 +278,7 @@ CREATE TABLE challengeruns (
 );
 CREATE INDEX ON challengeruns(carid);
 REVOKE ALL ON challengeruns FROM public;
+GRANT  ALL ON challengeruns TO <seriesname>;
 CREATE TRIGGER crunmod AFTER INSERT OR UPDATE OR DELETE ON challengeruns FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 COMMENT ON TABLE challengeruns IS 'the list of runs for a challenge in a ProSolo, different from regular runs table';
 
