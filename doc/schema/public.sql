@@ -1,18 +1,7 @@
 --------------------------------------------------------------------------------------
--- Initial database creation
--- CREATE USER wwwuser WITH PASSWORD <password>;
--- CREATE USER scorekeeper WITH PASSWORD <password>;
--- GRANT scorekeeper TO wwwuser;
--- CREATE DATABASE scorekeeper WITH OWNER scorekeeper;
-
--- As superuser when creating a new series
--- CREATE USER <seriesname> PASSWORD <password>;
--- CREATE SCHEMA <seriesname> AUTHORIZATION <seriesname>;
--- GRANT scorekeeper to <seriesname>;
--- GRANT <seriesname> to wwwuser;
-
---------------------------------------------------------------------------------------
 --- Create top level results and drivers tables that every series shares
+
+CREATE EXTENSION hstore;
 
 -- Logs are specific to this machine
 CREATE TABLE driverslog (
@@ -26,12 +15,12 @@ CREATE TABLE driverslog (
     changed JSONB     NOT NULL
 );
 REVOKE ALL ON driverslog FROM public;
+GRANT  ALL ON driverslog TO scorekeeper;
 CREATE INDEX ON driverslog(logid);
 CREATE INDEX ON driverslog(time);
 COMMENT ON TABLE driverslog IS 'Change logs that are specific to this local database';
  
 
-CREATE EXTENSION hstore;
 CREATE OR REPLACE FUNCTION logdrivermods() RETURNS TRIGGER AS $body$
 DECLARE
     audit_row driverslog;
@@ -76,6 +65,7 @@ CREATE TABLE results (
     PRIMARY KEY (series, name)
 );
 REVOKE ALL ON results FROM public;
+GRANT  ALL ON results TO scorekeeper;
 -- Everyone can view results but only owner can insert, update, delete their rows
 ALTER TABLE results ENABLE ROW LEVEL SECURITY;
 CREATE POLICY all_view ON results FOR SELECT USING (true);
@@ -99,6 +89,7 @@ CREATE TABLE drivers (
 CREATE INDEX ON drivers(lower(firstname));
 CREATE INDEX ON drivers(lower(lastname));
 REVOKE ALL   ON drivers FROM public;
+GRANT  ALL   ON drivers TO scorekeeper;
 CREATE TRIGGER driversmod AFTER INSERT OR UPDATE OR DELETE ON drivers FOR EACH ROW EXECUTE PROCEDURE logdrivermods();
 COMMENT ON TABLE drivers IS 'The global list of drivers for all series';
 

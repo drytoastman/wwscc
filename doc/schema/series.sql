@@ -1,4 +1,10 @@
 
+CREATE USER <seriesname> PASSWORD '<password>';
+CREATE SCHEMA <seriesname> AUTHORIZATION <seriesname>;
+GRANT scorekeeper to <seriesname>;
+GRANT <seriesname> to wwwuser;
+
+
 CREATE TABLE serieslog (
     logid   BIGSERIAL PRIMARY KEY,
     tablen  TEXT      NOT NULL,
@@ -11,6 +17,7 @@ CREATE TABLE serieslog (
     changed JSONB     NOT NULL
 );
 REVOKE ALL ON serieslog FROM public;
+GRANT  ALL ON serieslog TO <seriesname>;
 CREATE INDEX ON serieslog(logid);
 CREATE INDEX ON serieslog(time);
 COMMENT ON TABLE serieslog is 'Change logs that are specific to this local database';

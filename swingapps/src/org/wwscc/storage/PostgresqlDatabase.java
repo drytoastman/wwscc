@@ -23,7 +23,7 @@ public class PostgresqlDatabase extends SQLDataInterface {
 	
 	public PostgresqlDatabase() throws SQLException
 	{
-		String url = "jdbc:postgresql://localhost/scorekeeper";
+		String url = "jdbc:postgresql://127.0.0.1/scorekeeper";
 		Properties props = new Properties();
 		props.setProperty("user","ww2017");
 		props.setProperty("password","ww2017");

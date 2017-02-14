@@ -99,7 +99,7 @@ public class CarDialog extends BaseDialog<Car>
 		mainPanel.add(label("Index", true), "");
 		mainPanel.add(select("indexcode", cd.getIndex(car.getIndexCode()), indexlist, indexChange), "wrap");
 
-		mainPanel.add(label("Extra Tire Index", true), "");
+		mainPanel.add(label("Tire Index", true), "");
 		mainPanel.add(checkbox("tireindexed", car.isTireIndexed()), "wrap");
 		
 		override = new JCheckBox("Override Index Restrictions (rare)");
@@ -179,7 +179,7 @@ public class CarDialog extends BaseDialog<Car>
    	    			return;
     			}
     		}
-    		labels.get("Extra Tire Index").setVisible(false);
+    		labels.get("Tire Index").setVisible(false);
     		checks.get("tireindexed").setVisible(false);
     		checks.get("tireindexed").setSelected(false);
     	}

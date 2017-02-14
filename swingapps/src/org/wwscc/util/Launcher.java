@@ -44,7 +44,6 @@ public class Launcher
 
 			
 			Prefs.setLastApplication(app);
-			LibLoader.installLibrary("sqliteintf", "database access");
 			LibLoader.installLibrary("rxtxSerial", "serial port access");
 			
 			for (String arg : args) {

@@ -32,6 +32,8 @@ public abstract class DataInterface
 	
 	/** 
 	 * update the run count for an event
+	 * @param eventid the id of the event
+	 * @param runs the number of runs to set to
 	 * @return true if update succeeded
 	 */
 	public abstract boolean updateEventRuns(UUID eventid, int runs);
