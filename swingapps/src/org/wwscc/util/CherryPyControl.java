@@ -67,4 +67,10 @@ public class CherryPyControl implements ServiceControl
 		} */
 		return false;
 	}
+
+	@Override
+	public void openlog() 
+	{
+		// TODO Auto-generated method stub
+	}
 }

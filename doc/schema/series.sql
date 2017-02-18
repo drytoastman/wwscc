@@ -19,6 +19,7 @@ CREATE TABLE serieslog (
 );
 REVOKE ALL ON serieslog FROM public;
 GRANT  ALL ON serieslog TO <seriesname>;
+GRANT  ALL ON serieslog_logid_seq TO scorekeeper;
 CREATE INDEX ON serieslog(logid);
 CREATE INDEX ON serieslog(time);
 COMMENT ON TABLE serieslog is 'Change logs that are specific to this local database';
@@ -100,7 +101,7 @@ COMMENT ON TABLE classlist IS 'The list of classes for this series';
 
 
 CREATE TABLE events (
-    eventid       UUID        PRIMARY KEY, 
+    eventid       SERIAL      PRIMARY KEY, 
     name          TEXT        NOT NULL, 
     date          DATE        NOT NULL, 
     regopened     TIMESTAMP   NOT NULL DEFAULT now(), 
@@ -142,7 +143,7 @@ COMMENT ON TABLE cars IS 'The cars in this series.  Attr includes year, make, mo
 
 
 CREATE TABLE runs (
-    eventid  UUID       NOT NULL REFERENCES events, 
+    eventid  INTEGER    NOT NULL REFERENCES events, 
     carid    UUID       NOT NULL REFERENCES cars, 
     course   INTEGER    NOT NULL, 
     run      INTEGER    NOT NULL, 
@@ -155,7 +156,6 @@ CREATE TABLE runs (
     PRIMARY KEY (eventid, carid, course, run)
 );
 CREATE INDEX ON runs(eventid);
-CREATE INDEX ON runs(eventid, carid, course, run);
 REVOKE ALL ON runs FROM public;
 GRANT  ALL ON runs TO <seriesname>;
 CREATE TRIGGER runmod AFTER INSERT OR UPDATE OR DELETE ON runs FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
@@ -163,7 +163,7 @@ COMMENT ON TABLE runs IS 'The runs in this series. Attr includes reaction, sixty
 
 
 CREATE TABLE registered (
-    eventid  UUID       NOT NULL REFERENCES events, 
+    eventid  INTEGER    NOT NULL REFERENCES events, 
     carid    UUID       NOT NULL REFERENCES cars, 
     paid     BOOLEAN    NOT NULL DEFAULT FALSE,
     modified TIMESTAMP  NOT NULL DEFAULT now(),
@@ -177,7 +177,7 @@ COMMENT ON TABLE registered IS 'The list of cars registered for events';
 
 
 CREATE TABLE runorder (
-    eventid  UUID       NOT NULL REFERENCES events, 
+    eventid  INTEGER    NOT NULL REFERENCES events, 
     course   INTEGER    NOT NULL, 
     rungroup INTEGER    NOT NULL, 
     row      INTEGER    NOT NULL, 
@@ -199,7 +199,7 @@ CREATE TABLE payments (
     type     TEXT        NOT NULL, 
     status   TEXT        NOT NULL, 
     driverid UUID        NOT NULL REFERENCES public.drivers, 
-    eventid  UUID        NOT NULL REFERENCES events, 
+    eventid  INTEGER     NOT NULL REFERENCES events, 
     amount   FLOAT       NOT NULL,
     modified TIMESTAMP   NOT NULL DEFAULT now()
 );
@@ -212,7 +212,7 @@ COMMENT ON TABLE payments IS 'the payments that have been made online';
 
 
 CREATE TABLE classorder (
-    eventid   UUID        NOT NULL REFERENCES events, 
+    eventid   INTEGER     NOT NULL REFERENCES events, 
     classcode VARCHAR(16) NOT NULL REFERENCES classlist, 
     rungroup  INTEGER     NOT NULL, 
     gorder    INTEGER     NOT NULL, 
@@ -228,8 +228,8 @@ COMMENT ON TABLE classorder IS 'the ordering of classes in a runorder, generally
 
 
 CREATE TABLE challenges (
-    challengeid UUID        PRIMARY KEY,
-    eventid     UUID        NOT NULL REFERENCES events, 
+    challengeid SERIAL      PRIMARY KEY,
+    eventid     INTEGER     NOT NULL REFERENCES events, 
     name        TEXT        NOT NULL, 
     depth       INTEGER     NOT NULL,
     modified    TIMESTAMP   NOT NULL DEFAULT now()
@@ -242,7 +242,7 @@ COMMENT ON TABLE challenges is 'The list of challenges for each ProSolo event';
 
 
 CREATE TABLE challengerounds (
-    challengeid  UUID      NOT NULL REFERENCES challenges, 
+    challengeid  INTEGER   NOT NULL REFERENCES challenges, 
     round        INTEGER   NOT NULL,
     swappedstart BOOLEAN   NOT NULL DEFAULT FALSE, 
     car1id       UUID      REFERENCES cars(carid), 
@@ -253,8 +253,6 @@ CREATE TABLE challengerounds (
     PRIMARY KEY (challengeid, round)
 );
 CREATE INDEX ON challengerounds(challengeid);
---CREATE INDEX ON challengerounds(car1id);
---CREATE INDEX ON challengerounds(car2id);
 REVOKE ALL ON challengerounds FROM public;
 GRANT  ALL ON challengerounds TO <seriesname>;
 CREATE TRIGGER roundmod AFTER INSERT OR UPDATE OR DELETE ON challengerounds FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
@@ -262,7 +260,7 @@ COMMENT ON TABLE challengerounds IS 'the list of rounds (carids, input dialin, e
 
 
 CREATE TABLE challengeruns (
-    challengeid UUID       NOT NULL REFERENCES challenges,
+    challengeid INTEGER    NOT NULL REFERENCES challenges,
     round       INTEGER    NOT NULL,
     carid       UUID       NOT NULL REFERENCES cars,
     course      INTEGER    NOT NULL,

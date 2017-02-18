@@ -26,7 +26,8 @@ public class Run implements Serial, Cloneable
 	public static final int LEFT = 1;
 	public static final int RIGHT = 2;
 
-	protected UUID eventid, carid;
+	protected int eventid;
+	protected UUID carid;
 	protected int course, run; 
 	protected int cones, gates;
 	protected String status;
@@ -87,7 +88,7 @@ public class Run implements Serial, Cloneable
 		this.status	= status;
 
 		this.carid   = IdGenerator.nullid;
-		this.eventid = IdGenerator.nullid;
+		this.eventid = -1;
 		this.course  = -1;
 		this.run     = -1;
 		this.attr    = new JSONObject();
@@ -131,14 +132,14 @@ public class Run implements Serial, Cloneable
 	public void setStatus(String s)         { status = s; }
 	public void setCarId(UUID cid)          { carid = cid; }
 
-	public void setId(UUID eventid, int course, int run)
+	public void setId(int eventid, int course, int run)
 	{
 		this.eventid = eventid;
 		this.course = course;
 		this.run = run;
 	}
 
-	public void updateTo(UUID inEventid, UUID inCarid, int inCourse, int inRun)
+	public void updateTo(int inEventid, UUID inCarid, int inCourse, int inRun)
 	{
 		this.eventid = inEventid;
 		this.carid = inCarid;

@@ -76,7 +76,7 @@ class DriverContextMenu extends MouseAdapter
 		if (target.getSelectedColumn() != col) return;
 
 		Entrant selectedE = (Entrant)target.getValueAt(row, col);			
-		List<Car> registered = Database.d.getRegisteredCars(selectedE.getDriverId(), null);
+		List<Car> registered = Database.d.getRegisteredCars(selectedE.getDriverId(), DataEntry.state.getCurrentEventId());
 		List<Car> allcars = Database.d.getCarsForDriver(selectedE.getDriverId());
 
 		menu = new JPopupMenu("");
@@ -150,7 +150,7 @@ class PaidAction extends AbstractAction
 	public void actionPerformed(ActionEvent e)
 	{
 		try {
-			Database.d.registerCar(null, entrant.getCarId(), true, true);
+			Database.d.registerCar(DataEntry.state.getCurrentEventId(), entrant.getCarId(), true, true);
 			Messenger.sendEvent(MT.RUNGROUP_CHANGED, null);
 		} catch (IOException ioe) {
 			log.severe("Failed to mark driver paid: " + ioe.getMessage());

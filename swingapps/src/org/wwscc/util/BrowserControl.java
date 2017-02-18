@@ -42,6 +42,8 @@ public class BrowserControl
 	public static void openURL(String url)
 	{
 		try{
+			log.info("openURL request: " + url);
+			System.out.println("is supported = " + Desktop.isDesktopSupported());
 			Desktop.getDesktop().browse(new URI(url));
 		} catch (Exception ex) {
 			log.severe("Couldn't open default web browser:" + ex);
@@ -69,6 +71,7 @@ public class BrowserControl
 			Runtime r = Runtime.getRuntime();
 			String os = System.getProperty("os.name");
 			if ((os != null) && (os.startsWith("Windows"))) {
+				log.info("PrintHTML request: " + url);
 				r.exec("rundll32.exe \"C:\\Windows\\system32\\mshtml.dll\",PrintHTML \"" + url + "\"").waitFor();
 			} else {
 				openURL(url);

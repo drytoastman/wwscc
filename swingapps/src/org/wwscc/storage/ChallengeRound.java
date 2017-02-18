@@ -21,7 +21,7 @@ public class ChallengeRound
 {
 	private static Logger log = Logger.getLogger("org.wwscc.storage.ChallengeRound");
 
-	protected UUID challengeid;
+	protected int challengeid;
 	protected int round;
 	protected boolean swappedstart;
 	protected RoundEntrant car1;
@@ -29,12 +29,12 @@ public class ChallengeRound
 
 	public ChallengeRound()
 	{
-		challengeid = IdGenerator.generateId();
+		challengeid = -1;
 		round = -1;
 		swappedstart = false;
 	}
 
-	public ChallengeRound(UUID challenge, int rnd)
+	public ChallengeRound(int challenge, int rnd)
 	{
 		challengeid = challenge;
 		round = rnd;
@@ -43,7 +43,7 @@ public class ChallengeRound
 		car2 = new RoundEntrant();
 	}
 
-	public UUID getChallengeId() { return challengeid; }
+	public int getChallengeId() { return challengeid; }
 	public int getRound() { return round; }
 	public RoundEntrant getTopCar() { return car1; }
 	public RoundEntrant getBottomCar() { return car2; }

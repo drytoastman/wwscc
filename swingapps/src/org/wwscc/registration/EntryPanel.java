@@ -349,17 +349,17 @@ public class EntryPanel extends DriverCarPanel
 		{
 			if (cmd.equals(REGISTERONLY) && (selectedCar != null))
 			{
-				Database.d.registerCar(null, selectedCar.getCarId(), false, true);
+				Database.d.registerCar(Registration.state.getCurrentEventId(), selectedCar.getCarId(), false, true);
 				reloadCars(selectedCar);
 			}
 			else if (cmd.equals(REGISTERANDPAY) && (selectedCar != null))
 			{
-				Database.d.registerCar(null, selectedCar.getCarId(), true, true);
+				Database.d.registerCar(Registration.state.getCurrentEventId(), selectedCar.getCarId(), true, true);
 				reloadCars(selectedCar);
 			}
 			else if (cmd.equals(UNREGISTER) && (selectedCar != null))
 			{
-				Database.d.unregisterCar(null, selectedCar.getCarId());
+				Database.d.unregisterCar(Registration.state.getCurrentEventId(), selectedCar.getCarId());
 				reloadCars(selectedCar);
 			}
 			else if (cmd.equals(EDITNOTES) && (selectedDriver != null))
@@ -496,7 +496,7 @@ public class EntryPanel extends DriverCarPanel
 										JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
 				{
 					try {
-						Database.d.registerCar(null, c.getCarId(), true, true);
+						Database.d.registerCar(Registration.state.getCurrentEventId(), c.getCarId(), true, true);
 						reloadCars(c);
 					} catch (IOException e) {
 						log.log(Level.WARNING, "Hmm.  I wasn't able to register the car: " + e.getMessage(), e);

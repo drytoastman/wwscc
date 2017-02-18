@@ -25,8 +25,8 @@ public class PostgresqlDatabase extends SQLDataInterface {
 	{
 		String url = "jdbc:postgresql://127.0.0.1/scorekeeper";
 		Properties props = new Properties();
-		props.setProperty("user","ww2017");
-		props.setProperty("password","ww2017");
+		props.setProperty("user","pro2016");
+		props.setProperty("password","pro2016");
 		//props.setProperty("ssl","true");
 		conn = DriverManager.getConnection(url, props);
 	}

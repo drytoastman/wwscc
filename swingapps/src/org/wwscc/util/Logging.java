@@ -39,30 +39,37 @@ public class Logging
 		return dir;
 	}
 	
-	public static void logSetup(String name) throws IOException
+	public static void logSetup(String name)
 	{
-		LogManager lm = LogManager.getLogManager();
-		Logger root = lm.getLogger("");
-		Logger wwscc = Logger.getLogger("org.wwscc");
-		SingleLineFormatter formatter = new SingleLineFormatter();
-
-		ConsoleHandler ch = new ConsoleHandler();
-		ch.setFormatter(formatter);
-		ch.setLevel(Level.ALL);
-
-		FileHandler fh = new FileHandler(getLogDir().getAbsolutePath()+"/"+name+".%g.log", 1000000, 10, true);
-		fh.setFormatter(formatter);
-		fh.setLevel(Level.ALL);
-
-		AlertHandler ah = new AlertHandler();
-		ah.setLevel(Level.WARNING);
-
-		root.addHandler(ah);
-		root.addHandler(fh);
-		root.addHandler(ch);
-
-		root.setLevel(Level.WARNING);
-		wwscc.setLevel(Level.FINER);
+		try
+		{
+			LogManager lm = LogManager.getLogManager();
+			Logger root = lm.getLogger("");
+			Logger wwscc = Logger.getLogger("org.wwscc");
+			SingleLineFormatter formatter = new SingleLineFormatter();
+	
+			ConsoleHandler ch = new ConsoleHandler();
+			ch.setFormatter(formatter);
+			ch.setLevel(Level.ALL);
+	
+			FileHandler fh = new FileHandler(getLogDir().getAbsolutePath()+"/"+name+".%g.log", 1000000, 10, true);
+			fh.setFormatter(formatter);
+			fh.setLevel(Level.ALL);
+	
+			AlertHandler ah = new AlertHandler();
+			ah.setLevel(Level.WARNING);
+	
+			root.addHandler(ah);
+			root.addHandler(fh);
+			root.addHandler(ch);
+	
+			root.setLevel(Level.WARNING);
+			wwscc.setLevel(Level.FINER);
+		}
+		catch (IOException ioe)
+		{
+			JOptionPane.showConfirmDialog(null, "Unable to enable standard file logging");
+		}
 	}
 
 	public static class AlertHandler extends Handler
@@ -117,7 +124,6 @@ public class Logging
 
 		public void flush() {}
 		public void close() {}
-
 	}
 
 	public static class SingleLineFormatter extends Formatter

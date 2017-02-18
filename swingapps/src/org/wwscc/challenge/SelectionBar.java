@@ -23,7 +23,6 @@ import org.wwscc.components.CurrentDatabaseLabel;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
-import org.wwscc.util.IdGenerator;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
@@ -125,7 +124,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				
 			case NEW_CHALLENGE:
 			case CHALLENGE_DELETED:
-				List<Challenge> challenges = Database.d.getChallengesForEvent(null);
+				List<Challenge> challenges = Database.d.getChallengesForEvent(ChallengeGUI.state.getCurrentEventId());
 				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(challenges.toArray(new Challenge[0])));
 				for (Challenge c : challenges) {
 					if (c.getChallengeId() == ChallengeGUI.state.getCurrentChallengeId()) {
@@ -156,7 +155,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				ChallengeGUI.state.setCurrentEvent((Event)o);
 				Messenger.sendEvent(MT.EVENT_CHANGED, null);
 				Prefs.setEventId(eventSelect.getSelectedIndex());
-				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(Database.d.getChallengesForEvent(null).toArray(new Challenge[0])));
+				challengeSelect.setModel(new DefaultComboBoxModel<Challenge>(Database.d.getChallengesForEvent(ChallengeGUI.state.getCurrentEventId()).toArray(new Challenge[0])));
 				
 				int select = Prefs.getChallengeId(0);
 				if (select < challengeSelect.getItemCount())
@@ -165,7 +164,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 					challengeSelect.setSelectedIndex(0);
 				else
 				{
-					ChallengeGUI.state.setCurrentChallengeId(IdGenerator.nullid);
+					ChallengeGUI.state.setCurrentChallengeId(-1);
 					Messenger.sendEvent(MT.CHALLENGE_CHANGED, null);
 				}
 			}

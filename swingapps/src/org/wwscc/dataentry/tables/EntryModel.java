@@ -81,7 +81,7 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 		tableData.add(e);
 
 		try {
-			Database.d.registerCar(null, carid, false, false);
+			Database.d.registerCar(DataEntry.state.getCurrentEventId(), carid, false, false);
 		} catch (IOException ioe) {
 			log.log(Level.INFO, "Registration during car add failed: {0}" + ioe.getMessage(), ioe);
 		}

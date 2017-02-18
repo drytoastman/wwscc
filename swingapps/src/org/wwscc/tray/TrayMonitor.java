@@ -20,12 +20,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 import org.wwscc.util.CherryPyControl;
+import org.wwscc.util.Logging;
 import org.wwscc.util.PostgresqlControl;
 import org.wwscc.util.ServiceControl;
 
@@ -45,23 +49,29 @@ public class TrayMonitor implements ActionListener
     Image coneok, conewarn;
     TrayIcon trayIcon;
     PopupMenu trayPopup;
+    String cmdline[];
     
-	public TrayMonitor()
+	public TrayMonitor(String args[])
 	{
 	    if (!SystemTray.isSupported()) 
 	    {
 	    	log.severe("TrayIcon is not supported, unable to run Scorekeeper monitor application.");
 	    	System.exit(-1);
 	    }
+	    
+	    cmdline = args;
         
         trayPopup  = new PopupMenu();        
         Menu launch = new Menu("Launch");
         trayPopup.add(launch);
         
-        newMenuItem("DataEntry",    "dataentry",    launch);
-        newMenuItem("Registration", "registration", launch);
-        newMenuItem("Syncronizer",  "synchronizer", launch);
-        
+        newMenuItem("DataEntry",     "DataEntry",    launch);
+        newMenuItem("Registration",  "Registration", launch);
+        newMenuItem("Syncronizer",   "Synchronizer", launch);
+        newMenuItem("ProTimer",      "ProTimer",     launch);
+        newMenuItem("BWTimer",       "BWTimer",      launch);
+        newMenuItem("ChallengeGUI",  "ChallengeGUI", launch);
+                
         mDatabase  = newMenuItem(DATABASE_NOT_RUNNING,  "database",  trayPopup);
         mWebServer = newMenuItem(WEBSERVER_NOT_RUNNING, "webserver", trayPopup);
         mQuit      = newMenuItem("Quit",                "quit",      trayPopup);
@@ -132,7 +142,32 @@ public class TrayMonitor implements ActionListener
 				}
 				
 			default:
-				System.out.println("other command " + cmd);
+				launch(cmd);
+		}
+	}
+	
+	protected void launch(String app)
+	{
+		try {
+			ArrayList<String> cmd = new ArrayList<String>();
+			cmd.add("javaw");
+			cmd.add("-cp");
+			cmd.add(System.getProperty("java.class.path"));
+			cmd.add("org.wwscc.util.Launcher");
+			cmd.add(app);
+			cmd.addAll(Arrays.asList(cmdline));
+			log.info(String.format("Running %s", cmd));
+			Process p = new ProcessBuilder(cmd).start();
+			Thread.sleep(1000);
+			if (!p.isAlive()) 
+			{
+				byte data[] = new byte[4096];
+				p.getErrorStream().read(data);
+				log.info("PROCESS ERR: " + new String(data));
+				throw new Exception("Process not alive after 1 second");
+			}
+		} catch (Exception e) {
+			log.log(Level.SEVERE, String.format("Failed to launch %s",  app), e);
 		}
 	}
 	
@@ -163,11 +198,12 @@ public class TrayMonitor implements ActionListener
 	
     /**
      * Main entry point.
-     * @param args ignored
+     * @param args passed to any launched application, ignored otherwise
      */
 	public static void main(String args[])
 	{
 		System.setProperty("swing.defaultlaf", UIManager.getSystemLookAndFeelClassName());
-		new TrayMonitor();
+		Logging.logSetup("traymonitor");
+		new TrayMonitor(args);
 	}
 }

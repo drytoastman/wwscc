@@ -150,7 +150,7 @@ public class AUTO
 	{
 		org.wwscc.storage.Run o = new org.wwscc.storage.Run();
 		o.carid = rs.getUUID("carid");
-		o.eventid = rs.getUUID("eventid");
+		o.eventid = rs.getInt("eventid");
 		o.course = rs.getInt("course");
 		o.run = rs.getInt("run");
 		o.cones = rs.getInt("cones");
@@ -164,7 +164,7 @@ public class AUTO
 	public static org.wwscc.storage.Challenge loadChallenge(ResultRow rs) throws IOException
 	{
 		org.wwscc.storage.Challenge o = new org.wwscc.storage.Challenge();
-		o.challengeid = rs.getUUID("challengeid");
+		o.challengeid = rs.getInt("challengeid");
 		o.eventid = rs.getInt("eventid");
 		o.name = rs.getString("name");
 		o.depth = rs.getInt("depth");

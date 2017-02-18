@@ -10,11 +10,8 @@ package org.wwscc.util;
 
 public interface ServiceControl
 {
-
 	boolean check();
-
 	boolean start();
-
 	boolean stop();
-
+	void openlog();
 }

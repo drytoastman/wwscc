@@ -19,14 +19,15 @@ import org.wwscc.util.IdGenerator;
  */
 public class ChallengeRun
 {
-	protected UUID   challengeid, carid; 
+	protected int    challengeid; 
+	protected UUID   carid; 
 	protected double reaction, sixty, raw;
 	protected int    round, course, cones, gates;
 	protected String status;
 
 	public ChallengeRun()
 	{
-		challengeid = IdGenerator.nullid;
+		challengeid = -1;
 		carid = IdGenerator.nullid;
 		reaction = -1;
 		sixty = -1;
@@ -70,7 +71,7 @@ public class ChallengeRun
 		course = id.isLeft() ? Run.LEFT : Run.RIGHT;
 	}
 	
-	public UUID getChallengeId() { return challengeid; }
+	public int getChallengeId() { return challengeid; }
 	public int getRound() { return round; }
 	public int getCones() { return cones; }
 	public int getGates() { return gates; }

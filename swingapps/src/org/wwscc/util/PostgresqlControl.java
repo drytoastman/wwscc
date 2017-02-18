@@ -8,6 +8,7 @@
 
 package org.wwscc.util;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -16,16 +17,18 @@ public class PostgresqlControl implements ServiceControl
 {
 	private static final Logger log = Logger.getLogger(PostgresqlControl.class.getName());
 	ProcessBuilder create, starter, stopper, checker;
+	String logfile;
 	
 	public PostgresqlControl()
 	{
 		File installdir = new File(Prefs.getInstallRoot());
-		String pgctl  = new File(installdir, "postgresql-9.6.2/bin/pg_ctl").getAbsolutePath();
-		String initdb = new File(installdir, "pgdb").getAbsolutePath();
-		String dbdir  = new File(installdir, "scorekeeperdb").getAbsolutePath();
+		String pgctl   = new File(installdir, "postgresql-9.6.2/bin/pg_ctl").getAbsolutePath();
+		String initdb  = new File(installdir, "initdb").getAbsolutePath();
+		String dbdir   = new File(installdir, "pgdb").getAbsolutePath();
+		logfile = new File(installdir, "pgdb/postgresql.log").getAbsolutePath();
 		create  = new ProcessBuilder(initdb, "-D", dbdir, "-U", "postgres");
 		checker = new ProcessBuilder(pgctl,  "-D", dbdir, "status");
-		starter = new ProcessBuilder(pgctl,  "-D", dbdir, "start");
+		starter = new ProcessBuilder(pgctl,  "-D", dbdir, "-l", logfile, "start");
 		stopper = new ProcessBuilder(pgctl,  "-D", dbdir, "stop");
 	}
 
@@ -78,5 +81,14 @@ public class PostgresqlControl implements ServiceControl
 			log.info("failed to stop postgresql: " + e);
 		}
 		return false;
+	}
+	
+	public void openlog()
+	{
+		try {
+			Desktop.getDesktop().open(new File(logfile));
+		} catch (IOException e) {
+			log.warning("Unable to open log file: " + e);
+		};
 	}
 }

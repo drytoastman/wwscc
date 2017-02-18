@@ -8,8 +8,6 @@
 
 package org.wwscc.challenge;
 
-import java.util.UUID;
-
 /**
  *
  */
@@ -20,7 +18,7 @@ public class Id
 	 */ 
 	public static class Round
 	{
-		public UUID challengeid;
+		public int challengeid;
 		public int round;
 
 		public Round(Round r)
@@ -29,7 +27,7 @@ public class Id
 			round = r.round;
 		}
 		
-		public Round(UUID c, int r)
+		public Round(int c, int r)
 		{
 			challengeid = c;
 			round = r;
@@ -91,7 +89,7 @@ public class Id
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = challengeid.hashCode();
+			result = challengeid;
 			result = prime * result + round;
 			return result;
 		}
@@ -117,7 +115,7 @@ public class Id
 			level = e.level;
 		}
 		
-		public Entry(UUID c, int r, Level l)
+		public Entry(int c, int r, Level l)
 		{
 			super(c, r);
 			level = l;
@@ -164,7 +162,7 @@ public class Id
 			runType = t;
 		}
 		
-		public Run(UUID c, int r, Entry.Level l, RunType t)
+		public Run(int c, int r, Entry.Level l, RunType t)
 		{
 			super(c, r, l);
 			runType = t;

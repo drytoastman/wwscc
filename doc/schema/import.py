@@ -12,7 +12,7 @@ class JustPrint(object):
     def close(self):    pass
     def commit(self):   pass
     def cursor(self):   return self
-    def execute(self, cmd, tup=None): print cmd, tup
+    def execute(self, cmd, tup=None): print(cmd, tup)
 
 
 def convert(sourcefile, name):
@@ -22,8 +22,6 @@ def convert(sourcefile, name):
 
     remapdriver = dict()
     remapcar = dict()
-    remapevent = dict()
-    remapchallenge = dict()
     challengeruns = list()
 
     remapcar[-1] = None
@@ -36,7 +34,7 @@ def convert(sourcefile, name):
         import psycopg2.extras
         psycopg2.extras.register_uuid()
         new = psycopg2.connect("dbname='scorekeeper' user='{}' host='127.0.0.1' password='{}'".format(name, name))
-    except:
+    except ImportError:
         new = JustPrint()
     cur = new.cursor()
 
@@ -106,7 +104,7 @@ def convert(sourcefile, name):
         e = AttrWrapper(r, r.keys())
 
         newe = dict()
-        newe['eventid']     = uuid.uuid1()
+        newe['eventid']     = e.id
         newe['name']        = e.name
         newe['date']        = e.date
         newe['regopened']   = e.regopened
@@ -129,20 +127,19 @@ def convert(sourcefile, name):
         cur.execute("insert into events values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", 
             (newe['eventid'], newe['name'], newe['date'], newe['regopened'], newe['regclosed'], newe['courses'], newe['runs'], newe['countedruns'],
             newe['perlimit'], newe['totlimit'], newe['conepen'], newe['gatepen'], newe['ispro'], newe['ispractice'], json.dumps(newe['attr'])))
-        remapevent[e.id] = newe['eventid']
 
     #REGISTERED (map eventid, carid)
     for r in old.execute("select * from registered"):
         oldr = AttrWrapper(r, r.keys())
         if oldr.eventid > 0x0FFFF:
             continue
-        cur.execute("insert into registered values (%s, %s, %s, now())", (remapevent[oldr.eventid], remapcar[oldr.carid], oldr.paid and True or False))
+        cur.execute("insert into registered values (%s, %s, %s, now())", (oldr.eventid, remapcar[oldr.carid], oldr.paid and True or False))
 
 
     #RUNORDER 
     for r in old.execute("select * from runorder"):
         oldr = AttrWrapper(r, r.keys())
-        cur.execute("insert into runorder values (%s, %s, %s, %s, %s, now())", (remapevent[oldr.eventid], oldr.course, oldr.rungroup, oldr.row, remapcar[oldr.carid]))
+        cur.execute("insert into runorder values (%s, %s, %s, %s, %s, now())", (oldr.eventid, oldr.course, oldr.rungroup, oldr.row, remapcar[oldr.carid]))
 
 
     #RUNS (map eventid, carid)
@@ -157,10 +154,10 @@ def convert(sourcefile, name):
         attr['sixty'] = oldr.sixty or 0.0
         for ii in range(1,6):
             seg = getattr(oldr, 'seg%d'%ii)
-            if seg > 0:
+            if seg is not None and seg > 0:
                 attr['seg%d'%ii] = seg
         cur.execute("insert into runs values (%s, %s, %s, %s, %s, %s, %s, %s, %s, now())",
-            (remapevent[oldr.eventid], remapcar[oldr.carid], oldr.course, oldr.run, oldr.cones, oldr.gates, oldr.raw, oldr.status, json.dumps(attr)))
+            (oldr.eventid, remapcar[oldr.carid], oldr.course, oldr.run, oldr.cones, oldr.gates, oldr.raw, oldr.status, json.dumps(attr)))
 
 
     #SETTINGS
@@ -174,30 +171,35 @@ def convert(sourcefile, name):
         c = AttrWrapper(r, r.keys())
 
         newc = dict()
-        newc['challengeid'] = uuid.uuid1()
-        newc['eventid']     = remapevent[c.eventid]
+        newc['challengeid'] = c.id
+        newc['eventid']     = c.eventid
         newc['name']        = c.name
         newc['depth']       = c.depth
 
         cur.execute("insert into challenges values (%s, %s, %s, %s, now())", (newc['challengeid'], newc['eventid'], newc['name'], newc['depth']))
-        remapchallenge[c.id] = newc['challengeid']
 
 
     #CHALLENGEROUNDS (remap roundid, challengeid, carid)
+    check1 = set()
     for rp in old.execute("select * from challengerounds"):
         r = AttrWrapper(rp, rp.keys())
-        cid  = remapchallenge[r.challengeid]
+        cid  = r.challengeid
         c1id = remapcar[r.car1id]
         c2id = remapcar[r.car2id]
-        cur.execute("insert into challengerounds values (%s, %s, %s, %s, now())", (cid, r.round, r.swappedstart, c1id, r.car1dial, c2id, r.car2dial))
+        ss = r.swappedstart and True or False
+        c1d = r.car1dial or 0.0
+        c2d = r.car2dial or 0.0
+        check1.add((cid, r.round))
+        cur.execute("insert into challengerounds values (%s, %s, %s, %s, %s, %s, %s, now())", (cid, r.round, ss, c1id, c1d, c2id, c2d))
 
 
     #CHALLENGERUNS (now in ther own table)
     for r in challengeruns:
-        chid  = remapchallenge[r.eventid >> 16]
+        chid  = r.eventid >> 16
         round = r.eventid & 0x0FFF
         caid  = remapcar[r.carid]
-        cur.execute("insert into challengeruns values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", (chid, round, caid,
+        if caid is not None and (chid, round) in check1:
+            cur.execute("insert into challengeruns values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", (chid, round, caid,
                             r.course, r.reaction, r.sixty, r.raw, r.cones, r.gates, r.status))
 
     old.close()
@@ -206,7 +208,7 @@ def convert(sourcefile, name):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print "Usage: {} <old db file> <name>"
+        print("Usage: {} <old db file> <name>")
     else:
         convert(sys.argv[1], sys.argv[2])
 

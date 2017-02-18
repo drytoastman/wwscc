@@ -73,7 +73,7 @@ public class TextRunsDialog extends BaseDialog<List<Run>>
 				for (String rdata : line.split("\\s+"))
 				{
 					Run r = txtToRun(rdata);
-					r.updateTo(IdGenerator.nullid, IdGenerator.nullid, course, run);
+					r.updateTo(-1, IdGenerator.nullid, course, run);
 					result.add(r);
 					run++;
 				}

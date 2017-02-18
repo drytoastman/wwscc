@@ -12,7 +12,6 @@ import java.io.Serializable;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.UUID;
 
 import org.json.simple.JSONObject;
 import org.wwscc.storage.SQLDataInterface.ResultRow;
@@ -24,7 +23,7 @@ public class Event implements Serializable
 {
 	private static final long serialVersionUID = 3721488283732959966L;
 
-	protected UUID      eventid;
+	protected int       eventid;
 	protected String    name;
 	protected Date      date;
 	protected Timestamp regopened;
@@ -65,7 +64,7 @@ public class Event implements Serializable
 	
 	public Event(ResultRow rs) throws SQLException
 	{
-		eventid     = rs.getUUID("eventid");
+		eventid     = rs.getInt("eventid");
 		name        = rs.getString("name");
 		date        = rs.getDate("date");
 		regopened   = rs.getTimestamp("regopened");
@@ -82,7 +81,7 @@ public class Event implements Serializable
 		attr        = rs.getJSON("attr");
 	}
 
-	public UUID getEventId() { return eventid; }
+	public int getEventId() { return eventid; }
 	public int getRuns() { return runs; }
 	public int getCountedRuns()
 	{

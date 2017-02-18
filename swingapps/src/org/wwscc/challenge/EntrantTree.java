@@ -57,12 +57,12 @@ public class EntrantTree extends CarTree implements MessageListener
 		{
 			case CHALLENGE_CHANGED:
 			case ENTRANTS_CHANGED:
-				UUID challengeid = ChallengeGUI.state.getCurrentChallengeId();
+				int challengeid = ChallengeGUI.state.getCurrentChallengeId();
 				Collection<UUID> exclude;
 				Collection<Entrant> reg;
-				if (challengeid != new UUID(0,0))
+				if (challengeid > 0)
 				{
-					reg = Database.d.getEntrantsByEvent(null);
+					reg = Database.d.getEntrantsByEvent(ChallengeGUI.state.getCurrentEventId());
 					exclude = Database.d.getCarIdsByChallenge(challengeid);
 				}
 				else
@@ -107,7 +107,7 @@ public class EntrantTree extends CarTree implements MessageListener
 				if (o instanceof DefaultMutableTreeNode)
 				{
 					Entrant e = (Entrant)((DefaultMutableTreeNode)o).getUserObject();
-					Dialins dial = Database.d.loadDialins(null);
+					Dialins dial = Database.d.loadDialins(ChallengeGUI.state.getCurrentEventId());
 					return new BracketEntry.Transfer(new BracketEntry(null, e, dial.getDial(e.getCarId(), useBonusDialins)));
 				}
 			}

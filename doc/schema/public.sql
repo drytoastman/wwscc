@@ -16,6 +16,7 @@ CREATE TABLE driverslog (
 );
 REVOKE ALL ON driverslog FROM public;
 GRANT  ALL ON driverslog TO scorekeeper;
+GRANT  ALL ON driverslog_logid_seq TO scorekeeper;
 CREATE INDEX ON driverslog(logid);
 CREATE INDEX ON driverslog(time);
 COMMENT ON TABLE driverslog IS 'Change logs that are specific to this local database';

@@ -111,7 +111,7 @@ public class BracketingList extends BaseDialog<List<BracketEntry>> implements Ch
 			ret.add(model.getBracketEntry(table.convertRowIndexToModel(index)));
 
 		// sort by their net times
-		final Dialins dial = Database.d.loadDialins(null);
+		final Dialins dial = Database.d.loadDialins(ChallengeGUI.state.getCurrentEventId());
 		Collections.sort(ret, new Comparator<BracketEntry>() {
 			public int compare(BracketEntry o1, BracketEntry o2) {
 				return Double.compare(dial.getNet(o1.entrant.getCarId()), dial.getNet(o2.entrant.getCarId()));
@@ -165,7 +165,7 @@ class BracketingListModel extends AbstractTableModel
 	public void reload(boolean useOpen, boolean useLadies, boolean bonusStyle)
 	{
 		Map<UUID, Entrant> entrants = new HashMap<UUID, Entrant>();
-		for (Entrant e : Database.d.getEntrantsByEvent(null))
+		for (Entrant e : Database.d.getEntrantsByEvent(ChallengeGUI.state.getCurrentEventId()))
 		{
 			if ((useLadies && (e.getClassCode().startsWith("L"))) ||
 				(useOpen && (!e.getClassCode().startsWith("L"))))
@@ -173,7 +173,7 @@ class BracketingListModel extends AbstractTableModel
 		}
 
 		data = new ArrayList<Store>();
-		Dialins d = Database.d.loadDialins(null);
+		Dialins d = Database.d.loadDialins(ChallengeGUI.state.getCurrentEventId());
 		int pos = 1;
 		for (UUID id : d.getNetOrder())
 		{

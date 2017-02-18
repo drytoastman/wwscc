@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -224,7 +223,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public boolean updateEventRuns(UUID eventid, int runs)
+	public boolean updateEventRuns(int eventid, int runs)
 	{
 		try
 		{
@@ -317,7 +316,7 @@ public abstract class SQLDataInterface extends DataInterface
 	
 	
 	@Override
-	public List<Entrant> getEntrantsByEvent(UUID eventid)
+	public List<Entrant> getEntrantsByEvent(int eventid)
 	{
 		try
 		{
@@ -332,7 +331,7 @@ public abstract class SQLDataInterface extends DataInterface
 
 
 	@Override
-	public List<Entrant> getRegisteredEntrants(UUID eventid)
+	public List<Entrant> getRegisteredEntrants(int eventid)
 	{
 		try
 		{
@@ -347,7 +346,7 @@ public abstract class SQLDataInterface extends DataInterface
 	
 	
 	@Override
-	public List<Car> getRegisteredCars(UUID driverid, UUID eventid)
+	public List<Car> getRegisteredCars(UUID driverid, int eventid)
 	{
 		List<Car> ret = null;
 		try
@@ -373,7 +372,7 @@ public abstract class SQLDataInterface extends DataInterface
 	 * @return the list of entrants in the current run order
 	 */
 	@Override
-	public List<Entrant> getEntrantsByRunOrder(UUID eventid, int course, int rungroup)
+	public List<Entrant> getEntrantsByRunOrder(int eventid, int course, int rungroup)
 	{
 		try
 		{
@@ -392,7 +391,7 @@ public abstract class SQLDataInterface extends DataInterface
 
 	
 	@Override
-	public Entrant loadEntrant(UUID eventid, UUID carid, int course, boolean loadruns)
+	public Entrant loadEntrant(int eventid, UUID carid, int course, boolean loadruns)
 	{
 		try
 		{
@@ -414,7 +413,7 @@ public abstract class SQLDataInterface extends DataInterface
 
 
 	@Override
-	public Set<UUID> getCarIdsForCourse(UUID eventid, int course)
+	public Set<UUID> getCarIdsForCourse(int eventid, int course)
 	{
 		try
 		{
@@ -432,7 +431,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public List<UUID> getCarIdsForRunGroup(UUID eventid, int course, int rungroup)
+	public List<UUID> getCarIdsForRunGroup(int eventid, int course, int rungroup)
 	{
 		try
 		{
@@ -450,7 +449,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void setRunOrder(UUID eventid, int course, int rungroup, List<UUID> carids) 
+	public void setRunOrder(int eventid, int course, int rungroup, List<UUID> carids) 
 	{
 		try
 		{
@@ -518,7 +517,7 @@ public abstract class SQLDataInterface extends DataInterface
 
 
 	@Override
-	public MetaCar loadMetaCar(Car c, UUID eventid, int course)
+	public MetaCar loadMetaCar(Car c, int eventid, int course)
 	{
 		try
 		{
@@ -713,7 +712,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void registerCar(UUID eventid, UUID carid, boolean paid, boolean overwrite) throws IOException
+	public void registerCar(int eventid, UUID carid, boolean paid, boolean overwrite) throws IOException
 	{
 		List<Object> vals = newList(eventid, carid, paid);
 		if (overwrite)
@@ -723,7 +722,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void unregisterCar(UUID eventid, UUID carid) throws IOException
+	public void unregisterCar(int eventid, UUID carid) throws IOException
 	{
 		List<Object> vals = newList(eventid, carid);
 		executeUpdate("UNREGISTERCAR", vals);
@@ -803,7 +802,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void deleteRun(UUID eventid, UUID carid, int course, int run)
+	public void deleteRun(int eventid, UUID carid, int course, int run)
 	{
 		try {
 			executeUpdate("DELETE FROM runs WHERE eventid=? AND carid=? AND course=? AND run=?", newList(eventid, carid, course, run));
@@ -1056,7 +1055,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public Set<UUID> getCarIdsByChallenge(UUID challengeid)
+	public Set<UUID> getCarIdsByChallenge(int challengeid)
 	{
 		try
 		{
@@ -1108,7 +1107,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public void deleteChallenge(UUID challengeid)
+	public void deleteChallenge(int challengeid)
 	{
 		try
 		{
@@ -1122,7 +1121,7 @@ public abstract class SQLDataInterface extends DataInterface
 	
 	
 	@Override
-	public List<Challenge> getChallengesForEvent(UUID eventid)
+	public List<Challenge> getChallengesForEvent(int eventid)
 	{
 		try
 		{
@@ -1140,7 +1139,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public List<ChallengeRound> getRoundsForChallenge(UUID challengeid) 
+	public List<ChallengeRound> getRoundsForChallenge(int challengeid) 
 	{
 		try
 		{
@@ -1150,7 +1149,7 @@ public abstract class SQLDataInterface extends DataInterface
 			{
 				/* Not a standard class to table layout so write the load manually */
 				ChallengeRound rnd = new ChallengeRound();
-				rnd.challengeid = r.getUUID("challengeid");
+				rnd.challengeid = r.getInt("challengeid");
 				rnd.round = r.getInt("round");
 				rnd.car1 = new ChallengeRound.RoundEntrant();
 				rnd.car1.carid = r.getUUID("car1id");
@@ -1174,7 +1173,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 
 	@Override
-	public List<ChallengeRun> getRunsForChallenge(UUID challengeid)
+	public List<ChallengeRun> getRunsForChallenge(int challengeid)
 	{
 		try
 		{
@@ -1202,7 +1201,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 	
 	@Override
-	public Dialins loadDialins(UUID eventid) 
+	public Dialins loadDialins(int eventid) 
 	{
 		try
 		{
@@ -1347,6 +1346,7 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
+	/*
 	@Override
 	public Map<UUID, Driver> getAllDrivers()
 	{
@@ -1403,7 +1403,6 @@ public abstract class SQLDataInterface extends DataInterface
 		}
 	}
 
-	/*
 	@Override
 	public Map<Integer, Run> getAllRuns()
 	{
@@ -1429,7 +1428,7 @@ public abstract class SQLDataInterface extends DataInterface
 
 
 	@Override
-	public boolean isInOrder(UUID eventid, UUID carid, int course) 
+	public boolean isInOrder(int eventid, UUID carid, int course) 
 	{
 		try
 		{
@@ -1444,7 +1443,7 @@ public abstract class SQLDataInterface extends DataInterface
 	}
 	
 	@Override
-	public boolean isInCurrentOrder(UUID eventid, UUID carid, int course, int rungroup) 
+	public boolean isInCurrentOrder(int eventid, UUID carid, int course, int rungroup) 
 	{
 		try
 		{

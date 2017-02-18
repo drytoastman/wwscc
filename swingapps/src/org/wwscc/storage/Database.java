@@ -41,14 +41,12 @@ public class Database
 	{
 		d = new FakeDatabase();
 		Messenger.sendEvent(MT.DATABASE_CHANGED, "<none>");
-		Prefs.setUseSeriesURL(false);
 	}
 	
 	public static void openDatabase() throws IOException, SQLException
 	{
 		d = new PostgresqlDatabase();
 		Messenger.sendEvent(MT.DATABASE_CHANGED, "needdatahere");
-		Prefs.setUseSeriesURL(false);
 	}
 
 	public static void closeDatabase()

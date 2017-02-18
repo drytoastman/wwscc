@@ -111,7 +111,7 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 		}
 		
 		Driver d = (Driver)o;
-		List<Car> available = Database.d.getRegisteredCars(d.getDriverId(), null);
+		List<Car> available = Database.d.getRegisteredCars(d.getDriverId(), DataEntry.state.getCurrentEventId());
 		Iterator<Car> iter = available.iterator();
 		
 		while (iter.hasNext()) {

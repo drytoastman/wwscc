@@ -39,7 +39,7 @@ public class NewChallengeDialog extends BaseDialog<String>
 	@Override
 	public boolean verifyData()
 	{
-		List<Challenge> current = Database.d.getChallengesForEvent(null);
+		List<Challenge> current = Database.d.getChallengesForEvent(ChallengeGUI.state.getCurrentEventId());
 		for (Challenge c : current)
 		{
 			if (c.getName().equals(getChallengeName()))

@@ -15,7 +15,6 @@ import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -86,8 +85,8 @@ public class Menus extends JMenuBar implements ActionListener
 	
 	protected void editChallenge()
 	{
-		UUID curid = ChallengeGUI.state.getCurrentChallengeId();
-		for (Challenge c : Database.d.getChallengesForEvent(null))
+		int curid = ChallengeGUI.state.getCurrentChallengeId();
+		for (Challenge c : Database.d.getChallengesForEvent(ChallengeGUI.state.getCurrentEventId()))
 		{
 			if (c.getChallengeId() == curid)
 			{
