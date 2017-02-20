@@ -8,6 +8,8 @@
 
 package org.wwscc.storage;
 
+import java.util.LinkedList;
+
 /**
  */
 public class Challenge
@@ -31,6 +33,16 @@ public class Challenge
 		eventid = inEvent;
 		name = inName;
 		depth = inDepth;
+	}
+	
+	public LinkedList<Object> getValues()
+	{
+		LinkedList<Object> ret = new LinkedList<Object>();
+		ret.add(challengeid);
+		ret.add(eventid);
+		ret.add(name);
+		ret.add(depth);
+		return ret;
 	}
 
 	public int getChallengeId() { return challengeid; }

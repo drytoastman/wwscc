@@ -8,8 +8,6 @@
 
 package org.wwscc.storage;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.logging.Logger;
 
 import org.wwscc.util.MT;
@@ -31,7 +29,9 @@ public class Database
 	public static void openDefault()
 	{
 		try {
-			openDatabase();
+			String s = Prefs.getSeries("");
+			if (!s.equals(""))
+				openDatabase(s, Prefs.getPasswordFor(s));
 		} catch (Exception ioe) {
 			log.severe("Failed to open: " + ioe);
 		}
@@ -43,10 +43,11 @@ public class Database
 		Messenger.sendEvent(MT.DATABASE_CHANGED, "<none>");
 	}
 	
-	public static void openDatabase() throws IOException, SQLException
+	public static void openDatabase(String series, String password)
 	{
 		d = new PostgresqlDatabase();
-		Messenger.sendEvent(MT.DATABASE_CHANGED, "needdatahere");
+		d.open(series, password);
+		Messenger.sendEvent(MT.DATABASE_CHANGED, series);
 	}
 
 	public static void closeDatabase()

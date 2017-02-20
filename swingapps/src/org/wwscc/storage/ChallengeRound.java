@@ -8,11 +8,11 @@
 
 package org.wwscc.storage;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.wwscc.util.IdGenerator;
 
 /**
  *
@@ -41,6 +41,19 @@ public class ChallengeRound
 		swappedstart = false;
 		car1 = new RoundEntrant();
 		car2 = new RoundEntrant();
+	}
+	
+	public ChallengeRound(ResultSet rs) throws SQLException
+	{
+		ChallengeRound rnd = new ChallengeRound();
+		rnd.challengeid  = rs.getInt("challengeid");
+		rnd.round        = rs.getInt("round");
+		rnd.car1         = new ChallengeRound.RoundEntrant();
+		rnd.car1.carid   = (UUID)rs.getObject("car1id");
+		rnd.car1.dial    = rs.getDouble("car1dial");
+		rnd.car2         = new ChallengeRound.RoundEntrant();
+		rnd.car2.carid   = (UUID)rs.getObject("car2id");
+		rnd.car2.dial    = rs.getDouble("car2dial");
 	}
 
 	public int getChallengeId() { return challengeid; }

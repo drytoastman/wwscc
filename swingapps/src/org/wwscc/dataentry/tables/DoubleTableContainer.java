@@ -11,6 +11,7 @@ package org.wwscc.dataentry.tables;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -80,7 +81,7 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 	public RunsTable getRunsTable() { return runsTable; }
 	public DriverTable getDriverTable() { return driverTable; }
 	
-	public void processBarcode(String barcode) throws IOException
+	public void processBarcode(String barcode) throws SQLException, IOException
 	{
 		Object o = BarcodeLookup.findObjectByBarcode(barcode);
 
@@ -163,7 +164,7 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 			case BARCODE_SCANNED:
 				try {
 					processBarcode((String)o);
-				} catch (IOException be) {
+				} catch (IOException | SQLException be) {
 					log.log(Level.SEVERE, be.getMessage());
 				}
 				

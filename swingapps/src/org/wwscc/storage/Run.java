@@ -8,6 +8,8 @@
 
 package org.wwscc.storage;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.UUID;
 import org.json.simple.JSONObject;
@@ -21,7 +23,7 @@ import org.wwscc.util.IdGenerator;
  * run as default (reaction, sixty) and then use it for regular runs as well
  */
 @SuppressWarnings("unchecked")
-public class Run implements Serial, Cloneable
+public class Run extends AttrBase implements Serial, Cloneable
 {
 	public static final int LEFT = 1;
 	public static final int RIGHT = 2;
@@ -32,7 +34,6 @@ public class Run implements Serial, Cloneable
 	protected int cones, gates;
 	protected String status;
 	protected double raw;
-	protected JSONObject attr;
 
 	public static class RawOrder implements Comparator<Run>
 	{
@@ -91,7 +92,6 @@ public class Run implements Serial, Cloneable
 		this.eventid = -1;
 		this.course  = -1;
 		this.run     = -1;
-		this.attr    = new JSONObject();
 	}
 
 
@@ -102,6 +102,19 @@ public class Run implements Serial, Cloneable
 		attr.put("sixty", sixty);
 	}
 
+	public Run(ResultSet rs) throws SQLException
+	{
+		eventid = rs.getInt("eventid");
+		carid   = (UUID)rs.getObject("carid");
+		course  = rs.getInt("course");
+		run     = rs.getInt("run");
+		cones   = rs.getInt("cones");
+		gates   = rs.getInt("gates");
+		status  = rs.getString("status");
+		raw     = rs.getDouble("raw");
+		loadAttr(rs);
+	}
+	
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
@@ -116,16 +129,16 @@ public class Run implements Serial, Cloneable
 	public String getStatus() { return status; }
 	public boolean validRun() { return !Double.isNaN(raw); }
 
-	public double getReaction()     { return (double)attr.getOrDefault("reaction", -1.0);}
-	public double getSixty()        { return (double)attr.getOrDefault("sixty", -1.0); }
-	public double getSegment(int s) { return (double)attr.getOrDefault("seg"+s, -1.0); }
+	public double getReaction()     { return getAttrD("reaction");}
+	public double getSixty()        { return getAttrD("sixty"); }
+	public double getSegment(int s) { return getAttrD("seg"+s); }
 	public double getRaw()          { return raw; }
 
 	public void setRunNumber(int r)         { run = r; }
 	public void setCourse(int c)            { course = c; }
-	public void setReaction(double d)       { attr.put("reaction", d); }
-	public void setSixty(double d)          { attr.put("sixty", d); }
-	public void setSegment(int s, double d) { attr.put("seg"+s, d); }
+	public void setReaction(Double d)       { setAttrD("reaction", d); }
+	public void setSixty(Double d)          { setAttrD("sixty", d); }
+	public void setSegment(int s, Double d) { setAttrD("seg"+s, d); }
 	public void setRaw(double d)            { raw = d; }
 	public void setCones(int c)             { cones = c; }
 	public void setGates(int g)             { gates = g; }

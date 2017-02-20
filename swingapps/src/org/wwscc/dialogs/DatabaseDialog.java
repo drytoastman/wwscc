@@ -22,7 +22,6 @@ import org.wwscc.services.JServiceList;
 import org.wwscc.services.ServiceFinder;
 import org.wwscc.util.CancelException;
 import org.wwscc.util.FileChooser;
-import org.wwscc.util.Prefs;
 
 
 /**
@@ -214,7 +213,6 @@ public class DatabaseDialog extends BaseDialog<Object> implements ListSelectionL
 		String ret = (String)dd.getResult();
 		if (ret == null) throw new CancelException();
 		String spec[] = ret.split("/");
-		Prefs.setMergeHost(spec[0]);
 		return spec;
 	}
 }

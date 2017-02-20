@@ -8,30 +8,21 @@
 
 package org.wwscc.storage;
 
-import java.io.Serializable;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.UUID;
 
-import org.json.simple.JSONObject;
-import org.wwscc.storage.SQLDataInterface.ResultRow;
 import org.wwscc.util.IdGenerator;
 
-public class Car implements Serializable
+public class Car extends AttrBase
 {
-	private static final long serialVersionUID = -4356095380991113575L;
-	
 	protected UUID carid;
 	protected UUID driverid;
-
-	protected String year;
-	protected String make;
-	protected String model;
-	protected String color;
 	protected int number;
 	protected String classcode;
 	protected String indexcode;
-	protected boolean tireindexed;
 	
 	// not part of car tables
 	private String indexstr;
@@ -49,73 +40,68 @@ public class Car implements Serializable
 	 */
 	public Car()
 	{
-		carid = IdGenerator.generateId();
-		driverid = IdGenerator.nullid;
-		year = "";
-		make = "";
-		model = "";
-		color = "";
-		number = 0;
+		carid     = IdGenerator.generateId();
+		driverid  = IdGenerator.nullid;
+		number    = 0;
 		classcode = "";
 		indexcode = "";
-		tireindexed = false;
-		indexstr = null;
+		indexstr  = null;
 	}
 	
 	public Car(Car other)
 	{
-		carid = other.carid;
-		driverid = other.driverid;
-		year = other.year;
-		make = other.make;
-		model = other.model;
-		color = other.color;
-		number = other.number;
+		carid     = other.carid;
+		driverid  = other.driverid;
+		number    = other.number;
 		classcode = other.classcode;
 		indexcode = other.indexcode;
-		tireindexed = other.tireindexed;
-		indexstr = other.indexstr;
+		indexstr  = other.indexstr;
 	}
-
-	public Car(ResultRow rs) throws SQLException
-	{
-		carid       = rs.getUUID("carid");
-		driverid    = rs.getUUID("driverid");
-		classcode   = rs.getString("classcode");
-		indexcode   = rs.getString("indexcode");
-		number      = rs.getInt("number");
-		
-		JSONObject o = rs.getJSON("attr");
-		year        = (String)o.get("year");
-		make        = (String)o.get("make");
-		model       = (String)o.get("model");
-		color       = (String)o.get("color");
-		tireindexed = ((Long)o.get("tireindexed")) > 0;		
-	}
-
-	public UUID getCarId() { return carid; }
-	public UUID getDriverId() { return driverid; }
-	public String getClassCode() { return classcode; }
-	public String getIndexCode() { return indexcode; }
-	public String getIndexStr() { return (indexstr != null) ? indexstr: indexcode; } 
-	public int getNumber() { return number; }
-	public String getYear() { return year; }
-	public String getMake() { return make; }
-	public String getModel() { return model; }
-	public String getColor() { return color; }
-	public boolean isTireIndexed() { return tireindexed;}
 	
-	public void setDriverId(UUID id) { driverid = id; }
-	public void setNumber(int n) { number = n; }
-	public void setYear(String s) { year = s; }
-	public void setMake(String s) { make = s; }
-	public void setModel(String s) { model = s; }
-	public void setColor(String s) { color = s; }
+	public Car(ResultSet rs) throws SQLException
+	{
+		carid     = (UUID)rs.getObject("carid");
+		driverid  = (UUID)rs.getObject("driverid");
+		classcode = rs.getString("classcode");
+		indexcode = rs.getString("indexcode");
+		number    = rs.getInt("number");
+		loadAttr(rs);
+		// FINISH ME indexstr  = getIndexStr(classcode, indexcode, isTireIndexed());
+	}
+
+	public LinkedList<Object> getValues()
+	{
+		LinkedList<Object> ret = new LinkedList<Object>();
+		ret.add(carid);
+		ret.add(driverid);
+		ret.add(classcode);
+		ret.add(indexcode);
+		ret.add(number);
+		ret.add(attr);
+		return ret;
+	}
+	
+	public UUID getCarId()         { return carid; }
+	public UUID getDriverId()      { return driverid; }
+	public String getClassCode()   { return classcode; }
+	public String getIndexCode()   { return indexcode; }
+	public String getIndexStr()    { return (indexstr != null) ? indexstr: indexcode; } 
+	public int getNumber()         { return number; }
+	public String getYear()        { return getAttrS("year"); }
+	public String getMake()        { return getAttrS("make"); }
+	public String getModel()       { return getAttrS("model"); }
+	public String getColor()       { return getAttrS("color"); }
+	public boolean isTireIndexed() { return getAttrB("tireindexed");}
+	
+	public void setDriverId(UUID id)   { driverid = id; }
+	public void setNumber(int n)       { number = n; }
 	public void setClassCode(String s) { classcode = s; }
 	public void setIndexCode(String s) { indexcode = s; }
-	public void setTireIndexed(boolean b) { tireindexed = b; }
-		
-	protected void setIndexStr(String s) { indexstr = s; }
+	public void setYear(String s)      { setAttrS("year", s); }
+	public void setMake(String s)      { setAttrS("make", s); }
+	public void setModel(String s)     { setAttrS("model", s); }
+	public void setColor(String s)     { setAttrS("color", s); }
+	public void setTireIndexed(Boolean b) { setAttrB("tireindexed", b); }
 	
 	@Override
 	public boolean equals(Object o)

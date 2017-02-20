@@ -10,9 +10,11 @@ package org.wwscc.dialogs;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -71,15 +73,20 @@ public class CarDialog extends BaseDialog<Car>
 		mainPanel.add(label("Year", false), "");
 		mainPanel.add(entry("year", car.getYear()), "wrap");
 
-		List<String> makes = Database.d.getCarAttributes("make");
+		Map<String, Set<String>> attr = Database.d.getCarAttributes();
+		
+		List<String> makes = new ArrayList<String>(attr.get("makes"));
+		Collections.sort(makes);
 		mainPanel.add(label("Make", false), "");
 		mainPanel.add(autoentry("make", car.getMake(), makes), "wrap");
 
-		List<String> models = Database.d.getCarAttributes("model");
+		List<String> models = new ArrayList<String>(attr.get("models"));
+		Collections.sort(models);
 		mainPanel.add(label("Model", false), "");
 		mainPanel.add(autoentry("model", car.getModel(), models), "wrap");
 
-		List<String> colors = Database.d.getCarAttributes("color");
+		List<String> colors = new ArrayList<String>(attr.get("colors"));
+		Collections.sort(colors);
 		mainPanel.add(label("Color", false), "");
 		mainPanel.add(autoentry("color", car.getColor(), colors), "wrap");
 

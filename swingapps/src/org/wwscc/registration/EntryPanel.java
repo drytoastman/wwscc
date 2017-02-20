@@ -14,7 +14,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -249,7 +249,7 @@ public class EntryPanel extends DriverCarPanel
 						c.setDriverId(selectedDriver.getDriverId());
 						Database.d.updateCar(c);
 						reloadCars(c);
-					} catch (IOException ioe) {
+					} catch (SQLException ioe) {
 						log.log(Level.SEVERE, "Failed to edit car: " + ioe.getMessage(), ioe);
 					}
 				}
@@ -270,7 +270,7 @@ public class EntryPanel extends DriverCarPanel
 				try {
 					Database.d.deleteCar(selectedCar);
 					reloadCars(null);
-				} catch (IOException ioe) {
+				} catch (SQLException ioe) {
 					log.log(Level.SEVERE, "Failed to delete car: " + ioe, ioe);
 				}
 			}
@@ -367,14 +367,15 @@ public class EntryPanel extends DriverCarPanel
 				String ret = (String)JOptionPane.showInputDialog(this, "Enter/Delete notes", noteswarning.getText());
 				if (ret != null)
 				{
-					Database.d.setDriverNotes(selectedDriver.getDriverId(), ret);
+					selectedDriver.setAttrS("notes", ret);
+					Database.d.updateDriver(selectedDriver);
 					valueChanged(new ListSelectionEvent(drivers, -1, -1, false));
 				}
 			}
 			else
 				super.actionPerformed(e);
 		}
-		catch (IOException ioe)
+		catch (SQLException ioe)
 		{
 			log.log(Level.SEVERE, "Registation action failed: " + ioe, ioe);
 		}
@@ -418,7 +419,7 @@ public class EntryPanel extends DriverCarPanel
 					}
 				}
 				
-				String notes = Database.d.getDriverNotes(selectedDriver.getDriverId());
+				String notes = selectedDriver.getAttrS("notes");
 				if (!notes.trim().equals(""))
 				{
 					noteswarning.setText(notes);
@@ -498,7 +499,7 @@ public class EntryPanel extends DriverCarPanel
 					try {
 						Database.d.registerCar(Registration.state.getCurrentEventId(), c.getCarId(), true, true);
 						reloadCars(c);
-					} catch (IOException e) {
+					} catch (SQLException e) {
 						log.log(Level.WARNING, "Hmm.  I wasn't able to register the car: " + e.getMessage(), e);
 					}
 				}

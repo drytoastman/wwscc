@@ -32,7 +32,7 @@ public class Launcher
 			{
 				Object o = JOptionPane.showInputDialog(null,
 						"Select Application", "Launcher", JOptionPane.QUESTION_MESSAGE, null,
-						apps, Prefs.getLastApplication());
+						apps, null);
 				if (o == null)
 					return;
 				app = (String)o;
@@ -42,8 +42,6 @@ public class Launcher
 				app = args[0];
 			}
 
-			
-			Prefs.setLastApplication(app);
 			LibLoader.installLibrary("rxtxSerial", "serial port access");
 			
 			for (String arg : args) {

@@ -25,8 +25,6 @@ import org.wwscc.registration.attendance.AttendanceResult.AttendanceResultPiece;
 import org.wwscc.util.MT;
 import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
-import org.wwscc.util.Prefs;
-
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -62,9 +60,11 @@ public class AttendancePanel extends JPanel implements MessageListener, NameStor
 			case ATTENDANCE_SETUP_CHANGE:
 				try {
 					removeAll();
+					/* FINISH ME IF WE NEED THIS
 					calcs = Syntax.scanAll(Prefs.getAttendanceCalculations());
 					entries = Attendance.scanFile(Attendance.defaultfile);
 					names = new ExtraNameStorage(entries);
+					*/
 				} catch (Exception e) {
 					log.severe("Failed to read attendance calculation setup: " + e.getMessage());
 					return;

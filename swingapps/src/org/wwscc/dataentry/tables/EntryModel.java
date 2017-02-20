@@ -8,7 +8,7 @@
 
 package org.wwscc.dataentry.tables;
 
-import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -82,7 +82,7 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 
 		try {
 			Database.d.registerCar(DataEntry.state.getCurrentEventId(), carid, false, false);
-		} catch (IOException ioe) {
+		} catch (SQLException ioe) {
 			log.log(Level.INFO, "Registration during car add failed: {0}" + ioe.getMessage(), ioe);
 		}
 		

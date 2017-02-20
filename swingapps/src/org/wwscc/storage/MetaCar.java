@@ -6,9 +6,7 @@ package org.wwscc.storage;
  * something that was required to be set during instantiation.
  */
 public class MetaCar extends Car 
-{
-	private static final long serialVersionUID = 7446741644331347649L;
-	
+{	
 	protected boolean isRegistered;
 	protected boolean isInRunOrder;
 	protected boolean hasActivity;

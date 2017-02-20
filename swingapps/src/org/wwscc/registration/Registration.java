@@ -9,7 +9,6 @@
 package org.wwscc.registration;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -23,9 +22,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
@@ -39,7 +36,6 @@ import org.wwscc.util.ApplicationState;
 import org.wwscc.util.Logging;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
-import org.wwscc.util.Prefs;
 
 
 public class Registration extends JFrame
@@ -82,9 +78,9 @@ public class Registration extends JFrame
 		JMenu options = new JMenu("Options");
 		options.add(new BarcodeScannerOptionsAction());
 		
-		JMenu attendance = new JMenu("Attendance");
-		attendance.add(new AttendanceConfigureAction());
-		attendance.add(new JCheckBoxMenuItem(new AttendanceShowAction()));
+//		JMenu attendance = new JMenu("Attendance");
+//		attendance.add(new AttendanceConfigureAction());
+//		attendance.add(new JCheckBoxMenuItem(new AttendanceShowAction()));
 		
 		JMenu tools = new JMenu("Tools");
 //		tools.add(new DriverMergingAction());
@@ -95,7 +91,7 @@ public class Registration extends JFrame
 		bar.add(file);
 		bar.add(find);
 		bar.add(options);
-		bar.add(attendance);
+//		bar.add(attendance);
 		bar.add(tools);
 		bar.add(merge);
 		setJMenuBar(bar);
@@ -135,6 +131,7 @@ public class Registration extends JFrame
 	}
 */
 	
+	/* FINISH ME IF WE NEED THIS AGAIN
 	final static class AttendanceConfigureAction extends AbstractAction
 	{
 		public AttendanceConfigureAction() { super("Configure Attendance Values"); }
@@ -151,6 +148,7 @@ public class Registration extends JFrame
 			}
 		}
 	}
+	*/
 	
 	class AttendanceShowAction extends AbstractAction
 	{

@@ -1,14 +1,18 @@
 package org.wwscc.storage;
 
-import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -16,37 +20,92 @@ import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.postgresql.util.PGobject;
 
-public class PostgresqlDatabase extends SQLDataInterface {
-
+public class PostgresqlDatabase extends SQLDataInterface 
+{
 	private static final Logger log = Logger.getLogger(PostgresqlDatabase.class.getCanonicalName());
-	private Connection conn;
+	private static final List<String> ignore = Arrays.asList(new String[] {"information_schema", "pg_catalog", "public"});
 	
-	public PostgresqlDatabase() throws SQLException
+	private Connection conn;
+	private Map<ResultSet, PreparedStatement> leftovers;
+	
+	public PostgresqlDatabase()
 	{
-		String url = "jdbc:postgresql://127.0.0.1/scorekeeper";
-		Properties props = new Properties();
-		props.setProperty("user","pro2016");
-		props.setProperty("password","pro2016");
-		//props.setProperty("ssl","true");
-		conn = DriverManager.getConnection(url, props);
+		conn = null;
+		leftovers = new HashMap<ResultSet, PreparedStatement>();
+	}
+
+	static public List<String> getSeriesList()
+	{
+	    List<String> ret = new ArrayList<String>();
+		try
+		{
+			String url = "jdbc:postgresql://127.0.0.1/scorekeeper";
+			Properties props = new Properties();
+			props.setProperty("user", "scorekeeper");
+			props.setProperty("password", "scorkeeeper");
+			//props.setProperty("ssl","true");
+			Connection sconn = DriverManager.getConnection(url, props);
+
+			DatabaseMetaData meta = sconn.getMetaData();
+		    ResultSet rs = meta.getSchemas();
+		    while (rs.next()) {
+		    	String s = rs.getString("TABLE_SCHEM");
+		    	if (!ignore.contains(s))
+		    		ret.add(s);
+		    }
+		    rs.close();
+		    sconn.close();
+		}
+		catch (SQLException sqle)
+		{
+			logError("getSeriesList", sqle);
+		}
+		
+		return ret;
+	}
+    
+	@Override
+	public void open(String series, String password)
+	{
+		try
+		{
+			if ((conn != null) && (!conn.isClosed()))
+				close();
+			
+			String url = "jdbc:postgresql://127.0.0.1/scorekeeper";
+			Properties props = new Properties();
+			props.setProperty("user", series);
+			props.setProperty("password", password);
+			//props.setProperty("ssl","true");
+			conn = DriverManager.getConnection(url, props);
+		} 
+		catch (SQLException sqle)
+		{
+			log.severe(String.format("Error opening %s: %s", series, sqle));			
+		}
 	}
 	
 	@Override
-	public void start() throws IOException {
+	public void close() 
+	{
 		try {
-			conn.setAutoCommit(false);
+			if (conn != null)
+				conn.close();
 		} catch (SQLException sqle) {
-			throw new IOException(sqle);
+			log.warning("closing error: " + sqle);
 		}
 	}
 
 	@Override
-	public void commit() throws IOException {
-		try {
-			conn.setAutoCommit(true);
-		} catch (SQLException sqle) {
-			throw new IOException(sqle);
-		}
+	public void start() throws SQLException 
+	{
+		conn.setAutoCommit(false);
+	}
+
+	@Override
+	public void commit() throws SQLException 
+	{
+		conn.setAutoCommit(true);
 	}
 
 	@Override
@@ -54,15 +113,9 @@ public class PostgresqlDatabase extends SQLDataInterface {
 		try {
 			conn.rollback();
 		} catch (SQLException sqle) {
-			log.warning("rollback failed");
+			log.warning("Database rollback failed.  You should probably restart the application.");
 		}
 	}
-
-	@Override
-	public int lastInsertId() throws IOException {
-		throw new IOException("Remove last insert ids");
-	}
-
 
 	void bindParam(PreparedStatement p, List<Object> args) throws SQLException
 	{
@@ -92,126 +145,86 @@ public class PostgresqlDatabase extends SQLDataInterface {
 				throw new SQLException("unexpected param type: " + v.getClass());
 			}
 		}
-	}
+	}	
 	
-	
-	ResultRow loadRow(ResultSet rs) throws SQLException
+	@Override
+	public int executeUpdate(String sql, List<Object> args) throws SQLException 
 	{
-		ResultRow row = new ResultRow();
-		ResultSetMetaData meta = rs.getMetaData();
-		
-		for (int ii = 1; ii <= meta.getColumnCount(); ii++)
-		{
-			int type = meta.getColumnType(ii);
-			String name = meta.getColumnName(ii);
-
-			if (type == Types.INTEGER) {
-				row.put(name, rs.getInt(ii));
-			} else if (type == Types.DOUBLE) {
-				row.put(name, rs.getDouble(ii));
-			} else if ((type == Types.BOOLEAN) || (type == Types.BIT)) {
-				row.put(name, rs.getBoolean(ii));
-			} else if (type == Types.VARCHAR) {
-				row.put(name, rs.getString(ii));
-			} else if (type == Types.BLOB) {
-				row.put(name, rs.getBlob(ii));
-			} else if (type == Types.OTHER) {
-				row.put(name, rs.getObject(ii));
-			} else if (type == Types.DATE) {
-				row.put(name, rs.getDate(ii));
-			} else if (type == Types.TIMESTAMP) {
-				row.put(name, rs.getTimestamp(ii));
-			} else {
-				throw new SQLException("unexpected result type: " + type);
-			}
-		}
-		
-		return row;
+		int ret = -1;
+		PreparedStatement p = conn.prepareStatement(sql);
+		bindParam(p, args);
+		p.executeUpdate();
+		// FINISH ME ret = lastUpdateId();
+		p.close();
+		return ret;
 	}
 
-	
-	
 	@Override
-	public void executeUpdate(String sql, List<Object> args) throws IOException {
-		try {
-			PreparedStatement p = conn.prepareStatement(sql);
-			bindParam(p, args);
+	public void executeGroupUpdate(String sql, List<List<Object>> args) throws SQLException 
+	{
+		PreparedStatement p = conn.prepareStatement(sql);
+		for (List<Object> l : args) {
+			bindParam(p, l);
 			p.executeUpdate();
-			p.close();
-		} catch (SQLException sqle) {
-			throw new IOException(sqle);
 		}
+		p.close();
 	}
 
+
+	@Override 
+	public ResultSet executeSelect(String sql, List<Object> args) throws SQLException
+	{
+		PreparedStatement p = conn.prepareStatement(sql);
+		if (args != null)
+			bindParam(p, args);
+		ResultSet s = p.executeQuery();
+		synchronized(leftovers) {
+			leftovers.put(s,  p);
+		}
+		return s;
+	}
+
+	
 	@Override
-	public void executeGroupUpdate(String sql, List<List<Object>> args) throws IOException {
-		try {
-			PreparedStatement p = conn.prepareStatement(sql);
-			for (List<Object> l : args) {
-				bindParam(p, l);
-				p.executeUpdate();
+	public void closeLeftOvers()
+	{
+		synchronized (leftovers)
+		{
+			for (ResultSet s : leftovers.keySet())
+			{
+				try {
+					s.close();
+					leftovers.get(s).close();
+				} catch (SQLException sqle) {
+					log.info("Error closing leftover statements: " + sqle);
+				}
 			}
-			p.close();
-		} catch (SQLException sqle) {
-			throw new IOException(sqle);
+			
+			leftovers.clear();
 		}
 	}
 
-	/*
+
 	@Override
-	public <T> List<T> executeSelect(String key, List<Object> args, Constructor<T> objc) throws SQLException 
+	public <T> List<T> executeSelect(String sql, List<Object> args, Constructor<T> objc) throws SQLException 
 	{
 		try
 		{
 			List<T> result = new ArrayList<T>();
-			PreparedStatement p = conn.prepareStatement(SQLMap.get(key));
+			PreparedStatement p = conn.prepareStatement(sql);
 			if (args != null)
 				bindParam(p, args);
 			ResultSet s = p.executeQuery();
 			while (s.next()) {
 				result.add(objc.newInstance(s));
 			}
+			s.close();
 			p.close();
 			return result;
 		} 
-		catch (Exception e)
+		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 		{
 			throw new SQLException(e);
 		}
 	}
-	*/
-	
-	@Override
-	public ResultData executeSelect(String key, List<Object> args) throws IOException {
-		try {
-			PreparedStatement p = conn.prepareStatement(SQLMap.get(key));
-			if (args != null)
-				bindParam(p, args);
-			ResultSet s = p.executeQuery();
-			ResultData d = new ResultData();
-			while (s.next()) {
-				d.add(loadRow(s));
-			}
-			p.close();
-			return d;
-		} catch (SQLException sqle) {
-			throw new IOException(sqle);
-		}
-	}
-
-	@Override
-	protected ResultData getCarAttributesImpl(String attr) throws IOException {
-		// TODO Auto-generated method stub
-		throw new IOException("do this");
-	}
-
-	@Override
-	public void close() {
-		try {
-			conn.close();
-		} catch (SQLException sqle) {
-			log.warning("closing error: " + sqle);
-		}
-	}
-
 }

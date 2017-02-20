@@ -8,39 +8,26 @@
 
 package org.wwscc.storage;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.UUID;
-
 import org.wwscc.util.IdGenerator;
 
-public class Driver implements Serializable, Comparable<Driver>
+public class Driver extends AttrBase implements Comparable<Driver>
 {
-	private static final long serialVersionUID = -5960219850370470938L;
-	
 	protected UUID driverid;
 	protected String firstname;
 	protected String lastname;
-	protected String alias;
 	protected String email;
-	protected String address;
-	protected String city;
-	protected String state;
-	protected String zip;
-	protected String phone;
-	protected String brag;
-	protected String sponsor;
+	protected String password;
 	protected String membership;
-	private Map<String, String> extras;
 
 	/* meta */
 	public int carcount = 0;
 
 	public Driver()
 	{
-		extras = new HashMap<String,String>();
 	}
 
 	public Driver(String f, String l)
@@ -48,64 +35,59 @@ public class Driver implements Serializable, Comparable<Driver>
 		driverid = IdGenerator.generateId();
 		firstname = f;
 		lastname = l;
-		alias = "";
 		email = "";
-		address = "";
-		city = "";
-		state = "";
-		zip = "";
-		phone = "";
-		brag = "";
-		sponsor = "";
 		membership = "";
-		extras = new HashMap<String,String>();
 	}
-
-	public String getFullName() { return firstname + " " + lastname; }
-	public UUID getDriverId() { return driverid; }
-	public String getFirstName() { return firstname; }
-	public String getLastName() { return lastname; }
-	public String getEmail() { return email; }
-	public String getAddress() { return address; }
-	public String getCity() { return city; }
-	public String getState() { return state; }
-	public String getZip() { return zip; }
-	public String getPhone() { return phone; }
-	public String getBrag() { return brag; }
-	public String getSponsor() { return sponsor; }
-	public String getAlias() { return alias; }
-	public String getMembership() { return membership; }
-	public String getExtra(String name) 
-	{ 
-		String ret = extras.get(name); 
-		if (ret == null)
-			return "";
+	
+	public Driver(ResultSet rs) throws SQLException
+	{
+		driverid   = (UUID)rs.getObject("driverid");
+		firstname  = rs.getString("firstname");
+		lastname   = rs.getString("lastname");
+		email      = rs.getString("email");
+		membership = rs.getString("membership");
+		loadAttr(rs);
+	}
+	
+	public LinkedList<Object> getValues()
+	{
+		LinkedList<Object> ret = new LinkedList<Object>();
+		ret.add(driverid);
+		ret.add(firstname);
+		ret.add(lastname);
+		ret.add(email);
+		ret.add(membership);
+		ret.add(attr);
 		return ret;
 	}
-	public Set<String> getExtraKeys()
-	{
-		return extras.keySet();
-	}
 
-	public void setFirstName(String s) { firstname = s; }
-	public void setLastName(String s) { lastname = s; }
-	public void setEmail(String s) { email = s; }
-	public void setAddress(String s) { address = s; }
-	public void setCity(String s) { city = s; }
-	public void setState(String s) { state = s; }
-	public void setZip(String s) { zip = s; }
-	public void setPhone(String s) { phone = s; }
-	public void setBrag(String s) { brag = s; }
-	public void setSponsor(String s) { sponsor = s; }
-	public void setAlias(String s) { alias = s; }
+	public String getFullName()   { return firstname + " " + lastname; }
+	public UUID   getDriverId()   { return driverid; }
+	public String getFirstName()  { return firstname; }
+	public String getLastName()   { return lastname; }
+	public String getEmail()      { return email; }
+	public String getMembership() { return membership; }
+	public String getAddress()    { return getAttrS("address"); }
+	public String getCity()       { return getAttrS("city"); }
+	public String getState()      { return getAttrS("state"); }
+	public String getZip()        { return getAttrS("zip"); }
+	public String getPhone()      { return getAttrS("phone"); }
+	public String getBrag()       { return getAttrS("brag"); }
+	public String getSponsor()    { return getAttrS("sponsor"); }
+	public String getAlias()      { return getAttrS("alias"); }
+	
+	public void setFirstName(String s)  { firstname = s; }
+	public void setLastName(String s)   { lastname = s; }
+	public void setEmail(String s)      { email = s; }
 	public void setMembership(String s) { membership = s; }
-	public void setExtra(String name, String val) 
-	{ 
-		if ((val == null) || (val.trim().length() == 0))
-			extras.remove(name);
-		else
-			extras.put(name, val);
-	}
+	public void setAddress(String s)    { setAttrS("address", s); }
+	public void setCity(String s)       { setAttrS("city", s); }
+	public void setState(String s)      { setAttrS("state", s); }
+	public void setZip(String s)        { setAttrS("zip", s); }
+	public void setPhone(String s)      { setAttrS("phone", s); }
+	public void setBrag(String s)       { setAttrS("brag", s); }
+	public void setSponsor(String s)    { setAttrS("sponsor", s); }
+	public void setAlias(String s)      { setAttrS("alias", s); }
 	
 	@Override
 	public boolean equals(Object o)
@@ -129,6 +111,5 @@ public class Driver implements Serializable, Comparable<Driver>
 	{
 		return firstname + " " + lastname;
 	}
-	
 }
 

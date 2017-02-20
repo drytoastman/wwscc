@@ -8,37 +8,38 @@
 
 package org.wwscc.storage;
 
-import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author bwilson
  */
 public class FakeDatabase extends SQLDataInterface
 {
-	ResultData fakedata = new ResultData();
 	public FakeDatabase() {}
 
 	@Override
+	public void open(String series, String password) {}
+	@Override
 	public void close() {}
 	@Override
-	public void start() throws IOException {}
+	public void start() throws SQLException {}
 	@Override
-	public void commit() throws IOException {}
+	public void commit() throws SQLException {}
 	@Override
 	public void rollback() {}
 	@Override
-	public int lastInsertId() throws IOException { return -1; }
+	public int executeUpdate(String sql, List<Object> args) throws SQLException { return -1; }
 	@Override
-	public void executeUpdate(String sql, List<Object> args) throws IOException {}
+	public void executeGroupUpdate(String sql, List<List<Object>> args) throws SQLException {}
 	@Override
-	public void executeGroupUpdate(String sql, List<List<Object>> args) throws IOException {}
+	public ResultSet executeSelect(String sql, List<Object> args) throws SQLException { throw new SQLException("fake database"); }
 	@Override
-	public ResultData executeSelect(String sql, List<Object> args) throws IOException { return fakedata; }
-	//@Override
-	//public <T> List<T> executeSelect(String key, List<Object> args, Constructor<T> objc) throws SQLException { return new ArrayList<T>(); }
+	public void closeLeftOvers() {}
 	@Override
-	protected ResultData getCarAttributesImpl(String attr) throws IOException { return fakedata; }
+	public <T> List<T> executeSelect(String key, List<Object> args, Constructor<T> objc) throws SQLException { return new ArrayList<T>(); }
 }
 

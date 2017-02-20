@@ -9,25 +9,37 @@
 package org.wwscc.storage;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- *
- * @author bwilson
- */
-public abstract class DataInterface
+/** */
+public interface DataInterface
 {	
-	public abstract void close();
+	/**
+	 * Open a new series.  Closes the previous series if still open.
+	 * @param series the name of the series to open
+	 */
+	public void open(String series, String password);
 	
-	public abstract String getSetting(String key);
+	/**
+	 * Closes the currently open series connection if open.
+	 */
+	public void close();
+	
+	/**
+	 * @param key the setting to lookup
+	 * @return the string value of the setting
+	 */
+	public String getSetting(String key);
 	
 	/** 
-	 * @return a list of all events in the database 
+	 * @return a list of all events in the current series 
 	 */
-	public abstract List<Event> getEvents();
+	public List<Event> getEvents();
 	
 	/** 
 	 * update the run count for an event
@@ -35,48 +47,45 @@ public abstract class DataInterface
 	 * @param runs the number of runs to set to
 	 * @return true if update succeeded
 	 */
-	public abstract boolean updateEventRuns(int eventid, int runs);
+	public boolean updateEventRuns(int eventid, int runs);
 
 	/** 
 	 * @param eventid TODO
 	 * @return a list of all entrants participating in the current event  
 	 */
-	public abstract List<Entrant> getEntrantsByEvent(int eventid);
+	public List<Entrant> getEntrantsByEvent(int eventid);
 	
 	/** 
 	 * @param eventid TODO
 	 * @return a list of all entrants registered for an event 
 	 */
-	public abstract List<Entrant> getRegisteredEntrants(int eventid);
+	public List<Entrant> getRegisteredEntrants(int eventid);
 	
 	/** 
 	 * @param driverid the driver id of the cars to search for
 	 * @param eventid TODO
 	 * @return a list of all registered car ids for a driver
 	 */
-	public abstract List<Car> getRegisteredCars(UUID driverid, int eventid);
+	public List<Car> getRegisteredCars(UUID driverid, int eventid);
 	
 	/* Entrants w/ runs */
-	public abstract List<Entrant> getEntrantsByRunOrder(int eventid, int course, int rungroup); // get all entrants in a particular event/course/rungroup and loads their runs
-	public abstract Entrant loadEntrant(int eventid, UUID carid, int course, boolean loadruns); // load an entrant by carid and all of the associated runs if desired
+	public List<Entrant> getEntrantsByRunOrder(int eventid, int course, int rungroup); // get all entrants in a particular event/course/rungroup and loads their runs
+	public Entrant loadEntrant(int eventid, UUID carid, int course, boolean loadruns); // load an entrant by carid and all of the associated runs if desired
 
-	public abstract List<UUID> getCarIdsForRunGroup(int eventid, int course, int rungroup); // get the carids based on the current run group
-	public abstract Set<UUID> getCarIdsForCourse(int eventid, int course); // get the participating cardids based on the course
-	public abstract void setRunOrder(int eventid, int course, int rungroup, List<UUID> carids); // set the run order of the current rungroup to carids
+	public List<UUID> getCarIdsForRunGroup(int eventid, int course, int rungroup); // get the carids based on the current run group
+	public Set<UUID> getCarIdsForCourse(int eventid, int course); // get the participating cardids based on the course
+	public void setRunOrder(int eventid, int course, int rungroup, List<UUID> carids); // set the run order of the current rungroup to carids
 
-	//public abstract List<String> getRunGroupMapping(); // return the class codes assigned to the current run group
+	public void newDriver(Driver d) throws SQLException; // create a new driver from data in d and set the id variable
+	public void updateDriver(Driver d) throws SQLException; // update the driver values in the database
+	public void deleteDriver(Driver d) throws SQLException;
+	public void deleteDrivers(Collection<Driver> d) throws SQLException;
+	public Driver getDriver(UUID driverid);
+	public List<Driver> findDriverByMembership(String membership);
+	public List<Driver> getDriversLike(String firstname, String lastname);
 
-	public abstract void newDriver(Driver d) throws IOException; // create a new driver from data in d and set the id variable
-	public abstract void updateDriver(Driver d) throws IOException; // update the driver values in the database
-	public abstract void deleteDriver(Driver d) throws IOException;
-	public abstract void deleteDrivers(Collection<Driver> d) throws IOException;
-	public abstract Driver getDriver(UUID driverid);
-	public abstract String getDriverNotes(UUID driverid);
-	public abstract void setDriverNotes(UUID driverid, String notes);
-	public abstract List<Driver> findDriverByMembership(String membership);
-
-	public abstract List<Car> getCarsForDriver(UUID driverid); // get all cars for this driverid
-	public abstract List<String> getCarAttributes(String attr); // get a unique list of possible 'attr' for the car
+	public List<Car> getCarsForDriver(UUID driverid); // get all cars for this driverid
+	public Map<String, Set<String>> getCarAttributes(); // get a unique list of possible 'attr' for the car
 	
 	/**
 	 * Upon successful return, the provided car will be in the registered table for the current event.  If overwrite
@@ -88,40 +97,31 @@ public abstract class DataInterface
 	 * @param overwrite true if we should overwrite a current registration entry (i.e. paid flag)
 	 * @throws IOException
 	 */
-	public abstract void registerCar(int eventid, UUID carid, boolean paid, boolean overwrite) throws IOException;
+	public void registerCar(int eventid, UUID carid, boolean paid, boolean overwrite) throws SQLException;
 	
-	public abstract void unregisterCar(int eventid, UUID carid) throws IOException; // remove this car from the current event registration
-	public abstract void newCar(Car c) throws IOException; // create a new car entry with this data, sets the id variable
-	public abstract void updateCar(Car d) throws IOException; // update the car values in the database
-	public abstract void deleteCar(Car d) throws IOException;
-	public abstract void deleteCars(Collection<Car> d) throws IOException;
-	public abstract boolean isRegistered(UUID eventid, UUID carid);
-	public abstract MetaCar loadMetaCar(Car c, int eventid, int course);
+	public void unregisterCar(int eventid, UUID carid) throws SQLException; // remove this car from the current event registration
+	public void newCar(Car c) throws SQLException; // create a new car entry with this data, sets the id variable
+	public void updateCar(Car d) throws SQLException; // update the car values in the database
+	public void deleteCar(Car d) throws SQLException;
+	public void deleteCars(Collection<Car> d) throws SQLException;
+	public boolean isRegistered(UUID eventid, UUID carid);
+	public MetaCar loadMetaCar(Car c, int eventid, int course);
 
-	//public abstract boolean setEntrantRuns(Car newCar, Collection<Run> runs);
-	//public abstract void insertRun(Run r); 
-	public abstract void setRun(Run r);
-	public abstract void deleteRun(int eventid, UUID carid, int course, int run);
+	public void setRun(Run r);
+	public void deleteRun(int eventid, UUID carid, int course, int run);
 
-	public abstract List<EventResult> getResultsForClass(UUID eventid, String classcode);
-	public abstract AnnouncerData getAnnouncerDataForCar(UUID eventid, UUID carid);
+	/* Challenge */
+	public Set<UUID> getCarIdsByChallenge(int challengeid);
+	public void newChallenge(UUID eventid, String name, int size);
+	public void deleteChallenge(int challengeid);
+	public List<Challenge> getChallengesForEvent(int eventid);
+	public List<ChallengeRound> getRoundsForChallenge(int challengeid);
+	public List<ChallengeRun> getRunsForChallenge(int challengeid);
+	public Dialins loadDialins(int eventid);
+	public void updateChallenge(Challenge c);
+	public void updateChallengeRound(ChallengeRound r);
+	public void updateChallengeRounds(List<ChallengeRound> rounds);
 
-	//** Challenge **/
-	public abstract Set<UUID> getCarIdsByChallenge(int challengeid);
-	public abstract void newChallenge(UUID eventid, String name, int size);
-	public abstract void deleteChallenge(int challengeid);
-	public abstract List<Challenge> getChallengesForEvent(int eventid);
-	public abstract List<ChallengeRound> getRoundsForChallenge(int challengeid);
-	public abstract List<ChallengeRun> getRunsForChallenge(int challengeid);
-	public abstract Dialins loadDialins(int eventid);
-	public abstract void updateChallenge(Challenge c);
-	public abstract void updateChallengeRound(ChallengeRound r);
-	public abstract void updateChallengeRounds(List<ChallengeRound> rounds);
-
-	//** Cachable ??? ***
-	public abstract List<Driver> getDriversLike(String firstname, String lastname);
-	//public abstract Map<UUID, Driver> getAllDrivers();
-	//public abstract Map<UUID, Car> getAllCars();
 	
 	/**
 	 * Uses currentEvent, currentCourse
@@ -130,7 +130,7 @@ public abstract class DataInterface
 	 * @param course TODO
 	 * @return true if the carid is present in any rungroup for the current event/course
 	 */
-	public abstract boolean isInOrder(int eventid, UUID carid, int course);
+	public boolean isInOrder(int eventid, UUID carid, int course);
 	
 	/**
 	 * Uses currentEvent, currentCourse, currentRunGroup
@@ -140,8 +140,8 @@ public abstract class DataInterface
 	 * @param rungroup TODO
 	 * @return true if the carid is present in the current event/course/rungroup
 	 */
-	public abstract boolean isInCurrentOrder(int eventid, UUID carid, int course, int rungroup);
+	public boolean isInCurrentOrder(int eventid, UUID carid, int course, int rungroup);
 	
-	public abstract ClassData getClassData();
+	public ClassData getClassData();
 }
 

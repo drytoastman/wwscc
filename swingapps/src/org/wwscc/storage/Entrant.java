@@ -8,6 +8,8 @@
 
 package org.wwscc.storage;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,6 +29,16 @@ public class Entrant
 	{
 		runs = new HashMap<Integer,Run>();
 	}
+	
+	public Entrant(ResultSet rs) throws SQLException
+	{
+		this();
+		car       = new Car(rs);
+		driverid  = (UUID)rs.getObject("driverid");
+		firstname = rs.getString("firstname");
+		lastname  = rs.getString("lastname");
+		paid      = rs.getBoolean("paid");
+	}
 
 	static public class NumOrder implements Comparator<Entrant>
 	{
@@ -39,9 +51,9 @@ public class Entrant
 	public String getLastName() { return lastname; }
 
 	public UUID getCarId() { return car.carid; }
-	public String getCarModel() { return car.model; }
-	public String getCarColor() { return car.color; }
-	public String getCarDesc() { return car.year + " " + car.model + " " + car.color; }
+	public String getCarModel() { return car.getModel(); }
+	public String getCarColor() { return car.getColor(); }
+	public String getCarDesc() { return car.getYear() + " " + car.getModel() + " " + car.getColor(); }
 	public String getClassCode() { return car.classcode; }
 	public String getIndexStr() { return car.getIndexStr(); }
 	public int getNumber() { return car.number; }

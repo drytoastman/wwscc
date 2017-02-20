@@ -10,16 +10,14 @@ package org.wwscc.storage;
 
 import java.io.Serializable;
 import java.sql.Date;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-
-import org.json.simple.JSONObject;
-import org.wwscc.storage.SQLDataInterface.ResultRow;
 
 /**
  * Represents a single event from the database.
  */
-public class Event implements Serializable
+public class Event extends AttrBase implements Serializable
 {
 	private static final long serialVersionUID = 3721488283732959966L;
 
@@ -37,21 +35,7 @@ public class Event implements Serializable
 	protected double    gatepen;
 	protected boolean   ispro;
 	protected boolean   ispractice;
-	protected JSONObject attr;
-	
-	/*
-	protected String segments;
-	protected String location;
-	protected String sponsor;
-	protected String host;
-	protected String designer;
-	protected boolean doublespecial; // special double entry handling for registration
-	protected int cost;
-	protected String paypal;
-	protected String snail;
-	protected String notes;
-	*/
-	
+		
 	@Override
 	public String toString()
 	{
@@ -62,7 +46,7 @@ public class Event implements Serializable
 	{
 	}
 	
-	public Event(ResultRow rs) throws SQLException
+	public Event(ResultSet rs) throws SQLException
 	{
 		eventid     = rs.getInt("eventid");
 		name        = rs.getString("name");
@@ -78,7 +62,7 @@ public class Event implements Serializable
 		gatepen 	= rs.getDouble("gatepen");
 		ispro       = rs.getBoolean("ispro");
 		ispractice  = rs.getBoolean("ispractice");
-		attr        = rs.getJSON("attr");
+		loadAttr(rs);
 	}
 
 	public int getEventId() { return eventid; }
