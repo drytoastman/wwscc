@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 
@@ -115,7 +116,7 @@ public abstract class SQLDataInterface implements DataInterface
 	 * @param d result data containing entrant info
 	 * @param r result data containing run info or null
 	 * @return a list of entrants
-	 * @throws java.io.IOException
+	 * @throws SQLException 
 	 */
 	List<Entrant> loadEntrants(ResultSet d, ResultSet r) throws SQLException
 	{
@@ -154,7 +155,7 @@ public abstract class SQLDataInterface implements DataInterface
 		try
 		{
 			return loadEntrants(executeSelect("select distinct d.firstname as firstname,d.lastname as lastname,c.* from runs as r, cars as c, drivers as d " +
-						"where r.carid=c.id AND c.driverid=d.id and r.eventid=?", newList(eventid)), null);
+						"where r.carid=c.carid AND c.driverid=d.driverid and r.eventid=?", newList(eventid)), null);
 		}
 		catch (Exception ioe)
 		{
@@ -186,7 +187,7 @@ public abstract class SQLDataInterface implements DataInterface
 		try
 		{
 			return executeSelect("select c.* from registered as x, cars as c, drivers as d " +
-						"where x.carid=c.id AND c.driverid=d.id and x.eventid=? and d.id=?", 
+						"where x.carid=c.carid AND c.driverid=d.driverid and x.eventid=? and d.driverid=?", 
 						newList(eventid, driverid), Car.class.getConstructor(ResultSet.class));
 		}
 		catch (Exception ioe)
@@ -232,8 +233,8 @@ public abstract class SQLDataInterface implements DataInterface
 	{
 		try
 		{
-			ResultSet d = executeSelect("select d.firstname,d.lastname,c.*,r.paid from drivers as d, cars as c LEFT JOIN registered as r on r.carid=c.id and r.eventid=?  " +
-						"where c.driverid=d.id and c.id=?", newList(eventid, carid));
+			ResultSet d = executeSelect("select d.firstname,d.lastname,c.*,r.paid from drivers as d, cars as c LEFT JOIN registered as r on r.carid=c.carid and r.eventid=?  " +
+						"where c.driverid=d.driverid and c.carid=?", newList(eventid, carid));
 			ResultSet runs = null;
 			if (loadruns)
 				runs = executeSelect("select * from runs where carid=? and eventid=? and course=?", newList(carid, eventid, course));
@@ -298,28 +299,29 @@ public abstract class SQLDataInterface implements DataInterface
 			/* Start transaction */
 			start();
 
-			/* Delete the old */
-			List<Object> vals = newList(eventid, course, rungroup);
-			executeUpdate("delete from runorder where eventid=? and course=? and rungroup=?", vals);
-
-			/* Reinsert all */
-			vals.clear();
-
 			List<List<Object>> lists = new ArrayList<List<Object>>(carids.size());
 
-			int ii = 0;
+			int row = 0;
 			for (UUID carid : carids)
 			{
+				row++;
 				List<Object> items = new ArrayList<Object>(6);
 				items.add(eventid);
 				items.add(course);
 				items.add(rungroup);
+				items.add(row);
 				items.add(carid);
-				items.add(++ii);
+				items.add(carid);
 				lists.add(items);
 			}
-
-			executeGroupUpdate("insert into runorder values (NULL, ?,?,?,?,?)", lists);
+			
+			// update our ids
+			executeGroupUpdate("INSERT INTO runorder VALUES (?,?,?,?,?,now()) " + 
+								"ON CONFLICT (eventid, course, rungroup, row) DO UPDATE " + 
+								"SET carid=?,modified=now()", lists);
+			
+			// clear out any leftovers from previous values
+			executeUpdate("DELETE FROM runorder where eventid=? and course=? and rungroup=? and row>?", newList(eventid, course, rungroup, row));
 			commit();
 		}
 		catch (Exception ioe)
@@ -477,7 +479,7 @@ public abstract class SQLDataInterface implements DataInterface
 			ResultSet rs = executeSelect("select attr from cars", null);
 			while (rs.next())
 			{
-				JSONObject attr = (JSONObject)rs.getObject("attr");
+				JSONObject attr = (JSONObject)new JSONParser().parse(rs.getString("attr"));
 				if (attr.containsKey("make"))  make.add((String)attr.get("make"));
 				if (attr.containsKey("model")) model.add((String)attr.get("model"));
 				if (attr.containsKey("color")) color.add((String)attr.get("color"));
@@ -572,7 +574,7 @@ public abstract class SQLDataInterface implements DataInterface
 	public void setRun(Run r)
 	{
 		try{
-			executeUpdate("insert into runs (eventid, carid, course, run, cones, gates, raw, status, attr, modified) " +
+			executeUpdate("INSERT INTO runs (eventid, carid, course, run, cones, gates, raw, status, attr, modified) " +
 						"values (?,?,?,?,?,?,?,?,?,now()) ON CONFLICT (eventid, carid, course, run) DO UPDATE " +
 						"SET cones=?,gates=?,raw=?,status=?,attr=?,modified=now()", 
 						newList(r.eventid, r.carid, r.course, r.run, r.cones, r.gates, r.raw, r.status, r.attr,
@@ -693,7 +695,7 @@ public abstract class SQLDataInterface implements DataInterface
 	{
 		try
 		{
-			return executeSelect("select * from runs where challengeid=?", newList(challengeid), ChallengeRun.class.getConstructor(ResultSet.class));
+			return executeSelect("select * from challengeruns where challengeid=?", newList(challengeid), ChallengeRun.class.getConstructor(ResultSet.class));
 		}
 		catch (Exception ioe)
 		{
@@ -711,10 +713,10 @@ public abstract class SQLDataInterface implements DataInterface
 	public Dialins loadDialins(int eventid) 
 	{
 		String sql = "select d.firstname as firstname, d.lastname as lastname, d.alias as alias, c.classcode as classcode, " +
-				"c.indexcode as indexcode, c.tireindexed as tireindexed, c.id as carid, SUM(r.raw) as myraw, f.position as position, f.sum as mynet " +
+				"c.indexcode as indexcode, c.tireindexed as tireindexed, c.carid as carid, SUM(r.raw) as myraw, f.position as position, f.sum as mynet " +
 				"from runs as r, cars as c, drivers as d, eventresults as f " +
-				"where r.carid=c.id and c.driverid=d.id and r.eventid=? and r.rorder=1 and f.eventid=? and f.carid=c.id " +
-				"group by d.id order by position";
+				"where r.carid=c.carid and c.driverid=d.driverid and r.eventid=? and r.rorder=1 and f.eventid=? and f.carid=c.carid " +
+				"group by d.driverid order by position";
 
 		try
 		{

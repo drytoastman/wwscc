@@ -15,7 +15,7 @@ public class IdGenerator
 	
 	static
 	{
-		for (int ii = 0; ii < 10; ii++)
+		for (int ii = 0; ii < 20; ii++)
 		{
 			try 
 			{
@@ -23,11 +23,14 @@ public class IdGenerator
 				if (ni != null) // real interface
 				{
 					byte[] hwaddr = ni.getHardwareAddress();
-					if (hwaddr != null) // not localhost
-					{
-						hw = new BigInteger(hwaddr).longValue();
-						break;
-					}
+					String dname  = ni.getDisplayName();
+					if (dname.startsWith("Microsoft")) continue;
+					if (dname.startsWith("VMware")) continue;
+					if (hwaddr == null) continue;
+
+					// HW will be somewhat unique
+					hw = new BigInteger(1, hwaddr).longValue();
+					break;
 				}
 			} 
 			catch (SocketException se) {}

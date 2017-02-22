@@ -28,25 +28,31 @@ public class Driver extends AttrBase implements Comparable<Driver>
 
 	public Driver()
 	{
+		super();
+		driverid = IdGenerator.generateId();
+		firstname = "";
+		lastname = "";
+		email = "";
+		password = "";
+		membership = "";
 	}
 
 	public Driver(String f, String l)
 	{
-		driverid = IdGenerator.generateId();
+		this();
 		firstname = f;
 		lastname = l;
-		email = "";
-		membership = "";
 	}
 	
 	public Driver(ResultSet rs) throws SQLException
 	{
+		super(rs);
 		driverid   = (UUID)rs.getObject("driverid");
 		firstname  = rs.getString("firstname");
 		lastname   = rs.getString("lastname");
 		email      = rs.getString("email");
+		password   = rs.getString("password");
 		membership = rs.getString("membership");
-		loadAttr(rs);
 	}
 	
 	public LinkedList<Object> getValues()
@@ -56,7 +62,9 @@ public class Driver extends AttrBase implements Comparable<Driver>
 		ret.add(firstname);
 		ret.add(lastname);
 		ret.add(email);
+		ret.add(password);
 		ret.add(membership);
+		attrCleanup();
 		ret.add(attr);
 		return ret;
 	}

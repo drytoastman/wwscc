@@ -134,13 +134,13 @@ public final class TimerClient implements RunServiceInterface, ThreadedClass
 						}
 						else if (line.startsWith("RUN "))
 						{
-							Run r = new Run();
+							Run r = new Run(0.0);
 							r.decode(line.substring(4));
 							Messenger.sendEvent(MT.TIMER_SERVICE_RUN, r);
 						}
 						else if (line.startsWith("DELETE "))
 						{
-							Run r = new Run();
+							Run r = new Run(0.0);
 							r.decode(line.substring(7));
 							Messenger.sendEvent(MT.TIMER_SERVICE_DELETE, r);
 						}

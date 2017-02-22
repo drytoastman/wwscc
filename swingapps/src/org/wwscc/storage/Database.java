@@ -48,6 +48,7 @@ public class Database
 		d = new PostgresqlDatabase();
 		d.open(series, password);
 		Messenger.sendEvent(MT.DATABASE_CHANGED, series);
+		Prefs.setSeries(series);
 	}
 
 	public static void closeDatabase()

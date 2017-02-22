@@ -8,6 +8,8 @@
 
 package org.wwscc.storage;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 
 /**
@@ -33,6 +35,14 @@ public class Challenge
 		eventid = inEvent;
 		name = inName;
 		depth = inDepth;
+	}
+	
+	public Challenge(ResultSet rs) throws SQLException
+	{
+		challengeid = rs.getInt("challengeid");
+		eventid     = rs.getInt("eventid");
+		name        = rs.getString("name");
+		depth       = rs.getShort("depth");
 	}
 	
 	public LinkedList<Object> getValues()

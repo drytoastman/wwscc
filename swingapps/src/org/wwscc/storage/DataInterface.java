@@ -22,6 +22,7 @@ public interface DataInterface
 	/**
 	 * Open a new series.  Closes the previous series if still open.
 	 * @param series the name of the series to open
+	 * @param password the password for the series user
 	 */
 	public void open(String series, String password);
 	
@@ -95,6 +96,7 @@ public interface DataInterface
 	 * @param carid the carid to register in the current event
 	 * @param paid true if the paid flag should be set
 	 * @param overwrite true if we should overwrite a current registration entry (i.e. paid flag)
+	 * @throws SQLException 
 	 * @throws IOException
 	 */
 	public void registerCar(int eventid, UUID carid, boolean paid, boolean overwrite) throws SQLException;

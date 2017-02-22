@@ -67,18 +67,17 @@ public class Run extends AttrBase implements Serial, Cloneable
 		}
 	}
 
-	public Run()
-	{
-		this(0,0,0,"NA");
-	}
-
-	public Run(double raw)
-	{
-		this(raw, 0, 0, "OK");
-	}
-	
+	/**
+	 * The basic Run constructor
+	 * @param raw   the raw time in seconds
+	 * @param cones the number of cones
+	 * @param gates the number of gates
+	 * @param status the status string
+	 */
 	public Run(double raw, int cones, int gates, String status)
 	{
+		super();
+		
 		if (Double.isNaN(raw))
 			this.raw = 999.999;
 		else
@@ -94,16 +93,24 @@ public class Run extends AttrBase implements Serial, Cloneable
 		this.run     = -1;
 	}
 
-
-	public Run(double reaction, double sixty , double time, int cones, int gates, String status)
+	/**
+	 * Shortcut for a clean run
+	 * @param raw the raw time in seconds
+	 */
+	public Run(double raw)
 	{
-		this(time, cones, gates, status);
-		attr.put("reaction", reaction);
-		attr.put("sixty", sixty);
+		this(raw, 0, 0, "OK");
 	}
+	
 
+	/**
+	 * Extract run data from a SQL result set
+	 * @param rs the result set pointed at the row in question
+	 * @throws SQLException
+	 */
 	public Run(ResultSet rs) throws SQLException
 	{
+		super(rs);
 		eventid = rs.getInt("eventid");
 		carid   = (UUID)rs.getObject("carid");
 		course  = rs.getInt("course");
@@ -112,7 +119,6 @@ public class Run extends AttrBase implements Serial, Cloneable
 		gates   = rs.getInt("gates");
 		status  = rs.getString("status");
 		raw     = rs.getDouble("raw");
-		loadAttr(rs);
 	}
 	
 	@Override
@@ -158,6 +164,7 @@ public class Run extends AttrBase implements Serial, Cloneable
 		this.carid = inCarid;
 		this.course = inCourse;
 		this.run = inRun;
+		attrCleanup();
 	}
 
 	public boolean isOK()

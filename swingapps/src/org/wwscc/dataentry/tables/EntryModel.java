@@ -48,8 +48,6 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 
 		Messenger.register(MT.EVENT_CHANGED, this);
 		Messenger.register(MT.RUNGROUP_CHANGED, this);
-		Messenger.register(MT.START_FAKE_USER, this);
-		Messenger.register(MT.STOP_FAKE_USER, this);
 	}
 
 	public void addCar(UUID carid)
@@ -271,63 +269,6 @@ public class EntryModel extends AbstractTableModel implements MessageListener
 
 	}
 
-
-	/*
-	public void compute(double index)
-	{
-		if (status.equals("OK"))		
-		{
-			String idap = Database.d.getSetting("indexafterpenalties");
-			if (idap.equalsIgnoreCase("true") || idap.equals("1"))
-				net = (raw + (Database.d.currentEvent.conepen * cones) + (Database.d.currentEvent.gatepen * gates)) * index;
-			else
-				net = (raw * index) + (Database.d.currentEvent.conepen * cones) + (Database.d.currentEvent.gatepen * gates);
-		}
-		else if (status.equals("RL") || status.equals("NS"))
-			net = 1999.999;
-		else
-			net = 999.999;
-	}
-	
-	protected void sortRuns(Map<Integer, Run> theruns)
-	{
-		List<Run> list = new ArrayList<Run>(theruns.values());
-		if (list.size() == 0) return;
-
-		Collections.sort(list, rorder);
-		for (int ii = 0; ii < list.size(); ii++)
-		{
-			list.get(ii).brorder = ii+1;
-			list.get(ii).rorder = -1;
-		}
-
-		Collections.sort(list, norder);
-		for (int ii = 0; ii < list.size(); ii++)
-		{
-			list.get(ii).bnorder = ii+1;
-			list.get(ii).norder = -1;
-		}
-
-		// reduce list to first x runs
-		int cnt = Math.min(DataEntry.state.getCurrentEvent().getCountedRuns(), Database.d.getClassData().getClass(car.classcode).getCountedRuns());
-		Iterator<Run> iter = list.iterator();
-		while (iter.hasNext())
-		{
-			Run r = iter.next();
-			if (r.run > cnt)
-				iter.remove();
-		}
-
-		Collections.sort(list, rorder);
-		for (int ii = 0; ii < list.size(); ii++)
-			list.get(ii).rorder = ii+1;
-
-		Collections.sort(list, norder);
-		for (int ii = 0; ii < list.size(); ii++)
-			list.get(ii).norder = ii+1;
-	}
-
-	*/
 
 	/* This will only effect the 'runorder' table and nothing else */
 	public void moveRow(int start, int end, int to)

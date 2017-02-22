@@ -100,7 +100,6 @@ public class RunsTable extends TableBase implements MessageListener, ActionListe
 					getSelectionModel().setSelectionInterval(selectedrow, selectedrow);
 					getColumnModel().getSelectionModel().setSelectionInterval(ii, ii);
 					scrollTable(selectedrow, ii);
-					Messenger.sendEvent(MT.NEXT_TO_FINISH, getModel().getValueAt(selectedrow, 0)); // use model to get driver
 					return;
 				}
 			}
@@ -109,7 +108,6 @@ public class RunsTable extends TableBase implements MessageListener, ActionListe
 		/* Nowhere to go, clear selection */
 		getSelectionModel().clearSelection();
 		getColumnModel().getSelectionModel().clearSelection();
-		Messenger.sendEvent(MT.NEXT_TO_FINISH, null);
 	} 
 
 

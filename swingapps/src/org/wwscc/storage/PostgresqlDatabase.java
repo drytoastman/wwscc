@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -119,6 +120,9 @@ public class PostgresqlDatabase extends SQLDataInterface
 
 	void bindParam(PreparedStatement p, List<Object> args) throws SQLException
 	{
+		if (args == null)
+			return;
+		
 		for (int ii = 0; ii < args.size(); ii++)
 		{
 			Object v = args.get(ii);
@@ -151,10 +155,15 @@ public class PostgresqlDatabase extends SQLDataInterface
 	public int executeUpdate(String sql, List<Object> args) throws SQLException 
 	{
 		int ret = -1;
-		PreparedStatement p = conn.prepareStatement(sql);
+		PreparedStatement p = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		bindParam(p, args);
 		p.executeUpdate();
-		// FINISH ME ret = lastUpdateId();
+		
+		ResultSet gen = p.getGeneratedKeys();
+		if (gen.next())
+			ret = gen.getInt(1);
+		
+		gen.close();
 		p.close();
 		return ret;
 	}

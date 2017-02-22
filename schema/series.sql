@@ -28,27 +28,30 @@ COMMENT ON TABLE serieslog is 'Change logs that are specific to this local datab
 CREATE OR REPLACE FUNCTION logseriesmods() RETURNS TRIGGER AS $body$
 DECLARE
     audit_row serieslog;
+    changes hstore;
 BEGIN
-    audit_row = ROW(
+    audit_row := ROW(
         NULL, TG_TABLE_NAME::text, session_user::text, CURRENT_TIMESTAMP,
         inet_client_addr(), current_query(), SUBSTRING(TG_OP,1,1), '{}', '{}'
     );
  
     IF (TG_OP = 'UPDATE') THEN
-        IF OLD = NEW THEN
+        changes := hstore(NEW) - hstore(OLD);
+        IF akeys(changes) = ARRAY['modified'] THEN
             RETURN NULL;
         END IF;
-        audit_row.rowdata = to_jsonb(OLD.*);
-        audit_row.changed = hstore_to_jsonb(hstore(NEW) - hstore(OLD));
+
+        audit_row.changed := hstore_to_jsonb(changes);
+        audit_row.rowdata := to_jsonb(OLD.*);
     ELSIF (TG_OP = 'DELETE') THEN
-        audit_row.rowdata = to_jsonb(OLD.*);
+        audit_row.rowdata := to_jsonb(OLD.*);
     ELSIF (TG_OP = 'INSERT') THEN
-        audit_row.rowdata = to_jsonb(NEW.*);
+        audit_row.rowdata := to_jsonb(NEW.*);
     ELSE
         RETURN NULL;
     END IF;
 
-    audit_row.logid = NEXTVAL('serieslog_logid_seq');
+    audit_row.logid := NEXTVAL('serieslog_logid_seq');
     INSERT INTO serieslog VALUES (audit_row.*);
     RETURN NULL;
 END;
@@ -183,10 +186,10 @@ CREATE TABLE runorder (
     row      INTEGER    NOT NULL, 
     carid    UUID       NOT NULL REFERENCES cars, 
     modified TIMESTAMP  NOT NULL DEFAULT now(),
-    PRIMARY KEY (eventid, course, rungroup, row)
+    PRIMARY KEY (eventid, course, rungroup, row),
+    CONSTRAINT oneentrypercourse UNIQUE (eventid, course, carid) DEFERRABLE INITIALLY DEFERRED
 );
 CREATE INDEX getgroup ON runorder(eventid, course, rungroup);
-CREATE UNIQUE INDEX onecarpercourse ON runorder(eventid, course, carid);
 REVOKE ALL ON runorder FROM public;
 GRANT  ALL ON runorder TO <seriesname>;
 CREATE TRIGGER ordermod AFTER INSERT OR UPDATE OR DELETE ON runorder FOR EACH ROW EXECUTE PROCEDURE logseriesmods();

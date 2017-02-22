@@ -33,7 +33,7 @@ def convert(sourcefile, name):
         import psycopg2
         import psycopg2.extras
         psycopg2.extras.register_uuid()
-        new = psycopg2.connect("dbname='scorekeeper' user='{}' host='127.0.0.1' password='{}'".format(name, name))
+        new = psycopg2.connect("host='127.0.0.1' user='{}' password='{}' dbname='scorekeeper'".format(name, name))
     except ImportError:
         new = JustPrint()
     cur = new.cursor()
@@ -90,16 +90,19 @@ def convert(sourcefile, name):
         newc['indexcode'] = c.indexcode or ''
         newc['number']    = c.number or 999
         newc['attr']      = dict()
-        for a in ('year', 'make', 'model', 'color', 'tireindexed'):
+        for a in ('year', 'make', 'model', 'color'):
             if hasattr(c, a) and getattr(c, a) is not None:
                 newc['attr'][a] = getattr(c, a)
+        for a in ('tireindexed'):
+            if hasattr(c, a) and getattr(c, a) is not None:
+                newc['attr'][a] = bool(getattr(c, a))
 
         cur.execute("insert into cars values (%s, %s, %s, %s, %s, %s, now())", 
             (newc['carid'], newc['driverid'], newc['classcode'], newc['indexcode'], newc['number'], json.dumps(newc['attr'])))
         remapcar[c.id] = newc['carid']
 
         
-    #EVENTS (all the same fields, change segments, perlimit to personallimit, totlimit to totalimit, need to map eventid and seriesid)
+    #EVENTS (all the same fields)
     for r in old.execute("select * from events"):
         e = AttrWrapper(r, r.keys())
 
@@ -128,7 +131,7 @@ def convert(sourcefile, name):
             (newe['eventid'], newe['name'], newe['date'], newe['regopened'], newe['regclosed'], newe['courses'], newe['runs'], newe['countedruns'],
             newe['perlimit'], newe['totlimit'], newe['conepen'], newe['gatepen'], newe['ispro'], newe['ispractice'], json.dumps(newe['attr'])))
 
-    #REGISTERED (map eventid, carid)
+    #REGISTERED (map carid)
     for r in old.execute("select * from registered"):
         oldr = AttrWrapper(r, r.keys())
         if oldr.eventid > 0x0FFFF:

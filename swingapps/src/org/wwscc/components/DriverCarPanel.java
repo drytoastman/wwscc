@@ -40,12 +40,11 @@ import org.wwscc.storage.Driver;
 import org.wwscc.storage.MetaCar;
 import org.wwscc.util.ApplicationState;
 import org.wwscc.util.MT;
-import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.SearchTrigger;
 
 
-public abstract class DriverCarPanel extends JPanel implements ActionListener, ListSelectionListener, FocusListener, MessageListener
+public abstract class DriverCarPanel extends JPanel implements ActionListener, ListSelectionListener, FocusListener
 {
 	private static final Logger log = Logger.getLogger(DriverCarPanel.class.getCanonicalName());
 
@@ -72,8 +71,6 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		super();
 		state = s;
 		setLayout(new MigLayout("", "fill"));
-
-		Messenger.register(MT.DATABASE_CHANGED, this);
 		
 		selectedDriver = null;
 		selectedCar = null;
@@ -116,25 +113,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 		carInfo = displayArea("\n");
 	}
 
-
-	@Override
-	public void event(MT type, Object o)
-	{
-		switch (type)
-		{
-			case DATABASE_CHANGED:
-				log.info("Finish extra fields bit\n");
-				break;
-				/*
-				try {
-					driverFields = Database.d.getDriverFields();
-				} catch (IOException ex) {
-					log.log(Level.WARNING, "Can''t load extra driver fields, editor will be hamstrung: {0}", ex);
-				}
-				break; */
-		}
-	}
-				
+	
 	private JTextArea displayArea(String text)
 	{
 		JTextArea ta = new JTextArea(text);
@@ -350,7 +329,8 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	public static String driverDisplay(Driver d)
 	{
 		StringBuilder ret = new StringBuilder();
-		ret.append(d.getFullName()).append("  (driverid=").append(d.getDriverId()).append(")\n");
+		ret.append(d.getDriverId()).append("\n");
+		ret.append(d.getFullName()).append("\n");
 		ret.append(d.getAddress()).append("\n");
 		ret.append(String.format("%s, %s %s\n", d.getCity(), d.getState(), d.getZip()));
 		ret.append(d.getEmail()).append("\n");
@@ -363,8 +343,8 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	public static String carDisplay(Car c)
 	{
 		StringBuilder ret = new StringBuilder();
+		ret.append(c.getCarId()).append("\n");
 		ret.append(c.getClassCode()).append(" ").append(c.getIndexStr()).append(" #").append(c.getNumber());
-		ret.append("  (carid=").append(c.getCarId()).append(")\n");
 		ret.append(c.getYear() + " " + c.getMake() + " " + c.getModel() + " " + c.getColor());
 		return ret.toString();
 	}

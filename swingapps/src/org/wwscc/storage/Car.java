@@ -40,6 +40,7 @@ public class Car extends AttrBase
 	 */
 	public Car()
 	{
+		super();
 		carid     = IdGenerator.generateId();
 		driverid  = IdGenerator.nullid;
 		number    = 0;
@@ -48,8 +49,13 @@ public class Car extends AttrBase
 		indexstr  = null;
 	}
 	
-	public Car(Car other)
+	/**
+	 * Constructor just for use by MetaCar
+	 * @param other the original car to base the MetaCar on
+	 */
+	protected Car(Car other)
 	{
+		super(other.attr);
 		carid     = other.carid;
 		driverid  = other.driverid;
 		number    = other.number;
@@ -60,12 +66,12 @@ public class Car extends AttrBase
 	
 	public Car(ResultSet rs) throws SQLException
 	{
+		super(rs);
 		carid     = (UUID)rs.getObject("carid");
 		driverid  = (UUID)rs.getObject("driverid");
 		classcode = rs.getString("classcode");
 		indexcode = rs.getString("indexcode");
 		number    = rs.getInt("number");
-		loadAttr(rs);
 		// FINISH ME indexstr  = getIndexStr(classcode, indexcode, isTireIndexed());
 	}
 
@@ -77,6 +83,7 @@ public class Car extends AttrBase
 		ret.add(classcode);
 		ret.add(indexcode);
 		ret.add(number);
+		attrCleanup();
 		ret.add(attr);
 		return ret;
 	}
@@ -93,6 +100,7 @@ public class Car extends AttrBase
 	public String getColor()       { return getAttrS("color"); }
 	public boolean isTireIndexed() { return getAttrB("tireindexed");}
 	
+	public void setCarId(UUID id)      { carid = id; }
 	public void setDriverId(UUID id)   { driverid = id; }
 	public void setNumber(int n)       { number = n; }
 	public void setClassCode(String s) { classcode = s; }

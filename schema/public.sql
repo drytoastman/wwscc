@@ -25,18 +25,21 @@ COMMENT ON TABLE driverslog IS 'Change logs that are specific to this local data
 CREATE OR REPLACE FUNCTION logdrivermods() RETURNS TRIGGER AS $body$
 DECLARE
     audit_row driverslog;
+    changes hstore;
 BEGIN
     audit_row = ROW(
         NULL, session_user::text, CURRENT_TIMESTAMP,
         inet_client_addr(), current_query(), SUBSTRING(TG_OP,1,1), '{}', '{}'
     );
- 
+
     IF (TG_OP = 'UPDATE') THEN
-        IF OLD = NEW THEN
+        changes := hstore(NEW) - hstore(OLD);
+        IF akeys(changes) = ARRAY['modified'] THEN
             RETURN NULL;
         END IF;
-        audit_row.rowdata = to_jsonb(OLD.*);
-        audit_row.changed = hstore_to_jsonb(hstore(NEW) - hstore(OLD));
+
+        audit_row.changed := hstore_to_jsonb(changes);
+        audit_row.rowdata := to_jsonb(OLD.*);
     ELSIF (TG_OP = 'DELETE') THEN
         audit_row.rowdata = to_jsonb(OLD.*);
     ELSIF (TG_OP = 'INSERT') THEN

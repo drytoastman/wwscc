@@ -11,6 +11,8 @@ package org.wwscc.storage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
+import java.util.logging.Logger;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -18,14 +20,21 @@ import org.json.simple.parser.ParseException;
 @SuppressWarnings("unchecked")
 public class AttrBase
 {
+	private static Logger log = Logger.getLogger(AttrBase.class.getCanonicalName());
+	
 	protected JSONObject attr;
 
 	public AttrBase()
 	{
 		attr = new JSONObject();
 	}
+	
+	public AttrBase(JSONObject o)
+	{
+		attr = (JSONObject)o.clone();
+	}
 
-	public void loadAttr(ResultSet rs) throws SQLException
+	public AttrBase(ResultSet rs) throws SQLException
 	{
 		try {
 			attr = (JSONObject)new JSONParser().parse(rs.getString("attr"));
@@ -34,30 +43,63 @@ public class AttrBase
 		}
 	}
 	
+	/**
+	 * Try and purge unnecessary keys that have no information from the database
+	 */
+	public void attrCleanup()
+	{
+		for (Object key : attr.keySet())
+		{
+			Object val = attr.get(key);
+			if (    (val == null)
+				|| ((val instanceof String)  && (val.equals("")))
+				|| ((val instanceof Integer) && ((Integer)val == 0))
+				|| ((val instanceof Double)  && ((Double)val <= 0.0))
+				|| ((val instanceof Boolean) && (!(Boolean)val))
+			   ) {
+				attr.remove(key);
+			}
+		}
+	}
+	
 	public String getAttrS(String name) 
 	{ 
-		String ret = (String)attr.get(name); 
-		if (ret == null)
-			return "";
-		return ret;
+		String ret = null;
+		try {
+			ret = (String)attr.get(name);
+			if (ret != null)
+				return ret;
+		} catch (Exception e) {
+			log.info(String.format("Failed to load string named %s from %s: %s", name, ret, e)); 
+		}
+		return "";
 	}
 	
 	public double getAttrD(String name)
 	{
-		Double ret = (Double)attr.get(name);
-		if (ret == null)
-			return -1.0;
-		else
-			return ret;
+		Double ret = null;
+		try {
+			ret = (Double)attr.get(name);
+			if (ret != null)
+				return ret;
+		} catch (Exception e) {
+			log.info(String.format("Failed to load double named %s from %s: %s", name, ret, e)); 
+		}
+		return -1.0;
 	}
 
 	public boolean getAttrB(String name)
 	{
-		Boolean ret = (Boolean)attr.get(name);
-		if (ret == null)
-			return false;
-		else
-			return ret;
+		Boolean ret = null;
+		try {
+			ret = (Boolean)attr.get(name);
+			if (ret != null)
+				return ret;
+		} catch (Exception e) {
+			log.info(String.format("Failed to load boolean named %s from %s: %s", name, ret, e)); 
+		}
+		
+		return false;
 	}
 	
 	public Set<String> getAttrKeys()

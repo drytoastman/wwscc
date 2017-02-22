@@ -37,7 +37,11 @@ public class Entrant
 		driverid  = (UUID)rs.getObject("driverid");
 		firstname = rs.getString("firstname");
 		lastname  = rs.getString("lastname");
-		paid      = rs.getBoolean("paid");
+		try {
+			paid  = rs.getBoolean("paid");  // some queries don't load this?
+		} catch (SQLException pse) {
+			paid  = false;
+		}
 	}
 
 	static public class NumOrder implements Comparator<Entrant>

@@ -8,6 +8,8 @@
 
 package org.wwscc.storage;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -27,9 +29,9 @@ public class ClassData
 	static 
 	{
 		placeHolder = new Class();
-		placeHolder.code = "UKNWN";
+		placeHolder.classcode = "UKNWN";
 		placeHolder.descrip = "Missing Driver Class";
-		placeHolder.classindex = "";
+		placeHolder.indexcode = "";
 		placeHolder.classmultiplier = 1.0;
 		placeHolder.numorder  = 0;
 		placeHolder.countedruns  = 0;
@@ -122,9 +124,9 @@ public class ClassData
 			}
 			
 			/* Apply class index (linked to index tables) */
-			if (!classData.classindex.equals(""))
+			if (!classData.indexcode.equals(""))
 			{
-				if ((indexData = getIndex(classData.classindex)) != null)
+				if ((indexData = getIndex(classData.indexcode)) != null)
 					indexVal *= indexData.getValue();
 			}
 
@@ -149,8 +151,8 @@ public class ClassData
 			if (cls == null)
 				throw new Exception("Invalid class: " + classcode);
 
-            if (!cls.classindex.equals(""))
-                indexstr = cls.classindex;
+            if (!cls.indexcode.equals(""))
+                indexstr = cls.indexcode;
 
             if (cls.classmultiplier < 1.000 && (!cls.usecarflag || tireindexed))
                 indexstr = indexstr + "*";
@@ -171,28 +173,43 @@ public class ClassData
 		private static final Pattern RINDEX = Pattern.compile("([+-])\\((.*?)\\)");
 		private static final Pattern RFLAG = Pattern.compile("([+-])\\[(.*?)\\]");
 
-		protected String code;
+		protected String classcode;
 		protected String descrip;
-		protected boolean carindexed;
-		protected String classindex;
+		protected String indexcode;
+		protected String caridxrestrict;
 		protected double classmultiplier;
+		protected boolean carindexed;
+		protected boolean usecarflag;
 		protected boolean eventtrophy;
 		protected boolean champtrophy;
 		protected int numorder;
 		protected int countedruns;
-		protected boolean usecarflag;
-		protected String caridxrestrict;
 
 		public Class()
 		{
 		}
+		
+		public Class(ResultSet rs) throws SQLException
+		{
+			classcode       = rs.getString("classcode");
+			descrip         = rs.getString("descrip");
+			indexcode       = rs.getString("indexcode");
+			caridxrestrict  = rs.getString("caridxrestrict");
+			classmultiplier = rs.getDouble("classmultiplier");
+			carindexed      = rs.getBoolean("carindexed");
+			usecarflag      = rs.getBoolean("usecarflag");
+			eventtrophy     = rs.getBoolean("eventtrophy");
+			champtrophy     = rs.getBoolean("champtrophy");
+			numorder        = rs.getInt("numorder");
+			countedruns     = rs.getInt("countedruns");
+		}
 
 		public String toString() {
-			return code;
+			return classcode;
 		}
 
 		public String getCode() {
-			return code;
+			return classcode;
 		}
 
 		public String getDescrip() {
@@ -294,7 +311,7 @@ public class ClassData
 	/* Index */
 	public static class Index
 	{
-		protected String code;
+		protected String indexcode;
 		protected String descrip;
 		protected double value;
 
@@ -302,12 +319,19 @@ public class ClassData
 		{
 		}
 
+		public Index(ResultSet rs) throws SQLException
+		{
+			indexcode = rs.getString("indexcode");
+			descrip   = rs.getString("descrip");
+			value     = rs.getDouble("value");
+		}
+		
 		public String toString() {
-			return code;
+			return indexcode;
 		}
 
 		public String getCode() {
-			return code;
+			return indexcode;
 		}
 
 		public String getDescrip() {
@@ -336,9 +360,9 @@ public class ClassData
 		
 		@Override
 		public int hashCode() {
-			if (code == null)
+			if (indexcode == null)
 				return 1;
-			return code.hashCode();
+			return indexcode.hashCode();
 		}
 
 		@Override
@@ -350,10 +374,10 @@ public class ClassData
 			if (!(obj instanceof Index))
 				return false;
 			Index other = (Index) obj;
-			if (code == null) {
-				if (other.code != null)
+			if (indexcode == null) {
+				if (other.indexcode != null)
 					return false;
-			} else if (!code.equals(other.code))
+			} else if (!indexcode.equals(other.indexcode))
 				return false;
 			return true;
 		}

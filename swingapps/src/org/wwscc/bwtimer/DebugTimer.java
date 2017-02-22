@@ -34,7 +34,6 @@ public class DebugTimer extends JPanel
 		super(new MigLayout());
 
 		tf = new TimeTextField("123.456", 6);
-	
 		
 		defaultButton = new JButton("Send");
 		defaultButton.addActionListener(new AbstractAction() {

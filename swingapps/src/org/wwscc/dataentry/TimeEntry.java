@@ -442,9 +442,20 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 				throw new IndexOutOfBoundsException("No time or status entered");
 
 			/* Create a run from the text boxes and send */
-			Run val = new Run(reaction.getTime(), sixty.getTime(), dTime, cones.getInt(), gates.getInt(), sStatus);
-			for (int ii = 0; ii < SEGMENTS; ii++)
-				val.setSegment(ii+1, segVal[ii].getTime());
+			Run val = new Run(dTime, cones.getInt(), gates.getInt(), sStatus);
+			
+			/* Only set other values if visible and seen by the user */
+			if (reaction.isVisible())
+				val.setReaction(reaction.getTime());
+			
+			if (sixty.isVisible())
+				val.setSixty(sixty.getTime());
+				
+			for (int ii = 0; ii < SEGMENTS; ii++) {
+				if (segVal[ii].isVisible()) {
+					val.setSegment(ii+1, segVal[ii].getTime());  // only set segments if they are visible
+				}
+			}
 
 			Messenger.sendEventNow(MT.TIME_ENTERED, val);
 
@@ -583,6 +594,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 	 */
 	protected void setValues(Run r)
 	{
+		clearValues();
 		reaction.setTime(r.getReaction());
 		sixty.setTime(r.getSixty());
 		for (int ii = 0; ii < SEGMENTS; ii++)

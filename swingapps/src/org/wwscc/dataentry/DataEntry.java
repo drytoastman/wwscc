@@ -128,8 +128,6 @@ public class DataEntry extends JFrame implements MessageListener
 		content.add(new MiniInput.FindEntry(), "growx, growy 0, hidemode 2, wrap");
 		content.add(tableScroll, "grow, wrap");
 		content.add(infoBoxes, "spanx 3, growx, wrap");
-
-		new FakeUser(tableScroll.getRunsTable(), timeEntry);
 		
 		setContentPane(content);
 		setSize(1024,768);

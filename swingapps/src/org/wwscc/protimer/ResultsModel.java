@@ -372,12 +372,10 @@ public class ResultsModel extends AbstractTableModel implements MessageListener
 
 	private Run resultToRun(Result r, int course)
 	{
-		Run run = new Run();
+		Run run = new Run(r.finish);
 		run.setCourse(course);
 		run.setReaction(r.rt);
 		run.setSixty(r.sixty);
-		run.setRaw(r.finish);
-		run.setStatus("OK");
 		switch (r.state)
 		{
 			case Result.REDLIGHT: run.setStatus("RL"); break;

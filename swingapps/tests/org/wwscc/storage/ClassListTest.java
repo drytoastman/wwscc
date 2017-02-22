@@ -17,7 +17,7 @@ public class ClassListTest {
 		Set<ClassData.Index> ret = new HashSet<ClassData.Index>();
 		for (String s : codes) {
 			ClassData.Index i = new ClassData.Index();
-			i.code = s;
+			i.indexcode = s;
 			ret.add(i);
 		}
 		return ret;

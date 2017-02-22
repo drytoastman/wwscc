@@ -26,6 +26,7 @@ import net.miginfocom.swing.MigLayout;
 import org.wwscc.storage.Car;
 import org.wwscc.storage.ClassData;
 import org.wwscc.storage.Database;
+import org.wwscc.util.IdGenerator;
 
 
 /**
@@ -75,17 +76,17 @@ public class CarDialog extends BaseDialog<Car>
 
 		Map<String, Set<String>> attr = Database.d.getCarAttributes();
 		
-		List<String> makes = new ArrayList<String>(attr.get("makes"));
+		List<String> makes = new ArrayList<String>(attr.get("make"));
 		Collections.sort(makes);
 		mainPanel.add(label("Make", false), "");
 		mainPanel.add(autoentry("make", car.getMake(), makes), "wrap");
 
-		List<String> models = new ArrayList<String>(attr.get("models"));
+		List<String> models = new ArrayList<String>(attr.get("model"));
 		Collections.sort(models);
 		mainPanel.add(label("Model", false), "");
 		mainPanel.add(autoentry("model", car.getModel(), models), "wrap");
 
-		List<String> colors = new ArrayList<String>(attr.get("colors"));
+		List<String> colors = new ArrayList<String>(attr.get("color"));
 		Collections.sort(colors);
 		mainPanel.add(label("Color", false), "");
 		mainPanel.add(autoentry("color", car.getColor(), colors), "wrap");
@@ -276,6 +277,7 @@ public class CarDialog extends BaseDialog<Car>
 		
 		try
 		{
+			result.setCarId(IdGenerator.generateId());
 			result.setYear(getEntryText("year"));
 			result.setMake(getEntryText("make"));
 			result.setModel(getEntryText("model"));

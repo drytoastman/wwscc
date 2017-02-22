@@ -44,10 +44,12 @@ public class Event extends AttrBase implements Serializable
 
 	public Event()
 	{
+		super();
 	}
 	
 	public Event(ResultSet rs) throws SQLException
 	{
+		super(rs);
 		eventid     = rs.getInt("eventid");
 		name        = rs.getString("name");
 		date        = rs.getDate("date");
@@ -62,7 +64,6 @@ public class Event extends AttrBase implements Serializable
 		gatepen 	= rs.getDouble("gatepen");
 		ispro       = rs.getBoolean("ispro");
 		ispractice  = rs.getBoolean("ispractice");
-		loadAttr(rs);
 	}
 
 	public int getEventId() { return eventid; }

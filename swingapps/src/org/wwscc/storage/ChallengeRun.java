@@ -8,6 +8,8 @@
 
 package org.wwscc.storage;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.UUID;
 
 import org.wwscc.challenge.Id;
@@ -50,6 +52,20 @@ public class ChallengeRun
 		cones    = r.cones;
 		gates    = r.gates;
 		status   = r.status;
+	}
+	
+	public ChallengeRun(ResultSet rs) throws SQLException
+	{
+		challengeid  = rs.getInt("challengeid");
+		carid        = (UUID)rs.getObject("carid");
+		reaction     = rs.getDouble("reaction");
+		sixty        = rs.getDouble("sixty");
+		raw          = rs.getDouble("raw");
+		round        = rs.getInt("round");
+		course       = rs.getInt("course");
+		cones        = rs.getInt("cones");
+		gates        = rs.getInt("gates");
+		status       = rs.getString("status");
 	}
 
 	public ChallengeRun(double reaction, double sixty , double time, int cones, int gates, String status)

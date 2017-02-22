@@ -29,10 +29,11 @@ import org.wwscc.storage.Driver;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.MetaCar;
 import org.wwscc.util.MT;
+import org.wwscc.util.MessageListener;
 import org.wwscc.util.Messenger;
 
 
-public class DriverEntry extends DriverCarPanel
+public class DriverEntry extends DriverCarPanel implements MessageListener
 {
 	//private static final Logger log = Logger.getLogger(DriverEntry.class.getCanonicalName());
 
@@ -195,9 +196,6 @@ public class DriverEntry extends DriverCarPanel
 					}
 				}
 				break;
-				
-			default:
-				super.event(type, o);
 		}
 	}
 	
@@ -228,7 +226,7 @@ public class DriverEntry extends DriverCarPanel
 			else if (value instanceof Driver)
 			{
 				Driver d = (Driver)value;
-				setText(d.getDriverId() + ": " + d.getFullName());
+				setText(d.getFullName());
 			}
 
 			return this;
