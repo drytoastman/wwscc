@@ -152,16 +152,16 @@ public class PostgresqlDatabase extends SQLDataInterface
 	}	
 	
 	@Override
-	public int executeUpdate(String sql, List<Object> args) throws SQLException 
+	public Object executeUpdate(String sql, List<Object> args) throws SQLException 
 	{
-		int ret = -1;
+		Object ret = null;
 		PreparedStatement p = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		bindParam(p, args);
 		p.executeUpdate();
 		
 		ResultSet gen = p.getGeneratedKeys();
 		if (gen.next())
-			ret = gen.getInt(1);
+			ret = gen.getObject(1);
 		
 		gen.close();
 		p.close();

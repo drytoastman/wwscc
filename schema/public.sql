@@ -20,12 +20,11 @@ GRANT  ALL ON driverslog_logid_seq TO scorekeeper;
 CREATE INDEX ON driverslog(logid);
 CREATE INDEX ON driverslog(time);
 COMMENT ON TABLE driverslog IS 'Change logs that are specific to this local database';
- 
+
 
 CREATE OR REPLACE FUNCTION logdrivermods() RETURNS TRIGGER AS $body$
 DECLARE
     audit_row driverslog;
-    changes hstore;
 BEGIN
     audit_row = ROW(
         NULL, session_user::text, CURRENT_TIMESTAMP,
@@ -33,12 +32,10 @@ BEGIN
     );
 
     IF (TG_OP = 'UPDATE') THEN
-        changes := hstore(NEW) - hstore(OLD);
-        IF akeys(changes) = ARRAY['modified'] THEN
+        IF OLD = NEW THEN
             RETURN NULL;
         END IF;
-
-        audit_row.changed := hstore_to_jsonb(changes);
+        audit_row.changed := hstore_to_jsonb(hstore(NEW) - hstore(OLD));
         audit_row.rowdata := to_jsonb(OLD.*);
     ELSIF (TG_OP = 'DELETE') THEN
         audit_row.rowdata = to_jsonb(OLD.*);
@@ -55,6 +52,24 @@ END;
 $body$
 LANGUAGE plpgsql;
 COMMENT ON FUNCTION logdrivermods() IS 'Function to log details of any insert, delete or update on the drivers table';
+
+
+CREATE OR REPLACE FUNCTION ignoreunmodified() RETURNS TRIGGER AS $body$
+DECLARE
+BEGIN
+    IF (TG_OP = 'UPDATE') THEN
+        IF (OLD = NEW) THEN
+            RETURN NULL;
+        END IF;
+        IF akeys(hstore(NEW) - hstore(OLD)) = ARRAY['modified'] THEN
+            RETURN NULL;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$body$
+LANGUAGE plpgsql;
+COMMENT ON FUNCTION ignoreunmodified() IS 'does not update rows if only change is the modified field or less';
 
 
 -- The results table acts as a storage of calculated results for each series, it is also the location where
@@ -95,6 +110,7 @@ CREATE INDEX ON drivers(lower(lastname));
 REVOKE ALL   ON drivers FROM public;
 GRANT  ALL   ON drivers TO scorekeeper;
 CREATE TRIGGER driversmod AFTER INSERT OR UPDATE OR DELETE ON drivers FOR EACH ROW EXECUTE PROCEDURE logdrivermods();
+CREATE TRIGGER driversuni BEFORE UPDATE ON driver FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE drivers IS 'The global list of drivers for all series';
 
 

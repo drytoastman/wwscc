@@ -32,7 +32,7 @@ public class FakeDatabase extends SQLDataInterface
 	@Override
 	public void rollback() {}
 	@Override
-	public int executeUpdate(String sql, List<Object> args) throws SQLException { return -1; }
+	public Object executeUpdate(String sql, List<Object> args) throws SQLException { return null; }
 	@Override
 	public void executeGroupUpdate(String sql, List<List<Object>> args) throws SQLException {}
 	@Override

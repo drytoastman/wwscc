@@ -28,7 +28,6 @@ COMMENT ON TABLE serieslog is 'Change logs that are specific to this local datab
 CREATE OR REPLACE FUNCTION logseriesmods() RETURNS TRIGGER AS $body$
 DECLARE
     audit_row serieslog;
-    changes hstore;
 BEGIN
     audit_row := ROW(
         NULL, TG_TABLE_NAME::text, session_user::text, CURRENT_TIMESTAMP,
@@ -36,12 +35,10 @@ BEGIN
     );
  
     IF (TG_OP = 'UPDATE') THEN
-        changes := hstore(NEW) - hstore(OLD);
-        IF akeys(changes) = ARRAY['modified'] THEN
+        IF OLD = NEW THEN
             RETURN NULL;
         END IF;
-
-        audit_row.changed := hstore_to_jsonb(changes);
+        audit_row.changed := hstore_to_jsonb(hstore(NEW) - hstore(OLD));
         audit_row.rowdata := to_jsonb(OLD.*);
     ELSIF (TG_OP = 'DELETE') THEN
         audit_row.rowdata := to_jsonb(OLD.*);
@@ -138,7 +135,6 @@ CREATE TABLE cars (
 );
 CREATE INDEX ON cars(driverid);
 CREATE INDEX ON cars(classcode);
-CREATE INDEX ON cars(indexcode);
 REVOKE ALL ON cars FROM public;
 GRANT  ALL ON cars TO <seriesname>;
 CREATE TRIGGER carmod AFTER INSERT OR UPDATE OR DELETE ON cars FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
@@ -176,6 +172,7 @@ CREATE INDEX ON registered(eventid);
 REVOKE ALL ON registered FROM public;
 GRANT  ALL ON registered TO <seriesname>;
 CREATE TRIGGER regmod AFTER INSERT OR UPDATE OR DELETE ON registered FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER reguni BEFORE UPDATE ON registered FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE registered IS 'The list of cars registered for events';
 
 
@@ -193,6 +190,7 @@ CREATE INDEX getgroup ON runorder(eventid, course, rungroup);
 REVOKE ALL ON runorder FROM public;
 GRANT  ALL ON runorder TO <seriesname>;
 CREATE TRIGGER ordermod AFTER INSERT OR UPDATE OR DELETE ON runorder FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER orderuni BEFORE UPDATE ON runorder FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE runorder IS 'the ordering of cars in each runorder';
 
 

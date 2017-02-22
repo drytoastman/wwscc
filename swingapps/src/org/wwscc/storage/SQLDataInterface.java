@@ -39,7 +39,7 @@ public abstract class SQLDataInterface implements DataInterface
 	public abstract void start() throws SQLException;
 	public abstract void commit() throws SQLException;
 	public abstract void rollback();
-	public abstract int executeUpdate(String sql, List<Object> args) throws SQLException;
+	public abstract Object executeUpdate(String sql, List<Object> args) throws SQLException;
 	public abstract void executeGroupUpdate(String sql, List<List<Object>> args) throws SQLException;
 	public abstract ResultSet executeSelect(String sql, List<Object> args) throws SQLException;
 	public abstract void closeLeftOvers();
@@ -626,7 +626,7 @@ public abstract class SQLDataInterface implements DataInterface
 			int depth = (int)(Math.log(size)/Math.log(2));
 			start();
 
-			int next = executeUpdate("insert into challenges (challengeid, eventid, name, depth) values (next(),?,?,?)", newList(eventid, name, depth));
+			int next = (Integer)executeUpdate("insert into challenges (challengeid, eventid, name, depth) values (next(),?,?,?)", newList(eventid, name, depth));
 
 			String sql = "insert into challengerounds (challengeid,round,swappedstart,car1id,car2id) values (?,?,?,?,?)";
 			List<Object> rargs = newList(next, 0, false, -1, -1);
