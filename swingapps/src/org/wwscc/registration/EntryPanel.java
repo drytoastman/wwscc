@@ -72,12 +72,12 @@ public class EntryPanel extends DriverCarPanel implements MessageListener
 	private static final Logger log = Logger.getLogger(EntryPanel.class.getCanonicalName());
 	
 	public static final String REGISTERANDPAY = "Registered and Paid";
-	public static final String REGISTERONLY = "Registered Only";
-	public static final String UNREGISTER = "Unregister";
-	public static final String EDITNOTES = "Edit Notes";
+	public static final String REGISTERONLY   = "Registered Only";
+	public static final String UNREGISTER     = "Unregister";
 
 	JButton registeredandpaid, registerit, unregisterit;
-	JButton editcar, deletecar, print;
+	JButton newdriver, editdriver, editnotes;
+	JButton newcar, newcarfrom, editcar, deletecar, print;
 	JLabel membershipwarning, noteswarning, paidwarning;
 	JComboBox<PrintService> printers;
 	Code39 activeLabel;
@@ -140,6 +140,12 @@ public class EntryPanel extends DriverCarPanel implements MessageListener
 		unregisterit.setEnabled(false);
 		unregisterit.setFont(unregisterit.getFont().deriveFont(12f));
 		
+		newdriver  = smallButton(NEWDRIVER, true);
+		editdriver = smallButton(EDITDRIVER, false);
+		editnotes  = smallButton(EDITNOTES, false);
+		newcar     = smallButton(NEWCAR, false);		
+		newcarfrom = smallButton(NEWFROM, false);
+		
 		editcar = new JButton(new EditCarAction());
 		editcar.setEnabled(false);
 		
@@ -172,13 +178,13 @@ public class EntryPanel extends DriverCarPanel implements MessageListener
 		add(firstSearch, "grow, wrap");
 		add(new JLabel("Last Name"), "split 2");
 		add(lastSearch, "grow, wrap");
-		add(smallButton("Clear", true), "right, wrap");
+		add(smallButton(CLEAR, true), "right, wrap");
 
 		add(createTitle("2. Driver"), "spanx 3, growx, wrap");
 		add(dscroll, "spany 7, grow");
-		add(smallButton("New Driver", true), "growx, spanx 3, split");
-		add(smallButton("Edit Driver", true), "growx");
-		add(smallButton(EDITNOTES, true), "growx, wrap");
+		add(newdriver, "growx, spanx 3, split");
+		add(editdriver, "growx");
+		add(editnotes, "growx, wrap");
 		
 		add(driverInfo, "spanx 2, growx, wrap");
 		add(membershipwarning, "spanx 2, growx, h 15, wrap");
@@ -189,8 +195,8 @@ public class EntryPanel extends DriverCarPanel implements MessageListener
 
 		add(createTitle("3. Car"), "spanx 3, growx, gaptop 4, wrap");
 		add(cscroll, "spany 3, hmin 130, grow");
-		add(smallButton("New Car", true), "growx");
-		add(smallButton("New From", true), "growx, wrap");
+		add(newcar, "growx");
+		add(newcarfrom, "growx, wrap");
 		add(editcar, "growx"); 
 		add(deletecar, "growx, wrap");
 		
@@ -234,14 +240,14 @@ public class EntryPanel extends DriverCarPanel implements MessageListener
 	
 	class EditCarAction extends AbstractAction
 	{
-		public EditCarAction() { super("Edit Car"); }
+		public EditCarAction() { super(EDITCAR); }
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
 			if (selectedCar == null) return;
 			final CarDialog cd = new CarDialog(selectedCar, Database.d.getClassData(), false);
 			cd.setOkButtonText("Edit");
-			cd.doDialog("Edit Car", new DialogFinisher<Car>() {
+			cd.doDialog(EDITCAR, new DialogFinisher<Car>() {
 				@Override
 				public void dialogFinished(Car c) {
 					if ((c == null) || (selectedDriver == null))
@@ -261,12 +267,12 @@ public class EntryPanel extends DriverCarPanel implements MessageListener
 	
 	class DeleteCarAction extends AbstractAction
 	{
-		public DeleteCarAction() { super("Delete Car"); }
+		public DeleteCarAction() { super(DELETECAR); }
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
 			if (selectedCar == null) return;
-			if (JOptionPane.showConfirmDialog(EntryPanel.this, "Are you sure you want to delete the selected car?", "Delete Car", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
+			if (JOptionPane.showConfirmDialog(EntryPanel.this, "Are you sure you want to delete the selected car?", DELETECAR, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
 			{
 				try {
 					Database.d.deleteCar(selectedCar);
@@ -365,7 +371,7 @@ public class EntryPanel extends DriverCarPanel implements MessageListener
 			}
 			else if (cmd.equals(EDITNOTES) && (selectedDriver != null))
 			{
-				String ret = (String)JOptionPane.showInputDialog(this, "Enter/Delete notes", noteswarning.getText());
+				String ret = (String)JOptionPane.showInputDialog(this, EDITNOTES, noteswarning.getText());
 				if (ret != null)
 				{
 					selectedDriver.setAttrS("notes", ret);
@@ -403,6 +409,7 @@ public class EntryPanel extends DriverCarPanel implements MessageListener
 			
 			if (selectedDriver != null)
 			{
+				editdriver.setEnabled(true);
 				activeLabel.setValue(selectedDriver.getMembership(), String.format("%s - %s", selectedDriver.getMembership(), selectedDriver.getFullName()));
 				activeLabel.repaint();
 
@@ -431,6 +438,7 @@ public class EntryPanel extends DriverCarPanel implements MessageListener
 			}
 			else
 			{
+				editdriver.setEnabled(false);
 				activeLabel.setValue("", "");
 				activeLabel.repaint();
 				Messenger.sendEvent(MT.DRIVER_SELECTED, drivers.getSelectedValue());
@@ -439,20 +447,25 @@ public class EntryPanel extends DriverCarPanel implements MessageListener
 	
 		if (e.getSource() == cars)
 		{
+			newcar.setEnabled(selectedDriver != null);
+
 			if (selectedCar != null)
 			{
+				newcarfrom.setEnabled(selectedCar != null);
+				editcar.setEnabled(!selectedCar.isInRunOrder() && !selectedCar.hasActivity());
+				deletecar.setEnabled(!selectedCar.isRegistered() && !selectedCar.isInRunOrder() && !selectedCar.hasActivity());
 				registeredandpaid.setEnabled((!selectedCar.isRegistered() || !selectedCar.isPaid()) && !selectedCar.isInRunOrder());
 				registerit.setEnabled((!selectedCar.isRegistered() || selectedCar.isPaid()) && !selectedCar.isInRunOrder());
 				unregisterit.setEnabled(selectedCar.isRegistered() && !selectedCar.isInRunOrder());
-				
-				editcar.setEnabled(!selectedCar.isInRunOrder() && !selectedCar.hasActivity());
-				deletecar.setEnabled(!selectedCar.isRegistered() && !selectedCar.isInRunOrder() && !selectedCar.hasActivity());
 			}
 			else
 			{
+				newcarfrom.setEnabled(false);
+				editcar.setEnabled(false);
+				deletecar.setEnabled(false);
 				registeredandpaid.setEnabled(false);
 				registerit.setEnabled(false);
-				unregisterit.setEnabled(true);
+				unregisterit.setEnabled(false);
 			}
 		}
 	}

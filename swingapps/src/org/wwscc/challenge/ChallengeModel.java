@@ -24,6 +24,7 @@ import org.wwscc.storage.ChallengeRound.RoundEntrant;
 import org.wwscc.storage.ChallengeRun;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
+import org.wwscc.storage.Event;
 import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.storage.Run;
 import org.wwscc.timercomm.TimerClient;
@@ -172,11 +173,10 @@ public class ChallengeModel implements MessageListener
 	public void setTime(Id.Run rid, double time)
 	{
 		ChallengeRun r = getRun(rid);
-		/* FINISH ME
 		if (r != null)
 		{
 			r.setRaw(time);
-			Database.d.updateRun(r);
+			Database.d.setChallengeRun(r);
 		}
 		else
 		{
@@ -187,11 +187,11 @@ public class ChallengeModel implements MessageListener
 
 			ChallengeRound round = getRound(rid);
 			RoundEntrant re = (rid.isUpper()) ? round.getTopCar() : round.getBottomCar();
-			r.setCarId(re.getCar());
+			r.setCarId(re.getCarId());
 			round.applyRun(r);
-			Database.d.insertRun(r);
+			Database.d.setChallengeRun(r);
 		}
-		*/
+
 		checkForWinner(rid);
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
@@ -205,13 +205,11 @@ public class ChallengeModel implements MessageListener
 	public void setCones(Id.Run rid, int cones)
 	{
 		ChallengeRun r = getRun(rid);
-		/* FINISH ME
 		if (r != null)
 		{
 			r.setCones(cones);
-			Database.d.updateRun(r);
+			Database.d.setChallengeRun(r);
 		}
-		*/
 		checkForWinner(rid);
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
@@ -224,13 +222,11 @@ public class ChallengeModel implements MessageListener
 	public void setGates(Id.Run rid, int gates)
 	{
 		ChallengeRun r = getRun(rid);
-		/* FINISH ME
 		if (r != null)
 		{
 			r.setGates(gates);
-			Database.d.updateRun(r);
+			Database.d.setChallengeRun(r);
 		}
-		*/
 		checkForWinner(rid);
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
@@ -244,13 +240,11 @@ public class ChallengeModel implements MessageListener
 	public void setStatus(Id.Run rid, String status)
 	{
 		ChallengeRun r = getRun(rid);
-		/* FINISH ME
 		if (r != null)
 		{
 			r.setStatus(status);
-			Database.d.updateRun(r);
+			Database.d.setChallengeRun(r);
 		}
-		*/
 		checkForWinner(rid);
 		Messenger.sendEvent(MT.RUN_CHANGED, r);
 	}
@@ -323,11 +317,11 @@ public class ChallengeModel implements MessageListener
 		}
 		
 		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
-		Entrant e = entrantcache.get(re.getCar());
-		if ((e == null) && (re.getCar() != IdGenerator.nullid))
+		Entrant e = entrantcache.get(re.getCarId());
+		if ((e == null) && (re.getCarId() != IdGenerator.nullid))
 		{
-			e = Database.d.loadEntrant(ChallengeGUI.state.getCurrentEventId(), re.getCar(), 1, false);
-			entrantcache.put(re.getCar(), e);
+			e = Database.d.loadEntrant(ChallengeGUI.state.getCurrentEventId(), re.getCarId(), 1, false);
+			entrantcache.put(re.getCarId(), e);
 		}		
 		return e;
 	}
@@ -342,7 +336,7 @@ public class ChallengeModel implements MessageListener
 		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 		return re.getDial();
 	}
-
+	
 	/**
 	 * Set a new dial value for an entrant in the tree
 	 * @param eid the round and side (upper/lower) identifier
@@ -353,7 +347,6 @@ public class ChallengeModel implements MessageListener
 		ChallengeRound r = getRound(eid);
 		RoundEntrant re = (eid.isUpper()) ? r.getTopCar() : r.getBottomCar();
 		re.setDial(newDial);
-		re.setNewDial(newDial);
 		Database.d.updateChallengeRound(r);
 	}
 	
@@ -378,30 +371,22 @@ public class ChallengeModel implements MessageListener
 	public void resetRound(Id.Round rid)
 	{
 		ChallengeRound r = getRound(rid);
-		
-		/*** FINISH ME, deleteRun with ChallengeId?  That couldn't have been correct
 		RoundEntrant top = r.getTopCar();
 		RoundEntrant bottom = r.getBottomCar();
 		
-
 		if (top != null)
 		{
-			if (top.getLeft() != null)
-				Database.d.deleteRun(top.getLeft().getChallengeId());
-			if (top.getRight() != null)
-				Database.d.deleteRun(top.getRight().getChallengeId());
+			Database.d.deleteChallengeRun(top.getLeft());
+			Database.d.deleteChallengeRun(top.getRight());
 			top.reset();
 		}
 		
 		if (bottom != null)
 		{
-			if (bottom.getLeft() != null)
-				Database.d.deleteRun(bottom.getLeft().getChallengeId());
-			if (bottom.getRight() != null)
-				Database.d.deleteRun(bottom.getRight().getChallengeId());
+			Database.d.deleteChallengeRun(bottom.getLeft());
+			Database.d.deleteChallengeRun(bottom.getRight());
 			bottom.reset();
 		}
-		***/
 		
 		Database.d.updateChallengeRound(r);
 	}
@@ -419,14 +404,13 @@ public class ChallengeModel implements MessageListener
 		RoundEntrant re = (rid.isUpper()) ? rnd.getTopCar() : rnd.getBottomCar();
 		ChallengeRun cr = (rid.isLeft()) ? re.getLeft() : re.getRight();
 		
-		/* FINISH ME
 		if (cr == null)
 		{
 			cr = new ChallengeRun(run);
 			cr.setChallengeRound(rid);
-			cr.setCarId(re.getCar());
+			cr.setCarId(re.getCarId());
 			getRound(rid).applyRun(cr);
-			Database.d.insertRun(cr);
+			Database.d.setChallengeRun(cr);
 		}
 		else
 		{
@@ -435,14 +419,13 @@ public class ChallengeModel implements MessageListener
 			cr.setSixty(run.getSixty());
 			cr.setRaw(run.getRaw());
 			cr.setStatus(run.getStatus());
-			Database.d.updateRun(cr);
+			Database.d.setChallengeRun(cr);
 		}
-		*/
 		
 		Double raw = cr.getRaw();
 		if (raw.isNaN() || (raw == 0))
 		{
-			// updated reaction or sixty from timer
+			// updated reaction or sixty from timer, don't play with winner stuff yet
 		}
 		else
 		{  // pull out the active pointer, check for winner and let everyone know the active has changed
@@ -453,6 +436,55 @@ public class ChallengeModel implements MessageListener
 		Messenger.sendEvent(MT.RUN_CHANGED, cr);
 	}
 
+	/**
+	 * Database does not store calculated values as it breaks the relational model.
+	 * Basically caching things that can be calculated from the data is bad, 
+	 * particularly when the data changes but the cached data doesn't.
+	 * @param r the run to calculate a net (non-indexed) value for
+	 * @return the net double value
+	 */
+	public double getPenSum(ChallengeRun r)
+	{
+		Event e = ChallengeGUI.state.getCurrentEvent();
+		return r.getRaw() + (e.getConePenalty() * r.getCones()) + (e.getGatePenalty() * r.getGates());
+	}
+	
+	/**
+	 * @param re the round entrant to query
+	 * @return their round result of total net time - dialin
+	 */
+	public double getResult(ChallengeRound.RoundEntrant re) 
+	{ 
+		return getPenSum(re.getLeft()) + getPenSum(re.getRight()) - (2*re.getDial()); 
+	}
+
+	
+	/**
+	 * Compute the next round dialin for an entrant based on their completed left and right runs.
+	 * If they broke out, there is a new dialin calculated otherwise, their incoming dialin is used.
+	 * @param re the round entrant to calculate new dial for
+	 * @return the dial for the next round
+	 */
+	public Double getNewDial(ChallengeRound.RoundEntrant re)
+	{
+		double halfres = (getPenSum(re.getLeft()) + getPenSum(re.getRight()))/2;
+		double dial = re.getDial();
+		if (halfres < dial)
+			return dial - ((dial - halfres)*1.5);
+		else
+			return dial;
+	}
+	
+	/**
+	 * @param re the round entrant we care about
+	 * @return true if this entrant brokeout
+	 */
+	public boolean brokeout(ChallengeRound.RoundEntrant re) 
+	{ 
+		return Math.abs(getNewDial(re) - re.getDial()) > .0001; 
+	}
+	
+	
 	private void checkForWinner(Id.Round rid)
 	{
 		ChallengeRound round = getRound(rid);
@@ -483,8 +515,6 @@ public class ChallengeModel implements MessageListener
 				break;
 				
 			case DONE:
-				round.getTopCar().setResultByNet(topLeft.getNet() + topRight.getNet());
-				round.getBottomCar().setResultByNet(bottomLeft.getNet() + bottomRight.getNet());
 				int topLevel = topLeft.statusLevel() + topRight.statusLevel();
 				int botLevel = bottomLeft.statusLevel() + bottomRight.statusLevel();
 				
@@ -494,9 +524,9 @@ public class ChallengeModel implements MessageListener
 					winner = round.getBottomCar();
 				else if (botLevel > 0)
 					winner = round.getTopCar();
-				else if (round.getTopCar().getResult() < round.getBottomCar().getResult())
+				else if (getResult(round.getTopCar()) < getResult(round.getBottomCar()))
 					winner = round.getTopCar();
-				else if (round.getBottomCar().getResult() < round.getTopCar().getResult())
+				else if (getResult(round.getBottomCar()) < getResult(round.getTopCar()))
 					winner = round.getBottomCar();
 				//else no winner due to tie
 				break;
@@ -510,9 +540,9 @@ public class ChallengeModel implements MessageListener
 		Id.Entry eid = rid.advancesTo();
 		ChallengeRound next = getRound(eid);
 		if (eid.isUpper())
-			next.getTopCar().setTo(winner);
+			next.getTopCar().setTo(winner.getCarId(), getNewDial(winner));
 		else
-			next.getBottomCar().setTo(winner);
+			next.getBottomCar().setTo(winner.getCarId(), getNewDial(winner));
 		Database.d.updateChallengeRound(next);
 		Messenger.sendEvent(MT.ENTRANT_CHANGED, eid);
 		
@@ -524,9 +554,9 @@ public class ChallengeModel implements MessageListener
 			loser = (winner == round.getTopCar()) ? round.getBottomCar() : round.getTopCar();
 			ChallengeRound third = getRound(thirdid);
 			if (thirdid.isUpper())
-				third.getTopCar().setTo(loser);
+				third.getTopCar().setTo(loser.getCarId(), getNewDial(loser));
 			else
-				third.getBottomCar().setTo(loser);
+				third.getBottomCar().setTo(loser.getCarId(), getNewDial(loser));
 			Database.d.updateChallengeRound(third);
 			Messenger.sendEvent(MT.ENTRANT_CHANGED, thirdid);
 		}
@@ -619,9 +649,9 @@ public class ChallengeModel implements MessageListener
 				Id.Entry nextid = eid.advancesTo();
 				ChallengeRound next = getRound(nextid);
 				if (nextid.isUpper())
-					next.getTopCar().setTo(re);
+					next.getTopCar().setTo(re.getCarId(), getNewDial(re));
 				else
-					next.getBottomCar().setTo(re);
+					next.getBottomCar().setTo(re.getCarId(), getNewDial(re));
 				Database.d.updateChallengeRound(next);
 				Messenger.sendEvent(MT.ENTRANT_CHANGED, nextid);
 		}

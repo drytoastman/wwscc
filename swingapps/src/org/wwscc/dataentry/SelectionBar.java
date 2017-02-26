@@ -42,7 +42,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 	{
 		super(new MigLayout("fill, ins 3", "[grow 0][grow 0][grow 0][grow 0][grow 0][grow 0][grow][grow 0][grow 0]"));
 
-		Messenger.register(MT.DATABASE_CHANGED, this);
+		Messenger.register(MT.SERIES_CHANGED, this);
 		setBorder(new BevelBorder(0));
 
 		Font f = new Font(Font.DIALOG, Font.BOLD, 14);
@@ -103,7 +103,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 	{
 		switch (type)
 		{
-			case DATABASE_CHANGED:
+			case SERIES_CHANGED:
 				eventSelect.setModel(new DefaultComboBoxModel<Event>(Database.d.getEvents().toArray(new Event[0])));
 				int select = Prefs.getEventId(0);
 				if (select < eventSelect.getItemCount())

@@ -103,6 +103,10 @@ public class BarcodeScannerWatcher implements KeyEventDispatcher, MessageListene
 							
 				barcode.append(c);				
 			}
+			else // Don't let queue hang up on arrow key presses
+			{
+				return false;
+			}
 		}
 		return true;
 	}

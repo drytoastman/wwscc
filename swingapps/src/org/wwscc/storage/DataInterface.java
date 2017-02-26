@@ -20,13 +20,6 @@ import java.util.UUID;
 public interface DataInterface
 {	
 	/**
-	 * Open a new series.  Closes the previous series if still open.
-	 * @param series the name of the series to open
-	 * @param password the password for the series user
-	 */
-	public void open(String series, String password);
-	
-	/**
 	 * Closes the currently open series connection if open.
 	 */
 	public void close();
@@ -114,7 +107,7 @@ public interface DataInterface
 
 	/* Challenge */
 	public Set<UUID> getCarIdsByChallenge(int challengeid);
-	public void newChallenge(UUID eventid, String name, int size);
+	public int newChallenge(int eventid, String name, int size);
 	public void deleteChallenge(int challengeid);
 	public List<Challenge> getChallengesForEvent(int eventid);
 	public List<ChallengeRound> getRoundsForChallenge(int challengeid);
@@ -123,6 +116,8 @@ public interface DataInterface
 	public void updateChallenge(Challenge c);
 	public void updateChallengeRound(ChallengeRound r);
 	public void updateChallengeRounds(List<ChallengeRound> rounds);
+	public void setChallengeRun(ChallengeRun r);
+	public void deleteChallengeRun(ChallengeRun r);
 
 	
 	/**
@@ -145,5 +140,6 @@ public interface DataInterface
 	public boolean isInCurrentOrder(int eventid, UUID carid, int course, int rungroup);
 	
 	public ClassData getClassData();
+	public String getEffectiveIndexStr(Car c);
 }
 

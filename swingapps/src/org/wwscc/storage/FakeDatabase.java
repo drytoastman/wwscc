@@ -22,8 +22,6 @@ public class FakeDatabase extends SQLDataInterface
 	public FakeDatabase() {}
 
 	@Override
-	public void open(String series, String password) {}
-	@Override
 	public void close() {}
 	@Override
 	public void start() throws SQLException {}

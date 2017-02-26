@@ -27,7 +27,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import org.wwscc.actions.BarcodeScannerOptionsAction;
-import org.wwscc.actions.DatabaseOpenAction;
+import org.wwscc.actions.OpenSeriesAction;
 import org.wwscc.actions.QuitAction;
 import org.wwscc.barcodes.BarcodeScannerWatcher;
 import org.wwscc.registration.attendance.AttendancePanel;
@@ -66,7 +66,7 @@ public class Registration extends JFrame
 		log.log(Level.INFO, "Starting Registration: {0}", new java.util.Date());
 
 		JMenu file = new JMenu("File");
-		file.add(new DatabaseOpenAction());
+		file.add(new OpenSeriesAction());
 		file.add(new JSeparator());
 		file.add(new QuitAction());
 		

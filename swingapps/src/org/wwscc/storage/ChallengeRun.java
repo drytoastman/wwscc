@@ -88,14 +88,22 @@ public class ChallengeRun
 	}
 	
 	public int getChallengeId() { return challengeid; }
-	public int getRound() { return round; }
-	public int getCones() { return cones; }
-	public int getGates() { return gates; }
-	public double getRaw() { return raw; }
+	public int getRound()       { return round; }
+	public int getCones()       { return cones; }
+	public int getGates()       { return gates; }
+	public double getRaw()      { return raw; }
 	public double getReaction() { return reaction; }
-	public double getSixty() { return sixty; }
-	public String getStatus() { return status; }
-	public double getNet() { return Double.NaN; } // FINISH ME
+	public double getSixty()    { return sixty; }
+	public String getStatus()   { return status; }
+	
+	public void setCarId(UUID u)      { carid = u; }
+	public void setCourse(int c)      { course = c; }
+	public void setReaction(double r) { reaction = r; }
+	public void setSixty(double s)    { sixty = s; }
+	public void setRaw(double r)      { raw = r; }
+	public void setCones(int c)       { cones = c; }
+	public void setGates(int g)       { gates = g; }
+	public void setStatus(String s)   { status = s; }
 	
 	public boolean isOK()
 	{

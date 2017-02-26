@@ -21,7 +21,7 @@ import javax.swing.border.BevelBorder;
 
 import net.miginfocom.swing.MigLayout;
 
-import org.wwscc.components.CurrentDatabaseLabel;
+import org.wwscc.components.CurrentSeriesLabel;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
 import org.wwscc.util.MT;
@@ -34,13 +34,12 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 {
 	JComboBox<Event> eventSelect;
 	JCheckBox lock;
-	JLabel count;
 	
 	public SelectionBar()
 	{
 		super();
 
-		Messenger.register(MT.DATABASE_CHANGED, this);
+		Messenger.register(MT.SERIES_CHANGED, this);
 		
 		setLayout(new MigLayout("ins 2, center, gap 4"));
 		setBorder(new BevelBorder(0));
@@ -54,23 +53,16 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		lock.setActionCommand("lockEvent");
 		lock.addActionListener(this);
 
-		count = new JLabel("");
-		count.setFont(new Font(Font.DIALOG, Font.BOLD, 14));
-
-		JLabel dl = new JLabel("Database:");
+		JLabel dl = new JLabel("Series:");
 		dl.setFont(f);
 		JLabel el = new JLabel("Event:");
 		el.setFont(f);
-		JLabel cl = new JLabel("Changes:");
-		cl.setFont(f);
 
 		add(dl, "");
-		add(new CurrentDatabaseLabel(), "");
+		add(new CurrentSeriesLabel(), "");
 		add(el, "gap left 25");
 		add(eventSelect, "");
 		add(lock, "");
-		add(cl, "gap left 25");
-		add(count, "");
 	}
 	
 	@Override
@@ -78,7 +70,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 	{
 		switch (type)
 		{
-			case DATABASE_CHANGED:
+			case SERIES_CHANGED:
 				eventSelect.setModel(new DefaultComboBoxModel<Event>(Database.d.getEvents().toArray(new Event[0])));
 				int select = Prefs.getEventId(0);
 				if (select < eventSelect.getItemCount())

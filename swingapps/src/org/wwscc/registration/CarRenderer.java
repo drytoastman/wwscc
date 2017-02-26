@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
 
 import org.wwscc.components.UnderlineBorder;
+import org.wwscc.storage.Database;
 import org.wwscc.storage.MetaCar;
 
 
@@ -33,7 +34,7 @@ class CarRenderer extends DefaultListCellRenderer
 			p.setForeground(list.getForeground());
 		}
 
-		p.carinfo.setText(String.format("%s %s #%d", c.getClassCode(), c.getIndexStr(), c.getNumber()));
+		p.carinfo.setText(String.format("%s %s #%d", c.getClassCode(), Database.d.getEffectiveIndexStr(c), c.getNumber()));
 		p.cardesc.setText(String.format("%s %s %s %s", c.getYear(), c.getMake(), c.getModel(), c.getColor()));
 		
 		if (c.isInRunOrder())

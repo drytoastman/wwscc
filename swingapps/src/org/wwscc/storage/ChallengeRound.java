@@ -14,6 +14,8 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.wwscc.util.IdGenerator;
+
 /**
  *
  */
@@ -45,15 +47,14 @@ public class ChallengeRound
 	
 	public ChallengeRound(ResultSet rs) throws SQLException
 	{
-		ChallengeRound rnd = new ChallengeRound();
-		rnd.challengeid  = rs.getInt("challengeid");
-		rnd.round        = rs.getInt("round");
-		rnd.car1         = new ChallengeRound.RoundEntrant();
-		rnd.car1.carid   = (UUID)rs.getObject("car1id");
-		rnd.car1.dial    = rs.getDouble("car1dial");
-		rnd.car2         = new ChallengeRound.RoundEntrant();
-		rnd.car2.carid   = (UUID)rs.getObject("car2id");
-		rnd.car2.dial    = rs.getDouble("car2dial");
+		challengeid  = rs.getInt("challengeid");
+		round        = rs.getInt("round");
+		car1         = new ChallengeRound.RoundEntrant();
+		car1.carid   = (UUID)rs.getObject("car1id");
+		car1.dial    = rs.getDouble("car1dial");
+		car2         = new ChallengeRound.RoundEntrant();
+		car2.carid   = (UUID)rs.getObject("car2id");
+		car2.dial    = rs.getDouble("car2dial");
 	}
 
 	public int getChallengeId() { return challengeid; }
@@ -61,16 +62,17 @@ public class ChallengeRound
 	public RoundEntrant getTopCar() { return car1; }
 	public RoundEntrant getBottomCar() { return car2; }
 	public boolean isSwappedStart() { return swappedstart; }
+	
 	public void setSwappedStart(boolean swapped) { swappedstart = swapped; }
 
 	public void applyRun(ChallengeRun r)
 	{
-		if (car1.carid == r.carid)
+		if ((car1.carid != null) && car1.carid.equals(r.carid))
 			car1.applyRun(r);
-		else if (car2.carid == r.carid)
+		else if ((car2.carid != null) && car2.carid.equals(r.carid))
 			car2.applyRun(r);
 		else
-			log.info("Throwing away run, doesn't belong to any of the round cars: " + r);
+			log.info("Throwing away run, doesn't belong to any of the round cars: " + r.carid);
 	}
 
 	public enum RoundState { NONE, PARTIAL1, HALFNORMAL, HALFINVERSE, PARTIAL2, DONE, INVALID };
@@ -119,26 +121,22 @@ public class ChallengeRound
 	public static class RoundEntrant
 	{
 		protected UUID carid;
-		protected double dial, result, newdial;
+		protected double dial;
 		private ChallengeRun left, right;
 
 		public RoundEntrant()
 		{
-			carid = new UUID(0,0);
+			carid = IdGenerator.nullid;
 			left = null;
 			right = null;
 			dial = 0.0;
-			result = 0.0;
-			newdial = 0.0;
 		}
 		
 		public void setCar(UUID i) { carid = i; }
 		public void setDial(double d) { dial = d; }
-		public void setNewDial(double d) { newdial = d; }
 		
 		public void reset()
 		{
-			newdial = dial;
 			left = null;
 			right = null;
 		}
@@ -153,38 +151,15 @@ public class ChallengeRound
 				log.log(Level.INFO, "Throwing away run as it isn''t left or right: {0}", r);
 		}
 		
-		public void setTo(RoundEntrant re)
-		{
-			carid = re.carid;
-			if (re.newdial == 0.0)
-				dial = re.dial;
-			else
-				dial = re.newdial;
-		}
-		
-		public void setResultByNet(double d)
-		{
-			result = d - (2*dial);
-			if (Double.isNaN(d))
-				return;
-			
-			double hresult = d/2;
-			if (hresult < dial)
-				newdial = dial - ((dial - hresult)*1.5);
-			else
-				newdial = dial;
-			
-			if (newdial <= 0)
-				newdial = 0.001;
-		}
-
-		public boolean breakout() { return Math.abs(newdial - dial) > .0001; }
-				
-		public UUID getCar() { return carid; }
+		public UUID getCarId() { return carid; }
 		public double getDial() { return dial; }
-		public double getResult() { return result; }
-		public double getNewDial() { return newdial; }
 		public ChallengeRun getLeft() { return left; }
 		public ChallengeRun getRight() { return right; }
+
+		public void setTo(UUID carid, double dial)
+		{
+			this.carid = carid;
+			this.dial  = dial;
+		}
 	}
 }

@@ -9,11 +9,11 @@ import javax.swing.KeyStroke;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.PostgresqlDatabase;
 
-public class DatabaseOpenAction extends AbstractAction
+public class OpenSeriesAction extends AbstractAction
 {
-	public DatabaseOpenAction()
+	public OpenSeriesAction()
 	{
-		super("Open Database");
+		super("Open Series");
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 	}
 	
@@ -22,6 +22,7 @@ public class DatabaseOpenAction extends AbstractAction
 	{
 		String options[] = PostgresqlDatabase.getSeriesList().toArray(new String[0]);
 		String series = (String)JOptionPane.showInputDialog(null, "Select the series", "Series Selection", JOptionPane.QUESTION_MESSAGE, null, options, null);
-		Database.openDatabase(series, series);
+		if (series != null)
+			Database.openSeries(series, series);
 	}
 }

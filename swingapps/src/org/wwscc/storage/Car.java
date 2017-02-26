@@ -23,9 +23,6 @@ public class Car extends AttrBase
 	protected int number;
 	protected String classcode;
 	protected String indexcode;
-	
-	// not part of car tables
-	private String indexstr;
 
 	static public class NumOrder implements Comparator<Car>
 	{
@@ -46,14 +43,9 @@ public class Car extends AttrBase
 		number    = 0;
 		classcode = "";
 		indexcode = "";
-		indexstr  = null;
 	}
 	
-	/**
-	 * Constructor just for use by MetaCar
-	 * @param other the original car to base the MetaCar on
-	 */
-	protected Car(Car other)
+	public Car(Car other)
 	{
 		super(other.attr);
 		carid     = other.carid;
@@ -61,7 +53,6 @@ public class Car extends AttrBase
 		number    = other.number;
 		classcode = other.classcode;
 		indexcode = other.indexcode;
-		indexstr  = other.indexstr;
 	}
 	
 	public Car(ResultSet rs) throws SQLException
@@ -72,7 +63,6 @@ public class Car extends AttrBase
 		classcode = rs.getString("classcode");
 		indexcode = rs.getString("indexcode");
 		number    = rs.getInt("number");
-		// FINISH ME indexstr  = getIndexStr(classcode, indexcode, isTireIndexed());
 	}
 
 	public LinkedList<Object> getValues()
@@ -92,7 +82,6 @@ public class Car extends AttrBase
 	public UUID getDriverId()      { return driverid; }
 	public String getClassCode()   { return classcode; }
 	public String getIndexCode()   { return indexcode; }
-	public String getIndexStr()    { return (indexstr != null) ? indexstr: indexcode; } 
 	public int getNumber()         { return number; }
 	public String getYear()        { return getAttrS("year"); }
 	public String getMake()        { return getAttrS("make"); }

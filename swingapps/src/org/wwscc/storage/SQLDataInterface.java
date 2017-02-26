@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.wwscc.util.IdGenerator;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 
@@ -392,7 +393,7 @@ public abstract class SQLDataInterface implements DataInterface
 	{
 		LinkedList<Object> vals = d.getValues();
 		vals.add(vals.pop());
-		executeUpdate("update drivers set firstname=?,lastname=?,email=?,membership=?,attr=? where driverid=?", vals);
+		executeUpdate("update drivers set firstname=?,lastname=?,email=?,password=?,membership=?,attr=?,modified=now() where driverid=?", vals);
 	}
 
 	@Override
@@ -501,10 +502,18 @@ public abstract class SQLDataInterface implements DataInterface
 	public void registerCar(int eventid, UUID carid, boolean paid, boolean overwrite) throws SQLException
 	{
 		List<Object> vals = newList(eventid, carid, paid);
+		String sql = "INSERT INTO REGISTERED (eventid, carid, paid) VALUES (?, ?, ?) ON CONFLICT (eventid, carid) DO ";
+		String upd = "UPDATE SET paid=?,modified=now()";
+		String ign = "NOTHING"; 
 		if (overwrite)
-			executeUpdate("insert or replace into registered (eventid, carid, paid) values (?,?,?)", vals);
+		{
+			vals.add(paid);
+			executeUpdate(sql+upd, vals);
+		}
 		else
-			executeUpdate("insert or ignore into registered (eventid, carid, paid) values (?,?,?)", vals);
+		{
+			executeUpdate(sql+ign, vals);
+		}
 	}
 
 	@Override
@@ -526,7 +535,7 @@ public abstract class SQLDataInterface implements DataInterface
 	{
 		LinkedList<Object> vals = c.getValues();
 		vals.add(vals.pop());
-		executeUpdate("update cars set driverid=?,classcode=?,indexcode=?,number=?,attr=? where carid=?", vals);
+		executeUpdate("update cars set driverid=?,classcode=?,indexcode=?,number=?,attr=?,modified=now() where carid=?", vals);
 	}
 
 	@Override
@@ -580,7 +589,7 @@ public abstract class SQLDataInterface implements DataInterface
 						newList(r.eventid, r.carid, r.course, r.run, r.cones, r.gates, r.raw, r.status, r.attr,
 								r.cones, r.gates, r.raw, r.status, r.attr));
 		} catch (Exception ioe){
-			logError("updateRun", ioe);
+			logError("setRun", ioe);
 		}
 	}
 
@@ -618,18 +627,19 @@ public abstract class SQLDataInterface implements DataInterface
 	}
 
 	@Override
-	public void newChallenge(UUID eventid, String name, int size)
+	public int newChallenge(int eventid, String name, int size)
 	{
+		int newid = -1;
 		try
 		{
 			int rounds = size - 1;
 			int depth = (int)(Math.log(size)/Math.log(2));
 			start();
 
-			int next = (Integer)executeUpdate("insert into challenges (challengeid, eventid, name, depth) values (next(),?,?,?)", newList(eventid, name, depth));
+			newid = (Integer)executeUpdate("insert into challenges (eventid, name, depth) values (?,?,?)", newList(eventid, name, depth));
 
-			String sql = "insert into challengerounds (challengeid,round,swappedstart,car1id,car2id) values (?,?,?,?,?)";
-			List<Object> rargs = newList(next, 0, false, -1, -1);
+			String sql = "insert into challengerounds (challengeid,round,swappedstart) values (?,?,?)";
+			List<Object> rargs = newList(newid, 0, false);
 			for (int ii = 0; ii <= rounds; ii++)
 			{
 				rargs.set(1, ii);
@@ -645,14 +655,16 @@ public abstract class SQLDataInterface implements DataInterface
 			logError("newChallenge", ioe);
 			rollback();
 		}
+		
+		return newid;
 	}
 
 	@Override
 	public void deleteChallenge(int challengeid)
 	{
 		try
-		{
-			executeUpdate("delete from challenges where challengeid=?", newList(challengeid));
+		{   // This delete cascades to challengrounds and challengeruns
+			executeUpdate("DELETE FROM challenges WHERE challengeid=?", newList(challengeid));
 		}
 		catch (Exception ioe)
 		{
@@ -705,57 +717,62 @@ public abstract class SQLDataInterface implements DataInterface
 	}
 
 	final static class Leader {  // I miss python
-		UUID carid; double basis; double net;
-		Leader(UUID i, double b, double n) { carid = i; basis = b; net = n; }
+		UUID Xcarid; double basis; double net;
+		Leader(UUID i, double b, double n) { Xcarid = i; basis = b; net = n; }
 	}
 	
 	@Override
 	public Dialins loadDialins(int eventid) 
-	{
-		String sql = "select d.firstname as firstname, d.lastname as lastname, d.alias as alias, c.classcode as classcode, " +
-				"c.indexcode as indexcode, c.tireindexed as tireindexed, c.carid as carid, SUM(r.raw) as myraw, f.position as position, f.sum as mynet " +
-				"from runs as r, cars as c, drivers as d, eventresults as f " +
-				"where r.carid=c.carid and c.driverid=d.driverid and r.eventid=? and r.rorder=1 and f.eventid=? and f.carid=c.carid " +
-				"group by d.driverid order by position";
+	{		
+		String sql = "SELECT c.classcode,c.indexcode,c.attr->'tireindexed' as tireindexed,r.* "
+				+ "FROM runs AS r JOIN cars AS c ON c.carid=r.carid WHERE r.eventid=? ORDER BY r.carid,r.course";
 
 		try
 		{
-			HashMap <String, Leader> leaders = new HashMap<String, Leader>();
-			ResultSet rs = executeSelect(sql, newList(eventid, eventid));
-			Dialins ret = new Dialins();
+			Event e      = executeSelect("select * from events where eventid=?", newList(eventid), Event.class.getConstructor(ResultSet.class)).get(0);
+			ResultSet rs = executeSelect(sql, newList(eventid));
+
+			Dialins ret         = new Dialins();
+			UUID currentid      = IdGenerator.nullid;
+			String classcode    = "";
+			String indexcode    = "";
+			double index        = 1.0;
+			double bestraw[]    = new double[2];
+			double bestnet[]    = new double[2];
+			
+			// 1. load all runs
+			// 2. calculate best raw/net/sum for each carid
+			// 3. set personal dialin
 			while (rs.next())
 			{
-				String classcode    = rs.getString("classcode");
-				String indexcode    = rs.getString("indexcode");
-				boolean tireindexed = rs.getBoolean("tireindexed");
-				int position        = rs.getInt("position");
-				UUID carid          = (UUID)rs.getObject("carid");
-				double myraw        = rs.getDouble("myraw");
-				double mynet        = rs.getDouble("mynet");
-				double index        = getEffectiveIndex(classcode, indexcode, tireindexed);
-
-				if (position == 1)
-					leaders.put(classcode, new Leader(carid, myraw * index, mynet));
-
-				if (!leaders.containsKey(classcode))
+				Run r = new Run(rs);
+				double net = 999.999;
+				
+				if (!currentid.equals(r.getCarId()))  // next car, process previous
 				{
-					log.info("No leader for " + classcode + "?");
-					continue;
+					ret.setEntrant(currentid, classcode, bestraw[0]+bestraw[1], bestnet[0]+bestnet[1], index);
+					currentid = r.getCarId();
+					bestraw[0] = bestraw[1] = bestnet[0] = bestnet[1] = 999.999;
 				}
-
-				// Bonus dial is based on my best raw times
-				ret.bonusDial.put(carid, myraw/2.0);
-				// Class dial is based on the class leaders best time, need to apply indexing though
-				ret.classDial.put(carid, leaders.get(classcode).basis / index / 2.0);
-				ret.netTime.put(carid, mynet);
-				ret.classDiff.put(carid, mynet - leaders.get(classcode).net);
-
-				if (position == 2)
-				{
-					Leader lead = leaders.get(classcode);
-					ret.classDiff.put(lead.carid, lead.net - mynet);
+				
+				classcode    = rs.getString("classcode");
+				indexcode    = rs.getString("indexcode");
+				index        = getClassData().getEffectiveIndex(classcode, indexcode, rs.getBoolean("tireindexed"));
+				
+				if (r.isOK()) // we ignore non-OK runs
+				{				
+					int idx = r.course() - 1;
+					if (r.raw < bestraw[idx])
+						bestraw[idx] = r.raw;
+					
+					net = (r.getRaw() + (e.getConePenalty() * r.getCones()) + (e.getGatePenalty() * r.getGates())) * index;
+					if (net < bestnet[idx])
+						bestnet[idx] = net;
 				}
 			}
+				
+			// 4. order and set class dialins
+			ret.finalize();
 			closeLeftOvers();
 			return ret;
 		}
@@ -826,6 +843,32 @@ public abstract class SQLDataInterface implements DataInterface
 		}
 	}
 	
+	@Override
+	public void setChallengeRun(ChallengeRun r)
+	{
+		try {
+			executeUpdate("INSERT INTO challengeruns (challengeid, round, carid, course, reaction, sixty, raw, cones, gates, status, modified) " +
+						"values (?,?,?,?,?,?,?,?,?,?,now()) ON CONFLICT (challengeid, round, carid, course) DO UPDATE " +
+						"SET reaction=?,sixty=?,raw=?,cones=?,gates=?,status=?,modified=now()", 
+						newList(r.challengeid, r.round, r.carid, r.course, r.reaction, r.sixty, r.raw, r.cones, r.gates, r.status, 
+								r.reaction, r.sixty, r.raw, r.cones, r.gates, r.status));
+		} catch (Exception ioe){
+			logError("setChallengeRun", ioe);
+		}
+	}
+
+	@Override
+	public void deleteChallengeRun(ChallengeRun r)
+	{
+		if (r == null)
+			return;
+		try {
+			executeUpdate("DELETE FROM challengeruns where challengeid=? AND round=? AND carid=? AND course=?", newList(r.challengeid, r.round, r.carid, r.course)); 
+		} catch (Exception ioe){
+			logError("deleteChallengeRun", ioe);
+		}
+	}
+	
 	
 	@Override
 	public List<Driver> getDriversLike(String first, String last)
@@ -836,11 +879,11 @@ public abstract class SQLDataInterface implements DataInterface
 		{
 			Constructor<Driver> cc = Driver.class.getConstructor(ResultSet.class);
 			if (first == null)
-				return executeSelect("select * from drivers where lastname like ? order by firstname,lastname", newList(last+"%"), cc);
+				return executeSelect("select * from drivers where lower(lastname) like ? order by firstname,lastname", newList(last.toLowerCase()+"%"), cc);
 			else if (last == null)
-				return executeSelect("select * from drivers where firstname like ? order by firstname,lastname", newList(first+"%"), cc);
+				return executeSelect("select * from drivers where lower(firstname) like ? order by firstname,lastname", newList(first.toLowerCase()+"%"), cc);
 			else
-				return executeSelect("select * from drivers where firstname like ? and lastname like ? order by firstname,lastname", newList(first+"%", last+"%"), cc);
+				return executeSelect("select * from drivers where lower(firstname) like ? and lower(lastname) like ? order by firstname,lastname", newList(first.toLowerCase()+"%", last.toLowerCase()+"%"), cc);
 		}
 		catch (Exception ioe)
 		{
@@ -893,14 +936,17 @@ public abstract class SQLDataInterface implements DataInterface
 	{
 		try
 		{
+			if ((classCache != null) && (classCacheTimestamp < System.currentTimeMillis() + 2000))
+				return classCache;
+				
 			ClassData ret = new ClassData();
 			for (ClassData.Class cls : executeSelect("select * from classlist", null, ClassData.Class.class.getConstructor(ResultSet.class)))
 				ret.add(cls);
 			for (ClassData.Index idx : executeSelect("select * from indexlist", null, ClassData.Index.class.getConstructor(ResultSet.class)))
 				ret.add(idx);
-			classCache = ret; // save for index lookups, user may preload cache for us
+			classCache = ret; // save for quick lookups when doing multiple calls within a couple seconds
 			classCacheTimestamp = System.currentTimeMillis();
-			return ret;
+			return classCache;
 		}
 		catch (Exception ioe)
 		{
@@ -909,17 +955,9 @@ public abstract class SQLDataInterface implements DataInterface
 		}
 	}
 
-	protected double getEffectiveIndex(String classcode, String indexcode, boolean tireindexed)
+	@Override
+	public String getEffectiveIndexStr(Car c)
 	{
-		if ((classCache == null) || (classCacheTimestamp < System.currentTimeMillis() + 2000))
-			getClassData();
-		return classCache.getEffectiveIndex(classcode, indexcode, tireindexed);
-	}
-	
-	protected String getIndexStr(String classcode, String indexcode, boolean tireindexed)
-	{
-		if ((classCache == null) || (classCacheTimestamp < System.currentTimeMillis() + 2000))
-			getClassData();
-		return classCache.getIndexStr(classcode, indexcode, tireindexed);
+		return getClassData().getIndexStr(c.classcode, c.indexcode, c.isTireIndexed());
 	}	
 }

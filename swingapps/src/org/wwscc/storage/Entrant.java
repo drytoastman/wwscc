@@ -54,12 +54,12 @@ public class Entrant
 	public String getFirstName() { return firstname; }
 	public String getLastName() { return lastname; }
 
+	public Car  getCar() { return car; }
 	public UUID getCarId() { return car.carid; }
 	public String getCarModel() { return car.getModel(); }
 	public String getCarColor() { return car.getColor(); }
 	public String getCarDesc() { return car.getYear() + " " + car.getModel() + " " + car.getColor(); }
 	public String getClassCode() { return car.classcode; }
-	public String getIndexStr() { return car.getIndexStr(); }
 	public int getNumber() { return car.number; }
 	public boolean isPaid() { return paid; }
 

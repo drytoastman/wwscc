@@ -15,7 +15,7 @@ class JustPrint(object):
     def execute(self, cmd, tup=None): print(cmd, tup)
 
 
-def convert(sourcefile, name):
+def convert(sourcefile, name, password):
     import sqlite3
     import json
     import uuid
@@ -33,7 +33,7 @@ def convert(sourcefile, name):
         import psycopg2
         import psycopg2.extras
         psycopg2.extras.register_uuid()
-        new = psycopg2.connect("host='127.0.0.1' user='{}' password='{}' dbname='scorekeeper'".format(name, name))
+        new = psycopg2.connect("host='127.0.0.1' user='{}' password='{}' dbname='scorekeeper'".format(name, password))
     except ImportError:
         new = JustPrint()
     cur = new.cursor()
@@ -103,6 +103,7 @@ def convert(sourcefile, name):
 
         
     #EVENTS (all the same fields)
+    maxeid = 1
     for r in old.execute("select * from events"):
         e = AttrWrapper(r, r.keys())
 
@@ -122,6 +123,7 @@ def convert(sourcefile, name):
         newe['ispro']       = e.ispro and True or False
         newe['ispractice']  = e.practice and True or False
         newe['attr']        = dict()
+        maxeid = max(maxeid, e.id)
 
         for a in ('location', 'sponsor', 'host', 'chair', 'designer', 'segments', 'paypal', 'snail', 'cost', 'notes', 'doublespecial'):
             if hasattr(e, a) and getattr(e, a) is not None:
@@ -130,6 +132,7 @@ def convert(sourcefile, name):
         cur.execute("insert into events values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", 
             (newe['eventid'], newe['name'], newe['date'], newe['regopened'], newe['regclosed'], newe['courses'], newe['runs'], newe['countedruns'],
             newe['perlimit'], newe['totlimit'], newe['conepen'], newe['gatepen'], newe['ispro'], newe['ispractice'], json.dumps(newe['attr'])))
+    cur.execute("ALTER SEQUENCE events_eventid_seq RESTART WITH %s", maxeid+1)
 
     #REGISTERED (map carid)
     for r in old.execute("select * from registered"):
@@ -184,6 +187,7 @@ def convert(sourcefile, name):
 
     #CHALLENGEROUNDS (remap roundid, challengeid, carid)
     check1 = set()
+    maxcid = 1
     for rp in old.execute("select * from challengerounds"):
         r = AttrWrapper(rp, rp.keys())
         cid  = r.challengeid
@@ -193,7 +197,9 @@ def convert(sourcefile, name):
         c1d = r.car1dial or 0.0
         c2d = r.car2dial or 0.0
         check1.add((cid, r.round))
+        maxcid = max(maxcid, cid)
         cur.execute("insert into challengerounds values (%s, %s, %s, %s, %s, %s, %s, now())", (cid, r.round, ss, c1id, c1d, c2id, c2d))
+    cur.execute("ALTER SEQUENCE challenges_challengeid_seq RESTART WITH %s", maxcid+1)
 
 
     #CHALLENGERUNS (now in ther own table)
@@ -210,8 +216,8 @@ def convert(sourcefile, name):
     new.close()
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print("Usage: {} <old db file> <name>")
+    if len(sys.argv) < 4:
+        print("Usage: {} <old db file> <name> <password>")
     else:
-        convert(sys.argv[1], sys.argv[2])
+        convert(sys.argv[1], sys.argv[2], sys.argv[3])
 

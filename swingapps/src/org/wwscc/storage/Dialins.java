@@ -21,66 +21,95 @@ import java.util.UUID;
  */
 public class Dialins 
 {
-	//private static Logger log = Logger.getLogger(Dialins.class.getCanonicalName());
+	private class CarInfo
+	{
+		UUID   carid;
+		String classcode;
+		Double index;
+		Double net;
+		Double bonus;
+		Double dial;
+	}
+	
+	private class Leader
+	{
+		double net;   // net time of class leader
+		double basis; // leader dialin * leader index for other dialin calculations
+		public Leader() { net = basis = 999.999; }
+	}
 
-	//protected Map <String, Double> leaderNet;
-	protected Map <UUID, Double> classDial;
-	protected Map <UUID, Double> bonusDial;
-	protected Map <UUID, Double> netTime;
-	protected Map <UUID, Double> classDiff;
-
-	//protected List<Integer> netOrder;
-	//protected List<Integer> diffOrder;
+	private Map <String, Leader> classmap;   // used to determine class dialin basis
+	private Map <UUID, CarInfo> carmap;     // map from carid to details for the Car
 	
 	public Dialins()
 	{
-		//leaderNet = new HashMap<String, Double>();
-		classDial = new HashMap<UUID, Double>();
-		bonusDial = new HashMap<UUID, Double>();
-		netTime = new HashMap<UUID, Double>();
-		classDiff = new HashMap<UUID, Double>();
-
-		//netOrder = new ArrayList<Integer>();
-		//diffOrder = new ArrayList<Integer>();
+		classmap = new HashMap<String, Leader>();
+		carmap   = new HashMap<UUID, CarInfo>();
 	}
-
-	public double getNet(UUID carid) { return netTime.get(carid); }
-	public double getDiff(UUID carid) { return classDiff.get(carid); }
+	
+	public void setEntrant(UUID carid, String classcode, double raw, double net, double index)
+	{
+		CarInfo c = new CarInfo();
+		carmap.put(carid, c);
+		c.carid     = carid;
+		c.classcode = classcode;
+		c.index     = index;
+		c.net       = net;
+		c.bonus     = raw/2.0;
+		c.dial      = 999.999;
+		
+		if (!classmap.containsKey(c.classcode))
+			classmap.put(c.classcode, new Leader());
+		
+		Leader l = classmap.get(c.classcode);
+		if (c.net < l.net)  // new leader
+		{
+			l.net   = c.net;
+			l.basis = c.bonus*index;
+		}
+	}
+	
+	public void finalize()
+	{
+		for (CarInfo info : carmap.values())
+		{
+			Leader l = classmap.get(info.classcode);
+			info.dial = l.basis / info.index;
+		}
+	}
+	
+	public double getNet(UUID carid)  { return carmap.get(carid).net; }
 	public double getDial(UUID carid, boolean bonus)
 	{
 		double ret;
 		if (bonus)
-			ret = bonusDial.get(carid);
+			ret = carmap.get(carid).bonus;
 		else
-			ret = classDial.get(carid);
+			ret = carmap.get(carid).dial;
 		
 		return (Math.round(ret * 1000.0))/1000.0;
 	}
 
 	public List<UUID> getNetOrder()
 	{
-		return mapSort(netTime);
+		return mapSort(
+			new Comparator<CarInfo>() {
+				public int compare(CarInfo o1, CarInfo o2) {
+					return (o1.net.compareTo(o2.net));
+				}
+			});
 	}
 
-	public List<UUID> getDiffOrder()
-	{
-		return mapSort(classDiff);
-	}
 
-	public List<UUID> mapSort(Map<UUID, Double> map)
+	private List<UUID> mapSort(Comparator<CarInfo> compare)
 	{
-		List<Map.Entry<UUID,Double>> torder = new LinkedList<Map.Entry<UUID,Double>>(map.entrySet());
-		Collections.sort(torder,  new Comparator<Map.Entry<UUID,Double>>() {
-			public int compare(Map.Entry<UUID,Double> o1, Map.Entry<UUID,Double> o2) {
-				return (o1.getValue().compareTo(o2.getValue()));
-			}
-		});
+		List<CarInfo> torder = new LinkedList<CarInfo>(carmap.values());
+		Collections.sort(torder, compare);
 
 		List<UUID> ids = new ArrayList<UUID>();
-		for (Map.Entry<UUID,Double> e : torder)
-			ids.add(e.getKey());
-
+		for (CarInfo i : torder)
+			ids.add(i.carid);
+		
 		return ids;
 	}
-
 }

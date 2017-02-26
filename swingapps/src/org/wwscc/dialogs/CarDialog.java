@@ -26,7 +26,6 @@ import net.miginfocom.swing.MigLayout;
 import org.wwscc.storage.Car;
 import org.wwscc.storage.ClassData;
 import org.wwscc.storage.Database;
-import org.wwscc.util.IdGenerator;
 
 
 /**
@@ -277,7 +276,6 @@ public class CarDialog extends BaseDialog<Car>
 		
 		try
 		{
-			result.setCarId(IdGenerator.generateId());
 			result.setYear(getEntryText("year"));
 			result.setMake(getEntryText("make"));
 			result.setModel(getEntryText("model"));

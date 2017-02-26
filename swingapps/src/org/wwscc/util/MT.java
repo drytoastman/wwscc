@@ -12,7 +12,7 @@ package org.wwscc.util;
 public enum MT {
 
 	// Generic ?
-	DATABASE_CHANGED,
+	SERIES_CHANGED,
 	EVENT_CHANGED,
 	COURSE_CHANGED,
 	RUNGROUP_CHANGED,

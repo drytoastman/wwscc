@@ -39,6 +39,7 @@ import org.wwscc.storage.Database;
 import org.wwscc.storage.Driver;
 import org.wwscc.storage.MetaCar;
 import org.wwscc.util.ApplicationState;
+import org.wwscc.util.IdGenerator;
 import org.wwscc.util.MT;
 import org.wwscc.util.Messenger;
 import org.wwscc.util.SearchTrigger;
@@ -48,6 +49,16 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 {
 	private static final Logger log = Logger.getLogger(DriverCarPanel.class.getCanonicalName());
 
+	public static final String CLEAR      = "Clear";
+	public static final String NEWDRIVER  = "New Driver";
+	public static final String EDITDRIVER = "Edit Driver";
+	public static final String EDITNOTES  = "Edit Notes";
+
+	public static final String NEWCAR     = "New Car";
+	public static final String NEWFROM    = "New From";
+	public static final String EDITCAR    = "Edit Car";
+	public static final String DELETECAR  = "Delete Car";
+	
 	protected JTextField firstSearch;
 	protected JTextField lastSearch;
 
@@ -197,10 +208,10 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	{
 		String cmd = e.getActionCommand();
 
-		if (cmd.equals("New Driver"))
+		if (cmd.equals(NEWDRIVER))
 		{
 			DriverDialog dd = new DriverDialog(new Driver(firstSearch.getText(), lastSearch.getText()));
-			dd.doDialog("New Driver", new DialogFinisher<Driver>() {
+			dd.doDialog(NEWDRIVER, new DialogFinisher<Driver>() {
 				@Override
 				public void dialogFinished(Driver d) {
 					if (d == null) return;
@@ -214,10 +225,10 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 			});
 		}
 
-		else if (cmd.equals("Edit Driver"))
+		else if (cmd.equals(EDITDRIVER))
 		{
 			DriverDialog dd = new DriverDialog(selectedDriver);
-			dd.doDialog("Edit Driver", new DialogFinisher<Driver>() {
+			dd.doDialog(EDITDRIVER, new DialogFinisher<Driver>() {
 				@Override
 				public void dialogFinished(Driver d) {
 					if (d == null) return;
@@ -235,15 +246,21 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 			});
 		}
 
-		else if (cmd.equals("New Car") || cmd.equals("New From"))
+		else if (cmd.equals(NEWCAR) || cmd.equals(NEWFROM))
 		{
 			final CarDialog cd;
-			if (cmd.equals("New From"))
-				cd = new CarDialog(selectedCar, Database.d.getClassData(), carAddOption);
+			if (cmd.equals(NEWFROM) && (selectedCar != null))
+			{
+				Car initial = new Car(selectedCar);
+				initial.setCarId(IdGenerator.generateId());  // Need a new id
+				cd = new CarDialog(initial, Database.d.getClassData(), carAddOption);
+			}
 			else
+			{
 				cd = new CarDialog(null, Database.d.getClassData(), carAddOption);
+			}
 
-			cd.doDialog("New Car", new DialogFinisher<Car>() {
+			cd.doDialog(NEWCAR, new DialogFinisher<Car>() {
 				@Override
 				public void dialogFinished(Car c) {
 					if (c == null)
@@ -267,7 +284,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 			});
 		}
 
-		else if (cmd.equals("Clear"))
+		else if (cmd.equals(CLEAR))
 		{
 			firstSearch.setText("");
 			lastSearch.setText("");
@@ -344,7 +361,7 @@ public abstract class DriverCarPanel extends JPanel implements ActionListener, L
 	{
 		StringBuilder ret = new StringBuilder();
 		ret.append(c.getCarId()).append("\n");
-		ret.append(c.getClassCode()).append(" ").append(c.getIndexStr()).append(" #").append(c.getNumber());
+		ret.append(c.getClassCode()).append(" ").append(Database.d.getEffectiveIndexStr(c)).append(" #").append(c.getNumber()).append("\n");
 		ret.append(c.getYear() + " " + c.getMake() + " " + c.getModel() + " " + c.getColor());
 		return ret.toString();
 	}

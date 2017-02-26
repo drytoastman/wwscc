@@ -13,6 +13,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+
+import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
 
 /**
@@ -52,7 +54,7 @@ public class CarTreeRenderer extends DefaultTreeCellRenderer
 		{
 			Entrant e = (Entrant)o;
 			
-			String display = e.getNumber() + " - " + e.getName() + " - " + e.getCarModel() + " " + e.getIndexStr();
+			String display = e.getNumber() + " - " + e.getName() + " - " + e.getCarModel() + " " + Database.d.getEffectiveIndexStr(e.getCar());
 			setText(display);
 		}
 

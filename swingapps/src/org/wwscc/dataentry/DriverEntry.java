@@ -25,6 +25,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ListSelectionEvent;
 import org.wwscc.components.DriverCarPanel;
 import org.wwscc.components.UnderlineBorder;
+import org.wwscc.storage.Database;
 import org.wwscc.storage.Driver;
 import org.wwscc.storage.Entrant;
 import org.wwscc.storage.MetaCar;
@@ -214,7 +215,7 @@ public class DriverEntry extends DriverCarPanel implements MessageListener
 			if (value instanceof MetaCar)
 			{
 				MetaCar c = (MetaCar)value;
-				String myclass = c.getClassCode() + " " + c.getIndexStr();
+				String myclass = c.getClassCode() + " " + Database.d.getEffectiveIndexStr(c);
 				setText(myclass + " #" + c.getNumber() + ": " + c.getYear() + " " + c.getModel() + " " + c.getColor());
 				if (c.isInRunOrder())
 				{

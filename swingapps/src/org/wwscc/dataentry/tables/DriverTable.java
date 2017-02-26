@@ -37,6 +37,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.wwscc.dataentry.tables.TableBase.SimpleDataTransfer;
+import org.wwscc.storage.Database;
 import org.wwscc.storage.Entrant;
 import org.wwscc.util.Prefs;
 
@@ -176,7 +177,7 @@ class EntrantRenderer extends JComponent implements TableCellRenderer
 
 				case 1:
 					topLine = e.getFirstName() + " " + e.getLastName();
-					bottomLine = e.getCarDesc() + " " + e.getIndexStr();
+					bottomLine = e.getCarDesc() + " " +  Database.d.getEffectiveIndexStr(e.getCar());
 					break;
 
 				default:	

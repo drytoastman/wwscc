@@ -1,6 +1,9 @@
 --------------------------------------------------------------------------------------
 --- Create top level results and drivers tables that every series shares
 
+CREATE ROLE baseaccess;
+CREATE USER wwwuser PASSWORD '<wwwpassword>';
+GRANT  baseaccess TO wwwuser;
 CREATE EXTENSION hstore;
 
 -- Logs are specific to this machine
@@ -9,14 +12,13 @@ CREATE TABLE driverslog (
     usern   TEXT      NOT NULL,
     time    TIMESTAMP NOT NULL,
     addr    INET      NOT NULL,
-    query   TEXT      NOT NULL,
     action  CHAR(1)   NOT NULL CHECK (action IN ('I', 'D', 'U')),
     rowdata JSONB     NOT NULL,
     changed JSONB     NOT NULL
 );
 REVOKE ALL ON driverslog FROM public;
-GRANT  ALL ON driverslog TO scorekeeper;
-GRANT  ALL ON driverslog_logid_seq TO scorekeeper;
+GRANT  ALL ON driverslog TO baseaccess;
+GRANT  ALL ON driverslog_logid_seq TO baseaccess;
 CREATE INDEX ON driverslog(logid);
 CREATE INDEX ON driverslog(time);
 COMMENT ON TABLE driverslog IS 'Change logs that are specific to this local database';
@@ -26,10 +28,7 @@ CREATE OR REPLACE FUNCTION logdrivermods() RETURNS TRIGGER AS $body$
 DECLARE
     audit_row driverslog;
 BEGIN
-    audit_row = ROW(
-        NULL, session_user::text, CURRENT_TIMESTAMP,
-        inet_client_addr(), current_query(), SUBSTRING(TG_OP,1,1), '{}', '{}'
-    );
+    audit_row = ROW(NULL, session_user::text, CURRENT_TIMESTAMP, inet_client_addr(), SUBSTRING(TG_OP,1,1), '{}', '{}');
 
     IF (TG_OP = 'UPDATE') THEN
         IF OLD = NEW THEN
@@ -84,7 +83,7 @@ CREATE TABLE results (
     PRIMARY KEY (series, name)
 );
 REVOKE ALL ON results FROM public;
-GRANT  ALL ON results TO scorekeeper;
+GRANT  ALL ON results TO baseaccess;
 -- Everyone can view results but only owner can insert, update, delete their rows
 ALTER TABLE results ENABLE ROW LEVEL SECURITY;
 CREATE POLICY all_view ON results FOR SELECT USING (true);
@@ -108,9 +107,9 @@ CREATE TABLE drivers (
 CREATE INDEX ON drivers(lower(firstname));
 CREATE INDEX ON drivers(lower(lastname));
 REVOKE ALL   ON drivers FROM public;
-GRANT  ALL   ON drivers TO scorekeeper;
+GRANT  ALL   ON drivers TO baseaccess;
 CREATE TRIGGER driversmod AFTER INSERT OR UPDATE OR DELETE ON drivers FOR EACH ROW EXECUTE PROCEDURE logdrivermods();
-CREATE TRIGGER driversuni BEFORE UPDATE ON driver FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
+CREATE TRIGGER driversuni BEFORE UPDATE ON drivers FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE drivers IS 'The global list of drivers for all series';
 
 

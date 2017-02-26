@@ -27,7 +27,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 
 import org.wwscc.actions.BarcodeScannerOptionsAction;
-import org.wwscc.actions.DatabaseOpenAction;
+import org.wwscc.actions.OpenSeriesAction;
 import org.wwscc.actions.EventSendAction;
 import org.wwscc.actions.QuitAction;
 import org.wwscc.dialogs.BaseDialog.DialogFinisher;
@@ -60,7 +60,7 @@ public class Menus extends JMenuBar implements ActionListener, MessageListener
 		JMenu file = new JMenu("File");
 		add(file);
 
-		file.add(new DatabaseOpenAction());
+		file.add(new OpenSeriesAction());
 		file.add(new QuitAction());
 
 		/* Edit Menu */

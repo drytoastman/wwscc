@@ -19,7 +19,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
-import org.wwscc.components.CurrentDatabaseLabel;
+import org.wwscc.components.CurrentSeriesLabel;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.Database;
 import org.wwscc.storage.Event;
@@ -34,7 +34,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 	//private static final Logger log = Logger.getLogger(SelectionBar.class.getCanonicalName());
 
 	JLabel connectLabel;
-	CurrentDatabaseLabel seriesLabel;
+	CurrentSeriesLabel seriesLabel;
 	JComboBox<Event> eventSelect;
 	JComboBox<Challenge> challengeSelect;
 
@@ -43,7 +43,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 		super();
 
 		Messenger.register(MT.TIMER_SERVICE_CONNECTION, this);
-		Messenger.register(MT.DATABASE_CHANGED, this);
+		Messenger.register(MT.SERIES_CHANGED, this);
 		Messenger.register(MT.NEW_CHALLENGE, this);
 		Messenger.register(MT.CHALLENGE_DELETED, this);
 
@@ -51,7 +51,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 
 		Font f = new Font(Font.DIALOG, Font.BOLD, 14);
 
-		seriesLabel = new CurrentDatabaseLabel();
+		seriesLabel = new CurrentSeriesLabel();
 		seriesLabel.setFont(f.deriveFont(Font.PLAIN));
 		challengeSelect  = createCombo("challengeChange");
 		eventSelect = createCombo("eventChange");
@@ -111,7 +111,7 @@ class SelectionBar extends JPanel implements ActionListener, MessageListener
 				}
 				break;
 				
-			case DATABASE_CHANGED:
+			case SERIES_CHANGED:
 				seriesLabel.setText(ChallengeGUI.state.getCurrentSeries());
 				eventSelect.setModel(new DefaultComboBoxModel<Event>(Database.d.getEvents().toArray(new Event[0])));
 

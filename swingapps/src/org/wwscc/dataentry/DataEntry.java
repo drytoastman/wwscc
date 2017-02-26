@@ -22,7 +22,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.barcodes.BarcodeScannerWatcher;
-import org.wwscc.components.CurrentDatabaseLabel;
+import org.wwscc.components.CurrentSeriesLabel;
 import org.wwscc.components.MyIpLabel;
 import org.wwscc.dataentry.tables.DoubleTableContainer;
 import org.wwscc.storage.Database;
@@ -106,7 +106,7 @@ public class DataEntry extends JFrame implements MessageListener
 		timeEntry = new TimeEntry();
 		menus.add(timeEntry.getTimerMenu());
 
-		CurrentDatabaseLabel curdb = new CurrentDatabaseLabel();
+		CurrentSeriesLabel curdb = new CurrentSeriesLabel();
 		HelpPanel help = new HelpPanel();
 		MyIpLabel myip = new MyIpLabel();
 		curdb.setBorder(BorderFactory.createLoweredBevelBorder());

@@ -164,7 +164,7 @@ class RunDisplay extends JComponent
 			cones.setSelectedItem(run.getCones());
 			gates.setSelectedItem(run.getGates());
 			status.setSelectedItem(run.getStatus());
-			diff = run.getNet() - model.getDial(runId);
+			diff = model.getPenSum(run) - model.getDial(runId);
 			if (Double.isNaN(diff))
 				rundiff.setText("");
 			else if (diff > 900)

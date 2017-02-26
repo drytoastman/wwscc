@@ -1,8 +1,9 @@
 
-CREATE USER <seriesname> PASSWORD '<seriesname>';
-CREATE SCHEMA <seriesname> AUTHORIZATION <seriesname>;
-GRANT scorekeeper to <seriesname>;
-GRANT <seriesname> to wwwuser;
+CREATE SCHEMA <seriesname>; 
+CREATE USER   <seriesname> PASSWORD '<password>';
+GRANT ALL ON SCHEMA <seriesname> TO <seriesname>;
+GRANT baseaccess   TO <seriesname>;
+GRANT <seriesname> TO wwwuser;
 SET search_path='<seriesname>','public';
 
 
@@ -12,14 +13,13 @@ CREATE TABLE serieslog (
     usern   TEXT      NOT NULL,
     time    TIMESTAMP NOT NULL,
     addr    INET      NOT NULL,
-    query   TEXT      NOT NULL,
     action  CHAR(1)   NOT NULL CHECK (action IN ('I', 'D', 'U')),
     rowdata JSONB     NOT NULL,
     changed JSONB     NOT NULL
 );
 REVOKE ALL ON serieslog FROM public;
 GRANT  ALL ON serieslog TO <seriesname>;
-GRANT  ALL ON serieslog_logid_seq TO scorekeeper;
+GRANT  ALL ON serieslog_logid_seq TO <seriesname>;
 CREATE INDEX ON serieslog(logid);
 CREATE INDEX ON serieslog(time);
 COMMENT ON TABLE serieslog is 'Change logs that are specific to this local database';
@@ -29,10 +29,7 @@ CREATE OR REPLACE FUNCTION logseriesmods() RETURNS TRIGGER AS $body$
 DECLARE
     audit_row serieslog;
 BEGIN
-    audit_row := ROW(
-        NULL, TG_TABLE_NAME::text, session_user::text, CURRENT_TIMESTAMP,
-        inet_client_addr(), current_query(), SUBSTRING(TG_OP,1,1), '{}', '{}'
-    );
+    audit_row := ROW(NULL, TG_TABLE_NAME::text, session_user::text, CURRENT_TIMESTAMP, inet_client_addr(), SUBSTRING(TG_OP,1,1), '{}', '{}');
  
     IF (TG_OP = 'UPDATE') THEN
         IF OLD = NEW THEN
@@ -64,6 +61,7 @@ CREATE TABLE settings (
 REVOKE ALL ON settings FROM public;
 GRANT  ALL ON settings TO <seriesname>;
 CREATE TRIGGER settingsmod AFTER INSERT OR UPDATE OR DELETE ON settings FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER settingsuni BEFORE UPDATE ON settings FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE settings IS 'settings includes any boolean, integer, double preferences for the series, sql keeps us in string format';
 
 
@@ -76,6 +74,7 @@ CREATE TABLE indexlist (
 REVOKE ALL ON indexlist FROM public;
 GRANT  ALL ON indexlist TO <seriesname>;
 CREATE TRIGGER indexmod AFTER INSERT OR UPDATE OR DELETE ON indexlist FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER indexuni BEFORE UPDATE ON indexlist FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE indexlist IS 'The list of indexes for this series';
 
 
@@ -97,6 +96,7 @@ CREATE INDEX ON classlist(classcode);
 REVOKE ALL ON classlist FROM public;
 GRANT  ALL ON classlist TO <seriesname>;
 CREATE TRIGGER classmod AFTER INSERT OR UPDATE OR DELETE ON classlist FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER classuni BEFORE UPDATE ON classlist FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE classlist IS 'The list of classes for this series';
 
 
@@ -120,7 +120,9 @@ CREATE TABLE events (
 );
 REVOKE ALL ON events FROM public;
 GRANT  ALL ON events TO <seriesname>;
+GRANT  ALL ON events_eventid_seq TO <seriesname>;
 CREATE TRIGGER eventmod AFTER INSERT OR UPDATE OR DELETE ON events FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER eventuni BEFORE UPDATE ON events FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE events IS 'The list of events for this series, attr includes location, sponsor, host, chair, designer, segments, paypal, snail, cost, notes, doublespecial, etc';
 
 
@@ -138,6 +140,7 @@ CREATE INDEX ON cars(classcode);
 REVOKE ALL ON cars FROM public;
 GRANT  ALL ON cars TO <seriesname>;
 CREATE TRIGGER carmod AFTER INSERT OR UPDATE OR DELETE ON cars FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER casuni BEFORE UPDATE ON cars FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE cars IS 'The cars in this series.  Attr includes year, make, model, color, tireindexed';
 
 
@@ -158,6 +161,7 @@ CREATE INDEX ON runs(eventid);
 REVOKE ALL ON runs FROM public;
 GRANT  ALL ON runs TO <seriesname>;
 CREATE TRIGGER runmod AFTER INSERT OR UPDATE OR DELETE ON runs FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER rununi BEFORE UPDATE ON runs FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE runs IS 'The runs in this series. Attr includes reaction, sixty, segments[n] (What about net, ordering values?)';
 
 
@@ -209,6 +213,7 @@ CREATE INDEX ON payments(eventid);
 REVOKE ALL ON payments FROM public;
 GRANT  ALL ON payments TO <seriesname>;
 CREATE TRIGGER paymentmod AFTER INSERT OR UPDATE OR DELETE ON payments FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER paymentuni BEFORE UPDATE ON payments FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE payments IS 'the payments that have been made online';
 
 
@@ -225,45 +230,53 @@ CREATE INDEX ON classorder(classcode);
 REVOKE ALL ON classorder FROM public;
 GRANT  ALL ON classorder TO <seriesname>;
 CREATE TRIGGER classordermod AFTER INSERT OR UPDATE OR DELETE ON classorder FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER classorderuni BEFORE UPDATE ON classorder FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE classorder IS 'the ordering of classes in a runorder, generally only used in the Pro event for grid ordering';
 
 
 CREATE TABLE challenges (
     challengeid SERIAL      PRIMARY KEY,
-    eventid     INTEGER     NOT NULL REFERENCES events, 
+    eventid     INTEGER     NOT NULL,
     name        TEXT        NOT NULL, 
     depth       INTEGER     NOT NULL,
-    modified    TIMESTAMP   NOT NULL DEFAULT now()
+    modified    TIMESTAMP   NOT NULL DEFAULT now(),
+	FOREIGN KEY (eventid) REFERENCES events(eventid)
 );
 CREATE INDEX ON challenges(eventid);
 REVOKE ALL ON challenges FROM public;
 GRANT  ALL ON challenges TO <seriesname>;
+GRANT  ALL ON challenges_challengeid_seq TO <seriesname>;
 CREATE TRIGGER challengemod AFTER INSERT OR UPDATE OR DELETE ON challenges FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER challengeuni BEFORE UPDATE ON challenges FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE challenges is 'The list of challenges for each ProSolo event';
 
 
 CREATE TABLE challengerounds (
-    challengeid  INTEGER   NOT NULL REFERENCES challenges, 
+    challengeid  INTEGER   NOT NULL,
     round        INTEGER   NOT NULL,
     swappedstart BOOLEAN   NOT NULL DEFAULT FALSE, 
-    car1id       UUID      REFERENCES cars(carid), 
-    car1dial     FLOAT     NOT NULL, 
-    car2id       UUID      REFERENCES cars(carid), 
-    car2dial     FLOAT     NOT NULL, 
+    car1id       UUID,
+    car1dial     FLOAT     NOT NULL DEFAULT 999.999, 
+    car2id       UUID,
+    car2dial     FLOAT     NOT NULL DEFAULT 999.999, 
     modified     TIMESTAMP NOT NULL DEFAULT now(),
-    PRIMARY KEY (challengeid, round)
+    PRIMARY KEY (challengeid, round),
+	FOREIGN KEY (challengeid) REFERENCES challenges(challengeid) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (car1id) REFERENCES cars(carid),
+	FOREIGN KEY (car2id) REFERENCES cars(carid)
 );
 CREATE INDEX ON challengerounds(challengeid);
 REVOKE ALL ON challengerounds FROM public;
 GRANT  ALL ON challengerounds TO <seriesname>;
 CREATE TRIGGER roundmod AFTER INSERT OR UPDATE OR DELETE ON challengerounds FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER rounduni BEFORE UPDATE ON challengerounds FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE challengerounds IS 'the list of rounds (carids, input dialin, etc) for each challenge, carid can be null';
 
 
 CREATE TABLE challengeruns (
-    challengeid INTEGER    NOT NULL REFERENCES challenges,
+    challengeid INTEGER    NOT NULL,
     round       INTEGER    NOT NULL,
-    carid       UUID       NOT NULL REFERENCES cars,
+    carid       UUID       NOT NULL,
     course      INTEGER    NOT NULL,
     reaction    FLOAT      NOT NULL,
     sixty       FLOAT      NOT NULL,
@@ -273,11 +286,13 @@ CREATE TABLE challengeruns (
     status      VARCHAR(8) NOT NULL DEFAULT 'OK',
     modified    TIMESTAMP  NOT NULL DEFAULT now(),
     PRIMARY KEY (challengeid, round, carid, course),
-    FOREIGN KEY (challengeid, round) REFERENCES challengerounds
+    FOREIGN KEY (challengeid, round) REFERENCES challengerounds ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (carid) REFERENCES cars(carid)
 );
 CREATE INDEX ON challengeruns(carid);
 REVOKE ALL ON challengeruns FROM public;
 GRANT  ALL ON challengeruns TO <seriesname>;
 CREATE TRIGGER crunmod AFTER INSERT OR UPDATE OR DELETE ON challengeruns FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER crununi BEFORE UPDATE ON challengeruns FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE challengeruns IS 'the list of runs for a challenge in a ProSolo, different from regular runs table';
 

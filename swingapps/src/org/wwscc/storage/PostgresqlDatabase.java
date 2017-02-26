@@ -29,12 +29,30 @@ public class PostgresqlDatabase extends SQLDataInterface
 	private Connection conn;
 	private Map<ResultSet, PreparedStatement> leftovers;
 	
-	public PostgresqlDatabase()
+	/**
+	 * Open a connection to the local scorekeeper database  
+	 * @param series
+	 * @param password
+	 * @throws SQLException
+	 */
+	public PostgresqlDatabase(String series, String password) throws SQLException
 	{
 		conn = null;
 		leftovers = new HashMap<ResultSet, PreparedStatement>();
+		
+		String url = "jdbc:postgresql://127.0.0.1/scorekeeper";
+		Properties props = new Properties();
+		props.setProperty("user", series);
+		props.setProperty("password", password);
+		//props.setProperty("ssl","true");
+		conn = DriverManager.getConnection(url, props);
 	}
 
+	/**
+	 * Static function to get the list of series from a database.  Gets the schema list
+	 * from the Postgresql connection metadata using the base scorekeeper user.
+	 * @return a list of series string names
+	 */
 	static public List<String> getSeriesList()
 	{
 	    List<String> ret = new ArrayList<String>();
@@ -64,36 +82,21 @@ public class PostgresqlDatabase extends SQLDataInterface
 		
 		return ret;
 	}
-    
-	@Override
-	public void open(String series, String password)
-	{
-		try
-		{
-			if ((conn != null) && (!conn.isClosed()))
-				close();
-			
-			String url = "jdbc:postgresql://127.0.0.1/scorekeeper";
-			Properties props = new Properties();
-			props.setProperty("user", series);
-			props.setProperty("password", password);
-			//props.setProperty("ssl","true");
-			conn = DriverManager.getConnection(url, props);
-		} 
-		catch (SQLException sqle)
-		{
-			log.severe(String.format("Error opening %s: %s", series, sqle));			
-		}
-	}
-	
+
 	@Override
 	public void close() 
 	{
-		try {
-			if (conn != null)
+		try 
+		{
+			if ((conn != null) && (!conn.isClosed()))
+			{
 				conn.close();
-		} catch (SQLException sqle) {
-			log.warning("closing error: " + sqle);
+				conn = null;
+			}
+		} 
+		catch (SQLException sqle) 
+		{
+			log.warning("Postgresql error closing series: " + sqle);
 		}
 	}
 

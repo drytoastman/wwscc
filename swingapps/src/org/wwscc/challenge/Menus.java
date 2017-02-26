@@ -23,6 +23,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
+
+import org.wwscc.actions.OpenSeriesAction;
 import org.wwscc.storage.Challenge;
 import org.wwscc.storage.Database;
 import org.wwscc.util.MT;
@@ -44,7 +46,7 @@ public class Menus extends JMenuBar implements ActionListener
 		/* File Menu */
 		JMenu file = new JMenu("File");
 		add(file);
-		file.add(createItem("Open Database", KeyEvent.VK_O));
+		file.add(new OpenSeriesAction());
 		file.add(createItem("Print Bracket", KeyEvent.VK_P));
 		file.addSeparator();
 		file.add(createItem("Quit", KeyEvent.VK_Q));
@@ -79,8 +81,12 @@ public class Menus extends JMenuBar implements ActionListener
 		if (!d.isValid())
 			return;
 		
-		Database.d.newChallenge(null, d.getChallengeName(), d.getChallengeSize());
-		Messenger.sendEvent(MT.NEW_CHALLENGE, null);
+		int newid = Database.d.newChallenge(ChallengeGUI.state.getCurrentEventId(), d.getChallengeName(), d.getChallengeSize());
+		if (newid > 0)
+		{
+			ChallengeGUI.state.setCurrentChallengeId(newid);
+			Messenger.sendEvent(MT.NEW_CHALLENGE, newid);
+		}
 	}
 	
 	protected void editChallenge()
@@ -125,10 +131,6 @@ public class Menus extends JMenuBar implements ActionListener
 		{ 
 			System.exit(0); 
 		} 
-		else if (cmd.equals("Open Database"))
-		{
-			Database.openDefault();
-		}
 		else if (cmd.equals("Print Bracket"))
 		{
 			Messenger.sendEvent(MT.PRINT_BRACKET, chooser.getSelectedFile());

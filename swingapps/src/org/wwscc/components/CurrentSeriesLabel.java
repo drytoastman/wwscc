@@ -17,11 +17,11 @@ import org.wwscc.util.Messenger;
  *
  * @author bwilson
  */
-public class CurrentDatabaseLabel extends JLabel implements MessageListener
+public class CurrentSeriesLabel extends JLabel implements MessageListener
 {
-	public CurrentDatabaseLabel()
+	public CurrentSeriesLabel()
 	{
-		Messenger.register(MT.DATABASE_CHANGED, this);
+		Messenger.register(MT.SERIES_CHANGED, this);
 		setHorizontalAlignment(CENTER);
 	}
 
@@ -30,7 +30,7 @@ public class CurrentDatabaseLabel extends JLabel implements MessageListener
 	{
 		switch (type)
 		{
-			case DATABASE_CHANGED:
+			case SERIES_CHANGED:
 				setText((String)o);
 				break;
 		}

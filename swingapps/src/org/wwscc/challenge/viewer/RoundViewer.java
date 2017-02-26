@@ -349,18 +349,18 @@ public class RoundViewer extends JInternalFrame implements MessageListener
 			
 			if (state == RoundState.DONE) // can enter this area after first half default
 			{
-				if (round.getTopCar().breakout())
+				if (model.brokeout(round.getTopCar()))
 				{
-					String nd = "Breakout! New Dial: " + NF.format(round.getTopCar().getNewDial());
+					String nd = "Breakout! New Dial: " + NF.format(model.getNewDial(round.getTopCar()));
 					if (round.isSwappedStart())
 						rndial.setText(nd);
 					else
 						lndial.setText(nd);
 				}
 
-				if (round.getBottomCar().breakout())
+				if (model.brokeout(round.getBottomCar()))
 				{
-					String nd = "Breakout! New Dial: " + NF.format(round.getBottomCar().getNewDial());
+					String nd = "Breakout! New Dial: " + NF.format(model.getNewDial(round.getBottomCar()));
 					if (round.isSwappedStart())
 						lndial.setText(nd);
 					else
