@@ -14,7 +14,7 @@ import java.util.LinkedList;
 import java.util.UUID;
 import org.wwscc.util.IdGenerator;
 
-public class Driver extends AttrBase implements Comparable<Driver>
+public class Driver extends AttrBase //implements Comparable<Driver>
 {
 	protected UUID driverid;
 	protected String firstname;
@@ -22,9 +22,6 @@ public class Driver extends AttrBase implements Comparable<Driver>
 	protected String email;
 	protected String password;
 	protected String membership;
-
-	/* meta */
-	public int carcount = 0;
 
 	public Driver()
 	{
@@ -109,11 +106,12 @@ public class Driver extends AttrBase implements Comparable<Driver>
 		return driverid.hashCode();
 	}
 
+	/*
 	@Override
 	public int compareTo(Driver d)
 	{
 		return (firstname + lastname).toLowerCase().compareTo((d.firstname + d.lastname).toLowerCase());
-	}
+	} */
 	
 	public String toString()
 	{

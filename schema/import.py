@@ -132,7 +132,7 @@ def convert(sourcefile, name, password):
         cur.execute("insert into events values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", 
             (newe['eventid'], newe['name'], newe['date'], newe['regopened'], newe['regclosed'], newe['courses'], newe['runs'], newe['countedruns'],
             newe['perlimit'], newe['totlimit'], newe['conepen'], newe['gatepen'], newe['ispro'], newe['ispractice'], json.dumps(newe['attr'])))
-    cur.execute("ALTER SEQUENCE events_eventid_seq RESTART WITH %s", maxeid+1)
+#    cur.execute("ALTER SEQUENCE events_eventid_seq RESTART WITH %s", (maxeid+1,))
 
     #REGISTERED (map carid)
     for r in old.execute("select * from registered"):
@@ -199,7 +199,7 @@ def convert(sourcefile, name, password):
         check1.add((cid, r.round))
         maxcid = max(maxcid, cid)
         cur.execute("insert into challengerounds values (%s, %s, %s, %s, %s, %s, %s, now())", (cid, r.round, ss, c1id, c1d, c2id, c2d))
-    cur.execute("ALTER SEQUENCE challenges_challengeid_seq RESTART WITH %s", maxcid+1)
+#    cur.execute("ALTER SEQUENCE challenges_challengeid_seq RESTART WITH %s", (maxcid+1,))
 
 
     #CHALLENGERUNS (now in ther own table)

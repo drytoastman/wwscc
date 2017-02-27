@@ -31,21 +31,15 @@ public class PostgresqlDatabase extends SQLDataInterface
 	
 	/**
 	 * Open a connection to the local scorekeeper database  
-	 * @param series
-	 * @param password
+	 * @param series we are interested in
+	 * @param password the password for the series access
 	 * @throws SQLException
 	 */
 	public PostgresqlDatabase(String series, String password) throws SQLException
 	{
 		conn = null;
 		leftovers = new HashMap<ResultSet, PreparedStatement>();
-		
-		String url = "jdbc:postgresql://127.0.0.1/scorekeeper";
-		Properties props = new Properties();
-		props.setProperty("user", series);
-		props.setProperty("password", password);
-		//props.setProperty("ssl","true");
-		conn = DriverManager.getConnection(url, props);
+		conn = getConnection("127.0.0.1", series, password);
 	}
 
 	/**
@@ -58,13 +52,7 @@ public class PostgresqlDatabase extends SQLDataInterface
 	    List<String> ret = new ArrayList<String>();
 		try
 		{
-			String url = "jdbc:postgresql://127.0.0.1/scorekeeper";
-			Properties props = new Properties();
-			props.setProperty("user", "scorekeeper");
-			props.setProperty("password", "scorkeeeper");
-			//props.setProperty("ssl","true");
-			Connection sconn = DriverManager.getConnection(url, props);
-
+			Connection sconn = getConnection("127.0.0.1", "seriesview", "seriesview");
 			DatabaseMetaData meta = sconn.getMetaData();
 		    ResultSet rs = meta.getSchemas();
 		    while (rs.next()) {
@@ -83,6 +71,23 @@ public class PostgresqlDatabase extends SQLDataInterface
 		return ret;
 	}
 
+	/**
+	 * Wrap the properties and url pieces to get a PG connection
+	 * @param host the host to connect to
+	 * @param user the username to use
+	 * @param password the password to use
+	 * @return a java.sql.Connection object
+	 * @throws SQLException
+	 */
+	private static Connection getConnection(String host, String user, String password) throws SQLException
+	{
+		Properties props = new Properties();
+		props.setProperty("user", user);
+		props.setProperty("password", password);
+		//props.setProperty("ssl","true");
+		return DriverManager.getConnection("jdbc:postgresql://"+host+"/scorekeeper", props);
+	}
+	
 	@Override
 	public void close() 
 	{

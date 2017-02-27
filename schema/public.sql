@@ -2,8 +2,11 @@
 --- Create top level results and drivers tables that every series shares
 
 CREATE ROLE baseaccess;
+CREATE USER seriesview PASSWORD 'seriesview';
 CREATE USER wwwuser PASSWORD '<wwwpassword>';
 GRANT  baseaccess TO wwwuser;
+REVOKE ALL ON SCHEMA public FROM public;
+GRANT ALL ON SCHEMA public TO baseaccess;
 CREATE EXTENSION hstore;
 
 -- Logs are specific to this machine

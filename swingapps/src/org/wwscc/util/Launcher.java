@@ -31,8 +31,7 @@ public class Launcher
 			if (args.length == 0)
 			{
 				Object o = JOptionPane.showInputDialog(null,
-						"Select Application", "Launcher", JOptionPane.QUESTION_MESSAGE, null,
-						apps, null);
+						"Select Application", "Launcher", JOptionPane.QUESTION_MESSAGE, null, apps, null);
 				if (o == null)
 					return;
 				app = (String)o;
@@ -42,7 +41,15 @@ public class Launcher
 				app = args[0];
 			}
 
-			LibLoader.installLibrary("rxtxSerial", "serial port access");
+			String model = System.getProperty("sun.arch.data.model", "?");
+			if (!model.equals("64")) {
+				String msg = "<HTML>The active version of Java is "+model+"-bits, not 64-bits.<br>Serial Port Access will not be available.<br><br>"+
+								"You must download a 64-bit version of Java to fix this problem.";
+				JOptionPane.showMessageDialog(null, msg, "Java Version Issue", JOptionPane.WARNING_MESSAGE);
+				
+			} else {
+				LibLoader.installSerialLibrary();
+			}
 			
 			for (String arg : args) {
 				if (arg.startsWith("prefs=")) {
@@ -64,9 +71,7 @@ public class Launcher
 		}
 		catch (Throwable e)
 		{
-			JOptionPane.showMessageDialog(null, "Launcher catches Throwable: " + e,
-					"Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Launcher catches Throwable: " + e, "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
-
 }

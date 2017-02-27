@@ -22,8 +22,8 @@ import javax.swing.JOptionPane;
 public class LibLoader
 {
 	private static final Logger log = Logger.getLogger(LibLoader.class.getCanonicalName());
-	
-	public static boolean copyResource(String path, String dest)
+
+	private static boolean copyResource(String path, String dest)
 	{		
 		log.log(Level.INFO, "Attempting to copy resource/file {0}", path);
 		try 
@@ -50,9 +50,9 @@ public class LibLoader
 		return false;
 	}
 	
-	public static void installLibrary(String name, String function)
+	private static void installLibrary(String name, String function)
 	{
-		String dirname = "", libname = "";
+		String dirname = "", libname = "";		
 		try
 		{
 			libname = System.mapLibraryName(name);
@@ -75,19 +75,9 @@ public class LibLoader
 					"Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
-
-	public static void main(String args[])
+	
+	public static void installSerialLibrary()
 	{
-		try
-		{
-			installLibrary("sqliteintf", "database access");
-			installLibrary("rxtxSerial", "serial port access");
-		}
-		catch (Throwable e)
-		{
-			JOptionPane.showMessageDialog(null, "Test Load catches Throwable: " + e,
-					"Error", JOptionPane.ERROR_MESSAGE);
-		}
+		installLibrary("rxtxSerial", "serial port access");
 	}
-
 }

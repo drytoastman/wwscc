@@ -45,7 +45,7 @@ public class Database
 	 * @param series
 	 * @param password
 	 */
-	public static void openSeries(String series, String password)
+	public static boolean openSeries(String series, String password)
 	{
 		if (d != null)
 			d.close();
@@ -61,9 +61,10 @@ public class Database
 				d = new PostgresqlDatabase(series, password);
 				Messenger.sendEvent(MT.SERIES_CHANGED, series);
 			}
-			Prefs.setSeries(series);
+			return true;
 		} catch (SQLException sqle) {
 			log.severe(String.format("Unable to open series %s due to error %s", series, sqle));
+			return false;
 		}
 	}
 }

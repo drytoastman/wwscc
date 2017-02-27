@@ -26,18 +26,20 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     installbase = sys.argv[1]
-
-    bindir  = os.path.join(installbase, "postgresql-9.6.2/bin")
-    dbdir   = os.path.join(installbase, "pgdb")
-    logfile = os.path.join(installbase, "pgdb/postgresql.log")
-
-    initdb  = os.path.join(bindir, "initdb")
-    pg_ctl  = os.path.join(bindir, "pg_ctl")
-    psql    = os.path.join(bindir, "psql")
+    if installbase == "":
+        psql    = "psql"
+    else:
+        bindir  = os.path.join(installbase, "postgresql-9.6.2/bin")
+        dbdir   = os.path.join(installbase, "pgdb")
+        logfile = os.path.join(installbase, "pgdb/postgresql.log")
+        initdb  = os.path.join(bindir, "initdb")
+        pg_ctl  = os.path.join(bindir, "pg_ctl")
+        psql    = os.path.join(bindir, "psql")
     
     if sys.argv[2] == 'init':
-        call([initdb, "-D", dbdir, "-U", "postgres"])
-        call([pg_ctl, "-D", dbdir, "-l", logfile, "start"])
+        if installbase != "": # we did not install postgres, its locally running
+            call([initdb, "-D", dbdir, "-U", "postgres"])
+            call([pg_ctl, "-D", dbdir, "-l", logfile, "start"])
         call([psql, "-U", "postgres", "-c", "CREATE DATABASE scorekeeper"])
         processfile('public.sql', { '<wwwpassword>':sys.argv[3] }) 
         call([psql, "-U", "postgres", "-d", "scorekeeper", "-c", "\i public.sql"])
