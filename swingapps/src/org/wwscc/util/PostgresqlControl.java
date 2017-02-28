@@ -13,27 +13,44 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import javax.swing.JOptionPane;
+
 public class PostgresqlControl implements ServiceControl
 {
 	private static final Logger log = Logger.getLogger(PostgresqlControl.class.getName());
-	ProcessBuilder create, starter, stopper, checker;
+	ProcessBuilder starter, stopper, checker;
 	String logfile;
 	
 	public PostgresqlControl()
 	{
-		File installdir = new File(Prefs.getInstallRoot());
-		String pgctl   = new File(installdir, "postgresql-9.6.2/bin/pg_ctl").getAbsolutePath();
-		String initdb  = new File(installdir, "initdb").getAbsolutePath();
-		String dbdir   = new File(installdir, "pgdb").getAbsolutePath();
-		logfile = new File(installdir, "pgdb/postgresql.log").getAbsolutePath();
-		create  = new ProcessBuilder(initdb, "-D", dbdir, "-U", "postgres");
-		checker = new ProcessBuilder(pgctl,  "-D", dbdir, "status");
-		starter = new ProcessBuilder(pgctl,  "-D", dbdir, "-l", logfile, "start");
-		stopper = new ProcessBuilder(pgctl,  "-D", dbdir, "stop");
+		if (Prefs.isWindows())
+		{
+			File installdir = new File(Prefs.getInstallRoot());
+			String pgctl   = new File(installdir, "postgresql-9.6.2/bin/pg_ctl").getAbsolutePath();
+			String dbdir   = new File(installdir, "pgdb").getAbsolutePath();
+			logfile = new File(installdir, "pgdb/postgresql.log").getAbsolutePath();
+			checker = new ProcessBuilder(pgctl,  "-D", dbdir, "status");
+			starter = new ProcessBuilder(pgctl,  "-D", dbdir, "-l", logfile, "start");
+			stopper = new ProcessBuilder(pgctl,  "-D", dbdir, "stop");
+		}
+		else if (Prefs.isLinux())
+		{
+			checker = new ProcessBuilder("/etc/init.d/postgresql", "status");
+			starter = new ProcessBuilder("/etc/init.d/postgresql", "start");
+			stopper = new ProcessBuilder("/etc/init.d/postgresql", "stop");
+		}
+		else
+		{
+			JOptionPane.showMessageDialog(null, "Don't know how to control Postgresql on " + System.getProperty("os.name"),
+					"Error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
+	/*
 	public boolean createDatabase()
 	{
+		String initdb  = new File(installdir, "initdb").getAbsolutePath();
+		ProcessBuilder create  = new ProcessBuilder(initdb, "-D", dbdir, "-U", "postgres");
 		try {
 			return create.start().waitFor() != 0;
 		} catch (InterruptedException | IOException e) {
@@ -41,6 +58,7 @@ public class PostgresqlControl implements ServiceControl
 		}
 		return false;
 	}
+	*/
 	
 	@Override
 	public boolean check()

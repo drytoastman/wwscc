@@ -57,6 +57,21 @@ public class Prefs
 		return ret;
 	}
 	
+	public static boolean isWindows()
+	{
+		return System.getProperty("os.name").split("\\s")[0].equals("Windows");
+	}
+	
+	public static boolean isLinux()
+	{
+		return System.getProperty("os.name").split("\\s")[0].equals("Linux");
+	}
+	
+	public static boolean isMac()
+	{
+		return System.getProperty("os.name").split("\\s")[0].equals("Mac");
+	}
+
 	public static String getHomeServer() { return prefs.get("hostname", "scorekeeper.wwscc.org"); }
 	public static String getInstallRoot() { return prefs.get("installroot", System.getProperty("user.home")); }
 	public static String getPasswordFor(String series) { return prefs.get("password-"+series, ""); }

@@ -44,7 +44,7 @@ public class DataEntry extends JFrame implements MessageListener
 	SelectionBar setupBar;
 	DriverEntry driverEntry;
 	ClassTree  numberTree;
-	//AnnouncerPanel announcer;
+	AnnouncerPanel announcer;
 	TimeEntry timeEntry;
 	JTabbedPane tabs;
 
@@ -93,14 +93,14 @@ public class DataEntry extends JFrame implements MessageListener
 		setupBar = new SelectionBar();
 		numberTree = new ClassTree();
 		driverEntry = new DriverEntry();
-		//announcer = new AnnouncerPanel();
+		announcer = new AnnouncerPanel();
 		
 		tabs = new JTabbedPane();
 		tabs.setMinimumSize(new Dimension(270, 400));
 		tabs.setPreferredSize(new Dimension(270, 768));
 		tabs.addTab("Add By Name", driverEntry);
 		tabs.addTab("Preregistered", new JScrollPane(numberTree));
-		//tabs.addTab(" Announcer Data ", announcer);
+		tabs.addTab(" Announcer Data ", announcer);
 
 		DoubleTableContainer tableScroll = new DoubleTableContainer();
 		timeEntry = new TimeEntry();

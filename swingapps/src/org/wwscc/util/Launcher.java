@@ -20,14 +20,14 @@ import org.wwscc.registration.Registration;
  */
 public class Launcher
 {
-	static String[] apps = new String[] {"DataEntry", "Registration", "ChallengeGUI", "ProTimer", "BWTimer" };
+	static String[] apps = new String[] {"DataEntry", "Registration", "ChallengeGUI", "ProTimer", "BWTimer"};
 
 	public static void main(String args[])
 	{
+		String app = "";
 		try
 		{
 			System.setProperty("swing.defaultlaf", UIManager.getSystemLookAndFeelClassName());
-			String app;
 			if (args.length == 0)
 			{
 				Object o = JOptionPane.showInputDialog(null,
@@ -41,23 +41,30 @@ public class Launcher
 				app = args[0];
 			}
 
-			String model = System.getProperty("sun.arch.data.model", "?");
-			if (!model.equals("64")) {
-				String msg = "<HTML>The active version of Java is "+model+"-bits, not 64-bits.<br>Serial Port Access will not be available.<br><br>"+
-								"You must download a 64-bit version of Java to fix this problem.";
-				JOptionPane.showMessageDialog(null, msg, "Java Version Issue", JOptionPane.WARNING_MESSAGE);
-				
-			} else {
-				LibLoader.installSerialLibrary();
+			// Load serial library for applications that need it
+			if (app.equals("DataEntry") || app.equals("ProTimer") || app.equals("BWTimer"))
+			{
+				String model = System.getProperty("sun.arch.data.model", "?");
+				if (!model.equals("64")) {
+					JOptionPane.showMessageDialog(null, 
+							"<HTML>The active version of Java is "+model+"-bits, not 64-bits.<br>"+
+							"Serial Port Access will not be available.<br><br>"+
+							"You must download a 64-bit version of Java to fix this problem.", 
+							"Java Version Issue", JOptionPane.WARNING_MESSAGE);
+				} else {
+					LibLoader.installSerialLibrary();
+				}
 			}
 			
+			// Check if we are using a special prefs node, only used for testing
 			for (String arg : args) {
 				if (arg.startsWith("prefs=")) {
 					String node = arg.substring(arg.indexOf('=')+1);
 					Prefs.setPrefsNode(node);
 				}
-			}
+			}			
 			
+			// Launch the application
 			if (app.equals("DataEntry"))
 				DataEntry.main(args);
 			else if (app.equals("ChallengeGUI"))

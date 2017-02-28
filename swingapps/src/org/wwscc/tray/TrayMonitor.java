@@ -31,6 +31,7 @@ import javax.swing.UIManager;
 import org.wwscc.util.CherryPyControl;
 import org.wwscc.util.Logging;
 import org.wwscc.util.PostgresqlControl;
+import org.wwscc.util.Prefs;
 import org.wwscc.util.ServiceControl;
 
 public class TrayMonitor implements ActionListener
@@ -101,8 +102,10 @@ public class TrayMonitor implements ActionListener
         databaseCtrl = new PostgresqlControl();
         webserverCtrl = new CherryPyControl();
         
-        databaseCtrl.start();
-        webserverCtrl.start();
+        if (!databaseCtrl.check())
+        	databaseCtrl.start();
+        if (!webserverCtrl.check())
+        	webserverCtrl.start();
         checker = new BackgroundChecker();
         checker.start();
 	}
@@ -150,7 +153,10 @@ public class TrayMonitor implements ActionListener
 	{
 		try {
 			ArrayList<String> cmd = new ArrayList<String>();
-			cmd.add("javaw");
+			if (Prefs.isWindows())
+				cmd.add("javaw");
+			else
+				cmd.add("java");
 			cmd.add("-cp");
 			cmd.add(System.getProperty("java.class.path"));
 			cmd.add("org.wwscc.util.Launcher");
