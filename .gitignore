@@ -9,13 +9,11 @@ wwjarsigner.key
 wwsccapps*.jar
 WWSCC*.exe
 swingapps/*.dll
+swingapps/*.so
 swingapps/bin
 android/**/bin
 android/**/gen
 installers/windows/python/Lib/site-packages/nwrsc-*
-pythonwebservice/rundir/archive
-pythonwebservice/rundir/series
-pythonwebservice/rundir/data
 pythonwebservice/nwrsc.egg-info
 pythonwebservice/build
 pythonwebservice/dist
