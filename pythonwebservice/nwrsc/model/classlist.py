@@ -70,7 +70,7 @@ class Index(AttrBase):
 
 class PlaceHolder(object):
     def __init__(self):
-        self.classindex = ""
+        self.indexcode = ""
         self.classmultiplier = 1.0
         self.countedruns = 0
         self.usecarflag = False
@@ -94,7 +94,7 @@ class ClassData(object):
             cur.execute("select * from indexlist")
             for x in cur.fetchall():
                 i = Index(**x)
-                ret.indexlist[c.indexcode] = i
+                ret.indexlist[i.indexcode] = i
         return ret
 
     def getCountedRuns(self, classcode):
@@ -108,8 +108,8 @@ class ClassData(object):
         indexstr = car.indexcode or ""
         try:
             cls = self.classlist[car.classcode]
-            if cls.classindex != "":
-                indexstr = cls.classindex
+            if cls.indexcode != "":
+                indexstr = cls.indexcode
 
             tireindexed = getattr(car, 'tireindexed', False)
             if cls.classmultiplier < 1.000 and (not cls.usecarflag or tireindexed):
@@ -125,8 +125,8 @@ class ClassData(object):
         try:
             cls = self.classlist[car.classcode]
 
-            if cls.classindex != "":
-                indexval *= self.indexlist[cls.classindex].value
+            if cls.indexcode != "":
+                indexval *= self.indexlist[cls.indexcode].value
 
             if cls.carindexed and car.indexcode:
                 indexval *= self.indexlist[car.indexcode].value
@@ -135,6 +135,7 @@ class ClassData(object):
                 indexval *= cls.classmultiplier
 
         except Exception as e:
+            print(self.indexlist)
             log.warning("getEffectiveIndex(%s,%s,%s) failed: %s" % (car.classcode, car.indexcode, tireindexed, e))
 
         return indexval

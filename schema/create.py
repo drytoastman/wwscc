@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import time
 import os.path
 import subprocess
 
@@ -40,6 +41,8 @@ if __name__ == '__main__':
         if installbase != "": # we did not install postgres, its locally running
             call([initdb, "-D", dbdir, "-U", "postgres"])
             call([pg_ctl, "-D", dbdir, "-l", logfile, "start"])
+            print("waiting for database to start")
+            time.sleep(5)
         call([psql, "-U", "postgres", "-c", "CREATE DATABASE scorekeeper"])
         processfile('public.sql', { '<wwwpassword>':sys.argv[3] }) 
         call([psql, "-U", "postgres", "-d", "scorekeeper", "-c", "\i public.sql"])

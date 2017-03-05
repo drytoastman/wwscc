@@ -1,72 +1,67 @@
 
-from sqlalchemy import Table, Column
-from sqlalchemy.orm import mapper
-from sqlalchemy.types import String
+from flask import g
 
-from meta import metadata
-
-class Setting(AttrBase):
-	pass
-			
 class Settings(object):
 
-	INTS = ["largestcarnumber", "useevents", "minevents"]
-	BOOLS = ["locked", "superuniquenumbers", "indexafterpenalties", "usepospoints"]
-	STRS = ["pospointlist", "champsorting", "seriesname", "sponsorlink", "schema", "parentseries", "classinglink"]
-	FLOATS = []
+    BOOLS  = ["locked", "superuniquenumbers", "indexafterpenalties", "usepospoints"]
+    INTS   = ["largestcarnumber", "useevents", "minevents"]
+    FLOATS = []
+    STRS   = ["pospointlist", "champsorting", "seriesname", "sponsorlink", "schema", "parentseries", "classinglink"]
+ 
 
-	def __init__(self):
-		self.locked = False
-		self.superuniquenumbers = False
-		self.indexafterpenalties = False
-		self.usepospoints = False
+    def __init__(self):
+        self.__dict__.update({
+            'locked': False,
+            'superuniquenumbers': False,
+            'indexafterpenalties': False,
+            'usepospoints': False,
+    
+            'largestcarnumber': 1999,
+            'useevents': 6,
+            'minevents': 0,
 
-		self.pospointlist = "20,16,13,11,9,7,6,5,4,3,2,1"
-		self.champsorting = ""
-		self.seriesname = ""
-		self.sponsorlink = ""
-		self.schema = "missing"
-		self.parentseries = ""
-		self.classinglink = ""
-
-		self.largestcarnumber = 1999
-		self.useevents = 6
-		self.minevents = 0
+            'pospointlist': "20,16,13,11,9,7,6,5,4,3,2,1",
+            'champsorting': "",
+            'seriesname': "",
+            'sponsorlink': "",
+            'schema': "missing",
+            'parentseries': "",
+            'classinglink': ""
+        })
 
 
-	def set(self, items):
-		for k, v in items.iteritems():
-			if k in Settings.INTS:
-				setattr(self, k, int(v))
-			elif k in Settings.FLOATS:
-				setattr(self, k, float(v))
-			elif k in Settings.BOOLS:
-				setattr(self, k, v in ("True", "1", True, "checked"))
-			else:
-				setattr(self, k, v)
-			
-		
-	def load(self, session):
-		for s in session.query(Setting):
-			if s.name in Settings.INTS:
-				setattr(self, s.name, int(s.val))
-			elif s.name in Settings.FLOATS:
-				setattr(self, s.name, float(s.val))
-			elif s.name in Settings.BOOLS:
-				setattr(self, s.name, s.val in ("True", "1"))
-			else:
-				setattr(self, s.name, s.val)
+    def __setattr__(self, key, val):
+        if val is None:
+            log.warning("Trying to set %s to None, ignoring" % key)
+            return
 
-	def save(self, session):
-		for name in Settings.INTS + Settings.FLOATS + Settings.STRS + Settings.BOOLS:
-			s = session.query(Setting).get(name)
-			if s is None:
-				s = Setting()
-				s.name = name
-				session.add(s)
+        if key in Settings.INTS + Settings.FLOATS:
+            conv = str(val)
+        elif key in Settings.BOOLS:
+            conv = val and "1" or "0"
+        else:
+            conv = val
 
-			if name in Settings.BOOLS:
-				s.val = getattr(self, name) and "1" or "0"
-			else:
-				s.val = str(getattr(self, name))
+        self.__dict__[key] = conv
+        with g.db.cursor() as cur:
+            cur.execute("update settings set val=%s,modified=now() where name=%s", (conv, key))
+
+
+    @classmethod
+    def get(cls):
+        ret = Settings()
+        with g.db.cursor() as cur:
+            cur.execute("select * from settings")
+            for row in cur.fetchall():
+                n = row['name']
+                v = row['val']
+                if n in Settings.INTS:
+                    ret.__dict__[n] = int(v)
+                elif n in Settings.FLOATS:
+                    ret.__dict__[n] = float(v)
+                elif n in Settings.BOOLS:
+                    ret.__dict__[n] = (v == "1")
+                else:
+                    ret.__dict__[n] = v
+        return ret
 

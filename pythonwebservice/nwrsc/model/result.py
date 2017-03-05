@@ -6,11 +6,9 @@ from collections import defaultdict
 from operator import attrgetter
 
 from .base import AttrBase
-from .runs import Run
 from .classlist import ClassData
-
-#from math import ceil
-#from nwrsc.lib.helpers import t3
+from .runs import Run
+from .settings import Settings
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +32,7 @@ class EventResult(object):
             mods = cur.fetchone()
             cur.execute("select modified from results where series=%s and name=%s", (g.series, "e%d"%eventid))
             resmod  = cur.fetchone()
-            if True: #mods is None or resmod is None or mods['max'] > resmod['modified']:
+            if mods is None or resmod is None or mods['max'] > resmod['modified']:
                 cls.update(eventid)
 
             # everything should be the latest now, load and return 
@@ -59,10 +57,9 @@ class EventResult(object):
         cptrs = {}
 
         classdata = ClassData.get()
-        eventtrophy = True # FINISH ME
-        indexafterpenalties = False # FINISH ME
-        usepospoints = False # FINISH ME
-        PPOINTS = [20, 16, 12, 10, 8, 6, 4, 1 ]
+        settings = Settings.get()
+        settings.schema = '20170305'
+        ppoints = list(map(int, settings.pospointlist.split(',')))
 
         with g.db.cursor() as cur:
             # Fetch all of the entrants (driver/car combo), place in class lists, save pointers for quicker access
@@ -84,7 +81,9 @@ class EventResult(object):
                 r.attrToUpper()
                 match = cptrs[r.carid]
                 match.runs[r.course-1].append(r)
-                if indexafterpenalties:
+                if r.status != "OK":
+                    r.net = 999.999
+                elif settings.indexafterpenalties:
                     r.net = (r.raw + (r.cones * g.event.conepen) + (r.gates * g.event.gatepen)) * match.indexval
                 else:
                     r.net = (r.raw*match.indexval) + (r.cones * g.event.conepen) + (r.gates * g.event.gatepen)
@@ -104,20 +103,21 @@ class EventResult(object):
                 res = results[cls]
                 res.sort(key=attrgetter('sum'))
                 trophydepth = ceil(len(res) / 3.0)
+                eventtrophy = classdata.classlist[cls].eventtrophy
                 for ii, e in enumerate(res):
                     e.position = ii+1
                     e.trophy = eventtrophy and (ii < trophydepth)
                     if ii == 0:
                         e.diff       = 0
                         e.diffpoints = 100.0
-                        e.pospoints  = PPOINTS[0]
+                        e.pospoints  = ppoints[0]
                     else:
                         e.diff       = res[ii-1].sum - e.sum
                         e.diffpoints = res[0].sum*100/e.sum;
-                        e.pospoints  = ii >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[ii]
+                        e.pospoints  = ii >= len(ppoints) and ppoints[-1] or ppoints[ii]
 
                     # quick access for templates
-                    e.points = usepospoints and e.pospoints or e.diffpoints
+                    e.points = settings.usepospoints and e.pospoints or e.diffpoints
 
             # Get access for modifying series rows, check if we need to insert a default first.  Don't upsert as we have to specify LARGE json object twice.
             cur.execute("set role %s", (g.series,))
@@ -141,7 +141,7 @@ def UpdateClassResults(session, eventid, course, classcode, carid):
     mysum = 0
     sumlist = []
 
-    PPOINTS = [int(x) for x in session.query(Setting).get('pospointlist').val.split(',')]
+    ppoints = [int(x) for x in session.query(Setting).get('pospointlist').val.split(',')]
     lists = []
     for r in session.sqlmap("GETCLASSRESULTS", cevals):
         thesum = float(r['sum'])
@@ -169,7 +169,7 @@ def UpdateClassResults(session, eventid, course, classcode, carid):
         if cnt == basecnt:
             rvals[6] = thesum-prev
             rvals[7] = basis/thesum*100
-            rvals[8] = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
+            rvals[8] = position >= len(ppoints) and ppoints[-1] or ppoints[position-1]
         else:
             #This person ran less courses than the other people
             rvals[6] = 999.999
@@ -181,7 +181,7 @@ def UpdateClassResults(session, eventid, course, classcode, carid):
         prev = thesum
 
     if course != 0 and carid != 0:
-        UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, sumlist, PPOINTS)
+        UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, sumlist, ppoints)
 """
         
 

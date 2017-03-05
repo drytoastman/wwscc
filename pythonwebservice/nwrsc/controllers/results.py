@@ -18,9 +18,9 @@ def event():
 @Results.route("/<int:eventid>/byclass")
 def byclass():
     g.event = Event.get(g.eventid)
-    g.results = EventResult.get(g.eventid)
+    res = EventResult.get(g.eventid)
+    g.results = { k: res[k] for k in request.args.get('list','').split(',')}
     return render_template('results/classresult.html')
-#    return "looking for %s" % request.args.get('list')
 
 @Results.route("/<int:eventid>/bygroup")
 def bygroup():

@@ -135,7 +135,7 @@ CREATE TABLE cars (
     attr          JSONB       NOT NULL,
     modified      TIMESTAMP   NOT NULL DEFAULT now(),
     PRIMARY KEY (carid),
-    CONTRAINT validcardata CHECK (number > 0)
+    CONSTRAINT validcardata CHECK (number > 0)
 );
 CREATE INDEX ON cars(driverid);
 CREATE INDEX ON cars(classcode);
@@ -158,7 +158,7 @@ CREATE TABLE runs (
     attr     JSONB      NOT NULL,
     modified TIMESTAMP  NOT NULL DEFAULT now(),
     PRIMARY KEY (eventid, carid, course, run),
-    CONSTRAINT validrundata CHECK (course > 0 AND run > 0 and raw > 0.0)
+    CONSTRAINT validrundata CHECK (course > 0 AND run > 0 and raw >= 0.0)
 );
 CREATE INDEX ON runs(eventid);
 REVOKE ALL ON runs FROM public;
