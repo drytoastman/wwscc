@@ -20,19 +20,6 @@ class Class(AttrBase):
         else:
             return self.countedruns
 
-    def getPublicFeed(self):
-        d = dict()
-        for k,v in self.__dict__.iteritems():
-            if v is None or k in ['_sa_instance_state']:
-                continue
-            if isinstance(v, float):
-                if v != 0:
-                    d[k] = "%0.3f" % (v)
-            else:
-                d[k] = v
-        return d
-
-
     def _globItem(self, item, full):
         tomatch = '^' + item.strip().replace('*', '.*') + '$'
         ret = set()
@@ -78,18 +65,7 @@ class Class(AttrBase):
 
 
 class Index(AttrBase):
-
-    def getPublicFeed(self):
-        d = dict()
-        for k,v in self.__dict__.iteritems():
-            if v is None or k in ['_sa_instance_state']:
-                continue
-            if isinstance(v, float):
-                if v != 0:
-                    d[k] = "%0.3f" % (v)
-            else:
-                d[k] = v
-        return d
+    pass
 
 
 class PlaceHolder(object):
@@ -100,20 +76,26 @@ class PlaceHolder(object):
         self.usecarflag = False
         self.carindexed = False
 
-    def restrictedIndexes(self):
-        return ([], [])
-
-
 class ClassData(object):
 
-    def __init__(self, session):
+    def __init__(self):
         self.classlist = defaultdict(PlaceHolder)
         self.indexlist = dict()
-        for cls in session.query(Class):
-            self.classlist[cls.code] = cls
-        for idx in session.query(Index):
-            self.indexlist[idx.code] = idx
 
+    @classmethod
+    def get(cls):
+        """ Get all the class and index data for the active series """
+        ret = ClassData()
+        with g.db.cursor() as cur:
+            cur.execute("select * from classlist")
+            for x in cur.fetchall():
+                c = Class(**x)
+                ret.classlist[c.classcode] = c
+            cur.execute("select * from indexlist")
+            for x in cur.fetchall():
+                i = Index(**x)
+                ret.indexlist[c.indexcode] = i
+        return ret
 
     def getCountedRuns(self, classcode):
         try:
@@ -122,14 +104,15 @@ class ClassData(object):
             return sys.maxint
         
 
-    def getIndexStr(self, car): #classcode, indexcode, tireindexed):
+    def getIndexStr(self, car):
         indexstr = car.indexcode or ""
         try:
             cls = self.classlist[car.classcode]
             if cls.classindex != "":
                 indexstr = cls.classindex
 
-            if cls.classmultiplier < 1.000 and (not cls.usecarflag or car.tireindexed):
+            tireindexed = getattr(car, 'tireindexed', False)
+            if cls.classmultiplier < 1.000 and (not cls.usecarflag or tireindexed):
                 indexstr = indexstr + '*'
         except:
             pass
@@ -138,6 +121,7 @@ class ClassData(object):
 
     def getEffectiveIndex(self, car): #classcode, indexcode, tireindexed):
         indexval = 1.0
+        tireindexed = getattr(car, 'tireindexed', False)
         try:
             cls = self.classlist[car.classcode]
 
@@ -147,11 +131,11 @@ class ClassData(object):
             if cls.carindexed and car.indexcode:
                 indexval *= self.indexlist[car.indexcode].value
 
-            if cls.classmultiplier < 1.000 and (not cls.usecarflag or car.tireindexed):
+            if cls.classmultiplier < 1.000 and (not cls.usecarflag or tireindexed):
                 indexval *= cls.classmultiplier
 
         except Exception as e:
-            log.warning("getEffectiveIndex(%s,%s,%s) failed: %s" % (car.classcode, car.indexcode, car.tireindexed, e))
+            log.warning("getEffectiveIndex(%s,%s,%s) failed: %s" % (car.classcode, car.indexcode, tireindexed, e))
 
         return indexval
 

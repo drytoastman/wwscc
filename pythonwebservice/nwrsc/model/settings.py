@@ -5,19 +5,9 @@ from sqlalchemy.types import String
 
 from meta import metadata
 
-
-## Settings table
-t_settings = Table('settings', metadata,
-	Column('name', String(32), primary_key=True),
-	Column('val', String(128)),
-	)
-
-class Setting(object):
+class Setting(AttrBase):
 	pass
 			
-mapper(Setting, t_settings)
-
-
 class Settings(object):
 
 	INTS = ["largestcarnumber", "useevents", "minevents"]

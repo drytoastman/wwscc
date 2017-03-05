@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block headers %}
+{{ super() }}
+
+<style type='text/css'>
+ul.selectorlist { list-style: none;  display:block; float: left; height: 220px; }
+</style>
+
+{% endblock headers %}
+
+{% block content %}
+<h3>Select Series:</h3>
+
+{%for year in serieslist %}
+<ul class='selectorlist'>
+	<h4>{{year}}</h4>
+	{% for series in serieslist[year] %}
+	    <li><a href='/{{g.subapp}}/{{series}}/'>{{series}}</a></li>
+	{% endfor %}
+</ul>
+{% endfor %}
+
+<br style='clear:all;'/>
+{% endblock content %}
+

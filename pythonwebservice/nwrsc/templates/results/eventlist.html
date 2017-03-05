@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block headers %}
+{{ super() }}
+
+<style>
+h2 { text-align: left; }
+ul { list-style: none; }
+</style>
+
+{% endblock headers %}
+
+{% block content %}
+<h2>Select Event:</h2>
+<ul>
+{% for e in eventlist %}
+	<li><a href='{{url_for('.event', eventid=e.eventid)}}'>{{e.name}}</a></li>
+{% endfor %}
+<li>&nbsp;</li>
+<li><a href='{{url_for('.champ')}}'>Championship</a></li>
+</ul>
+{% endblock content %}
+

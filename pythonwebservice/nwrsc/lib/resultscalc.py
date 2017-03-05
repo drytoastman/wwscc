@@ -15,9 +15,6 @@ log = logging.getLogger(__name__)
 def UpdateClassResults(session, eventid, course, classcode, carid):
 	cevals = [classcode, eventid]
 
-	# Delete current event results for the same event/class, then query runs table for new results 
-	session.sqlmap("DELETECLASSRESULTS", cevals)
-
 	# Now we will loop from 1st to last, calculating points and inserting new event results 
 	position = 1
 	first = True

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block headers %}
+{{ super() }}
+
+<style type="text/css">
+ul, ol, h3, h2 { text-align: left; }
+h3 { color: #111; margin-bottom: 0px; }
+ul { margin-top: 0px; list-style: none; }
+a { color: #44A; text-decoration: none; }
+
+ul.classlist {
+margin: 0;
+margin-left: 40px;
+padding: 0;
+list-style: none;
+width: 350px;
+}
+
+ul.classlist li {
+float: left;
+width: 70px;
+margin: 0;
+padding: 0;
+}
+</style>
+
+{% endblock headers %}
+
+
+{% block content %}
+{{ super() }}
+
+<h2>Results for {{g.event.name}}</h2>
+
+<h3>Active Classes</h3>
+<ul class='classlist'>
+{% for cls in g.active %}
+	<li><a href='{{url_for('.byclass', list=cls.classcode)}}'>{{cls.classcode}}</a></li>
+{% endfor %}
+</ul>
+<br style='clear:both;'/>
+
+<h3>Classes By Run Group</h3>
+<ul class='classlist'>
+{% for ii in range(1,5) %}
+	<li><a href='{{url_for('.bygroup', course=1, list=ii)}}'>R{{ii}}</a></li>
+{% endfor %}
+</ul>
+<br style='clear:both;'/>
+
+{%if g.event.ispro %}
+	{%for ch in g.challenges %}
+		<h3>{{ch.name}}</h3>
+		<ul class='classlist'>
+		<li><a href='{{url_for('.bracket', id=ch.challengeid)}}'>Bracket</a></li>
+		<li><a href='{{url_for('.challenge', id=ch.challengeid)}}'>Details</a></li>
+		</ul>
+		<br style='clear:both'/>
+	{%else%}
+        <!-- No challenges created yet. -->
+    {%endfor%}
+{%endif%}
+
+<h3>Top Times Lists (All Runs)</h3>
+<ul class='classlist'>
+<li><a href='{{url_for('.tt', tttype='indexall')}}'>Indexed</a></li>
+<li><a href='{{url_for('.tt', tttype='rawall')}}'>Raw</a></li>
+</ul>
+<br style='clear:both;'/>
+
+
+<h3>Top Times Lists (Counted Runs)</h3>
+<ul class='classlist'>
+<li><a href='{{url_for('.tt', tttype='index')}}'>Indexed</a></li>
+<li><a href='{{url_for('.tt', tttype='raw')}}'>Raw</a></li>
+</ul>
+<br style='clear:both;'/>
+
+
+{%if g.event.getSegmentCount() > 0 %}
+<h3>Other Top Times Lists</h3>
+<ul class='classlist'>
+<li><a href='{{url_for('.tt', tttype='seg')}}'>Segment</a></li>
+</ul>
+<br style='clear:both;'/>
+{% endif %}
+
+
+<h3>Other</h3>
+<ul>
+{%if config.SHOWLIVE %}
+<li><a href="{{url_for('Live.index')}}">Mobile Live Page</a></li>
+<li><a href="{{url_for('Announcer.index')}}">Announcer Panel</a></li>
+{% endif %}
+<li><a href='{{url_for('.all')}}'>All Classes</a></li>
+<li><a href='{{url_for('.post')}}'>Event Results For Posting</a></li>
+<li><a href='{{url_for('.champ')}}'>Championship Results for Posting</a></li>
+<li><a href='{{url_for('Xml.scca')}}'>SCCA Report</a></li>
+{%if g.event.ispro and config.SHOWGRID %}
+	<li><a href='{{url_for('.grid', order='number')}}'>Grid By Number</a></li>
+	<li><a href='{{url_for('.grid', order='position')}}'>Grid By Position</a></li>
+{% endif %}
+{%if g.event.ispro %}
+	<li><a href='{{url_for('.dialins', order='net')}}'>Dialins By Net</a></li>
+	<li><a href='{{url_for('.dialins', order='diff')}}'>Dialins By Diff</a></li>
+{% endif %}
+</ul>
+
+{% endblock content %}

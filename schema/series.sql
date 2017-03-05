@@ -127,13 +127,15 @@ COMMENT ON TABLE events IS 'The list of events for this series, attr includes lo
 
 
 CREATE TABLE cars (
-    carid         UUID        PRIMARY KEY,
+    carid         UUID        NOT NULL,
     driverid      UUID        NOT NULL REFERENCES public.drivers, 
     classcode     VARCHAR(16) NOT NULL REFERENCES classlist, 
     indexcode     VARCHAR(16) NOT NULL REFERENCES indexlist, 
     number        INTEGER     NOT NULL, 
     attr          JSONB       NOT NULL,
-    modified      TIMESTAMP   NOT NULL DEFAULT now()
+    modified      TIMESTAMP   NOT NULL DEFAULT now(),
+    PRIMARY KEY (carid),
+    CONTRAINT validcardata CHECK (number > 0)
 );
 CREATE INDEX ON cars(driverid);
 CREATE INDEX ON cars(classcode);
@@ -147,7 +149,7 @@ COMMENT ON TABLE cars IS 'The cars in this series.  Attr includes year, make, mo
 CREATE TABLE runs (
     eventid  INTEGER    NOT NULL REFERENCES events, 
     carid    UUID       NOT NULL REFERENCES cars, 
-    course   INTEGER    NOT NULL, 
+    course   INTEGER    NOT NULL,
     run      INTEGER    NOT NULL, 
     cones    INTEGER    NOT NULL DEFAULT 0, 
     gates    INTEGER    NOT NULL DEFAULT 0, 
@@ -155,7 +157,8 @@ CREATE TABLE runs (
     status   VARCHAR(8) NOT NULL DEFAULT 'DNS', 
     attr     JSONB      NOT NULL,
     modified TIMESTAMP  NOT NULL DEFAULT now(),
-    PRIMARY KEY (eventid, carid, course, run)
+    PRIMARY KEY (eventid, carid, course, run),
+    CONSTRAINT validrundata CHECK (course > 0 AND run > 0 and raw > 0.0)
 );
 CREATE INDEX ON runs(eventid);
 REVOKE ALL ON runs FROM public;
@@ -188,6 +191,7 @@ CREATE TABLE runorder (
     carid    UUID       NOT NULL REFERENCES cars, 
     modified TIMESTAMP  NOT NULL DEFAULT now(),
     PRIMARY KEY (eventid, course, rungroup, row),
+    CONSTRAINT validrunorder CHECK (course > 0 and rungroup > 0 and row > 0),
     CONSTRAINT oneentrypercourse UNIQUE (eventid, course, carid) DEFERRABLE INITIALLY DEFERRED
 );
 CREATE INDEX getgroup ON runorder(eventid, course, rungroup);

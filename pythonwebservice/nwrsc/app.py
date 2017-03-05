@@ -6,10 +6,12 @@ from psycopg2.pool import ThreadedConnectionPool
 from psycopg2.extras import DictCursor
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from werkzeug.debug.tbtools import get_current_traceback
-from flask import Flask, request, g, current_app
+from flask import Flask, request, g, current_app, render_template
 from flask_compress import Compress
 
 from nwrsc.controllers.results import Results
+from nwrsc.controllers.xml import Xml
+from nwrsc.model import Series
 
 def create_app(config=None):
     """ Setup the application for the WSGI server """
@@ -21,30 +23,42 @@ def create_app(config=None):
         last = traceback.frames[-1]
         return "%s:%s %s" % (os.path.basename(last.filename), last.lineno, exception);
 
-    def serieshook1(endpoint, values):
-        """ Stop the requirement for blueprint functions to put series in their function definitions """
+    def preprocessor(endpoint, values):
+        """ Remove the requirement for blueprint functions to put subapp/series in their function definitions """
         if values is not None:
+            g.subapp = values.pop('subapp', None)
             g.series = values.pop('series', None)
+            g.eventid = values.pop('eventid', None)
 
-    def serieshook2(endpoint, values):
-        """ Make sure 'series' from the blueprint URLs is available for url_for relative calls """
-        if 'series' in values or not g.series:
-            return
-        if current_app.url_map.is_endpoint_expecting(endpoint, 'series'):
-            values['series'] = g.series
+    def urldefaults(endpoint, values):
+        """ Make sure 'series' from the subapp URLs is available for url_for relative calls """
+        for u in ('subapp', 'series', 'eventid'):
+            if u not in values and getattr(g, u) and current_app.url_map.is_endpoint_expecting(endpoint, u):
+                values[u] = getattr(g, u)
 
-    def serieslist(blueprint=None):
-        return "series list here %s" % blueprint
+    def serieslist(subapp='results'):
+        return render_template('serieslist.html', serieslist=Series.list())
+
+    def t3(val):
+        if val is None: return ""
+        if type(val) is int: return str(val)
+        try:
+            return "%0.3f" % (val)
+        except:
+            return str(val)
 
     # Setup the application
     theapp = Flask("nwrsc")
-    theapp.config.update(DEBUG=True, LOGGER_HANDLER_POLICY="None")
-    theapp.add_url_rule('/', 'serieslist', serieslist)
-    theapp.add_url_rule('/<blueprint>/', 'serieslist', serieslist)
+    theapp.config.from_json("config/defaultconfig.json")
+    theapp.url_value_preprocessor(preprocessor)
+    theapp.url_defaults(urldefaults)
+    theapp.add_url_rule('/',          'serieslist', redirect_to='/results')
+    theapp.add_url_rule('/<subapp>/', 'serieslist', serieslist)
     theapp.register_blueprint(Results, url_prefix="/results/<series>")
-    theapp.url_value_preprocessor(serieshook1)
-    theapp.url_defaults(serieshook2)
-    theapp.pool = ThreadedConnectionPool(5, 10, host="127.0.0.1", dbname="scorekeeper", user="wwwuser", password="wwwuser", cursor_factory=DictCursor)
+    theapp.register_blueprint(Xml,     url_prefix="/xml/<series>")
+    theapp.pool = ThreadedConnectionPool(5, 10, host="127.0.0.1", dbname="scorekeeper", user=theapp.config['DBUSER'], password=theapp.config['DBPASS'], cursor_factory=DictCursor)
+    theapp.jinja_env.filters['t3'] = t3
+
 
     if not theapp.debug:
         # If not using Flask debugger, log our exceptions
@@ -61,6 +75,7 @@ def create_app(config=None):
     Compress(theapp)
 
     theapp.logger.info("NWRSC App created")
+    theapp.logger.setLevel(logging.INFO)
     return theapp
 
 
@@ -76,12 +91,11 @@ class DBSeriesWrapper(object):
         g.db =  self.app.pool.getconn() 
         if hasattr(g, 'series') and g.series:
             # Set up the schema path if we have a series
-            with g.db.cursor() as cur:
-                cur.execute("select schema_name from information_schema.schemata where schema_name=%s", (g.series,))
-                if cur.rowcount > 0:
+            if Series.exists(g.series):
+                with g.db.cursor() as cur:
                     cur.execute("SET search_path=%s,'public'", (g.series,))
-                else:
-                    return "%s is not a valid series" % g.series
+            else:
+                return "%s is not a valid series" % g.series
 
     def teardown(self, exc=None):
         """ Make sure that the connection is commited so it doesn't sit in a locked state, put back in the pool """

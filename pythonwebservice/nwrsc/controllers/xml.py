@@ -1,9 +1,14 @@
 
-from pylons import response
-from nwrsc.controllers.feed import FeedController
-from webhelpers.html import escape
+from flask import Blueprint, request, g
+from nwrsc.model import *
 
-class XmlController(FeedController):
+Xml = Blueprint("Xml", __name__)
+
+@Xml.route("/scca")
+def scca():
+    return "scca"
+
+class XmlController(object):
 	""" Provides the feed using XML encoding """
 
 	def _encode(self, head, o):
@@ -23,7 +28,7 @@ class XmlController(FeedController):
 				self.buffer.append('<%s>'%k)
 				self._format(v)
 				self.buffer.append('</%s>'%k)
-		elif hasattr(o, 'getFeed'):
+		elif hasattr(o, 'getPublicFeed'):
 			self.buffer.append('<%s>'%o.__class__.__name__)
 			for k,v in o.getFeed().iteritems():
 				self.buffer.append('<%s>'%k)

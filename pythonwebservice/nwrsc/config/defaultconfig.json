@@ -1,0 +1,8 @@
+{
+    "DEBUG": true, 
+    "LOGGER_HANDLER_POLICY":"None",
+    "DBUSER":"wwwuser",
+    "DBPASS":"wwwuser",
+    "SHOWLIVE":false,
+    "SHOWGRID":true
+}
