@@ -1,9 +1,4 @@
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, find_packages
+from setuptools import setup, find_packages
 
 x = setup(
     name='nwrsc',
@@ -14,18 +9,18 @@ x = setup(
     url='https://github.com/drytoastman/wwscc',
 
     install_requires=[
+        "psycopg2",
         "CherryPy",
         "Flask",
         "Flask-Assets",
-        "Flask-Compress"
+        "Flask-Compress",
+        "ReportLab",
+        "icalendar",
+        "python-dateutil"
     ],
 
-    extras_require = {
-        'PDF':  ["ReportLab>=3.3.0"],
-        'iCalendar': ["icalendar", "python-dateutil"]
-    },
-
-    packages=['nwrsc'],
+    packages=find_packages(),
+    scripts=['bin/webserver'],
     include_package_data=True,
     zip_safe=False,
 )

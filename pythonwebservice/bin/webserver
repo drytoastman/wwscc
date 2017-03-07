@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+
+import signal
+import os, sys
+from nwrsc import create_app
+
+def writepid():
+    with open(pidfile, 'w') as fp:
+        fp.write(str(os.getpid()))
+
+def removepid(signum, frame):
+    os.remove(pidfile)
+    sys.exit(0)
+
+def run_flask_debug_server(port):
+    # If set to debug, use the flask development server
+    app.run(host='0.0.0.0', port=port)
+
+def run_cherrypy_server(port):
+    # Otherwise we run the cherrypy server
+    import cherrypy
+    cherrypy.tree.graft(app, "/")
+    cherrypy.server.unsubscribe()
+    cherrypy.config.update({'engine.autoreload.on': False})
+
+    server = cherrypy._cpserver.Server()
+    server.socket_host = "0.0.0.0"
+    server.socket_port = port
+    server.thread_pool = 60
+    server.shutdown_timeout = 1
+    server.subscribe()
+    cherrypy.engine.start()
+    cherrypy.engine.block()
+
+
+if __name__ == '__main__':
+    app = create_app()
+    port = app.config['PORT']
+    pidfile = os.path.join(app.config['INSTALLROOT'], 'logs/webserver.pid')
+
+    signal.signal(signal.SIGABRT, removepid)
+    signal.signal(signal.SIGINT,  removepid)
+    signal.signal(signal.SIGTERM, removepid)
+    writepid()
+
+    if app.debug:
+        run_flask_debug_server(port)
+    else:
+        run_cherrypy_server(port)
+
+    removepid(0, 0) # just in case we get here somehow
+

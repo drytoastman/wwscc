@@ -1,0 +1,7 @@
+{
+    "INSTALLROOT":"/cygwin/home/bwilson/installdir",
+    "PORT":8080,
+    "DEBUG": true, 
+    "DBUSER":"wwwuser",
+    "DBPASS":"wwwuser"
+}

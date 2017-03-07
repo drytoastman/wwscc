@@ -1,17 +1,44 @@
+import sys
 import os.path
 import logging
+import threading
 from logging.handlers import RotatingFileHandler
 
+from psycopg2 import OperationalError
 from psycopg2.pool import ThreadedConnectionPool
 from psycopg2.extras import DictCursor
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from werkzeug.debug.tbtools import get_current_traceback
-from flask import Flask, request, g, current_app, render_template
+from werkzeug.contrib.profiler import ProfilerMiddleware
+from flask import Flask, request, g, current_app, render_template, send_from_directory
 from flask_compress import Compress
 
 from nwrsc.controllers.results import Results
 from nwrsc.controllers.xml import Xml
 from nwrsc.model import Series
+
+
+class FlaskWithPool(Flask):
+    """ Add some PGPool operations so we can reset from a request context when the DB is restarted on us """
+    def __init__(self, name):
+        Flask.__init__(self, name)
+        self.resetlock = threading.Lock()
+
+    def create_pool(self):
+        self.pool = ThreadedConnectionPool(5, 10, cursor_factory=DictCursor, host="127.0.0.1", dbname="scorekeeper",
+                                             user=self.config['DBUSER'], password=self.config['DBPASS'])
+
+    def reset_pool(self):
+        """ First person here gets to reset it, others can continue on and try again """
+        if self.resetlock.acquire(False):
+            try:
+                if not self.pool.closed:
+                    self.pool.closeall()
+                self.create_pool()
+            finally:
+                self.resetlock.release()
+        
+
 
 def create_app(config=None):
     """ Setup the application for the WSGI server """
@@ -37,9 +64,15 @@ def create_app(config=None):
                 values[u] = getattr(g, u)
 
     def serieslist(subapp='results'):
+        """ Render a list of series available in the current database """
         return render_template('serieslist.html', serieslist=Series.list())
 
+    def favicon():
+        """ Return our cone icon as the favicon """
+        return send_from_directory('static', 'cone.png')
+
     def t3(val):
+        """ Wrapper to safely print floats as XXX.123 format """
         if val is None: return ""
         if type(val) is int: return str(val)
         try:
@@ -47,35 +80,61 @@ def create_app(config=None):
         except:
             return str(val)
 
-    # Setup the application
-    theapp = Flask("nwrsc")
-    theapp.config.from_json("config/defaultconfig.json")
-    theapp.url_value_preprocessor(preprocessor)
-    theapp.url_defaults(urldefaults)
-    theapp.add_url_rule('/',          'serieslist', redirect_to='/results')
-    theapp.add_url_rule('/<subapp>/', 'serieslist', serieslist)
-    theapp.register_blueprint(Results, url_prefix="/results/<series>")
-    theapp.register_blueprint(Xml,     url_prefix="/xml/<series>")
-    theapp.pool = ThreadedConnectionPool(5, 10, host="127.0.0.1", dbname="scorekeeper", user=theapp.config['DBUSER'], password=theapp.config['DBPASS'], cursor_factory=DictCursor)
-    theapp.jinja_env.filters['t3'] = t3
 
+    # Figure out where we are
+    installroot = os.path.abspath(os.path.join(sys.executable, "../../../"))
 
+    # Setup the application with default configuration
+    theapp = FlaskWithPool("nwrsc")
+    theapp.config.update({
+        "PORT": 80,
+        "DEBUG": False,
+        "PROFILE": False,
+        "LOGGER_HANDLER_POLICY":"None",
+        "DBUSER":"wwwuser",
+        "DBPASS":"wwwuser",
+        "SHOWLIVE":True,
+        "SHOWGRID":True,
+        "INSTALLROOT": installroot
+    })
+
+    # Let the site config override what it wants
+    theapp.config.from_json(os.path.join(installroot, 'siteconfig.json'))
+
+    # If not using Flask debugging webserver, log our exceptions to the regular errorlog
     if not theapp.debug:
-        # If not using Flask debugger, log our exceptions
         theapp.register_error_handler(Exception, errorlog)
 
-    # Configure our logging to use nwrsc.log with rotation
-    handler = RotatingFileHandler('nwrsc.log', maxBytes=10000, backupCount=1)
+    # Setup basic top level URL handling followed by Blueprints for the various sections
+    theapp.url_value_preprocessor(preprocessor)
+    theapp.url_defaults(urldefaults)
+    theapp.add_url_rule('/',            'serieslist', redirect_to='/results')
+    theapp.add_url_rule('/favicon.ico', 'favicon',    favicon)
+    theapp.add_url_rule('/<subapp>/',   'serieslist', serieslist)
+    theapp.register_blueprint(Results, url_prefix="/results/<series>")
+    theapp.register_blueprint(Xml,     url_prefix="/xml/<series>")
+
+    # Create a PG connection pool and extra Jinja filters
+    theapp.create_pool()
+    theapp.jinja_env.filters['t3'] = t3
+
+    # Configure our logging to use webserver.log with rotation
+    path = os.path.join(installroot, 'logs/webserver.log')
+    handler = RotatingFileHandler(path, maxBytes=1000000, backupCount=10)
     handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m/%d/%Y %H:%M:%S'))
     handler.setLevel(logging.DEBUG)
     theapp.logger.addHandler(handler)
+    theapp.logger.setLevel(logging.INFO)
 
+    # Create some wrapping pieces for setting up PG connection, response logging, compression and profiling
     DBSeriesWrapper(theapp)
     ResponseLogger(theapp)
     Compress(theapp)
+    if theapp.config.get('PROFILE', False):
+        theapp.wsgi_app = ProfilerMiddleware(theapp.wsgi_app, restrictions=[30])
 
-    theapp.logger.info("NWRSC App created")
-    theapp.logger.setLevel(logging.INFO)
+    # Good to go
+    theapp.logger.info("Scorekeeper App created")
     return theapp
 
 
@@ -83,8 +142,16 @@ class DBSeriesWrapper(object):
     """ Get a database connection from the pool and setup the schema path, teardown on request end """
     def __init__(self, app):
         self.app = app
-        self.app.before_request(self.series_setup)
+        self.app.before_request(self.onrequest)
         self.app.teardown_request(self.teardown)
+
+    def onrequest(self):
+        try:
+            self.series_setup()
+        except OperationalError as e:
+            self.app.logger.warning("Possible database restart.  Reseting pool and trying again!")
+            self.app.reset_pool()
+            self.series_setup()
 
     def series_setup(self):
         """ Check if we have the series in the URL, set the schema path if available, return an error message otherwise """
@@ -99,7 +166,6 @@ class DBSeriesWrapper(object):
 
     def teardown(self, exc=None):
         """ Make sure that the connection is commited so it doesn't sit in a locked state, put back in the pool """
-        g.db.commit()
         self.app.pool.putconn(g.db) 
 
 

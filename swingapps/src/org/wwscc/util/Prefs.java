@@ -8,6 +8,7 @@
 package org.wwscc.util;
 
 import java.awt.Rectangle;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -71,9 +72,14 @@ public class Prefs
 	{
 		return System.getProperty("os.name").split("\\s")[0].equals("Mac");
 	}
+	
+	public static String getInstallRoot() 
+	{
+		return new File(System.getProperty("user.home"), "scorekeeper").getAbsolutePath();
+	}
+
 
 	public static String getHomeServer() { return prefs.get("hostname", "scorekeeper.wwscc.org"); }
-	public static String getInstallRoot() { return prefs.get("installroot", System.getProperty("user.home")); }
 	public static String getPasswordFor(String series) { return prefs.get("password-"+series, ""); }
 	public static String getSeries(String def) { return prefs.get("series", def); }
 	public static int getEventId(int def) { return prefs.getInt("eventid", def); }
@@ -94,7 +100,6 @@ public class Prefs
 	}
 
 	public static void setHomeServer(String s) { prefs.put("hostname", s); }
-	public static void setInstallRoot(String s) { prefs.put("installroot", s); }
 	public static void setPasswordFor(String series, String s) { prefs.put("password-"+series, s); }
 	public static void setSeries(String s) { prefs.put("series", s); }
 	public static void setEventId(int i) { prefs.putInt("eventid", i); }

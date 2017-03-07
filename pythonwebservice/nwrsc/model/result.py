@@ -29,10 +29,11 @@ class EventResult(object):
         with g.db.cursor() as cur:
             # check if we need to update the results
             cur.execute("select max(time) from serieslog where tablen in ('classlist', 'indexlist', 'events', 'cars', 'runs')")
-            mods = cur.fetchone()
-            cur.execute("select modified from results where series=%s and name=%s", (g.series, "e%d"%eventid))
-            resmod  = cur.fetchone()
-            if mods is None or resmod is None or mods['max'] > resmod['modified']:
+            seriesmods = cur.fetchone()['max']
+            if seriesmods is not None:
+                cur.execute("select modified from results where series=%s and name=%s", (g.series, "e%d"%eventid))
+                resultsmod = (cur.rowcount > 0) and cur.fetchone()['modified'] or None
+            if seriesmods is None or resultsmod is None or seriesmods > resultsmod:
                 cls.update(eventid)
 
             # everything should be the latest now, load and return 

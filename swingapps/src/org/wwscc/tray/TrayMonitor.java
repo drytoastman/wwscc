@@ -28,11 +28,8 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
-import org.wwscc.util.CherryPyControl;
 import org.wwscc.util.Logging;
-import org.wwscc.util.PostgresqlControl;
 import org.wwscc.util.Prefs;
-import org.wwscc.util.ServiceControl;
 
 public class TrayMonitor implements ActionListener
 {
@@ -59,6 +56,8 @@ public class TrayMonitor implements ActionListener
 	    	log.severe("TrayIcon is not supported, unable to run Scorekeeper monitor application.");
 	    	System.exit(-1);
 	    }
+	    
+	    System.out.println(System.getProperty("user.home"));
 	    
 	    cmdline = args;
         
@@ -184,6 +183,11 @@ public class TrayMonitor implements ActionListener
     class BackgroundChecker extends Thread
     {
     	boolean done = false;
+    	public BackgroundChecker()
+    	{
+    		super("Background Checker");
+    	}
+    	
     	@Override
     	public void run()
     	{
@@ -195,7 +199,7 @@ public class TrayMonitor implements ActionListener
 					mDatabase.setLabel(databaseRunning ? DATABASE_RUNNING : DATABASE_NOT_RUNNING);
 					mWebServer.setLabel(webserverRunning ? WEBSERVER_RUNNING : WEBSERVER_NOT_RUNNING);
 					trayIcon.setImage((databaseRunning && webserverRunning) ? coneok : conewarn);
-    				synchronized (this) { this.wait(3000); }
+    				synchronized (this) { this.wait(5000); }
 
 				} catch (InterruptedException e) {}
     		}

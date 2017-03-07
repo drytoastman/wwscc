@@ -23,7 +23,7 @@ def compile(files, output):
 	for f in files:
 		prog.extend(["--js", f])
 	prog.extend(["--js_output_file", output])
-	print ' '.join(prog)
+	print(' '.join(prog))
 	subprocess.call(prog)
 
 

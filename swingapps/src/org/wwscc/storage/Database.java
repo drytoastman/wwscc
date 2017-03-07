@@ -44,6 +44,7 @@ public class Database
 	 * Used when the user wants to select a new specific series
 	 * @param series
 	 * @param password
+	 * @return true if the series was opened, false otherwise
 	 */
 	public static boolean openSeries(String series, String password)
 	{
