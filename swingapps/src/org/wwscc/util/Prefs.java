@@ -9,6 +9,7 @@ package org.wwscc.util;
 
 import java.awt.Rectangle;
 import java.io.File;
+import java.nio.file.FileSystems;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -76,6 +77,11 @@ public class Prefs
 	public static String getInstallRoot() 
 	{
 		return new File(System.getProperty("user.home"), "scorekeeper").getAbsolutePath();
+	}
+	
+	public static String getLogDirectory()
+	{
+		return FileSystems.getDefault().getPath(getInstallRoot(), "logs").toString();
 	}
 
 

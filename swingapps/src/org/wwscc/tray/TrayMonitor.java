@@ -20,6 +20,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -56,9 +58,7 @@ public class TrayMonitor implements ActionListener
 	    	log.severe("TrayIcon is not supported, unable to run Scorekeeper monitor application.");
 	    	System.exit(-1);
 	    }
-	    
-	    System.out.println(System.getProperty("user.home"));
-	    
+	    	    
 	    cmdline = args;
         
         trayPopup  = new PopupMenu();        
@@ -162,14 +162,13 @@ public class TrayMonitor implements ActionListener
 			cmd.add(app);
 			cmd.addAll(Arrays.asList(cmdline));
 			log.info(String.format("Running %s", cmd));
-			Process p = new ProcessBuilder(cmd).start();
+			ProcessBuilder starter = new ProcessBuilder(cmd);
+			starter.redirectErrorStream(true);
+			starter.redirectOutput(Redirect.appendTo(new File(Prefs.getLogDirectory(), "jvmlaunches.log")));
+			Process p = starter.start();
 			Thread.sleep(1000);
-			if (!p.isAlive()) 
-			{
-				byte data[] = new byte[4096];
-				p.getErrorStream().read(data);
-				log.info("PROCESS ERR: " + new String(data));
-				throw new Exception("Process not alive after 1 second");
+			if (!p.isAlive()) {
+				throw new Exception("Process not alive after 1 second, see jvmlaunched.log");
 			}
 		} catch (Exception e) {
 			log.log(Level.SEVERE, String.format("Failed to launch %s",  app), e);

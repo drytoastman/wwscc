@@ -14,7 +14,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -33,7 +32,7 @@ public class Logging
 {
 	public static File getLogDir()
 	{
-		File dir = new File(Prefs.getInstallRoot(), "logs");
+		File dir = new File(Prefs.getLogDirectory());
 		if (!dir.exists())
 			dir.mkdirs();
 		return dir;
@@ -45,15 +44,15 @@ public class Logging
 		{
 			LogManager lm = LogManager.getLogManager();
 			Logger root = lm.getLogger("");
-			Logger wwscc = Logger.getLogger("org.wwscc");
-			SingleLineFormatter formatter = new SingleLineFormatter();
-	
-			ConsoleHandler ch = new ConsoleHandler();
-			ch.setFormatter(formatter);
-			ch.setLevel(Level.ALL);
-	
-			FileHandler fh = new FileHandler(getLogDir().getAbsolutePath()+"/"+name+".%g.log", 1000000, 10, true);
-			fh.setFormatter(formatter);
+
+			Handler[] handlers = root.getHandlers();
+			for(Handler handler : handlers) {
+				root.removeHandler(handler);
+			}
+			
+			File logdir = getLogDir();
+			FileHandler fh = new FileHandler(new File(logdir, name+".%g.log").getAbsolutePath(), 1000000, 10, true);
+			fh.setFormatter(new SingleLineFormatter());
 			fh.setLevel(Level.ALL);
 	
 			AlertHandler ah = new AlertHandler();
@@ -61,10 +60,9 @@ public class Logging
 	
 			root.addHandler(ah);
 			root.addHandler(fh);
-			root.addHandler(ch);
 	
 			root.setLevel(Level.WARNING);
-			wwscc.setLevel(Level.FINER);
+			Logger.getLogger("org.wwscc").setLevel(Level.FINER);
 		}
 		catch (IOException ioe)
 		{

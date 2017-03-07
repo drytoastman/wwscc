@@ -36,8 +36,8 @@ public class CherryPyControl implements ServiceControl
 	{
 		python  = FileSystems.getDefault().getPath(Prefs.getInstallRoot(), "webserver/Scripts/python");
 		server  = FileSystems.getDefault().getPath(Prefs.getInstallRoot(), "webserver/Scripts/webserver");
-		pidfile = FileSystems.getDefault().getPath(Prefs.getInstallRoot(), "logs/webserver.pid");
-		logfile = FileSystems.getDefault().getPath(Prefs.getInstallRoot(), "logs/webserver.log");
+		pidfile = FileSystems.getDefault().getPath(Prefs.getLogDirectory(), "webserver.pid");
+		logfile = FileSystems.getDefault().getPath(Prefs.getLogDirectory(), "webserver.log");
 		stopcommand = new ArrayList<String>();
 		
 		starter = new ProcessBuilder(python.toString(), server.toString());
@@ -106,6 +106,7 @@ public class CherryPyControl implements ServiceControl
 		try {
 			if (runner != null)
 			{
+				log.info("Calling destroy on " + runner);
 				runner.destroy();
 				runner = null;
 				return true;
