@@ -14,7 +14,7 @@ from flask import Flask, request, g, current_app, render_template, send_from_dir
 from flask_compress import Compress
 
 from nwrsc.controllers.results import Results
-from nwrsc.controllers.xml import Xml
+from nwrsc.controllers.feed import Xml, Json
 from nwrsc.model import Series
 
 
@@ -37,7 +37,6 @@ class FlaskWithPool(Flask):
                 self.create_pool()
             finally:
                 self.resetlock.release()
-        
 
 
 def create_app(config=None):
@@ -113,6 +112,7 @@ def create_app(config=None):
     theapp.add_url_rule('/<subapp>/',   'serieslist', serieslist)
     theapp.register_blueprint(Results, url_prefix="/results/<series>")
     theapp.register_blueprint(Xml,     url_prefix="/xml/<series>")
+    theapp.register_blueprint(Json,    url_prefix="/json/<series>")
 
     # Create a PG connection pool and extra Jinja filters
     theapp.create_pool()

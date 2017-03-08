@@ -62,7 +62,7 @@ public class CherryPyControl implements ServiceControl
 	}
 
 	/**
-	 * Check to see if our process handler is valid and running, otherwise check by socket connection (someone else started it
+	 * Check to see if our process handler is valid and running, otherwise check by socket connection (someone else started it)
 	 */
 	@Override
 	public boolean check()
@@ -103,11 +103,15 @@ public class CherryPyControl implements ServiceControl
 	@Override
 	public boolean stop()
 	{
-		try {
+		try 
+		{
 			if (runner != null)
 			{
-				log.info("Calling destroy on " + runner);
-				runner.destroy();
+				if (runner.isAlive())
+				{
+					log.info("Calling destroy on " + runner);
+					runner.destroy();
+				}
 				runner = null;
 				return true;
 			}
@@ -118,7 +122,9 @@ public class CherryPyControl implements ServiceControl
 			
 			log.info("Running " + stopcommand.toString());
 			return new ProcessBuilder(stopcommand).start().waitFor() != 0;
-		} catch (Exception e) {
+		} 
+		catch (Exception e) 
+		{
 			log.info("failed to stop cherrypy server: " + e);
 		}
 		return false;

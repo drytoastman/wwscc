@@ -87,7 +87,7 @@ public class Car extends AttrBase
 	public String getMake()        { return getAttrS("make"); }
 	public String getModel()       { return getAttrS("model"); }
 	public String getColor()       { return getAttrS("color"); }
-	public boolean isTireIndexed() { return getAttrB("tireindexed");}
+	//public boolean isTireIndexed() { return getAttrB("tireindexed");}
 	
 	public void setCarId(UUID id)      { carid = id; }
 	public void setDriverId(UUID id)   { driverid = id; }
@@ -98,7 +98,7 @@ public class Car extends AttrBase
 	public void setMake(String s)      { setAttrS("make", s); }
 	public void setModel(String s)     { setAttrS("model", s); }
 	public void setColor(String s)     { setAttrS("color", s); }
-	public void setTireIndexed(Boolean b) { setAttrB("tireindexed", b); }
+	//public void setTireIndexed(Boolean b) { setAttrB("tireindexed", b); }
 	
 	@Override
 	public boolean equals(Object o)

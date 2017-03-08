@@ -1,4 +1,5 @@
 
+"""
 class RunGroupList(object):
 	def __init__(self, groupnum):
 		self.groupnum = groupnum
@@ -29,4 +30,5 @@ class ClassOrder(object):
 		else:
 			self.second.append(Entrant(driver, car))
 			self.second.sort(key=lambda e: getattr(e.car, ckey))
+"""
 

@@ -1,6 +1,6 @@
 import logging
 from flask import g
-from .base import AttrBase
+from .base import AttrBase, Entrant
 
 log = logging.getLogger(__name__)
 
@@ -11,15 +11,67 @@ class Challenge(AttrBase):
         with g.db.cursor() as cur:
             cur.execute("select * from challenges where eventid=%s", (eventid,))
             return [cls(**x) for x in cur.fetchall()]
-        
+
+    @classmethod
+    def getResults(cls, challengeid, round=-1):
+        rounds = dict()
+        with g.db.cursor() as cur:
+            getrounds = "SELECT x.*, " \
+                    "d1.firstname as e1fn, d1.lastname as e1ln, c1.classcode as e1cc, c1.indexcode as e1ic, " \
+                    "d2.firstname as e2fn, d2.lastname as e2ln, c2.classcode as e2cc, c2.indexcode as e2ic  " \
+                    "FROM challengerounds x " \
+                    "JOIN cars    c1 ON x.car1id=c1.carid       JOIN cars    c2 ON x.car2id=c2.carid " \
+                    "JOIN drivers d1 ON c1.driverid=d1.driverid JOIN drivers d2 ON c2.driverid=d2.driverid " \
+                    "WHERE challengeid=%s "
+    
+            getruns = "select * from challengeruns where challengeid=%s "
+    
+            if round >= 0:
+                cur.execute(getrounds+"and round=%s", (challengeid,round))
+            else:
+                cur.execute(getrounds, (challengeid,))
+    
+            for rnd in [ChallengeRound(**x) for x in cur.fetchall()]:
+                rnd.e1.firstname = rnd.e1fn
+                rnd.e1.lastname  = rnd.e1ln
+                rnd.e1.classcode = rnd.e1cc
+                rnd.e1.indexcode = rnd.e1ic
+                rnd.e2.firstname = rnd.e2fn
+                rnd.e2.lastname  = rnd.e2ln
+                rnd.e2.classcode = rnd.e2cc
+                rnd.e2.indexcode = rnd.e2ic
+                rounds[rnd.round] = rnd
+    
+            if round >= 0:
+                cur.execute(getruns + "and round=%s", (challengeid, round))
+            else:
+                cur.execute(getruns, (challengeid,))
+    
+            for run in [ChallengeRun(**x) for x in cur.fetchall()]:
+                rnd = rounds[run.round]
+                if   rnd.car1id == run.carid: rnd.e1runs[run.course-1] = run
+                elif rnd.car2id == run.carid: rnd.e2runs[run.course-1] = run
+    
+        return rounds
+
 
 class ChallengeRound(AttrBase):
 
+    LEFT = 0
+    RIGHT = 1
+
+    def __init__(self, *args, **kwargs):
+        AttrBase.__init__(self, *args, **kwargs)
+        self.e1 = Entrant()
+        self.e1runs = [None, None]
+        self.e2 = Entrant()
+        self.e2runs = [None, None]
+
     def getHalfResult(self):
-        tl = getattr(self, 'car1leftrun',  None)
-        tr = getattr(self, 'car1rightrun', None)
-        bl = getattr(self, 'car2leftrun',  None)
-        br = getattr(self, 'car2rightrun', None)
+        tl = self.e1runs[0]
+        tr = self.e1runs[1]
+        bl = self.e2runs[0]
+        br = self.e2runs[1]
         
         if tl and br:
             tdiff = tl.net - self.car1dial
@@ -35,79 +87,12 @@ class ChallengeRound(AttrBase):
 
 
 class ChallengeRun(AttrBase):
-    pass
 
+    @property
+    def net(self):
+        # FINISH ME, get the event cone/gate penalties someday (if they ever change)
+        if self.status == "OK":
+            return self.raw + (self.cones * 2) + (self.gates * 10)
+        return 999.999
 
-def loadSingleRoundResults(session, challenge, rnd):
-    rnd.driver1 = rnd.car1 and rnd.car1.driver or None
-    rnd.car1leftrun = None
-    rnd.car1rightrun = None
-    rnd.driver2 = rnd.car2 and rnd.car2.driver or None
-    rnd.car2leftrun = None
-    rnd.car2rightrun = None 
-
-    for dr in (rnd.driver1, rnd.driver2):
-        if dr is not None and dr.alias and not config['nwrsc.private']:
-            dr.firstname = dr.alias
-            dr.lastname = ""
-
-    for r in session.query(Run).filter(Run.eventid.op(">>")(16)==challenge.id).filter(Run.eventid.op("&")(255)==rnd.round):
-        if rnd.car1id == r.carid:
-            if r.course == 1:
-                rnd.car1leftrun = r
-            elif r.course == 2:
-                rnd.car1rightrun = r
-        elif rnd.car2id == r.carid:
-            if r.course == 1:
-                rnd.car2leftrun = r
-            elif r.course == 2:
-                rnd.car2rightrun = r
-        else:
-            log.warning("Can't match run to round car")
-
-
-def loadChallengeResults(session, challengeid, rounds):
-
-    carids = set()
-    for rnd in rounds.itervalues():
-        carids.add(rnd.car1id)
-        carids.add(rnd.car2id)
-        rnd.driver1 = None
-        rnd.car1leftrun = None
-        rnd.car1rightrun = None
-        rnd.driver2 = None
-        rnd.car2leftrun = None
-        rnd.car2rightrun = None
-
-    for r in session.query(Run).filter(Run.eventid.op(">>")(16)==challengeid):
-        rnd = rounds.get(r.eventid & 0x0FF, None)
-        if rnd is None:
-            log.warning("Can't match run to round")
-            continue
-
-        if rnd.car1id == r.carid:
-            if r.course == 1:
-                rnd.car1leftrun = r
-            elif r.course == 2:
-                rnd.car1rightrun = r
-        elif rnd.car2id == r.carid:
-            if r.course == 1:
-                rnd.car2leftrun = r
-            elif r.course == 2:
-                rnd.car2rightrun = r
-        else:
-            log.warning("Can't match run to round car")
-        
-    cars = dict()
-    for cd in session.query(Driver,Car).join('cars').filter(Car.id.in_(carids)):
-        cars[cd.Car.id] = cd
-        if cd[0].alias and not config['nwrsc.private']:
-            cd[0].firstname = cd[0].alias
-            cd[0].lastname = ""
-
-    for rnd in rounds.itervalues():
-        if rnd.car1id > 0 and rnd.car1id in cars:
-            rnd.driver1 = cars[rnd.car1id].Driver
-        if rnd.car2id > 0 and rnd.car2id in cars:
-            rnd.driver2 = cars[rnd.car2id].Driver
 

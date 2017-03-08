@@ -52,6 +52,11 @@ class Class(AttrBase):
 
         return (indexrestrict, flagrestrict)
 
+    @classmethod
+    def getAll(cls):
+        with g.db.cursor() as cur:
+            cur.execute("select * from classlist order by classcode")
+            return [Class(**x) for x in cur.fetchall()]
 
     @classmethod
     def activeClasses(cls, eventid):
@@ -65,7 +70,11 @@ class Class(AttrBase):
 
 
 class Index(AttrBase):
-    pass
+    @classmethod
+    def getAll(cls):
+        with g.db.cursor() as cur:
+            cur.execute("select * from indexlist order by indexcode")
+            return [Index(**x) for x in cur.fetchall()]
 
 
 class PlaceHolder(object):

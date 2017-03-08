@@ -1,27 +1,19 @@
-from sqlalchemy import Table, Column, ForeignKey, Index, UniqueConstraint
-from sqlalchemy.orm import mapper, relation
-from sqlalchemy.types import Integer, SmallInteger, String
-from pylons import config
 
-from meta import metadata
-from data import Car
+from flask import g
 
-## Runorder table
-t_runorder = Table('runorder', metadata,
-    Column('id', Integer, primary_key=True),
-	Column('eventid', Integer, ForeignKey('events.id')),
-	Column('course', Integer),
-	Column('rungroup', SmallInteger),
-	Column('carid', Integer, ForeignKey('cars.id')),
-	Column('row', SmallInteger),
-	UniqueConstraint('eventid', 'course', 'carid', name='orderindex_2')
-	)
-Index('orderindex_1', t_runorder.c.eventid)
+class RunOrder():
 
-class RunOrder(object):
 	pass
 
-mapper(RunOrder, t_runorder, properties = {'car':relation(Car)})
+class RunGroup():
+
+    @classmethod
+    def getClassesForRunGroup(cls, eventid, rungroups):
+        with g.db.cursor() as cur:
+            cur.execute("select distinct(classcode) from cars where carid in " +
+                        "(select distinct(carid) from runorder where eventid=%s and rungroup in %s) " +
+                        "order by classcode", (eventid, tuple(rungroups)))
+            return [x[0] for x in cur.fetchall()]
 
 
 ## Getting particular runorder details for announcer
@@ -73,20 +65,5 @@ def loadNextRunOrder(session, event, carid):
 			entrant.firstname = entrant.alias
 			entrant.lastname = ""
 	return ret
-
-
-## Rungroup table - mapping code to a rungroup
-t_rungroups = Table('rungroups', metadata,
-    Column('id', Integer, primary_key=True),
-	Column('eventid', Integer, ForeignKey('events.id')),
-	Column('classcode', String(16), ForeignKey('classlist.code')),
-	Column('rungroup', SmallInteger),
-	Column('gorder', SmallInteger),
-	UniqueConstraint('eventid', 'classcode', 'rungroup', name='rungroupindex_1'))
-
-class RunGroup(object):
-	pass
-
-mapper(RunGroup, t_rungroups)
 
 

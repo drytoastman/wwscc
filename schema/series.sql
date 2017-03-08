@@ -131,6 +131,7 @@ CREATE TABLE cars (
     driverid      UUID        NOT NULL REFERENCES public.drivers, 
     classcode     VARCHAR(16) NOT NULL REFERENCES classlist, 
     indexcode     VARCHAR(16) NOT NULL REFERENCES indexlist, 
+	tireindexed   BOOLEAN     NOT NULL,
     number        INTEGER     NOT NULL, 
     attr          JSONB       NOT NULL,
     modified      TIMESTAMP   NOT NULL DEFAULT now(),
@@ -143,7 +144,7 @@ REVOKE ALL ON cars FROM public;
 GRANT  ALL ON cars TO <seriesname>;
 CREATE TRIGGER carmod AFTER INSERT OR UPDATE OR DELETE ON cars FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 CREATE TRIGGER casuni BEFORE UPDATE ON cars FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
-COMMENT ON TABLE cars IS 'The cars in this series.  Attr includes year, make, model, color, tireindexed';
+COMMENT ON TABLE cars IS 'The cars in this series.  Attr includes year, make, model, color';
 
 
 CREATE TABLE runs (

@@ -1,21 +1,29 @@
+import json
+
+class BaseEncoder(json.JSONEncoder):
+    """ Helper that calls getPublicFeed if available for getting json encoding """
+    def default(self, o):
+        if hasattr(o, 'getPublicFeed'):
+            return o.getPublicFeed()
+        else:
+            return str(o)
+
 
 class AttrBase(object):
 
     def __init__(self, **kwargs):
+        self.attr = dict()
         self.merge(**kwargs)
 
     def merge(self, **kwargs):
         """ Merge these values into this object, attr* gets merged with the attr dict """
         for k, v in kwargs.items():
-            if k.startswith('attr'):
-                if self.__dict__.get('attr', None) is None:
-                    self.attr = dict()
+            if k == 'attr':
                 self.attr.update(v)
             else:
                 setattr(self, k, v)
 
     def attrToUpper(self):
-        """ Bring attr dict up to main level dict for output """
         for k, v in self.attr.items():
             setattr(self, k, v)
 
@@ -34,7 +42,7 @@ class AttrBase(object):
 
     def getPublicFeed(self):
         d = dict()
-        for k,v in self.__dict__.items():
+        for k,v in {**self.__dict__, **self.attr}.items():
             if k[0] == '_' or k == 'attr':
                 continue
             v = self.feedFilter(k, v)
@@ -46,4 +54,12 @@ class AttrBase(object):
             else:
                 d[k] = v
         return d
+
+
+class Entrant(AttrBase):
+    """ Generic holder for some subset of driver and car entry data """
+    pass
+
+#    def feedFilter(self, key, value):
+#        return None
 

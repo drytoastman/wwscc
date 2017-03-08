@@ -1,89 +1,123 @@
 import logging
-import os
-
-from simplejson import JSONEncoder
-from pylons import request, response, config
-from nwrsc.controllers.lib.base import BaseController
+from flask import Blueprint, request, g, escape, make_response
 from nwrsc.model import *
 
-log = logging.getLogger(__name__)
+log  = logging.getLogger(__name__)
+Xml  = Blueprint("Xml", __name__)
+Json = Blueprint("Json", __name__) 
+
+@Json.route("/")
+@Xml.route("/")
+def eventlist():
+    return feed_encode("eventlist", Event.byDate())
+
+@Json.route("/classes")
+@Xml.route("/classes")
+def classlist():
+    return feed_encode("seriesclasses", Class.getAll())
+
+@Json.route("/indexes")
+@Xml.route("/indexes")
+def indexlist():
+    return feed_encode("seriesindicies", Index.getAll())
+
+@Json.route("/<int:eventid>")
+@Xml.route("/<int:eventid>")
+def eventresults():
+    # Need to rewrap raw dict/list output into classes for XML output
+    class Result(AttrBase):
+        pass
+    res = EventResult.get(Event.get(g.eventid))
+    forencoding = dict()
+    for cls in res:
+        forencoding[cls] = list()
+        for e in res[cls]:
+            newruns = []
+            for c in e['runs']:
+                newcourse = []
+                newruns.append(newcourse)
+                for r in c:
+                    newcourse.append(Run(**r))
+
+            e['runs'] = newruns
+            forencoding[cls].append(Result(**e))
+            
+    return feed_encode("classlist", forencoding)
+
+@Json.route("/<int:eventid>/challenge")
+@Xml.route("/<int:eventid>/challenge")
+def challengelist():
+    return feed_encode("challengelist", Challenge.getForEvent(g.eventid))
+
+@Json.route("/<int:eventid>/challenge/<int:challengeid>")
+@Xml.route("/<int:eventid>/challenge/<int:challengeid>")
+def challenge(challengeid):
+    return feed_encode("roundlist", Challenge.getResults(challengeid))
+
+@Xml.route("/<int:eventid>/scca")
+def scca():
+    class Entry(AttrBase):
+        pass
+    results = EventResult.get(Event.get(g.eventid))
+    entries = list()
+    for cls in results:
+        for res in results[cls]:
+            entries.append(Entry(FirstName=res['firstname'],
+                                 LastName=res['lastname'],
+                                 MemberNo=res['membership'],
+                                 Class=res['classcode'],
+                                 Index=res['indexcode'],
+                                 Pos=res['position'],
+                                 CarModel="%s %s %s %s" % (res['year'], res['make'], res['model'], res['color']),
+                                 CarNo="%s" % (res['number']),
+                                 TotalTm=res['sum']))
+    return feed_encode("Entries", entries)
 
 
-class FeedController(BaseController):
-	"""
-		Generic feed controller that provides standard behaviour used by both the json and xml feeds
-	"""
+def feed_encode(head, data):
+    if request.blueprint == 'Xml':
+        response = make_response(XMLEncoder().encode(head, data))
+        response.headers['Content-type'] = 'text/xml'
+    else:
+        response = make_response(BaseEncoder(indent=1).encode(data))
+        response.headers['Content-type'] = 'text/javascript'
 
-	def __before__(self):
-		self.eventid = self.routingargs.get('eventid', None)
-
-	def index(self):
-		if self.database is None:
-			return self._encode("serieslist", self._databaseList())
-
-		event = None
-		if self.eventid == 'classes':
-			return self._encode("seriesclasses", self.session.query(Class).all())
-		elif self.eventid == 'indexes':
-			return self._encode("seriesindicies", self.session.query(Index).all())
-		elif self.eventid:
-			classdata = ClassData(self.session)
-			event = self.session.query(Event).get(self.eventid)
-			active = Class.activeClasses(self.session, self.eventid)
-		
-		if event:
-			return self._encode("classlist", getClassResults(self.session, self.settings, event, classdata, [cls.code for cls in active]))
-		else:
-			return self._encode("eventlist", self.session.query(Event).all())
-
-	def _encode(self, head, o):
-		return "What?"
-
-	def challenge(self, other = 0):
-		challengeid = int(other)
-		if challengeid == 0:
-			return self._encode("challengelist", self.session.query(Challenge).filter(Challenge.eventid==self.eventid).all())
-
-		rounds = dict()
-		for rnd in self.session.query(ChallengeRound).filter(ChallengeRound.challengeid == challengeid).all():
-			rounds[rnd.round] = rnd
-		loadChallengeResults(self.session, challengeid, rounds)
-		return self._encode("roundlist", rounds.values())
+    return response
 
 
+class XMLEncoder(object):
+    """ XML in python doesn't have easy encoding or custom getter options like JSONEncoder so we do it ourselves. """
+    def __init__(self, indent=False):
+        self.bits = list()
+        self.indent = indent
 
-	class Entry(object):
-		def __init__(self, **kwargs):
-			for k,v in kwargs.iteritems():
-				setattr(self, k, v)
-		def getFeed(self):
-			ret = dict()
-			for k,v in self.__dict__.iteritems():
-				if v is None or v == '': continue
-				if isinstance(v, float):
-					ret[k] = "%0.3f" % (v)
-				else:
-					ret[k] = v
-			return ret
+    def encode(self, outertag, data):
+        self.bits.append('<%s>'  % outertag)
+        self.toxml(data)
+        self.bits.append('</%s>' % outertag)
+        return str(''.join(self.bits))
 
+    def toxml(self, data):
+        if type(data) in (list, tuple):      self._encodelist(data)
+        elif hasattr(data, 'getPublicFeed'): self._encodefeed(data)
+        elif type(data) in (dict,):          self._encodedict(data)
+        else:                                self._encodedata(data)
 
-	def scca(self):
-		classdata = ClassData(self.session)
-		event = self.session.query(Event).get(self.eventid)
-		active = Class.activeClasses(self.session, self.eventid)
-		entries = list()
-		results = getClassResults(self.session, self.settings, event, classdata, [cls.code for cls in active])
-		for cls in results:
-			for res in results[cls]:
-				entries.append(self.Entry(FirstName=res.firstname, 
-											LastName=res.lastname,
-											MemberNo=res.membership,
-											Class=res.classcode,
-											Index=res.indexcode,
-											Pos=res.position,
-											CarModel="%s %s %s %s" % (res.year, res.make, res.model, res.color),
-											CarNo="%s" % (res.number),
-											TotalTm=res.sum))
+    def _encodelist(self, data):
+        for v in data:
+            self.toxml(v)
 
-		return self._encode("Entries", entries)
+    def _encodedict(self, data):
+        for k,v in data.items():
+            self.bits.append('<%s>'  % k)
+            self.toxml(v)
+            self.bits.append('</%s>' % k)
+
+    def _encodefeed(self, data):
+        self.bits.append('<%s>'  % data.__class__.__name__)
+        self._encodedict(data.getPublicFeed())
+        self.bits.append('</%s>' % data.__class__.__name__)
+
+    def _encodedata(self, data):
+        self.bits.append(escape(str(data)))
 

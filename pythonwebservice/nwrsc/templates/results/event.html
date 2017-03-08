@@ -44,7 +44,7 @@ padding: 0;
 <h3>Classes By Run Group</h3>
 <ul class='classlist'>
 {% for ii in range(1,5) %}
-	<li><a href='{{url_for('.bygroup', course=1, list=ii)}}'>R{{ii}}</a></li>
+	<li><a href='{{url_for('.bygroup', list=ii)}}'>R{{ii}}</a></li>
 {% endfor %}
 </ul>
 <br style='clear:both;'/>
@@ -93,10 +93,10 @@ padding: 0;
 <li><a href="{{url_for('Live.index')}}">Mobile Live Page</a></li>
 <li><a href="{{url_for('Announcer.index')}}">Announcer Panel</a></li>
 {% endif %}
-<li><a href='{{url_for('.all')}}'>All Classes</a></li>
-<li><a href='{{url_for('.post')}}'>Event Results For Posting</a></li>
-<li><a href='{{url_for('.champ')}}'>Championship Results for Posting</a></li>
+<li><a href='{{url_for('.post')}}'>Event Results</a></li>
+<li><a href='{{url_for('.champ')}}'>Championship</a></li>
 <li><a href='{{url_for('Xml.scca')}}'>SCCA Report</a></li>
+
 {%if g.event.ispro and config.SHOWGRID %}
 	<li><a href='{{url_for('.grid', order='number')}}'>Grid By Number</a></li>
 	<li><a href='{{url_for('.grid', order='position')}}'>Grid By Position</a></li>

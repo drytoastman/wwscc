@@ -5,7 +5,7 @@ from .base import AttrBase
 class Event(AttrBase):
 
     def feedFilter(self, key, value):
-        if key in ('paypay', 'snail', 'cost'):
+        if key in ('paypal', 'snail', 'cost'):
             return None
         return value
 

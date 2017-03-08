@@ -7,8 +7,44 @@
 {% endblock %}
 
 {% block content %}
-{{resulttables()}}
+{% if ispost %}
+	{{eventpost()}}
+{% else %}
+	{{resulttables()}}
+{% endif %}
 {% endblock content %}
+
+
+{% macro eventpost() %}
+<!-- Series info -->
+<div id='seriescustom'>
+{{g.settings.customheader|safe}}
+</div>
+
+<div id='seriestitle'>{{g.settings.seriesname}}</div>
+
+<!-- Event info -->
+<div id='eventtitle'>{{g.event.date}} - {{g.event.name}}</div>
+<div id='hosttitle'>Hosted At: <span class='host'>{{g.event.attr.location}}</span></div>
+<div id='entrantcount'>({{g.entrantcount}} Entrants)</div>
+
+<hr />
+<!-- Results -->
+
+<div id='classlinks'>
+{% for cls in g.results|sort -%}
+<a href='#{{cls}}'>{{cls}}</a>
+{% endfor %}
+</div>
+
+{{resulttables()}}
+
+<br/>
+<br/>
+{# ${toptimestable([c.toptimes.getList(allruns=False, raw=False, course=0), c.toptimes.getList(allruns=False, raw=True, course=0)])} #}
+{% endmacro %}
+
+
 
 {% macro resulttables() -%}
 <table class='classresults'>
@@ -31,6 +67,7 @@
 {%- endmacro %}
 
 
+
 {% macro headerrow(classcode) -%}
 <tr>
 	<th class='classhead' colspan='{{colcount}}'>
@@ -41,7 +78,7 @@
 <th class='pos'>#</th>
 <th class='trophy'>T</th>
 <th class='name'>Entrant</th>
-{% for ii in range(1, g.event.runs+1) %}
+{% for ii in range(1, g.event.runs+1) -%}
 	<th class='run'>Run {{ii}}</th>
 {% endfor %}
 <th></th>  {# Extra col to fix firefox border bug #}
@@ -49,6 +86,7 @@
 <th class='points'>Points</th>
 </tr>
 {%- endmacro %}
+
 
 
 {%- macro entrantrow(entrant) %}
@@ -68,23 +106,20 @@
 {% endmacro %}
 
 
+
 {%- macro runcell(run) %}
 {%- if not run -%}
 <td class='run'>
 blank
 {%- else -%}
-
 <td class='run {{run.bestnet and "bestnet"}} {{run.bestraw and "bestraw"}}'>
 {%- if run.status == "OK" -%}
 	<span class='net'>{{run.net | t3}}</span>
 {%- else -%}
 	<span class='net'>{{run.status}}</span>
 {%- endif -%}
-<span class='raw'>{{run.raw | t3}} ({{run.cones}},{{run.gates}})</span>
-{%- if run.reaction or run.sixty -%}
-<span class='reaction'>{{run.reaction|t3}}/{{run.sixty | t3}}</span>
-{%- endif -%}
-
+{%- if run.raw != "999.999" -%} <span class='raw'>{{run.raw | t3}} ({{run.cones}},{{run.gates}})</span> {%- endif -%}
+{%- if run.reaction or run.sixty -%} <span class='reaction'>{{run.reaction|t3}}/{{run.sixty | t3}}</span> {%- endif -%}
 {%- endif -%}
 </td>
 {% endmacro -%}

@@ -45,7 +45,7 @@ class PointStorage(object):
 		return cmp(other.total, self.total)
 
 
-class Entrant(object):
+class XXEntrant(object):
 
 	AvailableSubKeys = ['firsts', 'seconds', 'thirds', 'fourths', 'attended']
 
