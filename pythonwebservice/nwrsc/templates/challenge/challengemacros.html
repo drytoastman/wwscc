@@ -1,0 +1,73 @@
+
+{% macro roundReport(round) %}
+	<table class='challengeround'>
+	<tr><th>Entrant<th><th>Reaction<th>Sixty<th>Time<th>Diff<th>Total<th>NewDial</tr>
+	<tr{{round.winner > 0 and " class='winner'"|safe or ""}}>
+	{{driverCell(round.e1)}}
+	<td>L</td>
+	{{runRow(round.e1.dial, round.e1.left)}}
+	{{runTotal(round.e1.dial, round.e1.left, round.e1.right, round.e1.newdial)}}
+	</tr>
+	<tr{{round.winner > 0 and " class='winner'"|safe or ""}}>
+	<td>R</td>
+	{{runRow(round.e1.dial, round.e1.right)}}
+	</tr>
+	<tr{{round.winner < 0 and " class='winner'"|safe or ""}}>
+	{{driverCell(round.e2)}}
+	<td>L</td>
+	{{runRow(round.e2.dial, round.e2.left)}}
+	{{runTotal(round.e2.dial, round.e2.left, round.e2.right, round.e2.newdial)}}
+	</tr>
+	<tr{{round.winner < 0 and " class='winner'"|safe or ""}}>
+	<td>R</td>
+	{{runRow(round.e2.dial, round.e2.right)}}
+	</tr>
+	<tr><td colspan=8 class='result'>{{round.detail}}</td></tr>
+	</table>
+{% endmacro %}
+
+{%- macro driverCell(e) -%}
+	<td class='entrant' rowspan=2>
+	{% if e.firstname %}
+	<span class='name'>{{e.firstname}}</span><span class='dial'>{{e.dial}}</span><br/>
+	<span class='class'>{{e.classcode}}</span><span class='index'>({{e.indexcode}})</span>
+	{% endif %}
+	</td>
+{%- endmacro -%}
+
+{%- macro runRow(dial, run) -%}
+	{% if not run %}
+		<td></td><td></td><td></td><td></td>
+	{% else %}
+		<td>{{run.reaction|t3}}</td>
+		<td>{{run.sixty|t3}}</td>
+		<td>{{run.raw|t3}} (+{{run.cones}})</td>
+		{% if run.status != "OK" %}
+			<td>{{run.status}}</td>
+		{% else %}
+			<td>{{(run.net - dial)|t3}}</td>
+		{% endif %}
+	{% endif %}
+{%- endmacro -%}
+
+{%- macro runTotal(dial, left, right, newdial) -%}
+	<td rowspan=2>
+	{% if not left or not right %}
+	 	</td>
+	{% elif left.status != "OK" and left.status != "" %}
+		{{left.status}}</td>
+	{% elif right.status != "OK" and right.status != "" %}
+		{{right.status}}</td>
+	{% elif left.net == 0.0 or right.net == 0.0 %}
+		</td>
+	{% else %}
+		{{"%+0.3f"%(left.net + right.net - (2*dial))}}</td>
+	{% endif %}
+
+	<td rowspan=2>
+	{% if newdial != dial and newdial != 0.0 %}
+		{{newdial|t3}}
+	{% endif %}
+	</td>
+{%- endmacro -%}
+

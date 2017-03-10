@@ -1,6 +1,7 @@
 
-from flask import Blueprint, request, render_template, g
+from flask import Blueprint, request, abort, render_template, get_template_attribute, make_response, g
 from nwrsc.model import *
+from nwrsc.lib.bracket import Bracket
 
 Results = Blueprint("Results", __name__)
 
@@ -58,14 +59,39 @@ def champ():
 def tt(tttype):
     return "tt %s %s" % (g.eventid, tttype)
 
-@Results.route("/<int:eventid>/bracket")
-def bracket():
-    return "bracket"
+@Results.route("/<int:eventid>/bracket/<int:challengeid>")
+def bracket(challengeid):
+    challenge = Challenge.get(challengeid)
+    if challenge is None:
+        abort(404, "Invalid or no challenge id")
+    (coords, size) = Bracket.coords(challenge.depth)
+    return render_template('/challenge/bracketbase.html', challengeid=challenge.challengeid, coords=coords, size=size)
 
-@Results.route("/<int:eventid>/challenge")
-def challenge():
-    return "challenge"
+@Results.route("/<int:eventid>/bracketimg/<int:challengeid>")
+def bracketimg(challengeid):
+    challenge = Challenge.get(challengeid)
+    if challenge is None:
+        abort(404, "Invalid or no challenge id")
+    results = Challenge.getResults(challengeid)
+    response = make_response(Bracket.image(challenge.depth, results))
+    response.headers['Content-type'] = 'image/png'
+    return response
 
+@Results.route("/<int:eventid>/bracketround/<int:challengeid>/<int:round>")
+def bracketround(challengeid, round):
+    chal = Challenge.get(challengeid)
+    if challenge is None:
+        abort(404, "Invalid or no challenge id")
+    results = Challenge.getResults(challengeid, round)
+    roundReport = get_template_attribute('/challenge/challengemacros.html', 'roundReport')
+    return roundReport(results[round])
+
+
+@Results.route("/<int:eventid>/challenge/<int:challengeid>")
+def challenge(challengeid):
+    chal = Challenge.get(challengeid)
+    results = Challenge.getResults(challengeid)
+    return render_template('/challenge/challengereport.html', results=results, chal=chal)
 
 @Results.route("/<int:eventid>/grid")
 def grid():

@@ -127,3 +127,36 @@ div#classlinks a {
 	margin-right: 2px;
 }
 
+/** Challenge related things **/
+
+table.challengeround {
+    margin-bottom: 20px;
+    width: 650px;
+}
+
+table.challengeround th {
+    border: 1px solid grey;
+}
+
+table.challengeround td.entrant {
+    width: 180px;
+}
+
+table.challengeround td {
+    padding: 2px 6px;
+    border: 1px solid grey;
+}
+
+table.challengeround tr.winner {
+    background: #EE8;
+}
+
+table.challengeround td.result {
+    text-align:center;
+    font-size: 1.2em;
+}
+
+table.challengeround span.dial {
+    font-weight: bold;
+}
+

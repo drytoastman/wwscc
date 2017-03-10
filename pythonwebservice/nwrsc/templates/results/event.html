@@ -53,8 +53,8 @@ padding: 0;
 	{%for ch in g.challenges %}
 		<h3>{{ch.name}}</h3>
 		<ul class='classlist'>
-		<li><a href='{{url_for('.bracket', id=ch.challengeid)}}'>Bracket</a></li>
-		<li><a href='{{url_for('.challenge', id=ch.challengeid)}}'>Details</a></li>
+		<li><a href='{{url_for('.bracket', challengeid=ch.challengeid)}}'>Bracket</a></li>
+		<li><a href='{{url_for('.challenge', challengeid=ch.challengeid)}}'>Details</a></li>
 		</ul>
 		<br style='clear:both'/>
 	{%else%}

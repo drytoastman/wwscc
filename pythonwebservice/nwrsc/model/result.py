@@ -54,7 +54,7 @@ class EventResult(object):
 
         with g.db.cursor() as cur:
             # Fetch all of the entrants (driver/car combo), place in class lists, save pointers for quicker access
-            cur.execute("select d.firstname,d.lastname,c.* from drivers as d join cars as c on c.driverid=d.driverid " +
+            cur.execute("select d.firstname,d.lastname,d.membership,c.* from drivers as d join cars as c on c.driverid=d.driverid " +
                         "where c.carid in (select distinct carid from runs where eventid=%s)", (event.eventid,))
             for row in cur.fetchall():
                 e = Entrant(**row)

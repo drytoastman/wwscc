@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block headers %}
+<link rel="stylesheet" href="/static/results.css" />
+<style type="text/css">
+#popup {
+	display:none;
+	position: absolute; 
+	background: white; 
+	font-size: 0.8em;
+	border: 1px ridge #999999;
+}
+table.challengeround { margin: 0px; width: auto; }
+table.challengeround td.entrant { width: auto; }
+</style>
+
+<script src="/static/jquery-1.9.0.js" type="text/javascript"></script>
+<script type="text/javascript">
+function mousein(ev, rnd)
+{	
+	pop = document.getElementById("popup");
+	pop.style.left = (ev.clientX-10)+"px";
+	pop.style.top = (ev.clientY-10)+"px";
+	pop.style.display = 'block';
+	pop.innerHTML = "<h4>loading round data...</h4>";
+	$('#popup').load('{{url_for('.bracketround', challengeid=challengeid, round=999)}}'.replace('999', rnd));
+}
+</script>
+{% endblock headers %}
+
+{% block content %}
+<img src="{{url_for('.bracketimg', challengeid=challengeid)}}" alt="loading bracket image..." width='{{size[0]}}' height='{{size[1]}}' usemap="#bracketmap"/>
+<map name="bracketmap" id="bracketmap">
+{% for rnd, coord in coords %}
+  <area shape="rect" coords="{{coord}}" href="#" onclick="mousein(event, {{rnd}});" alt="Round {{rnd}}" />
+{% endfor %}
+</map>
+<div id='popup' onclick='style.display="none";'></div>
+{% endblock content %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% import '/challenge/challengemacros.html' as m %}
+
+{% block headers %}
+<link rel="stylesheet" href="/static/results.css" />
+{% endblock headers %}
+
+
+{% block content %}
+<h1>{{chal.name}}</h1>
+
+{% for round in results | sort(reverse=True) %}
+{% if round <= 98 and round > 1 %}
+	{% if round == 31 %}<h2>Bittersweet Thirty-two</h2>{% endif %}
+	{% if round == 15 %}<h2>Sweet Sixteen</h2>{% endif %}
+	{% if round == 7  %}<h2>Quarter Finals</h2>{% endif %}
+	{% if round == 3  %}<h2>Semi Finals</h2>{% endif %}
+{{m.roundReport(results[round])}}
+{% endif %}
+{% endfor %}
+
+<h2>Third Place</h2>
+{{m.roundReport(results[99])}}
+<h2>Final</h2>
+{{m.roundReport(results[1])}}
+
+{% endblock content %}
+

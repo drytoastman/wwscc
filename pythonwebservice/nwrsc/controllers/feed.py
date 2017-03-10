@@ -24,10 +24,13 @@ def indexlist():
 @Json.route("/<int:eventid>")
 @Xml.route("/<int:eventid>")
 def eventresults():
-    # Need to rewrap raw dict/list output into classes for XML output
+    res = EventResult.get(Event.get(g.eventid))
+    if request.blueprint == 'Json':
+        return feed_encode("classlist", forencoding)
+
+    # Need to rewrap raw dict/list output into classes for XML tag output
     class Result(AttrBase):
         pass
-    res = EventResult.get(Event.get(g.eventid))
     forencoding = dict()
     for cls in res:
         forencoding[cls] = list()
@@ -41,7 +44,7 @@ def eventresults():
 
             e['runs'] = newruns
             forencoding[cls].append(Result(**e))
-            
+
     return feed_encode("classlist", forencoding)
 
 @Json.route("/<int:eventid>/challenge")
@@ -74,9 +77,9 @@ def scca():
     return feed_encode("Entries", entries)
 
 
-def feed_encode(head, data):
+def feed_encode(wrapper, data):
     if request.blueprint == 'Xml':
-        response = make_response(XMLEncoder().encode(head, data))
+        response = make_response(XMLEncoder().encode(wrapper, data))
         response.headers['Content-type'] = 'text/xml'
     else:
         response = make_response(BaseEncoder(indent=1).encode(data))
@@ -108,7 +111,7 @@ class XMLEncoder(object):
             self.toxml(v)
 
     def _encodedict(self, data):
-        for k,v in data.items():
+        for k,v in sorted(data.items()):
             self.bits.append('<%s>'  % k)
             self.toxml(v)
             self.bits.append('</%s>' % k)
