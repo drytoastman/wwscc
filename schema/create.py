@@ -30,9 +30,9 @@ if __name__ == '__main__':
     if installbase == "":
         psql    = "psql"
     else:
-        bindir  = os.path.join(installbase, "postgresql-9.6.2/bin")
+        bindir  = os.path.join(installbase, "postgresql", "bin")
         dbdir   = os.path.join(installbase, "pgdb")
-        logfile = os.path.join(installbase, "pgdb/postgresql.log")
+        logfile = os.path.join(installbase, "pgdb", "postgresql.log")
         initdb  = os.path.join(bindir, "initdb")
         pg_ctl  = os.path.join(bindir, "pg_ctl")
         psql    = os.path.join(bindir, "psql")

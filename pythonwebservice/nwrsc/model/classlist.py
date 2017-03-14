@@ -16,7 +16,7 @@ class Class(AttrBase):
 
     def getCountedRuns(self):
         if self.countedruns <= 0:
-            return sys.maxint
+            return 999
         else:
             return self.countedruns
 
@@ -110,7 +110,7 @@ class ClassData(object):
         try:
             return self.classlist[classcode].getCountedRuns()
         except:
-            return sys.maxint
+            return 999
         
 
     def getIndexStr(self, car):
@@ -120,17 +120,15 @@ class ClassData(object):
             if cls.indexcode != "":
                 indexstr = cls.indexcode
 
-            tireindexed = getattr(car, 'tireindexed', False)
-            if cls.classmultiplier < 1.000 and (not cls.usecarflag or tireindexed):
+            if cls.classmultiplier < 1.000 and (not cls.usecarflag or car.useclsmult):
                 indexstr = indexstr + '*'
         except:
             pass
         return indexstr
 
 
-    def getEffectiveIndex(self, car): #classcode, indexcode, tireindexed):
+    def getEffectiveIndex(self, car): 
         indexval = 1.0
-        tireindexed = getattr(car, 'tireindexed', False)
         try:
             cls = self.classlist[car.classcode]
 
@@ -140,12 +138,11 @@ class ClassData(object):
             if cls.carindexed and car.indexcode:
                 indexval *= self.indexlist[car.indexcode].value
 
-            if cls.classmultiplier < 1.000 and (not cls.usecarflag or tireindexed):
+            if cls.classmultiplier < 1.000 and (not cls.usecarflag or car.useclsmult):
                 indexval *= cls.classmultiplier
 
         except Exception as e:
-            print(self.indexlist)
-            log.warning("getEffectiveIndex(%s,%s,%s) failed: %s" % (car.classcode, car.indexcode, tireindexed, e))
+            log.warning("getEffectiveIndex(%s,%s,%s) failed: %s" % (car.classcode, car.indexcode, car.useclsmult, e))
 
         return indexval
 

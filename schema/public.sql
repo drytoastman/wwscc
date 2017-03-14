@@ -6,7 +6,7 @@ CREATE USER seriesview PASSWORD 'seriesview';
 CREATE USER wwwuser PASSWORD '<wwwpassword>';
 GRANT  baseaccess TO wwwuser;
 REVOKE ALL ON SCHEMA public FROM public;
-GRANT ALL ON SCHEMA public TO baseaccess;
+GRANT  ALL ON SCHEMA public TO baseaccess;
 CREATE EXTENSION hstore;
 
 -- Logs are specific to this machine
@@ -76,7 +76,7 @@ COMMENT ON FUNCTION ignoreunmodified() IS 'does not update rows if only change i
 
 -- The results table acts as a storage of calculated results for each series, it is also the location where
 -- we archive old series into a compacted form where so can delete old unused drivers but maintain the basic data
--- Name values are 'series'=eventlist+settings+series champresults, e#=eventid results, a#=eventid announcer data
+-- Name values are champ=champ results, e#=eventid results, a#=eventid announcer data
 
 CREATE TABLE results (
     series     TEXT        NOT NULL,

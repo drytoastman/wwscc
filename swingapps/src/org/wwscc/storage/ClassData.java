@@ -33,7 +33,7 @@ public class ClassData
 		placeHolder.descrip = "Missing Driver Class";
 		placeHolder.indexcode = "";
 		placeHolder.classmultiplier = 1.0;
-		placeHolder.numorder  = 0;
+		placeHolder.secondruns  = false;
 		placeHolder.countedruns  = 0;
 		placeHolder.caridxrestrict = "";
 	}
@@ -105,7 +105,7 @@ public class ClassData
 	}
 
 	
-	public double getEffectiveIndex(String classcode, String indexcode, boolean tireindexed)
+	public double getEffectiveIndex(String classcode, String indexcode, boolean useclsmult)
 	{
 		double indexVal = 1.0;
 		try
@@ -131,7 +131,7 @@ public class ClassData
 			}
 
 			/* Apply special class multiplier (only < 1.000 for Tire class at this point) */
-			if (classData.classmultiplier < 1.0 && (!classData.usecarflag || tireindexed))
+			if (classData.classmultiplier < 1.0 && (!classData.usecarflag || useclsmult))
 				indexVal *= classData.classmultiplier;
 		}
 		catch (Exception ioe)
@@ -142,7 +142,7 @@ public class ClassData
 		return indexVal;
 	}
 
-	public String getIndexStr(String classcode, String indexcode, boolean tireindexed)
+	public String getIndexStr(String classcode, String indexcode, boolean useclsmult)
 	{
         String indexstr = indexcode;
         try
@@ -154,7 +154,7 @@ public class ClassData
             if (!cls.indexcode.equals(""))
                 indexstr = cls.indexcode;
 
-            if (cls.classmultiplier < 1.000 && (!cls.usecarflag || tireindexed))
+            if (cls.classmultiplier < 1.000 && (!cls.usecarflag || useclsmult))
                 indexstr = indexstr + "*";
         }
         catch (Exception e)
@@ -182,7 +182,7 @@ public class ClassData
 		protected boolean usecarflag;
 		protected boolean eventtrophy;
 		protected boolean champtrophy;
-		protected int numorder;
+		protected boolean secondruns;
 		protected int countedruns;
 
 		public Class()
@@ -200,7 +200,7 @@ public class ClassData
 			usecarflag      = rs.getBoolean("usecarflag");
 			eventtrophy     = rs.getBoolean("eventtrophy");
 			champtrophy     = rs.getBoolean("champtrophy");
-			numorder        = rs.getInt("numorder");
+			secondruns      = rs.getBoolean("secondruns");
 			countedruns     = rs.getInt("countedruns");
 		}
 
@@ -219,7 +219,7 @@ public class ClassData
 		public int getCountedRuns()
 		{
 			if (countedruns <= 0)
-				return Integer.MAX_VALUE;
+				return 999;
 			else
 				return countedruns;
 		}
@@ -230,6 +230,10 @@ public class ClassData
 		
 		public boolean useCarFlag() {
 			return usecarflag;
+		}
+		
+		public boolean isSecondRuns() {
+			return secondruns;
 		}
 		
 	    private Set<Index> globItem(String item, Set<Index> full)

@@ -526,7 +526,7 @@ public abstract class SQLDataInterface implements DataInterface
 	@Override
 	public void newCar(Car c) throws SQLException
 	{
-		executeUpdate("insert into cars values (?,?,?,?,?,?)", c.getValues());
+		executeUpdate("insert into cars values (?,?,?,?,?,?,?)", c.getValues());
 		Messenger.sendEvent(MT.CAR_CREATED, c);
 	}
 
@@ -535,7 +535,7 @@ public abstract class SQLDataInterface implements DataInterface
 	{
 		LinkedList<Object> vals = c.getValues();
 		vals.add(vals.pop());
-		executeUpdate("update cars set driverid=?,classcode=?,indexcode=?,number=?,attr=?,modified=now() where carid=?", vals);
+		executeUpdate("update cars set driverid=?,classcode=?,indexcode=?,number=?,useclsmult=?,attr=?,modified=now() where carid=?", vals);
 	}
 
 	@Override
@@ -724,7 +724,7 @@ public abstract class SQLDataInterface implements DataInterface
 	@Override
 	public Dialins loadDialins(int eventid) 
 	{		
-		String sql = "SELECT c.classcode,c.indexcode,c.attr->'tireindexed' as tireindexed,r.* "
+		String sql = "SELECT c.classcode,c.indexcode,c.useclsmult,r.* "
 				+ "FROM runs AS r JOIN cars AS c ON c.carid=r.carid WHERE r.eventid=? ORDER BY r.carid,r.course";
 
 		try
@@ -736,6 +736,7 @@ public abstract class SQLDataInterface implements DataInterface
 			UUID currentid      = IdGenerator.nullid;
 			String classcode    = "";
 			String indexcode    = "";
+			boolean useclsmult  = false;
 			double index        = 1.0;
 			double bestraw[]    = new double[2];
 			double bestnet[]    = new double[2];
@@ -757,7 +758,8 @@ public abstract class SQLDataInterface implements DataInterface
 				
 				classcode    = rs.getString("classcode");
 				indexcode    = rs.getString("indexcode");
-				index        = getClassData().getEffectiveIndex(classcode, indexcode, rs.getBoolean("tireindexed"));
+				useclsmult   = rs.getBoolean("useclsmult");
+				index        = getClassData().getEffectiveIndex(classcode, indexcode, useclsmult);
 				
 				if (r.isOK()) // we ignore non-OK runs
 				{				
@@ -958,6 +960,6 @@ public abstract class SQLDataInterface implements DataInterface
 	@Override
 	public String getEffectiveIndexStr(Car c)
 	{
-		return getClassData().getIndexStr(c.classcode, c.indexcode, c.isTireIndexed());
+		return getClassData().getIndexStr(c.classcode, c.indexcode, c.useClsMult());
 	}	
 }

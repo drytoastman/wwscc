@@ -106,8 +106,8 @@ public class CarDialog extends BaseDialog<Car>
 		mainPanel.add(label("Index", true), "");
 		mainPanel.add(select("indexcode", cd.getIndex(car.getIndexCode()), indexlist, indexChange), "wrap");
 
-		mainPanel.add(label("Tire Index", true), "");
-		mainPanel.add(checkbox("tireindexed", car.isTireIndexed()), "wrap");
+		mainPanel.add(label("Use Class Mult", true), "");
+		mainPanel.add(checkbox("useclsmlt", car.useClsMult()), "wrap");
 		
 		override = new JCheckBox("Override Index Restrictions (rare)");
 		override.addActionListener(this);
@@ -157,8 +157,8 @@ public class CarDialog extends BaseDialog<Car>
 			{
 				labels.get("Index").setVisible(false);
 				selects.get("indexcode").setVisible(false);
-				labels.get("Extra Tire Index").setVisible(false);
-				checks.get("tireindexed").setVisible(false);
+				labels.get("Use Class Mult").setVisible(false);
+				checks.get("useclsmult").setVisible(false);
 				return;
 			}
 	
@@ -181,14 +181,14 @@ public class CarDialog extends BaseDialog<Car>
     			ClassData.Index current = (ClassData.Index)selects.get("indexcode").getSelectedItem();
     			Set<ClassData.Index>[] lists = basis.restrictedIndexes(indexlist);
     			if (override.isSelected() || lists[1].contains(current)) {
-   	    			labels.get("Extra Tire Index").setVisible(true);
-   	    			checks.get("tireindexed").setVisible(true);
+   	    			labels.get("Use Class Mult").setVisible(true);
+   	    			checks.get("useclsmult").setVisible(true);
    	    			return;
     			}
     		}
-    		labels.get("Tire Index").setVisible(false);
-    		checks.get("tireindexed").setVisible(false);
-    		checks.get("tireindexed").setSelected(false);
+    		labels.get("Use Class Mult").setVisible(false);
+    		checks.get("useclsmult").setVisible(false);
+    		checks.get("useclsmult").setSelected(false);
     	}
     }
     
@@ -295,9 +295,9 @@ public class CarDialog extends BaseDialog<Car>
 			}
 
 			if (c.useCarFlag())
-				result.setTireIndexed(isChecked("tireindexed"));
+				result.setUseClsMult(isChecked("useclsmult"));
 			else
-				result.setTireIndexed(false);
+				result.setUseClsMult(false);
 
 			
 			result.setNumber(Integer.valueOf(getEntryText("number")));

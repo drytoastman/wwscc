@@ -11,18 +11,21 @@ table {
 	border-collapse: collapse;
 }
 
-table.centercols { 
-	margin-top: 20px;
-}
-
 table.classresults, table.toptimes, table.auditreport, table.champ {
 	font-size:0.9em; 
 }
 
-table.toptimes {
-	display: inline;
+table.toptimes tr:nth-child(even) {
+	background-color: #eee
 }
 
+table.toptimes {
+	border: 1px solid #bbb;
+}
+
+table.toptimes td.pos {
+	border-left: 1px solid #bbb;
+}
 
 /** Various TD types and their span internals **/
 
@@ -75,20 +78,21 @@ span.reaction {
 /** Table header entries **/
 
 th { 
-	background-color: #dcdcdc; 
+	background-color: #bbb; 
 	text-align: center;
 }
 
 th.classhead { 
-	text-align: left; 
 	background-color: #4682B4; 
 	color: white; 
+	text-align: left; 
 	border-top: 1px solid black;
 	padding-left: 6px;
 }
 
-table.champ th {
-	padding: 0px 5px;
+th.toptimeshead {
+	background-color: #4682B4; 
+	color: white; 
 }
 
 

@@ -1,6 +1,7 @@
 import logging
 from flask import g
 from math import ceil
+from copy import copy
 from collections import defaultdict
 from operator import attrgetter
 
@@ -10,6 +11,11 @@ from .runs import Run
 from .settings import Settings
 
 log = logging.getLogger(__name__)
+
+def marklist(lst, label):
+    """ Creates an attribute for each entry in the list with the value of index+1 """
+    for ii, entry in enumerate(lst):
+        setattr(entry, label, ii+1)
 
 class EventResult(object):
 
@@ -22,7 +28,6 @@ class EventResult(object):
                 "(select modified from results where series=%s and name=%s)", (g.series, "e%d"%event.eventid))
             mod = cur.fetchone()[0]
             if mod is None or mod:  # > if no results or serieslog data, we get a None, recalc on that case either way
-                print("update")
                 cls.update(event)
 
             # everything should be the latest now, load and return 
@@ -32,6 +37,26 @@ class EventResult(object):
                 return res['data']
             else:
                 return dict()
+
+    @classmethod
+    def audit(cls, event, course, group):
+        with g.db.cursor() as cur:
+            cur.execute("SELECT d.firstname,d.lastname,c.*,r.* FROM runorder r " \
+                        "JOIN cars c ON r.carid=c.carid JOIN drivers d ON c.driverid=d.driverid " \
+                        "WHERE r.eventid=%s and r.course=%s and r.rungroup=%s order by r.row", (event.eventid, course, group))
+            hold = dict()
+            for res in [Entrant(**x) for x in cur.fetchall()]:
+                res.runs = [None] * event.runs
+                hold[res.carid] = res
+
+            cur.execute("SELECT * FROM runs WHERE eventid=%s and course=%s and carid in %s", (event.eventid, course, tuple(hold.keys())))
+            for run in [Run(**x) for x in cur.fetchall()]:
+                res = hold[run.carid]
+                if run.run > event.runs:
+                    res.runs[:] =  res.runs + [None]*(run.run - event.runs)
+                res.runs[run.run-1] = run
+
+            return list(hold.values())
 
 
     @classmethod
@@ -47,7 +72,7 @@ class EventResult(object):
         results = defaultdict(list)
         cptrs = {}
 
-        blankrun = Run(raw=999.999, net=9999.999)
+        blankrun = Run(raw=999.999, net=999.999, status="DNS")
         classdata = ClassData.get()
         settings = Settings.get()
         ppoints = list(map(int, settings.pospointlist.split(',')))
@@ -61,7 +86,7 @@ class EventResult(object):
                 e.attrToUpper()
                 e.indexstr = classdata.getIndexStr(e)
                 e.indexval = classdata.getEffectiveIndex(e)
-                e.runs = [[blankrun]*event.runs for x in range(event.courses)]
+                e.runs = [[copy(blankrun) for x in range(event.runs)] for x in range(event.courses)]
                 results[e.classcode].append(e)
                 cptrs[e.carid] = e
             
@@ -72,27 +97,36 @@ class EventResult(object):
                 r.attrToUpper()
                 match = cptrs[r.carid]
                 match.runs[r.course-1][r.run - 1] = r
+                penalty = (r.cones * event.conepen) + (r.gates * event.gatepen)
                 if r.status != "OK":
+                    r.pen = 999.999
                     r.net = 999.999
                 elif settings.indexafterpenalties:
-                    r.net = (r.raw + (r.cones * event.conepen) + (r.gates * event.gatepen)) * match.indexval
+                    r.pen = r.raw + penalty
+                    r.net = r.pen * match.indexval
                 else:
-                    r.net = (r.raw*match.indexval) + (r.cones * event.conepen) + (r.gates * event.gatepen)
+                    r.pen = r.raw + penalty
+                    r.net = (r.raw*match.indexval) + penalty
 
-            # For every entrant, calculate their bestraw, best net and event sum
+            # For every entrant, calculate their best runs (raw,net,allraw,allnet) and event sum(net)
             for e in cptrs.values():
-                e.sum = 0
+                e.net = 0
+                e.pen = 0
+                counted = min(classdata.getCountedRuns(e.classcode), event.getCountedRuns())
+
                 for course in range(event.courses):
-                    bestraw = sorted(e.runs[course], key=attrgetter('raw'))[0]
-                    bestnet = sorted(e.runs[course], key=attrgetter('net'))[0]
-                    bestraw.bestraw = True
-                    bestnet.bestnet = True
-                    e.sum += bestnet.net
+                    marklist (sorted(e.runs[course], key=attrgetter('raw')), 'allraworder')
+                    marklist (sorted(e.runs[course], key=attrgetter('net')), 'allnetorder')
+                    marklist (sorted(e.runs[course][0:counted], key=attrgetter('raw')), 'raworder')
+                    bestnet = sorted(e.runs[course][0:counted], key=attrgetter('net'))
+                    marklist(bestnet, 'netorder')
+                    e.net += bestnet[0].net
+                    e.pen += bestnet[0].pen
 
             # Now for each class we can sort and update position, trophy, points(both types) and diffs
             for cls in results:
                 res = results[cls]
-                res.sort(key=attrgetter('sum'))
+                res.sort(key=attrgetter('net'))
                 trophydepth = ceil(len(res) / 3.0)
                 eventtrophy = classdata.classlist[cls].eventtrophy
                 for ii, e in enumerate(res):
@@ -103,8 +137,8 @@ class EventResult(object):
                         e.diffpoints = 100.0
                         e.pospoints  = ppoints[0]
                     else:
-                        e.diff       = res[ii-1].sum - e.sum
-                        e.diffpoints = res[0].sum*100/e.sum;
+                        e.diff       = res[ii-1].net - e.net
+                        e.diffpoints = res[0].net*100/e.net;
                         e.pospoints  = ii >= len(ppoints) and ppoints[-1] or ppoints[ii]
 
                     # quick access for templates
@@ -119,223 +153,118 @@ class EventResult(object):
             g.db.commit()
 
             
-"""
-UpdateAnnouncerDetails(session, eventid, course, carid, classcode, mysum, sumlist, ppoints)
-"""
+
+class TopTimesAccessor(object):
+
+    def __init__(self, event, results):
+        self.event = event
+        self.classdata = ClassData.get()
+        self.results = results
+
+    def getLists(self, *keys):
+        """
+            Generate lists on demand as there are many iterations
+                net      = True for indexed times, False for penalized but raw times
+                counted  = True for to only included 'counted' runs and non-second run classes
+                course   = 0 for combined course total, >0 for specific course
+               Extra fields that have standard defaults we stick with:
+                settitle = A string to override the list title with
+                col      = A list of column names for the table
+                fields   = The fields to match to each column
+        """
+        lists = list()
+        for key in keys:
+            net     = key.get('net', True)
+            counted = key.get('counted', True)
+            course  = key.get('course', 0)
+            title   = key.get('settitle', None)
+            cols    = key.get('cols', None)
+            fields  = key.get('fields', None)
+
+            if title is None:
+                title  = "Top {} Times ({} Runs)".format(net and "Net" or "Raw", counted and "Counted" or "All")
+                if course > 0: title += " Course {}".format(course)
+
+            if cols is None:   cols   = ['Name', 'Class',     'Index',    '',         'Time']
+            if fields is None: fields = ['name', 'classcode', 'indexstr', 'indexval', 'time']
+
+            ttl = TopTimesList(title, cols, fields)
+            for cls in self.results:
+                for e in self.results[cls]:
+                    if course > 0:
+                        for r in e['runs'][course-1]:
+                            if r['netorder'] == 1:
+                                time = net and r['net'] or r['pen']
+                    else:
+                        time = net and e['net'] or e['pen']
+
+                    ttl.append(TopTimeEntry(fields,
+                        name="{} {}".format(e['firstname'], e['lastname']),
+                        classcode = e['classcode'],
+                        indexstr  =  e['indexstr'],
+                        indexval  =  e['indexval'],
+                        time      =  time
+                    ))
+
+            # Sort and set 'pos' attribute, then add to the mass table
+            ttl.sort(key=attrgetter('time'))
+            lists.append(ttl)
+
+        return TopTimesTable(*lists)
+
+
+class TopTimesList(list):
+    """ A list of top times along with the title, column and field info """
+    def __init__(self, title, cols, fields):
+        self.title = title
+        self.cols = cols
+        self.fields = fields
         
-
-auditList = """select r.*,d.firstname,d.lastname,d.alias,c.year,c.number,c.make,c.model,c.color,c.classcode,c.indexcode,c.tireindexed
-                from runorder as r, cars as c, drivers as d  
-                where r.carid=c.id and c.driverid=d.id and 
-                r.eventid=:eventid and r.course=:course and r.rungroup=:group """
-
-def getAuditResults(session, settings, event, course, rungroup):
-    ret = list()
-    reshold = dict()
-    for row in session.execute(auditList, params={'eventid':event.id, 'course':course, 'group':rungroup}):
-        r = Result(row)
-        r.runs = [None] * event.runs
-        ret.append(r)
-        reshold[r.carid] = r
-
-    for run in session.query(Run).filter_by(eventid=event.id).filter(Run.course==course).filter(Run.carid.in_(reshold.iterkeys())):
-        r = reshold[run.carid]
-        if run.run > event.runs:
-            r.runs[:] =  r.runs + [None]*(run.run-event.runs)
-        r.runs[run.run-1] = run
-
-    return ret
-
-
-
-top1 = "select d.firstname as firstname, d.lastname as lastname, d.alias as alias, c.classcode as classcode, c.indexcode as indexcode, c.tireindexed as tireindexed, c.id as carid "
-top2 = "from runs as r, cars as c, drivers as d where r.carid=c.id and c.driverid=d.id and r.eventid=:eventid "
-
-
-topCourseRaw    = top1 + ", (r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
-topCourseRawAll = top1 + ", (r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.course=:course and r.bnorder=1 order by toptime"
-topCourseNet    = top1 + ", r.net as toptime " + top2 + " and r.course=:course and r.norder=1 order by toptime"
-topCourseNetAll = top1 + ", r.net as toptime " + top2 + " and r.course=:course and r.bnorder=1 order by toptime"
-topRaw    = top1 + ", COUNT(r.raw) as courses, SUM(r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.norder=1 group by c.id order by courses DESC, toptime"
-topRawAll = top1 + ", COUNT(r.raw) as courses, SUM(r.raw+:conepen*r.cones+:gatepen*r.gates) as toptime " + top2 + " and r.bnorder=1 group by c.id order by courses DESC, toptime"
-topNet    = top1 + ", COUNT(r.net) as courses, SUM(r.net) as toptime " + top2 + " and r.norder=1 group by c.id order by courses DESC, toptime"
-topNetAll = top1 + ", COUNT(r.net) as courses, SUM(r.net) as toptime " + top2 + " and r.bnorder=1 group by c.id order by courses DESC, toptime"
-
 
 class TopTimeEntry(object):
-    def __init__(self, rowproxy=None):
-        if rowproxy is not None:
-            self.__dict__.update(zip(rowproxy.keys(), rowproxy.values()))
-            if self.alias and not config['nwrsc.private']:
-                self.name = self.alias
-            else:
-                self.name = self.firstname + " " + self.lastname
-
-    def setIter(self, attributes):
-        """ set the attributes that should be iterated over if someone tries to iterate us """
-        self._attributes = attributes
+    """ A row entry in the TopTimesList """
+    def __init__(self, fields, **kwargs):
+        self._fields = fields
+        self.__dict__.update(kwargs)
 
     def __iter__(self):
-        """ return a set of attributes as determined by setIter """
-        for attr in self._attributes:
-            yield getattr(self, attr)
+        """ return a set of attributes as determined by original fields """
+        for f in self._fields:
+            yield getattr(self, f, "missing")
 
-    def copyWith(self, **kwargs):
-        ret = TopTimeEntry()
-        ret.__dict__ = self.__dict__.copy()
-        ret.__dict__.update(kwargs)
-        return ret
-        
-    def getFeed(self):
-        d = dict()
-        for k,v in self.__dict__.iteritems():
-            if v is None or k in ['alias', 'firstname', 'lastname', '_attributes']:
-                continue
-            d[k] = v
-        return d
+    def __repr__(self):
+        return "{}, {}".format(self._fields, self.__dict__)
 
 
+class TopTimesRow(list):
+    pass
 
-class TopTimesList(object):
-    def __init__(self, title, headers, attributes):
-        self.title = title
-        self.cols = headers
-        self.attributes = attributes
-        self.rows = list()
+class TopTimesTable(object):
+    """ We need to zip our lists together ourselves so we create our Table and Rows here """
 
-    def add(self, entry):
-        entry.setIter(self.attributes)
-        self.rows.append(entry)
+    def __init__(self, *lists):
+        self.titles   = list()
+        self.colcount = list()
+        self.cols     = list()
+        self.fields   = list()
+        self.rows     = list()
 
-    def getFeed(self):
-        d = dict()
-        for k,v in self.__dict__.iteritems():
-            if v is None or k in ['_sa_instance_state']:
-                continue
-            d[k] = v
-        return d
+        for ttl in lists:
+            self.addList(ttl)
 
+    def addList(self, ttl):
+        if len(ttl.cols) != len(ttl.fields):
+            raise Exception('Top times columns and field arrays are not equals in size ({}, {})'.format(len(ttl.cols), len(ttl.fields)))
 
+        self.titles.append(ttl.title)
+        self.colcount.append(len(ttl.cols))
+        self.cols.append(ttl.cols)
+        self.fields.append(ttl.fields)
 
-class TopTimesStorage(object):
+        if len(self.rows) < len(ttl):
+            self.rows.extend([TopTimesRow() for x in range(len(ttl) - len(self.rows))])
 
-    def __init__(self, session, event, classdata):
-        self.session = session
-        self.event = event
-        self.classdata = classdata
-    
-        if self.event.courses > 1:
-            coursecnt = self.event.courses + 1
-        else:
-            coursecnt = 1  # all courses == course 1
+        for ii in range(len(ttl)):
+            self.rows[ii].append(ttl[ii])
 
-        # first tuple is allruns vs counted runs
-        # next tuple is raw times vs net times
-        # last step is a list with 0=all_courses, 1=course1, ...
-        self.store = (([None]*coursecnt, [None]*coursecnt), ([None]*coursecnt, [None]*coursecnt))  
-
-        self.segs = [[None]*self.event.getSegmentCount()]*self.event.courses
-
-
-    def getList(self, allruns=False, raw=False, course=0, settitle=None):
-        if self.store[allruns][raw][course] is None:
-            if course == 0:
-                if raw:
-                    ttl = loadTopRawTimes(self.session, self.event, self.classdata, allruns)
-                else:
-                    ttl = loadTopNetTimes(self.session, self.event, self.classdata, allruns)
-            else:
-                if raw:
-                    ttl = loadTopCourseRawTimes(self.session, self.event, self.course, self.classdata, allruns)
-                else:
-                    ttl = loadTopCourseNetTimes(self.session, self.event, self.course, self.classdata, allruns)
-    
-            self.store[allruns][raw][course] = ttl
-
-        if settitle is not None:
-            self.store[allruns][raw][course].title = settitle
-        return self.store[allruns][raw][course]
-
-
-    def getSegmentList(self, course, seg):
-        if self.segs[course][seg] is None:
-            self.segs[course][seg] = loadTopSegRawTimes(self.session, self.event, course, seg)
-        return self.segs[course][seg]
-    
-
-
-def loadTopSegRawTimes(session, event, course, seg):
-    getcol = ", MIN(r.seg%d) as toptime " % (seg)
-    topSegRaw = top1 + getcol + top2 + " and r.course=:course and r.seg%d > %d group by r.carid order by toptime " % (seg, event.getSegments()[seg-1])
-
-    ttl = TopTimesList("Top Segment Times (Course %d)" % course, ['Name', 'Class', 'Time'], ['name', 'classcode', 'toptime'])
-    for row in session.execute(topSegRaw, params={'eventid':event.id, 'course':course}):
-        entry = TopTimeEntry(row)
-        entry.toptime = t3(entry.toptime)
-        ttl.add(entry)
-    return ttl
-            
-
-def loadTopCourseRawTimes(session, event, course, classdata, allruns=False):
-    if allruns:
-        sql = topCourseRawAll
-    else:
-        sql = topCourseRaw
-
-    ttl = TopTimesList("Top Times (Course %d)" % course, ['Name', 'Class', 'Time'], ['name', 'classcode', 'toptime'])
-    for row in session.execute(sql, params={'eventid':event.id, 'course':course, 'conepen':event.conepen, 'gatepen':event.gatepen}):
-        entry = TopTimeEntry(row)
-        entry.toptime = t3(entry.toptime)
-        ttl.add(entry)
-    return ttl
-        
-
-def loadTopCourseNetTimes(session, event, course, classdata, allruns=False):
-    if allruns:
-        sql = topCourseNetAll
-    else:
-        sql = topCourseNet
-
-    ttl = TopTimesList("Top Index Times (Course %d)" % course, ['Name', 'Index', '', 'Time'], ['name', 'indexstr', 'indexvalue', 'toptime'])
-    for row in session.execute(sql, params={'eventid':event.id, 'course':course}):
-        entry = TopTimeEntry(row)
-        entry.indexstr = classdata.getIndexStr(entry)
-        entry.indexvalue = t3(classdata.getEffectiveIndex(entry))
-        entry.toptime = t3(entry.toptime)
-        ttl.add(entry)
-    return ttl
-
-
-def loadTopRawTimes(session, event, classdata, allruns=False):
-    if allruns:
-        sql = topRawAll
-        title = "Top Times (All)"
-    else:
-        sql = topRaw
-        title = "Top Times (Counted)"
-
-    ttl = TopTimesList(title, ['Name', 'Class', 'Time'], ['name', 'classcode', 'toptime'])
-    for row in session.execute(sql, params={'eventid':event.id,'conepen':event.conepen,'gatepen':event.gatepen}):
-        entry = TopTimeEntry(row)
-        entry.toptime = t3(entry.toptime)
-        ttl.add(entry)
-    return ttl
-
-
-def loadTopNetTimes(session, event, classdata, allruns=False):
-    if allruns:
-        sql = topNetAll
-        title = "Top Index Times (All)"
-    else:
-        sql = topNet
-        title = "Top Index Times (Counted)"
-
-    ttl = TopTimesList(title, ['Name', 'Class', 'Index', '', 'Time'], ['name', 'classcode', 'indexstr', 'indexvalue', 'toptime'])
-    for row in session.execute(sql, params={'eventid':event.id}):
-        entry = TopTimeEntry(row)
-        entry.indexstr = classdata.getIndexStr(row)
-        entry.indexvalue = t3(classdata.getEffectiveIndex(row))
-        entry.toptime = t3(row.toptime)
-        ttl.add(entry)
-    return ttl
 

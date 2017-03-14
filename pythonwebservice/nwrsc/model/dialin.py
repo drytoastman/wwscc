@@ -10,7 +10,7 @@ class Entry(object):
 		self.lastname = row['lastname']
 		self.classcode = row['classcode']
 		self.indexcode = row['indexcode']
-		self.tireindexed = row['tireindexed']
+		self.useclsmult = row['useclsmult']
 		self.carid = row['carid']
 		self.raw = row['myraw']
 		self.net = row['mynet']

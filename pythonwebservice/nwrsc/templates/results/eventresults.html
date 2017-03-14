@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% import '/results/macros.html' as res %}
+
+{% block headers %}
+{{super()}}
+<link rel="stylesheet" href="/static/results.css" />
+{% endblock %}
+
+{% block content %}
+{% if not ispost %}
+
+<h2>{{g.title}}</h2>
+{{res.classtables()}}
+
+{% else %}
+
+<!-- Series info -->
+<div id='seriescustom'>
+{{g.settings.customheader|safe}}
+</div>
+
+<div id='seriestitle'>{{g.settings.seriesname}}</div>
+
+<!-- Event info -->
+<div id='eventtitle'>{{g.event.date}} - {{g.event.name}}</div>
+<div id='hosttitle'>Hosted At: <span class='host'>{{g.event.attr.location}}</span></div>
+<div id='entrantcount'>({{g.entrantcount}} Entrants)</div>
+
+<hr />
+<!-- Results -->
+
+<div id='classlinks'>
+{% for cls in g.results|sort -%}
+<a href='#{{cls}}'>{{cls}}</a>
+{% endfor %}
+</div>
+
+{{res.classtables()}}
+<br/>
+<br/>
+{{res.toptimestable(g.toptimes.getLists({'net':True}, {'net':False}))}}
+
+{% endif %}
+{% endblock content %}
+

@@ -130,8 +130,8 @@ public class DoubleTableContainer extends JScrollPane implements MessageListener
 			return;
 		}
 
-		for (Car c : available) {  // multiple available, skip TOPM, pick whatever else
-			if (c.getClassCode().equals("TOPM")) continue;
+		for (Car c : available) {  // multiple available, skip second runs classes, pick other items first
+			if (Database.d.getClassData().getClass(c.getClassCode()).isSecondRuns()) continue;
 			event(MT.CAR_ADD, c.getCarId());
 			return;
 		}

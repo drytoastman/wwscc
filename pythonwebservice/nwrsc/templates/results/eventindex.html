@@ -23,6 +23,18 @@ width: 70px;
 margin: 0;
 padding: 0;
 }
+
+
+.matrix {
+	margin: 20px;
+	border-collapse: collapse;
+}
+.matrix td, .matrix th {
+	padding: 4px;
+	text-align: center;
+	border: 1px solid grey;
+}
+
 </style>
 
 {% endblock headers %}
@@ -62,21 +74,24 @@ padding: 0;
     {%endfor%}
 {%endif%}
 
-<h3>Top Times Lists (All Runs)</h3>
-<ul class='classlist'>
-<li><a href='{{url_for('.tt', tttype='indexall')}}'>Indexed</a></li>
-<li><a href='{{url_for('.tt', tttype='rawall')}}'>Raw</a></li>
-</ul>
-<br style='clear:both;'/>
-
-
-<h3>Top Times Lists (Counted Runs)</h3>
-<ul class='classlist'>
-<li><a href='{{url_for('.tt', tttype='index')}}'>Indexed</a></li>
-<li><a href='{{url_for('.tt', tttype='raw')}}'>Raw</a></li>
-</ul>
-<br style='clear:both;'/>
-
+<h3>Top Times Lists</h3>
+<table class='matrix'>
+<tr>
+	<th></th>
+	<th>Counted Runs</th>
+	<th>All Runs</th>
+</tr>
+<tr>
+	<th>Indexed</th>
+	<td><a href='{{url_for('.tt', net=1, counted=1)}}'>List</a></td>
+	<td><a href='{{url_for('.tt', net=1, counted=0)}}'>List</a></td>
+</tr>
+<tr>
+	<th>Raw</th>
+	<td><a href='{{url_for('.tt', net=0, counted=1)}}'>List</a></td>
+	<td><a href='{{url_for('.tt', net=0, counted=0)}}'>List</a></td>
+</tr>
+</table>
 
 {%if g.event.getSegmentCount() > 0 %}
 <h3>Other Top Times Lists</h3>

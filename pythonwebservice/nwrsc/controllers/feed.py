@@ -26,7 +26,7 @@ def indexlist():
 def eventresults():
     res = EventResult.get(Event.get(g.eventid))
     if request.blueprint == 'Json':
-        return feed_encode("classlist", forencoding)
+        return feed_encode("classlist", res)
 
     # Need to rewrap raw dict/list output into classes for XML tag output
     class Result(AttrBase):

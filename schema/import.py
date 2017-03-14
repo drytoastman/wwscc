@@ -19,6 +19,8 @@ def convert(sourcefile, name, password):
     import sqlite3
     import json
     import uuid
+    import psycopg2
+    import psycopg2.extras
 
     remapdriver = dict()
     remapcar = dict()
@@ -29,13 +31,8 @@ def convert(sourcefile, name, password):
     old = sqlite3.connect(sourcefile)
     old.row_factory = sqlite3.Row
 
-    try:
-        import psycopg2
-        import psycopg2.extras
-        psycopg2.extras.register_uuid()
-        new = psycopg2.connect("host='127.0.0.1' user='{}' password='{}' dbname='scorekeeper'".format(name, password))
-    except ImportError:
-        new = JustPrint()
+    psycopg2.extras.register_uuid()
+    new = psycopg2.connect("host='127.0.0.1' user='{}' password='{}' dbname='scorekeeper'".format(name, password))
     cur = new.cursor()
 
     #DRIVERS, add to global list and remap ids as necessary
@@ -69,13 +66,13 @@ def convert(sourcefile, name, password):
     #CLASSLIST (map seriesid)
     for r in old.execute("select * from classlist"):
         c = AttrWrapper(r, r.keys())
-        c.numorder = c.numorder and int(c.numorder) or 0
-        c.usecarflag = c.usecarflag and True or False
-        c.carindexed = c.carindexed and True or False
+        c.usecarflag  = c.usecarflag and True or False
+        c.carindexed  = c.carindexed and True or False
         c.eventtrophy = c.eventtrophy and True or False
         c.champtrophy = c.champtrophy and True or False
+        c.secondruns  = c.code in ('TOPM', 'ITO2')
         cur.execute("insert into classlist values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", 
-                    (c.code, c.descrip, c.classindex, c.caridxrestrict, c.classmultiplier, c.carindexed, c.usecarflag, c.eventtrophy, c.champtrophy, c.numorder, c.countedruns))
+                    (c.code, c.descrip, c.classindex, c.caridxrestrict, c.classmultiplier, c.carindexed, c.usecarflag, c.eventtrophy, c.champtrophy, c.secondruns, c.countedruns))
 
 
     #CARS (all the same fields, need to map carid, driverid and seriesid)
@@ -84,21 +81,19 @@ def convert(sourcefile, name, password):
         if c.driverid < 0:
             continue
         newc = dict()
-        newc['carid']     = uuid.uuid1()
-        newc['driverid']  = remapdriver[c.driverid]
-        newc['classcode'] = c.classcode
-        newc['indexcode'] = c.indexcode or ''
-        newc['number']    = c.number or 999
-        newc['attr']      = dict()
+        newc['carid']      = uuid.uuid1()
+        newc['driverid']   = remapdriver[c.driverid]
+        newc['classcode']  = c.classcode
+        newc['indexcode']  = c.indexcode or ''
+        newc['number']     = c.number or 999
+        newc['useclsmult'] = bool(getattr(c, 'tireindexed', False))
+        newc['attr']       = dict()
         for a in ('year', 'make', 'model', 'color'):
             if hasattr(c, a) and getattr(c, a) is not None:
                 newc['attr'][a] = getattr(c, a)
-        for a in ('tireindexed'):
-            if hasattr(c, a) and getattr(c, a) is not None:
-                newc['attr'][a] = bool(getattr(c, a))
 
-        cur.execute("insert into cars values (%s, %s, %s, %s, %s, %s, now())", 
-            (newc['carid'], newc['driverid'], newc['classcode'], newc['indexcode'], newc['number'], json.dumps(newc['attr'])))
+        cur.execute("insert into cars values (%s, %s, %s, %s, %s, %s, %s, now())", 
+            (newc['carid'], newc['driverid'], newc['classcode'], newc['indexcode'], newc['number'], newc['useclsmult'], json.dumps(newc['attr'])))
         remapcar[c.id] = newc['carid']
 
         

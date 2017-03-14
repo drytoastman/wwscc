@@ -88,7 +88,7 @@ CREATE TABLE classlist (
     usecarflag      BOOLEAN      NOT NULL, 
     eventtrophy     BOOLEAN      NOT NULL, 
     champtrophy     BOOLEAN      NOT NULL, 
-    numorder        INTEGER      NOT NULL, 
+    secondruns      BOOLEAN      NOT NULL,
     countedruns     INTEGER      NOT NULL,
     modified        TIMESTAMP    NOT NULL DEFAULT now()
 );
@@ -98,7 +98,16 @@ GRANT  ALL ON classlist TO <seriesname>;
 CREATE TRIGGER classmod AFTER INSERT OR UPDATE OR DELETE ON classlist FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 CREATE TRIGGER classuni BEFORE UPDATE ON classlist FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE classlist IS 'The list of classes for this series';
-
+COMMENT ON COLUMN classlist.classcode       IS 'The string code for this class';
+COMMENT ON COLUMN classlist.indexcode       IS 'For classes where all cars get the same index, use this index';
+COMMENT ON COLUMN classlist.caridxrestrict  IS 'A special string defining what indexes to include/exclude from the list of indexes that can be selected';
+COMMENT ON COLUMN classlist.classmultiplier IS 'A fixed value multiplier for all cars in class (e.g. 0.975 tire index)';
+COMMENT ON COLUMN classlist.carindexed      IS 'True if each car has to select its own index (restricted by caridxrestrict result)';
+COMMENT ON COLUMN classlist.usecarflag      IS 'True if each car has to select to use the class multiplier or not';
+COMMENT ON COLUMN classlist.eventtrophy     IS 'True if cars in this class get trophies at each event';
+COMMENT ON COLUMN classlist.champtrophy     IS 'True if cars in this class are included in the championship points';
+COMMENT ON COLUMN classlist.secondruns      IS 'True if this class is meant for second runs of the day';
+COMMENT ON COLUMN classlist.countedruns     IS 'If > 0, the number of runs that are counted towards final results';
 
 CREATE TABLE events (
     eventid       SERIAL      PRIMARY KEY, 
@@ -131,8 +140,8 @@ CREATE TABLE cars (
     driverid      UUID        NOT NULL REFERENCES public.drivers, 
     classcode     VARCHAR(16) NOT NULL REFERENCES classlist, 
     indexcode     VARCHAR(16) NOT NULL REFERENCES indexlist, 
-	tireindexed   BOOLEAN     NOT NULL,
     number        INTEGER     NOT NULL, 
+	useclsmult    BOOLEAN     NOT NULL,
     attr          JSONB       NOT NULL,
     modified      TIMESTAMP   NOT NULL DEFAULT now(),
     PRIMARY KEY (carid),
@@ -145,6 +154,7 @@ GRANT  ALL ON cars TO <seriesname>;
 CREATE TRIGGER carmod AFTER INSERT OR UPDATE OR DELETE ON cars FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 CREATE TRIGGER casuni BEFORE UPDATE ON cars FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE cars IS 'The cars in this series.  Attr includes year, make, model, color';
+COMMENT ON COLUMN cars.useclsmult IS 'If classlist.usecarflag is True, each car must set this flag to use classlist.classmultiplier';
 
 
 CREATE TABLE runs (

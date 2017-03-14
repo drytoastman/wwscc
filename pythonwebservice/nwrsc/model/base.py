@@ -48,11 +48,7 @@ class AttrBase(object):
             v = self.feedFilter(k, v)
             if v is None:
                 continue
-            if isinstance(v, float):
-                if v != 0:
-                    d[k] = "%0.3f" % (v)
-            else:
-                d[k] = v
+            d[k] = v
         return d
 
 

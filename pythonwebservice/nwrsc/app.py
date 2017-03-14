@@ -73,7 +73,7 @@ def create_app(config=None):
     def t3(val):
         """ Wrapper to safely print floats as XXX.123 format """
         if val is None: return ""
-        if type(val) is int: return str(val)
+        if type(val) is not float: return str(val)
         try:
             return "%0.3f" % (val)
         except:
@@ -114,9 +114,10 @@ def create_app(config=None):
     theapp.register_blueprint(Xml,     url_prefix="/xml/<series>")
     theapp.register_blueprint(Json,    url_prefix="/json/<series>")
 
-    # Create a PG connection pool and extra Jinja filters
+    # Create a PG connection pool and extra Jinja bits
     theapp.create_pool()
     theapp.jinja_env.filters['t3'] = t3
+    theapp.jinja_env.globals['zip'] = zip
 
     # Configure our logging to use webserver.log with rotation
     path = os.path.join(installroot, 'logs/webserver.log')
@@ -147,8 +148,11 @@ class DBSeriesWrapper(object):
 
     def onrequest(self):
         try:
+            print("series setup starting ...")
             self.series_setup()
+            print("... done")
         except OperationalError as e:
+            print(".. exception ", e)
             self.app.logger.warning("Possible database restart.  Reseting pool and trying again!")
             self.app.reset_pool()
             self.series_setup()

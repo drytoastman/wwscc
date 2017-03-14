@@ -16,30 +16,40 @@ def event():
     g.event = Event.get(g.eventid)
     g.active = Class.activeClasses(g.eventid)
     g.challenges = Challenge.getForEvent(g.eventid)
-    return render_template('results/event.html')
+    return render_template('results/eventindex.html')
 
 
 ## Basic results display
 
-def _resultsforclasses(clslist=[]):
-    """ Show our class results, if the classlist is zero, we are posting for the event """
-    ispost  = len(clslist) == 0
-    g.event = Event.get(g.eventid)
-    results = EventResult.get(g.event)
+def _resultsforclasses(clslist=None):
+    """ Show our class results, if the classlist is None, we are posting for the event """
+    if clslist == [] or clslist == ['']:
+        return "No classes with recorded runs for this request"
 
-    g.results      = ispost and results or { k: results[k] for k in clslist }
-    g.settings     = Settings.get()
-    g.entrantcount = sum([len(x) for x in g.results.values()])
+    g.event     = Event.get(g.eventid)
+    g.classdata = ClassData.get()
+    results     = EventResult.get(g.event)
+    ispost      = clslist is None
 
-    return render_template('results/classresult.html', ispost=ispost)
+    if ispost:
+        g.results      = results
+        g.toptimes     = TopTimesAccessor(g.event, g.results)
+        g.entrantcount = sum([len(x) for x in g.results.values()])
+        g.settings     = Settings.get()
+    else:
+        g.results = { k: results[k] for k in (set(clslist) & set(results.keys())) }
+
+    return render_template('results/eventresults.html', ispost=ispost)
 
 
 @Results.route("/<int:eventid>/byclass")
 def byclass():
+    g.title = "Results For Class {}".format(request.args.get('list', ''))
     return _resultsforclasses(clslist=request.args.get('list','').split(','))
 
 @Results.route("/<int:eventid>/bygroup")
 def bygroup():
+    g.title = "Results For Group {}".format(request.args.get('list', ''))
     groups = [int(x) for x in request.args.get('list', '').split(',')]
     return _resultsforclasses(clslist=RunGroup.getClassesForRunGroup(g.eventid, groups))
 
@@ -51,13 +61,39 @@ def post():
 def champ():
     return "champ"
 
+@Results.route("/<int:eventid>/audit")
+def audit():
+    course = request.args.get('course', 1)
+    group  = request.args.get('group', 1)
+    order  = request.args.get('order', 'runorder')
+    event  = Event.get(g.eventid)
+    audit  = EventResult.audit(event, course, group)
+
+    if order in ['firstname', 'lastname']:
+        audit.sort(key=lambda obj: str.lower(str(getattr(obj, order))))
+    if order in ['runorder']:
+        audit.sort(key=lambda obj: obj.row)
+
+    return render_template('/results/audit.html', audit=audit, event=event, course=course, group=group, order=order)
 
 
 ## Special display for toptimes, brackets, grids, etc
 
-@Results.route("/<int:eventid>/tt<tttype>")
-def tt(tttype):
-    return "tt %s %s" % (g.eventid, tttype)
+@Results.route("/<int:eventid>/tt")
+def tt():
+    net      = bool(int(request.args.get('net', '1')))
+    counted  = bool(int(request.args.get('counted', '1')))
+    course   = int(request.args.get('course', '0'))
+
+    event    = Event.get(g.eventid)
+    results  = EventResult.get(event)
+    toptimes = TopTimesAccessor(event, results)
+    if event.courses > 1:
+        table = toptimes.getLists(*[{'net':net, 'counted':counted, 'course':c} for c in range(event.courses+1)])
+    else:
+        table = toptimes.getLists({'net':net, 'counted':counted, 'course':0})
+
+    return render_template('/results/toptimes.html', event=event, table=table)
 
 @Results.route("/<int:eventid>/bracket/<int:challengeid>")
 def bracket(challengeid):

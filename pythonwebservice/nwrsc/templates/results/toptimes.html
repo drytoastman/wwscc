@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% import '/results/macros.html' as res %}
+
+{% block headers %}
+{{super()}}
+<link rel="stylesheet" href="/static/results.css" />
+{% endblock headers %}
+
+{% block content %}
+<h3>Top Times Lists For {{event.name}}</h3>
+{{res.toptimestable(table)}}
+{% endblock content %}
+
