@@ -2,7 +2,6 @@
 from flask import g
 
 class RunOrder():
-
 	pass
 
 class RunGroup():

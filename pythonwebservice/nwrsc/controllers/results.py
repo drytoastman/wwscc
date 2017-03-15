@@ -1,3 +1,7 @@
+"""
+  This is the code for the results pages. Everything should be taken from the results table so
+  that it continues to work after old series are expunged.
+"""
 
 from flask import Blueprint, request, abort, render_template, get_template_attribute, make_response, g
 from nwrsc.model import *
@@ -88,12 +92,14 @@ def tt():
     event    = Event.get(g.eventid)
     results  = EventResult.get(event)
     toptimes = TopTimesAccessor(event, results)
-    if event.courses > 1:
-        table = toptimes.getLists(*[{'net':net, 'counted':counted, 'course':c} for c in range(event.courses+1)])
-    else:
-        table = toptimes.getLists({'net':net, 'counted':counted, 'course':0})
+    header   = "Top {} Times ({} Runs) for {}".format(net and "Net" or "Raw", counted and "Counted" or "All", event.name)
 
-    return render_template('/results/toptimes.html', event=event, table=table)
+    if event.courses > 1:
+        table = toptimes.getLists(*[{'net':net, 'counted':counted, 'course':c, 'title':c and "Course {}".format(c) or "Total"} for c in range(event.courses+1)])
+    else:
+        table = toptimes.getLists({'net':net, 'counted':counted, 'course':0, 'title':'Top Times'})
+
+    return render_template('/results/toptimes.html', header=header, table=table)
 
 @Results.route("/<int:eventid>/bracket/<int:challengeid>")
 def bracket(challengeid):

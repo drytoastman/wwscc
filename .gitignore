@@ -14,6 +14,7 @@ swingapps/bin
 android/**/bin
 android/**/gen
 installers/windows/python/Lib/site-packages/nwrsc-*
+pythonwebservice/nwrsc/static/jquery*
 pythonwebservice/nwrsc.egg-info
 pythonwebservice/build
 pythonwebservice/dist

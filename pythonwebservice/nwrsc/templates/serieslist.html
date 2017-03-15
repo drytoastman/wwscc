@@ -16,7 +16,7 @@ ul.selectorlist { list-style: none;  display:block; float: left; height: 220px; 
 <ul class='selectorlist'>
 	<h4>{{year}}</h4>
 	{% for series in serieslist[year] %}
-	    <li><a href='/{{g.subapp}}/{{series}}/'>{{series}}</a></li>
+	    <li><a href='/{{subapp}}/{{series}}/'>{{series}}</a></li>
 	{% endfor %}
 </ul>
 {% endfor %}

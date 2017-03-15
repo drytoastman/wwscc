@@ -10,7 +10,7 @@ from psycopg2.extras import DictCursor
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from werkzeug.debug.tbtools import get_current_traceback
 from werkzeug.contrib.profiler import ProfilerMiddleware
-from flask import Flask, request, g, current_app, render_template, send_from_directory
+from flask import Flask, request, abort, g, current_app, render_template, send_from_directory
 from flask_compress import Compress
 
 from nwrsc.controllers.results import Results
@@ -50,25 +50,22 @@ def create_app(config=None):
         return "%s:%s %s" % (os.path.basename(last.filename), last.lineno, exception);
 
     def preprocessor(endpoint, values):
-        """ Remove the requirement for blueprint functions to put subapp/series in their function definitions """
+        """ Remove the requirement for blueprint functions to put series/eventid in their function definitions """
         if values is not None:
-            g.subapp = values.pop('subapp', None)
             g.series = values.pop('series', None)
             g.eventid = values.pop('eventid', None)
 
     def urldefaults(endpoint, values):
-        """ Make sure 'series' from the subapp URLs is available for url_for relative calls """
-        for u in ('subapp', 'series', 'eventid'):
+        """ Make sure series,eventid from the subapp URLs are available for url_for relative calls """
+        for u in ('series', 'eventid'):
             if u not in values and getattr(g, u) and current_app.url_map.is_endpoint_expecting(endpoint, u):
                 values[u] = getattr(g, u)
 
-    def serieslist(subapp='results'):
+    def serieslist(subapp):
         """ Render a list of series available in the current database """
-        return render_template('serieslist.html', serieslist=Series.list())
-
-    def favicon():
-        """ Return our cone icon as the favicon """
-        return send_from_directory('static', 'cone.png')
+        if subapp not in ('results', 'xml', 'json'):
+            abort(404)
+        return render_template('serieslist.html', subapp=subapp, serieslist=Series.list())
 
     def t3(val):
         """ Wrapper to safely print floats as XXX.123 format """
@@ -107,17 +104,21 @@ def create_app(config=None):
     # Setup basic top level URL handling followed by Blueprints for the various sections
     theapp.url_value_preprocessor(preprocessor)
     theapp.url_defaults(urldefaults)
-    theapp.add_url_rule('/',            'serieslist', redirect_to='/results')
-    theapp.add_url_rule('/favicon.ico', 'favicon',    favicon)
-    theapp.add_url_rule('/<subapp>/',   'serieslist', serieslist)
+    theapp.add_url_rule('/',           'toresults',  redirect_to='/results')
+    theapp.add_url_rule('/<subapp>/',  'serieslist', serieslist)
     theapp.register_blueprint(Results, url_prefix="/results/<series>")
     theapp.register_blueprint(Xml,     url_prefix="/xml/<series>")
     theapp.register_blueprint(Json,    url_prefix="/json/<series>")
 
+    # Some static things that need to show up at the root level
+    @theapp.route('/favicon.ico')
+    def favicon(): return send_from_directory('static', 'cone.png')
+    @theapp.route('/robots.txt')
+    def robots(): return send_from_directory('static', 'robots.txt')
+
     # Create a PG connection pool and extra Jinja bits
     theapp.create_pool()
     theapp.jinja_env.filters['t3'] = t3
-    theapp.jinja_env.globals['zip'] = zip
 
     # Configure our logging to use webserver.log with rotation
     path = os.path.join(installroot, 'logs/webserver.log')
@@ -169,7 +170,7 @@ class DBSeriesWrapper(object):
                 return "%s is not a valid series" % g.series
 
     def teardown(self, exc=None):
-        """ Make sure that the connection is commited so it doesn't sit in a locked state, put back in the pool """
+        """ Put the connection back in the pool, this will close any open transactions """
         self.app.pool.putconn(g.db) 
 
 

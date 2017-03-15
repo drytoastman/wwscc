@@ -74,10 +74,10 @@ LANGUAGE plpgsql;
 COMMENT ON FUNCTION ignoreunmodified() IS 'does not update rows if only change is the modified field or less';
 
 
--- The results table acts as a storage of calculated results for each series, it is also the location where
--- we archive old series into a compacted form where so can delete old unused drivers but maintain the basic data
--- Name values are champ=champ results, e#=eventid results, a#=eventid announcer data
-
+-- The results table acts as a storage of calculated results and information for each series.  As enough information
+-- will exist here to supply the results set of pages, we can delete old series schema, release old unused driver
+-- information and solidify the driver information for older series (name changes, etc).
+-- The name column can be champ={champ results}, info={eventlist,classes,indexes}, e#={eventid results}
 CREATE TABLE results (
     series     TEXT        NOT NULL,
     name       TEXT        NOT NULL,

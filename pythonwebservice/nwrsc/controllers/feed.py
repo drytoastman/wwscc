@@ -1,3 +1,9 @@
+"""
+  This is the code for all the JSON and XML feeds.  Like the results interface, everything
+  should be taken from the results table so that it continues to work after old series are
+  expunged.
+"""
+
 import logging
 from flask import Blueprint, request, g, escape, make_response
 from nwrsc.model import *
@@ -6,20 +12,14 @@ log  = logging.getLogger(__name__)
 Xml  = Blueprint("Xml", __name__)
 Json = Blueprint("Json", __name__) 
 
+
 @Json.route("/")
 @Xml.route("/")
 def eventlist():
-    return feed_encode("eventlist", Event.byDate())
-
-@Json.route("/classes")
-@Xml.route("/classes")
-def classlist():
+    return feed_encode("info", Event.byDate())
     return feed_encode("seriesclasses", Class.getAll())
-
-@Json.route("/indexes")
-@Xml.route("/indexes")
-def indexlist():
     return feed_encode("seriesindicies", Index.getAll())
+    return feed_encode("challengelist", Challenge.getForEvent(g.eventid))
 
 @Json.route("/<int:eventid>")
 @Xml.route("/<int:eventid>")
@@ -47,13 +47,8 @@ def eventresults():
 
     return feed_encode("classlist", forencoding)
 
-@Json.route("/<int:eventid>/challenge")
-@Xml.route("/<int:eventid>/challenge")
-def challengelist():
-    return feed_encode("challengelist", Challenge.getForEvent(g.eventid))
-
-@Json.route("/<int:eventid>/challenge/<int:challengeid>")
-@Xml.route("/<int:eventid>/challenge/<int:challengeid>")
+@Json.route("/challenge/<int:challengeid>")
+@Xml.route("/challenge/<int:challengeid>")
 def challenge(challengeid):
     return feed_encode("roundlist", Challenge.getResults(challengeid))
 
@@ -73,7 +68,7 @@ def scca():
                                  Pos=res['position'],
                                  CarModel="%s %s %s %s" % (res['year'], res['make'], res['model'], res['color']),
                                  CarNo="%s" % (res['number']),
-                                 TotalTm=res['sum']))
+                                 TotalTm="%0.3lf" % res['net']))
     return feed_encode("Entries", entries)
 
 

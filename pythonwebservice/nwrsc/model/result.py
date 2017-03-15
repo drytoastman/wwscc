@@ -83,7 +83,7 @@ class EventResult(object):
                         "where c.carid in (select distinct carid from runs where eventid=%s)", (event.eventid,))
             for row in cur.fetchall():
                 e = Entrant(**row)
-                e.attrToUpper()
+                #e.attrToUpper()
                 e.indexstr = classdata.getIndexStr(e)
                 e.indexval = classdata.getEffectiveIndex(e)
                 e.runs = [[copy(blankrun) for x in range(event.runs)] for x in range(event.courses)]
@@ -94,7 +94,7 @@ class EventResult(object):
             cur.execute("select * from runs where eventid=%s", (event.eventid,))
             for row in cur.fetchall():
                 r = Run(**row)
-                r.attrToUpper()
+                #r.attrToUpper()
                 match = cptrs[r.carid]
                 match.runs[r.course-1][r.run - 1] = r
                 penalty = (r.cones * event.conepen) + (r.gates * event.gatepen)
@@ -144,6 +144,62 @@ class EventResult(object):
                     # quick access for templates
                     e.points = settings.usepospoints and e.pospoints or e.diffpoints
 
+            """
+        data.eventid = eventid
+        data.carid = carid
+        data.classcode = classcode
+        data.lastcourse = course
+        data.updated = datetime.datetime.now()
+
+        # Just get runs from last course that was recorded
+        runs = {}
+        for r in session.query(Run).filter(Run.carid==carid).filter(Run.eventid==eventid).filter(Run.course==course):
+                runs[r.run] = r
+
+        if not len(runs):
+                return  # Nothing to do
+
+        runlist = sorted(runs.keys())
+        lastrun = runs[runlist[-1]]
+
+        if len(runs) > 1:
+                if lastrun.norder == 1:  # we improved our position
+                        # find run with norder = 2, create the old entry with sum - lastrun + prevrun
+                        prevbest = [x for x in runs.values() if x.norder == 2][0]
+                        data.rawdiff = lastrun.raw - prevbest.raw
+                        data.netdiff = lastrun.net - prevbest.net
+                        data.oldsum = mysum - lastrun.net + prevbest.net
+
+                if lastrun.cones != 0 or lastrun.gates != 0:
+                        # add table entry with what could have been without penalties
+                        car = session.query(Car).get(carid)
+                        index = ClassData(session).getEffectiveIndex(car)
+                        curbest = [x for x in runs.values() if x.norder == 1][0]
+                        theory = mysum - curbest.net + ( lastrun.raw * index )
+                        if theory < mysum:
+                                data.rawdiff = lastrun.raw - curbest.raw
+                                data.netdiff = lastrun.net - curbest.net
+                                data.potentialsum = theory
+
+
+        sumlist.remove(mysum);
+        if data.oldsum > 0:
+                sumlist.append(data.oldsum);
+                sumlist.sort();
+                position = sumlist.index(data.oldsum)+1
+                data.oldpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
+                data.olddiffpoints = min(100, sumlist[0]/data.oldsum*100);
+                sumlist.remove(data.oldsum);
+
+        if data.potentialsum > 0:
+                sumlist.append(data.potentialsum)
+                sumlist.sort()
+                position = sumlist.index(data.potentialsum)+1
+                data.potentialpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
+                data.potentialdiffpoints = min(100, sumlist[0]/data.potentialsum*100);
+            """
+
+
             # Get access for modifying series rows, check if we need to insert a default first.  Don't upsert as we have to specify LARGE json object twice.
             cur.execute("set role %s", (g.series,))
             name = "e%d"%event.eventid
@@ -164,20 +220,20 @@ class TopTimesAccessor(object):
     def getLists(self, *keys):
         """
             Generate lists on demand as there are many iterations
-                net      = True for indexed times, False for penalized but raw times
-                counted  = True for to only included 'counted' runs and non-second run classes
-                course   = 0 for combined course total, >0 for specific course
+                net     = True for indexed times, False for penalized but raw times
+                counted = True for to only included 'counted' runs and non-second run classes
+                course  = 0 for combined course total, >0 for specific course
                Extra fields that have standard defaults we stick with:
-                settitle = A string to override the list title with
-                col      = A list of column names for the table
-                fields   = The fields to match to each column
+                title   = A string to override the list title with
+                col     = A list of column names for the table
+                fields  = The fields to match to each column
         """
         lists = list()
         for key in keys:
             net     = key.get('net', True)
             counted = key.get('counted', True)
             course  = key.get('course', 0)
-            title   = key.get('settitle', None)
+            title   = key.get('title', None)
             cols    = key.get('cols', None)
             fields  = key.get('fields', None)
 

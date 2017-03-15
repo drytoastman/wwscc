@@ -4,13 +4,14 @@ import os, io, logging
 log = logging.getLogger(__name__)
 
 class Bracket(object):
+    """ Class for drawing a challenge bracket or just calculating there the coordination of each round will be """
 
     RANK1 =  [ 1 ]
-    RANK2 =  [ 1, 2 ]
-    RANK4 =  [ 1, 4, 2, 3 ]
-    RANK8 =  [ 1, 8, 4, 5, 2, 7, 3, 6 ]
-    RANK16 = [ 1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11 ]
-    RANK32 = [ 1, 32, 16, 17, 8, 25, 9, 24, 4, 29, 13, 20, 5, 28, 12, 21, 2, 31, 15, 18, 7, 26, 10, 23, 3, 30, 14, 19, 6, 27, 11, 22 ]
+    RANK2 =  [ 2, 1 ]
+    RANK4 =  [ 3, 2, 4, 1 ]
+    RANK8 =  [ 6, 3, 7, 2, 5, 4, 8, 1 ]
+    RANK16 = [ 11, 6, 14, 3, 10, 7, 15, 2, 12, 5, 13, 4, 9, 8, 16, 1 ]
+    RANK32 = [ 22, 11, 27, 6, 19, 14, 30, 3, 23, 10, 26, 7, 18, 15, 31, 2, 21, 12, 28, 5, 20, 13, 29, 4, 24, 9, 25, 8, 17, 16, 32, 1 ]
     RANKS = RANK32 + RANK16 + RANK8 + RANK4 + RANK2 + RANK1 + [0]
     RANKS.reverse()
 

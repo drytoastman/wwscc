@@ -45,8 +45,8 @@ class Challenge(AttrBase):
                 rnd.e1.carid     = obj.car1id
                 rnd.e1.dial      = obj.car1dial
                 rnd.e1.newdial   = obj.car1dial
-                rnd.e1.firstname = obj.e1fn
-                rnd.e1.lastname  = obj.e1ln
+                rnd.e1.firstname = obj.e1fn or ""
+                rnd.e1.lastname  = obj.e1ln or ""
                 rnd.e1.classcode = obj.e1cc
                 rnd.e1.indexcode = obj.e1ic
                 rnd.e1.left      = None
@@ -54,8 +54,8 @@ class Challenge(AttrBase):
                 rnd.e2.carid     = obj.car2id
                 rnd.e2.dial      = obj.car2dial
                 rnd.e2.newdial   = obj.car2dial
-                rnd.e2.firstname = obj.e2fn
-                rnd.e2.lastname  = obj.e2ln
+                rnd.e2.firstname = obj.e2fn or ""
+                rnd.e2.lastname  = obj.e2ln or ""
                 rnd.e2.classcode = obj.e2cc
                 rnd.e2.indexcode = obj.e2ic
                 rnd.e2.left      = None

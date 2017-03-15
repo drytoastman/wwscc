@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>{% block title %}{{title}}{% endblock %}</title>
+<title>{{g.title}}</title>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 <!-- <meta http-equiv="X-UA-Compatible" content="IE=9"/> -->
 {% block headers %}{% endblock %}
 <script type='text/javascript'>
+{% if g.series %}
 $.nwr.urlbase = {{url_for('.index')}};
+{% endif %}
 </script>
 </head>
 
