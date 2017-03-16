@@ -149,13 +149,10 @@ class DBSeriesWrapper(object):
 
     def onrequest(self):
         try:
-            print("series setup starting ...")
             self.series_setup()
             if g.seriestype == Series.INVALID:
                 return "%s is not a valid series" % g.series
-            print("... done")
         except OperationalError as e:
-            print(".. exception ", e)
             self.app.logger.warning("Possible database restart.  Reseting pool and trying again!")
             self.app.reset_pool()
             self.series_setup()

@@ -60,9 +60,9 @@ class Bracket(object):
 
 
     def doEntrant(self, x, y, e):
-        dialtxt = "%0.3lf" % e.dial
+        dialtxt = "%0.3lf" % e['dial']
         w2, h2 = self.font.getsize(dialtxt)
-        name = e.firstname + " " + e.lastname
+        name = e['firstname'] + " " + e['lastname']
         w1, h1 = self.font.getsize(name)
         while w1 > 100:
             name = name[:-1]
@@ -79,10 +79,10 @@ class Bracket(object):
         self.coords.append((rnd, "%d,%d,%d,%d" % (x, y-10, x+self.roundwidth, y+spacing)))
         if self.draw is None: return
 
-        self.doEntrant(x, y, self.rounds[rnd].e1)
+        self.doEntrant(x, y, self.rounds[rnd]['e1'])
         self.line(x, y, x+self.roundwidth, y)
         y += spacing
-        self.doEntrant(x, y, self.rounds[rnd].e2)
+        self.doEntrant(x, y, self.rounds[rnd]['e2'])
         self.line(x, y, x+self.roundwidth, y)
         x += self.roundwidth
         self.line(x, y-spacing, x, y)
@@ -132,9 +132,9 @@ class Bracket(object):
         # Draw the 3rd and 1st place winners (round 0)
         x += self.roundwidth;
         y += (self.initialspacing/2);
-        self.doEntrant(x, y, self.rounds[0].e2)
+        self.doEntrant(x, y, self.rounds[0]['e2'])
         self.line(x, y, x+self.roundwidth-5, y)
-        self.doEntrant(startx, starty, self.rounds[0].e1)
+        self.doEntrant(startx, starty, self.rounds[0]['e1'])
         self.line(startx, starty, startx+self.roundwidth-5, starty)
     
         with io.BytesIO() as f:

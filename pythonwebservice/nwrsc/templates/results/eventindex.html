@@ -62,7 +62,7 @@ padding: 0;
 <br style='clear:both;'/>
 
 {%if event.ispro %}
-	{%for ch in g.challenges %}
+	{%for ch in challenges %}
 		<h3>{{ch.name}}</h3>
 		<ul class='classlist'>
 		<li><a href='{{url_for('.bracket', challengeid=ch.challengeid)}}'>Bracket</a></li>

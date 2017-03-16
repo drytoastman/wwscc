@@ -4,7 +4,7 @@
 """
 
 from flask import Blueprint, request, abort, render_template, get_template_attribute, make_response, g
-from nwrsc.model import Result, ClassData, TopTimesAccessor, Event
+from nwrsc.model import Result, ClassData, TopTimesAccessor, Event, Challenge
 from nwrsc.lib.bracket import Bracket
 
 Results = Blueprint("Results", __name__)
@@ -13,9 +13,10 @@ Results = Blueprint("Results", __name__)
 
 def eventfromlist(info, eventid):
     for e in info['events']:
-        if e['eventid'] == g.eventid:
+        if e['eventid'] == eventid:
             return Event(**e)
     return None
+
 
 @Results.route("/")
 def index():
@@ -27,7 +28,8 @@ def event():
     results = Result.getEventResults(g.eventid)
     active  = results.keys()
     event   = eventfromlist(info, g.eventid)
-    return render_template('results/eventindex.html', event=event, active=active)
+    challenges = [Challenge(**c) for c in info['challenges'] if c['eventid'] == event.eventid]
+    return render_template('results/eventindex.html', event=event, active=active, challenges=challenges)
 
 
 ## Basic results display
@@ -117,39 +119,41 @@ def tt():
 
     return render_template('/results/toptimes.html', header=header, table=table)
 
-@Results.route("/<int:eventid>/bracket/<int:challengeid>")
-def bracket(challengeid):
-    challenge = Challenge.get(challengeid)
+
+def _loadChallengeResults(challengeid, load=True):
+    info = Result.getSeriesInfo()
+    challenge = None
+    for c in info['challenges']:
+        if c['challengeid'] == challengeid:
+            challenge = Challenge(**c)
     if challenge is None:
         abort(404, "Invalid or no challenge id")
+    return (challenge, load and Result.getChallengeResults(challengeid) or None)
+
+@Results.route("/<int:eventid>/bracket/<int:challengeid>")
+def bracket(challengeid):
+    (challenge, results) = _loadChallengeResults(challengeid, load=False)
     (coords, size) = Bracket.coords(challenge.depth)
-    return render_template('/challenge/bracketbase.html', challengeid=challenge.challengeid, coords=coords, size=size)
+    return render_template('/challenge/bracketbase.html', challengeid=challengeid, coords=coords, size=size)
 
 @Results.route("/<int:eventid>/bracketimg/<int:challengeid>")
 def bracketimg(challengeid):
-    challenge = Challenge.get(challengeid)
-    if challenge is None:
-        abort(404, "Invalid or no challenge id")
-    results = Challenge.getResults(challengeid)
+    (challenge, results) = _loadChallengeResults(challengeid)
     response = make_response(Bracket.image(challenge.depth, results))
     response.headers['Content-type'] = 'image/png'
     return response
 
 @Results.route("/<int:eventid>/bracketround/<int:challengeid>/<int:round>")
 def bracketround(challengeid, round):
-    chal = Challenge.get(challengeid)
-    if challenge is None:
-        abort(404, "Invalid or no challenge id")
-    results = Challenge.getResults(challengeid, round)
+    (challenge, results) = _loadChallengeResults(challengeid)
     roundReport = get_template_attribute('/challenge/challengemacros.html', 'roundReport')
     return roundReport(results[round])
 
-
 @Results.route("/<int:eventid>/challenge/<int:challengeid>")
 def challenge(challengeid):
-    chal = Challenge.get(challengeid)
-    results = Challenge.getResults(challengeid)
-    return render_template('/challenge/challengereport.html', results=results, chal=chal)
+    (challenge, results) = _loadChallengeResults(challengeid)
+    return render_template('/challenge/challengereport.html', results=results, chal=challenge)
+
 
 @Results.route("/<int:eventid>/grid")
 def grid():

@@ -48,7 +48,7 @@ def eventresults():
 @Json.route("/challenge/<int:challengeid>")
 @Xml.route("/challenge/<int:challengeid>")
 def challenge(challengeid):
-    rounds = Result.getChallengeResults(challengeid)
+    rounds = list(Result.getChallengeResults(challengeid).values())
     if request.blueprint == 'Json':
         return json_encode(rounds)
 

@@ -21,6 +21,7 @@ class Event(AttrBase):
             cur.execute("select * from events order by date")
             return [cls(**x) for x in cur.fetchall()]
 
+    """
     def getSegments(self):
         val = self.attr.get('segments', '')
         sp  = val.strip().split(',').remove('')
@@ -30,6 +31,7 @@ class Event(AttrBase):
 
     def getSegmentCount(self):
         return len(self.getSegments())
+    """
 
     def getCountedRuns(self):
         if self.countedruns <= 0:
@@ -39,4 +41,13 @@ class Event(AttrBase):
 
     def __repr__(self):
         return "<Event: {}>".format(self.name)
+
+
+class Challenge(AttrBase):
+
+    @classmethod
+    def getAll(cls):
+        with g.db.cursor() as cur:
+            cur.execute("select * from challenges order by challengeid")
+            return [cls(**x) for x in cur.fetchall()]
 

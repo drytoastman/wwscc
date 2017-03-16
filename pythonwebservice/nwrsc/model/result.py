@@ -6,9 +6,8 @@ from collections import defaultdict
 from operator import attrgetter
 
 from .base import AttrBase, BaseEncoder, Entrant
-from .challenge import Challenge
 from .classlist import ClassData
-from .event import Event
+from .event import Event, Challenge
 from .runs import Run
 from .series import Series
 from .settings import Settings
@@ -42,7 +41,10 @@ class Result(object):
         name = "c%d"%challengeid
         if cls._needUpdate(('challengerounds', 'challengeruns'), name):
             cls._updateChallengeResults(name, challengeid)
-        return cls._loadResults(name)
+        ret = dict() # Have to convert back to dict as JSON can't store using ints as keys
+        for rnd in cls._loadResults(name):
+            ret[rnd['round']] = rnd
+        return ret
 
 
     #### Helpers for basic results operations
