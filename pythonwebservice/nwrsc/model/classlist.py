@@ -87,9 +87,13 @@ class PlaceHolder(object):
 
 class ClassData(object):
 
-    def __init__(self):
+    def __init__(self, classdicts=[], indexdicts=[]):
         self.classlist = defaultdict(PlaceHolder)
         self.indexlist = dict()
+        for c in classdicts:
+            self.classlist[c['classcode']] = Class(**c)
+        for i in indexdicts:
+            self.indexlist[i['indexcode']] = Index(**i)
 
     @classmethod
     def get(cls):
@@ -112,7 +116,6 @@ class ClassData(object):
         except:
             return 999
         
-
     def getIndexStr(self, car):
         indexstr = car.indexcode or ""
         try:

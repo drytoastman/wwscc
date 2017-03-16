@@ -114,17 +114,18 @@ class Result(object):
         ppoints   = list(map(int, settings.pospointlist.split(',')))
     
         with g.db.cursor() as cur:
-
             # Fetch all of the entrants (driver/car combo), place in class lists, save pointers for quicker access
-            cur.execute("select d.firstname,d.lastname,d.membership,c.* from drivers as d join cars as c on c.driverid=d.driverid " +
-                        "where c.carid in (select distinct carid from runs where eventid=%s)", (eventid,))
+            cur.execute("select distinct d.firstname,d.lastname,d.membership,c.*,r.rungroup from drivers d " + 
+                        "join cars c on c.driverid=d.driverid join runorder r on r.carid=c.carid " +
+                        "where r.eventid=%s", (eventid,))
+            ii = 0
             for e in [Entrant(**x) for x in cur.fetchall()]:
                 e.indexstr = classdata.getIndexStr(e)
                 e.indexval = classdata.getEffectiveIndex(e)
                 e.runs = [[Run(raw=999.999,net=999.999,status='DNS') for x in range(event.runs)] for x in range(event.courses)]
                 results[e.classcode].append(e)
+                ii = ii + 1
                 cptrs[e.carid] = e
-            
 
             # Fetch all of the runs, calc net and assign to the correct entrant
             cur.execute("select * from runs where eventid=%s", (eventid,))

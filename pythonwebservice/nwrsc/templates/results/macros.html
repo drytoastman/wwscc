@@ -1,7 +1,7 @@
 
-{% macro classtables() -%}
+{% macro classtables(results) -%}
 <table class='classresults'>
-{% for code,entrants in g.results.items()|sort %}
+{% for code,entrants in results.items()|sort %}
 	{{headerrow(code)}}
 	{% for e in entrants %}
 		{{entrantrow(e)}}

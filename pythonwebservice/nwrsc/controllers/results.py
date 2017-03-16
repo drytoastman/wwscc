@@ -4,12 +4,18 @@
 """
 
 from flask import Blueprint, request, abort, render_template, get_template_attribute, make_response, g
-from nwrsc.model import Result
+from nwrsc.model import Result, ClassData, TopTimesAccessor, Event
 from nwrsc.lib.bracket import Bracket
 
 Results = Blueprint("Results", __name__)
 
 ## The indexes and lists
+
+def eventfromlist(info, eventid):
+    for e in info['events']:
+        if e['eventid'] == g.eventid:
+            return Event(**e)
+    return None
 
 @Results.route("/")
 def index():
@@ -17,47 +23,54 @@ def index():
 
 @Results.route("/<int:eventid>/")
 def event():
-    info = Result.getSeriesInfo()
-    for e in info['events']:
-        if e['eventid'] == g.eventid:
-            event = e
-            break
-    return render_template('results/eventindex.html', event=event)
+    info    = Result.getSeriesInfo()
+    results = Result.getEventResults(g.eventid)
+    active  = results.keys()
+    event   = eventfromlist(info, g.eventid)
+    return render_template('results/eventindex.html', event=event, active=active)
 
 
 ## Basic results display
 
-def _resultsforclasses(clslist=None):
-    """ Show our class results, if the classlist is None, we are posting for the event """
-    if clslist == [] or clslist == ['']:
-        return "No classes with recorded runs for this request"
+def _resultsforclasses(clslist=None, grplist=None):
+    """ Show our class results """
+    info        = Result.getSeriesInfo()
+    resultsbase = Result.getEventResults(g.eventid)
+    g.classdata = ClassData(info['classes'], info['indexes'])
+    g.event     = eventfromlist(info, g.eventid)
 
-    g.event     = Event.get(g.eventid)
-    g.classdata = ClassData.get()
-    results     = Result.getEventResults(g.eventid)
-    ispost      = clslist is None
-
-    if ispost:
-        g.results      = results
-        g.toptimes     = TopTimesAccessor(g.results)
-        g.entrantcount = sum([len(x) for x in g.results.values()])
-        g.settings     = Settings.get()
+    if clslist is None and grplist is None:
+        ispost         = True
+        results        = resultsbase
+        g.toptimes     = TopTimesAccessor(results)
+        g.entrantcount = sum([len(x) for x in results.values()])
+        g.settings     = info['settings']
+    elif grplist is not None:
+        ispost         = False
+        results        = dict()
+        for code, entries in resultsbase.items():
+            for e in entries:
+                if e['rungroup'] in grplist:
+                    results[code] = entries
+                    break
     else:
-        g.results = { k: results[k] for k in (set(clslist) & set(results.keys())) }
+        ispost         = False
+        results        = { k: resultsbase[k] for k in (set(clslist) & set(resultsbase.keys())) }
 
-    return render_template('results/eventresults.html', ispost=ispost)
+    return render_template('results/eventresults.html', ispost=ispost, results=results)
 
 
 @Results.route("/<int:eventid>/byclass")
 def byclass():
-    g.title = "Results For Class {}".format(request.args.get('list', ''))
-    return _resultsforclasses(clslist=request.args.get('list','').split(','))
+    classes = request.args.get('list', '')
+    g.title = "Results For Class {}".format(classes)
+    return _resultsforclasses(clslist=classes.split(','))
 
 @Results.route("/<int:eventid>/bygroup")
 def bygroup():
-    g.title = "Results For Group {}".format(request.args.get('list', ''))
-    groups = [int(x) for x in request.args.get('list', '').split(',')]
-    return _resultsforclasses(clslist=RunGroup.getClassesForRunGroup(g.eventid, groups))
+    groups = request.args.get('list', '')
+    g.title = "Results For Group {}".format(groups)
+    return _resultsforclasses(grplist=[int(x) for x in groups.split(',')])
 
 @Results.route("/<int:eventid>/post")
 def post():
@@ -91,9 +104,10 @@ def tt():
     counted  = bool(int(request.args.get('counted', '1')))
     course   = int(request.args.get('course', '0'))
 
-    event    = Event.get(g.eventid)
+    info     = Result.getSeriesInfo()
     results  = Result.getEventResults(g.eventid)
     toptimes = TopTimesAccessor(results)
+    event    = eventfromlist(info, g.eventid)
     header   = "Top {} Times ({} Runs) for {}".format(net and "Net" or "Raw", counted and "Counted" or "All", event.name)
 
     if event.courses > 1:

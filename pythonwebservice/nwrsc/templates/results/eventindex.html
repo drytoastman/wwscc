@@ -47,8 +47,8 @@ padding: 0;
 
 <h3>Active Classes</h3>
 <ul class='classlist'>
-{% for cls in g.active %}
-	<li><a href='{{url_for('.byclass', list=cls.classcode)}}'>{{cls.classcode}}</a></li>
+{% for code in active %}
+	<li><a href='{{url_for('.byclass', list=code)}}'>{{code}}</a></li>
 {% endfor %}
 </ul>
 <br style='clear:both;'/>
@@ -93,6 +93,7 @@ padding: 0;
 </tr>
 </table>
 
+{#
 {%if event.segments > 0 %}
 <h3>Other Top Times Lists</h3>
 <ul class='classlist'>
@@ -100,7 +101,7 @@ padding: 0;
 </ul>
 <br style='clear:both;'/>
 {% endif %}
-
+#}
 
 <h3>Other</h3>
 <ul>

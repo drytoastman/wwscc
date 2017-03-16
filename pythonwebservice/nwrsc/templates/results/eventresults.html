@@ -10,7 +10,7 @@
 {% if not ispost %}
 
 <h2>{{g.title}}</h2>
-{{res.classtables()}}
+{{res.classtables(results)}}
 
 {% else %}
 
@@ -23,7 +23,7 @@
 
 <!-- Event info -->
 <div id='eventtitle'>{{g.event.date}} - {{g.event.name}}</div>
-<div id='hosttitle'>Hosted At: <span class='host'>{{g.event.attr.location}}</span></div>
+<div id='hosttitle'>Hosted At: <span class='host'>{{g.event.location}}</span></div>
 <div id='entrantcount'>({{g.entrantcount}} Entrants)</div>
 
 <hr />
@@ -35,7 +35,7 @@
 {% endfor %}
 </div>
 
-{{res.classtables()}}
+{{res.classtables(results)}}
 <br/>
 <br/>
 {{res.toptimestable(g.toptimes.getLists({'net':True}, {'net':False}))}}
