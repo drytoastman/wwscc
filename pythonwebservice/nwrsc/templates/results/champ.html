@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block headers %}
+{{super()}}
+<link rel="stylesheet" href="/static/results.css" />
+{% endblock %}
+
+{% block content %}
+<!-- Series info -->
+<div id='seriestitle'>{{seriesname}}</div>
+<hr />
+<!-- Results -->
+
+<table class='champ'>
+{% for code, entrants in champ.results.items()|sort %}
+{% set cls = champ.classdata.classlist[code] %}
+
+<tr><th class='classhead' colspan='{{champ.events|length + 4}}'>{{cls.classcode}} - {{cls.descrip}} -
+            Number of Entries: {{entrants.entries}} - Average Per Event: {{"%.2lf"%(entrants.entries/(champ.events|length))}}</th></tr>
+<tr>
+<th>#</th>
+<th>Name</th>
+<th>Attended</th>
+{% for event in champ.events %}
+<th>Event {{loop.index}}</th>
+{% endfor %}
+<th>Total</th>
+</tr>
+        
+{% for e in entrants %}
+	<tr{{e.events < champ.settings.minevents and " class='missingmin'"|safe or ""}}>
+    <td>{{loop.index}}</td>
+    <td class='name'>{{e.firstname}} {{e.lastname}}</td>
+    <td class='attend'>{{e.events}}</td>
+    {% for event in champ.events %}
+        <td class='points {{event.eventid in e.points.drop and "drop" or ""}}'>{{e.points.get(event.eventid)|t3}}</td>
+    {% endfor %}
+    <td class='points'>{{e.points.total|t3}}</td>
+    </tr>
+{% endfor %}
+{% endfor %}
+</table>
+{% endblock content %}
+
