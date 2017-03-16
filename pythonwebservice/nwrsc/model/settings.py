@@ -4,12 +4,12 @@ from flask import g
 class Settings(object):
 
     BOOLS  = ["locked", "superuniquenumbers", "indexafterpenalties", "usepospoints"]
-    INTS   = ["largestcarnumber", "useevents", "minevents"]
+    INTS   = ["largestcarnumber", "dropevents", "minevents"]
     FLOATS = []
     STRS   = ["pospointlist", "champsorting", "seriesname", "sponsorlink", "schema", "parentseries", "classinglink"]
  
 
-    def __init__(self):
+    def __init__(self, **initial):
         self.__dict__.update({
             'locked': False,
             'superuniquenumbers': False,
@@ -17,7 +17,7 @@ class Settings(object):
             'usepospoints': False,
     
             'largestcarnumber': 1999,
-            'useevents': 6,
+            'dropevents': 2,
             'minevents': 0,
 
             'pospointlist': "20,16,13,11,9,7,6,5,4,3,2,1",
@@ -28,6 +28,7 @@ class Settings(object):
             'parentseries': "",
             'classinglink': ""
         })
+        self.__dict__.update(initial)
 
 
     def __setattr__(self, key, val):

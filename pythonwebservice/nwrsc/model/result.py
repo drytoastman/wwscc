@@ -4,6 +4,7 @@ from math import ceil
 from copy import copy
 from collections import defaultdict
 from operator import attrgetter
+from datetime import datetime
 
 from .base import AttrBase, BaseEncoder, Entrant
 from .classlist import ClassData
@@ -45,6 +46,10 @@ class Result(object):
         for rnd in cls._loadResults(name):
             ret[rnd['round']] = rnd
         return ret
+
+    @classmethod
+    def getChampResults(cls):
+        return loadChampInfoFromResults()
 
 
     #### Helpers for basic results operations
@@ -124,7 +129,7 @@ class Result(object):
             for e in [Entrant(**x) for x in cur.fetchall()]:
                 e.indexstr = classdata.getIndexStr(e)
                 e.indexval = classdata.getEffectiveIndex(e)
-                e.runs = [[Run(raw=999.999,net=999.999,status='DNS') for x in range(event.runs)] for x in range(event.courses)]
+                e.runs = [[Run(raw=999.999,pen=999.999,net=999.999,status='DNS') for x in range(event.runs)] for x in range(event.courses)]
                 results[e.classcode].append(e)
                 ii = ii + 1
                 cptrs[e.carid] = e
@@ -434,8 +439,7 @@ class TopTimesRow(list):
     pass
 
 class TopTimesTable(object):
-    """ We need to zip our lists together ourselves so we create our Table and Rows here """
-
+    """ We need to zip our lists together ourselves (can't do it in template anymore) so we create our Table and Rows here """
     def __init__(self, *lists):
         self.titles   = list()
         self.colcount = list()
@@ -461,4 +465,124 @@ class TopTimesTable(object):
         for ii in range(len(ttl)):
             self.rows[ii].append(ttl[ii])
 
+
+class PointStorage(object):
+
+    def __init__(self):
+        self.storage = {}
+        self.total = 0
+        self.drop = []
+        self.usingbest = 0
+
+    def get(self, eventid):
+        return self.storage.get(eventid, None)
+
+    def set(self, eventid, points):
+        self.storage[eventid] = points
+
+    def theory(self, eventid, points):
+        save = self.storage[eventid]
+        self.storage[eventid] = points
+        self.calc(self.usingbest)
+        ret = self.total
+        self.storage[eventid] = save
+        self.calc(self.usingbest)
+        return ret
+        
+    def calc(self, bestof):
+        self.total = 0
+        self.drop = []
+        self.usingbest = bestof
+        for ii, points in enumerate(sorted(self.storage.items(), key=lambda x:x[1], reverse=True)):
+            if ii < bestof:
+                self.total += points[1]  # Add to total points
+            else:
+                self.drop.append(points[0])  # Otherwise this is a drop event, mark eventid
+
+    # provides the comparison for sorting
+    def __eq__(self, other):
+        return self.total == other.total
+
+    def __lt__(self, other):
+        return self.total < other.total
+
+
+class ChampEntrant(object):
+
+    AvailableSubKeys = ['firsts', 'seconds', 'thirds', 'fourths', 'attended']
+
+    def __init__(self, entry):
+        self.firstname  = entry['firstname']
+        self.lastname   = entry['lastname']
+        self.driverid   = entry['driverid']
+        self.points     = PointStorage()
+        self.finishes   = defaultdict(int)
+        self.events     = 0
+        self.addResults(entry)
+
+    def __getattr__(self, key):
+        """ Implement getattr to match firsts, seconds, thirds, etc. """
+        try:
+            # 100 - turns ordering into reverse
+            if key == 'attended': return 100 - self.events
+            return 100 - self.finishes[{ 'firsts':1, 'seconds':2, 'thirds':3, 'fourths':4 }[key]]
+        except:
+            raise AttributeError("No known key %s" % key)
+
+    def addResults(self, entry): 
+        self.finishes[entry['position']] += 1
+        self.events += 1
+        self.points.set(entry['eventid'], entry['points'])
+
+    def __repr__(self):
+        return "%s %s: %s" % (self.firstname, self.lastname, self.points.total)
+
+
+def loadChampInfoFromResults():
+    info      = Result.getSeriesInfo()
+    settings  = Settings(**info['settings'])
+    classdata = ClassData(info['classes'], info['indexes'])
+    completed = 0
+    eresults  = dict()
+
+    for event in info['events']:
+        if event['ispractice']: continue
+        if datetime.today() >= datetime.strptime(event['date'], "%Y-%m-%d"):
+            completed += 1
+        eresults[event['eventid']] = Result.getEventResults(event['eventid'])
+
+    todrop = settings.dropevents
+    bestof = max(todrop, completed - todrop)
+
+    minevent = settings.minevents
+    sortkeys = ['points']
+    sortkeys.extend([x for x in map(str.strip, settings.champsorting.split(',')) if x in ChampEntrant.AvailableSubKeys])
+
+    store = {}
+    for eventid, eventr in eresults.items():
+        for classcode in eventr:
+            if not classdata.classlist[classcode].champtrophy:  # class doesn't get champ trophies, ignore
+                continue
+            if classcode not in store:
+                store[classcode] = {}
+
+            clsstore = store[classcode]
+            for entrant in eventr[classcode]:
+                entrant['eventid'] = eventid
+                if entrant['driverid'] not in clsstore:
+                    clsstore[entrant['driverid']] = ChampEntrant(entrant)
+                else:
+                    clsstore[entrant['driverid']].addResults(entrant)
+
+    ret = {}
+    for code, entries in store.items():
+        toadd = list()
+        for entrant in entries.values():
+            if entrant.events >= minevent:
+                entrant.points.calc(bestof)
+                toadd.append(entrant)
+        toadd.sort(key=attrgetter(*sortkeys))
+        ret[code] = toadd
+
+    return ret
 

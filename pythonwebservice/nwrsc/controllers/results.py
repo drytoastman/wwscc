@@ -80,7 +80,8 @@ def post():
 
 @Results.route("/champ")
 def champ():
-    return "champ"
+    res = Result.getChampResults()
+    return str(res)
 
 @Results.route("/<int:eventid>/audit")
 def audit():

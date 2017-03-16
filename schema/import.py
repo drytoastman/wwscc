@@ -164,7 +164,11 @@ def convert(sourcefile, name, password):
     #SETTINGS
     settings = dict()
     for r in old.execute("select name,val from settings"):
-        cur.execute("insert into settings values (%s, %s, now())", (r[0], r[1]))
+        key = r['name']
+        val = r['val']
+        if key == 'useevents':
+            key = 'dropevents'
+        cur.execute("insert into settings values (%s, %s, now())", (key, val))
 
         
     #CHALLENGES (remap challengeid, eventid)
