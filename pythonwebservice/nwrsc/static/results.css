@@ -38,6 +38,10 @@ tr.entrantrow td {
 	border-top: 1px solid #222;
 }
 
+tr.missingmin td {
+	text-decoration: line-through;
+}
+
 td.run, td.points {
 	text-align:center;
 }

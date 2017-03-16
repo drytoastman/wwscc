@@ -23,6 +23,7 @@ class Result(object):
         archived.  If the series is active and the data in the regular tables is more up to date, we 
         regenerate the values in the results table.
     """
+
     @classmethod
     def getSeriesInfo(cls):
         name = "info"
@@ -49,23 +50,30 @@ class Result(object):
 
     @classmethod
     def getChampResults(cls):
-        return loadChampInfoFromResults()
+        return cls._loadChampInfo()
 
+    @classmethod
+    def getTopTimesTable(cls, results, *keys):
+        return cls._loadTopTimeTable(results, *keys)
+
+
+    #####################  Everything below here is for internal use, use the API above ##############
 
     #### Helpers for basic results operations
 
     @classmethod
     def _needUpdate(cls, tables, name):
         # check if we can/need to update based on table changes
-        with g.db.cursor() as cur:
-            if g.seriestype == Series.ACTIVE:
-                cur.execute("select " +
-                    "(select max(time) from serieslog where tablen in %s) >" +
-                    "(select modified from results where series=%s and name=%s)", (tables, g.series, name))
-                mod = cur.fetchone()[0]
-                if mod is None or mod: 
-                    return True
+        if g.seriestype != Series.ACTIVE:
             return False
+        with g.db.cursor() as cur:
+            cur.execute("select " +
+                "(select max(time) from serieslog where tablen in %s) >" +
+                "(select modified from results where series=%s and name=%s)", (tables, g.series, name))
+            mod = cur.fetchone()[0]
+            if mod is None or mod: 
+                return True
+        return False
 
     @classmethod
     def _loadResults(cls, name):
@@ -351,14 +359,50 @@ class Result(object):
     
         cls._insertResults(name, list(rounds.values()))
 
-            
-class TopTimesAccessor(object):
-    """ This is a simple accessor of JSON event result data for top times generation """
 
-    def __init__(self, results):
-        self.results = results
+    @classmethod
+    def _loadChampInfo(cls):
+        """
+            Return a ChampResults object
+        """
+        info      = cls.getSeriesInfo()
+        settings  = Settings(**info['settings'])
+        classdata = ClassData(info['classes'], info['indexes'])
+        completed = 0
 
-    def getLists(self, *keys):
+        # Interm storage while we distribute result data by driverid
+        store = defaultdict(lambda : defaultdict(ChampEntrant))
+        for event in info['events']:
+            if event['ispractice']: continue
+            if datetime.today() >= datetime.strptime(event['date'], "%Y-%m-%d"):
+                completed += 1
+
+            eventresults = cls.getEventResults(event['eventid'])
+            for classcode in eventresults:
+                if not classdata.classlist[classcode].champtrophy:  # class doesn't get champ trophies, ignore
+                    continue
+                classmap = store[classcode]
+                for entrant in eventresults[classcode]:
+                    classmap[entrant['driverid']].addResults(event['eventid'], entrant)
+
+        todrop   = settings.dropevents
+        bestof   = max(todrop, completed - todrop)
+        sortkeys = ['points']
+        sortkeys.extend([x for x in map(str.strip, settings.champsorting.split(',')) if x in ChampEntrant.AvailableSubKeys])
+
+        # Final storage where results are an ordered list rather than map
+        ret = defaultdict(ChampClass)
+        for classcode, classmap in store.items():
+            for entrant in classmap.values():
+                entrant.points.calc(bestof)
+                ret[classcode].append(entrant)
+            ret[classcode].sort(key=attrgetter(*sortkeys), reverse=True)
+
+        return ChampResults(settings, info['events'], classdata, ret)
+
+             
+    @classmethod
+    def _loadTopTimeTable(cls, results, *keys):
         """
             Generate lists on demand as there are many iterations.  Returns a TopTimesTable class
             that wraps all the TopTimesLists together.
@@ -388,8 +432,8 @@ class TopTimesAccessor(object):
             if fields is None: fields = ['name', 'classcode', 'indexstr', 'indexval', 'time']
 
             ttl = TopTimesList(title, cols, fields)
-            for cls in self.results:
-                for e in self.results[cls]:
+            for cls in results:
+                for e in results[cls]:
                     if course > 0:
                         for r in e['runs'][course-1]:
                             if r['netorder'] == 1:
@@ -410,6 +454,7 @@ class TopTimesAccessor(object):
             lists.append(ttl)
 
         return TopTimesTable(*lists)
+
 
 
 class TopTimesList(list):
@@ -511,14 +556,10 @@ class ChampEntrant(object):
 
     AvailableSubKeys = ['firsts', 'seconds', 'thirds', 'fourths', 'attended']
 
-    def __init__(self, entry):
-        self.firstname  = entry['firstname']
-        self.lastname   = entry['lastname']
-        self.driverid   = entry['driverid']
-        self.points     = PointStorage()
-        self.finishes   = defaultdict(int)
-        self.events     = 0
-        self.addResults(entry)
+    def __init__(self):
+        self.points   = PointStorage()
+        self.finishes = defaultdict(int)
+        self.events   = 0
 
     def __getattr__(self, key):
         """ Implement getattr to match firsts, seconds, thirds, etc. """
@@ -529,60 +570,27 @@ class ChampEntrant(object):
         except:
             raise AttributeError("No known key %s" % key)
 
-    def addResults(self, entry): 
+    def addResults(self, eventid, entry): 
+        self.firstname = entry['firstname']
+        self.lastname  = entry['lastname']
+        #self.driverid  = entry['driverid']
         self.finishes[entry['position']] += 1
         self.events += 1
-        self.points.set(entry['eventid'], entry['points'])
+        self.points.set(eventid, entry['points'])
 
     def __repr__(self):
         return "%s %s: %s" % (self.firstname, self.lastname, self.points.total)
 
 
-def loadChampInfoFromResults():
-    info      = Result.getSeriesInfo()
-    settings  = Settings(**info['settings'])
-    classdata = ClassData(info['classes'], info['indexes'])
-    completed = 0
-    eresults  = dict()
+class ChampClass(list):
+    @property
+    def entries(self):
+        return sum([e.events for e in self])
 
-    for event in info['events']:
-        if event['ispractice']: continue
-        if datetime.today() >= datetime.strptime(event['date'], "%Y-%m-%d"):
-            completed += 1
-        eresults[event['eventid']] = Result.getEventResults(event['eventid'])
-
-    todrop = settings.dropevents
-    bestof = max(todrop, completed - todrop)
-
-    minevent = settings.minevents
-    sortkeys = ['points']
-    sortkeys.extend([x for x in map(str.strip, settings.champsorting.split(',')) if x in ChampEntrant.AvailableSubKeys])
-
-    store = {}
-    for eventid, eventr in eresults.items():
-        for classcode in eventr:
-            if not classdata.classlist[classcode].champtrophy:  # class doesn't get champ trophies, ignore
-                continue
-            if classcode not in store:
-                store[classcode] = {}
-
-            clsstore = store[classcode]
-            for entrant in eventr[classcode]:
-                entrant['eventid'] = eventid
-                if entrant['driverid'] not in clsstore:
-                    clsstore[entrant['driverid']] = ChampEntrant(entrant)
-                else:
-                    clsstore[entrant['driverid']].addResults(entrant)
-
-    ret = {}
-    for code, entries in store.items():
-        toadd = list()
-        for entrant in entries.values():
-            if entrant.events >= minevent:
-                entrant.points.calc(bestof)
-                toadd.append(entrant)
-        toadd.sort(key=attrgetter(*sortkeys))
-        ret[code] = toadd
-
-    return ret
+class ChampResults(object):
+    def __init__(self, settings, events, classdata, results):
+        self.settings  = settings
+        self.events    = events
+        self.classdata = classdata
+        self.results   = results
 

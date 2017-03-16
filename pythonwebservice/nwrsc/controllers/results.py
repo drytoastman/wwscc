@@ -4,7 +4,7 @@
 """
 
 from flask import Blueprint, request, abort, render_template, get_template_attribute, make_response, g
-from nwrsc.model import Result, ClassData, TopTimesAccessor, Event, Challenge
+from nwrsc.model import Result, ClassData, Event, Challenge
 from nwrsc.lib.bracket import Bracket
 
 Results = Blueprint("Results", __name__)
@@ -44,7 +44,7 @@ def _resultsforclasses(clslist=None, grplist=None):
     if clslist is None and grplist is None:
         ispost         = True
         results        = resultsbase
-        g.toptimes     = TopTimesAccessor(results)
+        g.toptimes     = Result.getTopTimesTable(results, {'net':True}, {'net':False})
         g.entrantcount = sum([len(x) for x in results.values()])
         g.settings     = info['settings']
     elif grplist is not None:
@@ -80,8 +80,7 @@ def post():
 
 @Results.route("/champ")
 def champ():
-    res = Result.getChampResults()
-    return str(res)
+    return render_template('/results/champ.html', champ=Result.getChampResults())
 
 @Results.route("/<int:eventid>/audit")
 def audit():
@@ -109,14 +108,13 @@ def tt():
 
     info     = Result.getSeriesInfo()
     results  = Result.getEventResults(g.eventid)
-    toptimes = TopTimesAccessor(results)
     event    = eventfromlist(info, g.eventid)
     header   = "Top {} Times ({} Runs) for {}".format(net and "Net" or "Raw", counted and "Counted" or "All", event.name)
 
     if event.courses > 1:
-        table = toptimes.getLists(*[{'net':net, 'counted':counted, 'course':c, 'title':c and "Course {}".format(c) or "Total"} for c in range(event.courses+1)])
+        table = Result.getTopTimesTable(results, *[{'net':net, 'counted':counted, 'course':c, 'title':c and "Course {}".format(c) or "Total"} for c in range(event.courses+1)])
     else:
-        table = toptimes.getLists({'net':net, 'counted':counted, 'course':0, 'title':'Top Times'})
+        table = Result.getTopTimesTable(results, {'net':net, 'counted':counted, 'course':0, 'title':'Top Times'})
 
     return render_template('/results/toptimes.html', header=header, table=table)
 
