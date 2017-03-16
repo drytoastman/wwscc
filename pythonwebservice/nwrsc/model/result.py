@@ -6,32 +6,64 @@ from collections import defaultdict
 from operator import attrgetter
 
 from .base import AttrBase, BaseEncoder, Entrant
+from .challenge import Challenge
 from .classlist import ClassData
+from .event import Event
 from .runs import Run
+from .series import Series
 from .settings import Settings
 
 log = logging.getLogger(__name__)
 
-def marklist(lst, label):
-    """ Creates an attribute for each entry in the list with the value of index+1 """
-    for ii, entry in enumerate(lst):
-        setattr(entry, label, ii+1)
 
-class EventResult(object):
+class Result(object):
+    """ 
+        Interface into the results table for cached results.  This is the primary source of information
+        for the results, json and xml controllers as the data is present even if the series has been
+        archived.  If the series is active and the data in the regular tables is more up to date, we 
+        regenerate the values in the results table.
+    """
+    @classmethod
+    def getSeriesInfo(cls):
+        name = "info"
+        if cls._needUpdate(('classlist', 'indexlist', 'events', 'settings'), name):
+            cls._updateSeriesInfo(name)
+        return cls._loadResults(name)
 
     @classmethod
-    def get(cls, event):
-        with g.db.cursor() as cur:
-            # check if we need to update the results (serieslog shows changes later than calculated results)
-            cur.execute("select " +
-                "(select max(time) from serieslog where tablen in ('classlist', 'indexlist', 'events', 'cars', 'runs')) >" +
-                "(select modified from results where series=%s and name=%s)", (g.series, "e%d"%event.eventid))
-            mod = cur.fetchone()[0]
-            if mod is None or mod:  # > if no results or serieslog data, we get a None, recalc on that case either way
-                cls.update(event)
+    def getEventResults(cls, eventid):
+        name = "e%d"%eventid
+        if cls._needUpdate(('classlist', 'indexlist', 'events', 'cars', 'runs'), name):
+            cls._updateEventResults(name, eventid)
+        return cls._loadResults(name)
 
-            # everything should be the latest now, load and return 
-            cur.execute("select data from results where series=%s and name=%s", (g.series, "e%d"%event.eventid))
+    @classmethod
+    def getChallengeResults(cls, challengeid):
+        name = "c%d"%challengeid
+        if cls._needUpdate(('challengerounds', 'challengeruns'), name):
+            cls._updateChallengeResults(name, challengeid)
+        return cls._loadResults(name)
+
+
+    #### Helpers for basic results operations
+
+    @classmethod
+    def _needUpdate(cls, tables, name):
+        # check if we can/need to update based on table changes
+        with g.db.cursor() as cur:
+            if g.seriestype == Series.ACTIVE:
+                cur.execute("select " +
+                    "(select max(time) from serieslog where tablen in %s) >" +
+                    "(select modified from results where series=%s and name=%s)", (tables, g.series, name))
+                mod = cur.fetchone()[0]
+                if mod is None or mod: 
+                    return True
+            return False
+
+    @classmethod
+    def _loadResults(cls, name):
+        with g.db.cursor() as cur:
+            cur.execute("select data from results where series=%s and name=%s", (g.series, name))
             res = cur.fetchone()
             if res is not None:
                 return res['data']
@@ -39,62 +71,64 @@ class EventResult(object):
                 return dict()
 
     @classmethod
-    def audit(cls, event, course, group):
+    def _insertResults(cls, name, data):
+        # Get access for modifying series rows, check if we need to insert a default first.
+        # Don't upsert as we have to specify LARGE json object twice.
         with g.db.cursor() as cur:
-            cur.execute("SELECT d.firstname,d.lastname,c.*,r.* FROM runorder r " \
-                        "JOIN cars c ON r.carid=c.carid JOIN drivers d ON c.driverid=d.driverid " \
-                        "WHERE r.eventid=%s and r.course=%s and r.rungroup=%s order by r.row", (event.eventid, course, group))
-            hold = dict()
-            for res in [Entrant(**x) for x in cur.fetchall()]:
-                res.runs = [None] * event.runs
-                hold[res.carid] = res
+            cur.execute("set role %s", (g.series,))
+            cur.execute("insert into results values (%s, %s, '{}', now()) ON CONFLICT (series, name) DO NOTHING", (g.series, name))
+            cur.execute("update results set data=%s, modified=now() where series=%s and name=%s", (BaseEncoder().encode(data), g.series, name))
+            cur.execute("reset role")
+            g.db.commit()
 
-            cur.execute("SELECT * FROM runs WHERE eventid=%s and course=%s and carid in %s", (event.eventid, course, tuple(hold.keys())))
-            for run in [Run(**x) for x in cur.fetchall()]:
-                res = hold[run.carid]
-                if run.run > event.runs:
-                    res.runs[:] =  res.runs + [None]*(run.run - event.runs)
-                res.runs[run.run-1] = run
 
-            return list(hold.values())
+    ### Here is where the actual data generation is done
+
+    @classmethod
+    def _updateSeriesInfo(cls, name):
+        classdata = ClassData.get()
+        data = {
+                'events': Event.byDate(),
+                'challenges': Challenge.getAll(),
+                'classes': list(classdata.classlist.values()),
+                'indexes': list(classdata.indexlist.values()),
+                'settings': Settings.get()
+            }
+        cls._insertResults(name, data)
 
 
     @classmethod
-    def update(cls, event):
+    def _updateEventResults(cls, name, eventid):
         """
             Creating the cached event result data for the given event.
             The event result data is {<classcode>, [<Entrant>]}.
-            Each Entrant is a json object of attributes and a list of Run objects.
+            Each Entrant is a json object of attributes and a list of lists of Run objects ([course#][run#])
             Each Run object is regular run data with attributes like bestraw, bestnet assigned.
         """
-        log.info("produce new data for %s %d", g.series, event.eventid)
-
         results = defaultdict(list)
-        cptrs = {}
-
-        blankrun = Run(raw=999.999, net=999.999, status="DNS")
+        cptrs   = {}
+    
+        event     = Event.get(eventid)
         classdata = ClassData.get()
-        settings = Settings.get()
-        ppoints = list(map(int, settings.pospointlist.split(',')))
-
+        settings  = Settings.get()
+        ppoints   = list(map(int, settings.pospointlist.split(',')))
+    
         with g.db.cursor() as cur:
+
             # Fetch all of the entrants (driver/car combo), place in class lists, save pointers for quicker access
             cur.execute("select d.firstname,d.lastname,d.membership,c.* from drivers as d join cars as c on c.driverid=d.driverid " +
-                        "where c.carid in (select distinct carid from runs where eventid=%s)", (event.eventid,))
-            for row in cur.fetchall():
-                e = Entrant(**row)
-                #e.attrToUpper()
+                        "where c.carid in (select distinct carid from runs where eventid=%s)", (eventid,))
+            for e in [Entrant(**x) for x in cur.fetchall()]:
                 e.indexstr = classdata.getIndexStr(e)
                 e.indexval = classdata.getEffectiveIndex(e)
-                e.runs = [[copy(blankrun) for x in range(event.runs)] for x in range(event.courses)]
+                e.runs = [[Run(raw=999.999,net=999.999,status='DNS') for x in range(event.runs)] for x in range(event.courses)]
                 results[e.classcode].append(e)
                 cptrs[e.carid] = e
             
+
             # Fetch all of the runs, calc net and assign to the correct entrant
-            cur.execute("select * from runs where eventid=%s", (event.eventid,))
-            for row in cur.fetchall():
-                r = Run(**row)
-                #r.attrToUpper()
+            cur.execute("select * from runs where eventid=%s", (eventid,))
+            for r in [Run(**x) for x in cur.fetchall()]:
                 match = cptrs[r.carid]
                 match.runs[r.course-1][r.run - 1] = r
                 penalty = (r.cones * event.conepen) + (r.gates * event.gatepen)
@@ -107,13 +141,18 @@ class EventResult(object):
                 else:
                     r.pen = r.raw + penalty
                     r.net = (r.raw*match.indexval) + penalty
-
+        
             # For every entrant, calculate their best runs (raw,net,allraw,allnet) and event sum(net)
             for e in cptrs.values():
                 e.net = 0
                 e.pen = 0
                 counted = min(classdata.getCountedRuns(e.classcode), event.getCountedRuns())
 
+                # Creates an attribute for each entry in the list with the value of index+1 """
+                def marklist(lst, label):
+                    for ii, entry in enumerate(lst):
+                        setattr(entry, label, ii+1)
+        
                 for course in range(event.courses):
                     marklist (sorted(e.runs[course], key=attrgetter('raw')), 'allraworder')
                     marklist (sorted(e.runs[course], key=attrgetter('net')), 'allnetorder')
@@ -122,13 +161,13 @@ class EventResult(object):
                     marklist(bestnet, 'netorder')
                     e.net += bestnet[0].net
                     e.pen += bestnet[0].pen
-
+        
             # Now for each class we can sort and update position, trophy, points(both types) and diffs
-            for cls in results:
-                res = results[cls]
+            for clas in results:
+                res = results[clas]
                 res.sort(key=attrgetter('net'))
                 trophydepth = ceil(len(res) / 3.0)
-                eventtrophy = classdata.classlist[cls].eventtrophy
+                eventtrophy = classdata.classlist[clas].eventtrophy
                 for ii, e in enumerate(res):
                     e.position = ii+1
                     e.trophy = eventtrophy and (ii < trophydepth)
@@ -140,11 +179,13 @@ class EventResult(object):
                         e.diff       = res[ii-1].net - e.net
                         e.diffpoints = res[0].net*100/e.net;
                         e.pospoints  = ii >= len(ppoints) and ppoints[-1] or ppoints[ii]
-
+        
                     # quick access for templates
                     e.points = settings.usepospoints and e.pospoints or e.diffpoints
-
-            """
+        
+        cls._insertResults(name, results)
+    
+        """
         data.eventid = eventid
         data.carid = carid
         data.classcode = classcode
@@ -199,27 +240,121 @@ class EventResult(object):
                 data.potentialdiffpoints = min(100, sumlist[0]/data.potentialsum*100);
             """
 
+    @classmethod
+    def _updateChallengeResults(cls, name, challengeid):
+        rounds = dict()
+        with g.db.cursor() as cur:
+            getrounds = "SELECT x.*, " \
+                    "d1.firstname as e1fn, d1.lastname as e1ln, c1.classcode as e1cc, c1.indexcode as e1ic, " \
+                    "d2.firstname as e2fn, d2.lastname as e2ln, c2.classcode as e2cc, c2.indexcode as e2ic  " \
+                    "FROM challengerounds x " \
+                    "LEFT JOIN cars c1 ON x.car1id=c1.carid LEFT JOIN drivers d1 ON c1.driverid=d1.driverid " \
+                    "LEFT JOIN cars c2 ON x.car2id=c2.carid LEFT JOIN drivers d2 ON c2.driverid=d2.driverid " \
+                    "WHERE challengeid=%s "
+    
+            getruns = "select * from challengeruns where challengeid=%s "
+    
+            cur.execute(getrounds, (challengeid,))
+            for obj in [AttrBase(**x) for x in cur.fetchall()]:
+                # We organize ChallengeRound in a topological structure so we do custom setting here
+                rnd = AttrBase()
+                rnd.challengeid  = obj.challengeid
+                rnd.round        = obj.round
+                rnd.winner       = 0 
+                rnd.detail       = ""
+                rnd.e1           = AttrBase()
+                rnd.e1.carid     = obj.car1id
+                rnd.e1.dial      = obj.car1dial
+                rnd.e1.newdial   = obj.car1dial
+                rnd.e1.firstname = obj.e1fn or ""
+                rnd.e1.lastname  = obj.e1ln or ""
+                rnd.e1.classcode = obj.e1cc
+                rnd.e1.indexcode = obj.e1ic
+                rnd.e1.left      = None
+                rnd.e1.right     = None
+                rnd.e2           = AttrBase()
+                rnd.e2.carid     = obj.car2id
+                rnd.e2.dial      = obj.car2dial
+                rnd.e2.newdial   = obj.car2dial
+                rnd.e2.firstname = obj.e2fn or ""
+                rnd.e2.lastname  = obj.e2ln or ""
+                rnd.e2.classcode = obj.e2cc
+                rnd.e2.indexcode = obj.e2ic
+                rnd.e2.left      = None
+                rnd.e2.right     = None
+                rounds[rnd.round] = rnd
+    
+            cur.execute(getruns, (challengeid,))
+            for run in [AttrBase(**x) for x in cur.fetchall()]:
+                rnd = rounds[run.round]
+                run.net = run.status == "OK" and run.raw + (run.cones * 2) + (run.gates * 10) or 999.999
+                if   rnd.e1.carid == run.carid:
+                    setattr(rnd.e1, run.course==1 and 'left' or 'right', run)
+                elif rnd.e2.carid == run.carid:
+                    setattr(rnd.e2, run.course==1 and 'left' or 'right', run)
 
-            # Get access for modifying series rows, check if we need to insert a default first.  Don't upsert as we have to specify LARGE json object twice.
-            cur.execute("set role %s", (g.series,))
-            name = "e%d"%event.eventid
-            cur.execute("insert into results values (%s, %s, '{}', now()) ON CONFLICT (series, name) DO NOTHING", (g.series, name))
-            cur.execute("update results set data=%s, modified=now() where series=%s and name=%s", (BaseEncoder().encode(results), g.series, name))
-            cur.execute("reset role")
-            g.db.commit()
+            for rnd in rounds.values():
+                #(rnd.winner, rnd.detail) = rnd.compute()
+                tl = rnd.e1.left
+                tr = rnd.e1.right
+                bl = rnd.e2.left
+                br = rnd.e2.right
+
+                # Missing an entrant or no run data
+                if rnd.e1.carid == 0 or rnd.e2.carid == 0:
+                    rnd.detail = 'No matchup yet'
+                    continue
+                if tl is None and tr is None:
+                    rnd.detail = 'No runs taken'
+                    continue
+
+                # Some runs taken but there was non-OK status creating a default win
+                if tl and tl.status != "OK":  rnd.winner = 2; rnd.detail = rnd.e2.firstname+" wins by default"; continue
+                if br and br.status != "OK":  rnd.winner = 1; rnd.detail = rnd.e1.firstname+" wins by default"; continue
+                if tr and tr.status != "OK":  rnd.winner = 2; rnd.detail = rnd.e2.firstname+" wins by default"; continue
+                if bl and bl.status != "OK":  rnd.winner = 1; rnd.detail = rnd.e1.firstname+" wins by default"; continue
+
+                # Some runs so present a half way status
+                if not tl or not tr: 
+                    if tl and br:   hr = (tl.net - rnd.e1.dial) - (br.net - rnd.e2.dial)
+                    elif tr and bl: hr = (tr.net - rnd.e1.dial) - (bl.net - rnd.e2.dial)
+                    else:           hr = 0
+
+                    if hr > 0:   rnd.detail = '%s leads by %0.3f' % (rnd.e2.firstname, hr)
+                    elif hr < 0: rnd.detail = '%s leads by %0.3f' % (rnd.e1.firstname, hr)
+                    else:        rnd.detail = 'Tied at the Half'
+
+                    continue
+
+                # We have all the data, calculate who won
+                rnd.e1.result = rnd.e1.left.net + rnd.e1.right.net - (2*rnd.e1.dial)
+                rnd.e2.result = rnd.e2.left.net + rnd.e2.right.net - (2*rnd.e2.dial)
+                if rnd.e1.result < 0: rnd.e1.newdial = rnd.e1.dial + (rnd.e1.result/2 * 1.5)
+                if rnd.e2.result < 0: rnd.e2.newdial = rnd.e2.dial + (rnd.e2.result/2 * 1.5)
+
+                if rnd.e1.result < rnd.e2.result: 
+                    rnd.winner = 1
+                    rnd.detail = "%s wins by %0.3f" % (rnd.e1.firstname, (rnd.e2.result - rnd.e1.result))
+                elif rnd.e2.result < rnd.e1.result:
+                    rnd.winner = 2
+                    rnd.detail = "%s wins by %0.3f" % (rnd.e2.firstname, (rnd.e1.result - rnd.e2.result))
+                else:
+                    rnd.detail = 'Tied?'
+    
+        cls._insertResults(name, list(rounds.values()))
 
             
-
 class TopTimesAccessor(object):
+    """ This is a simple accessor of JSON event result data for top times generation """
 
-    def __init__(self, event, results):
-        self.event = event
-        self.classdata = ClassData.get()
+    def __init__(self, results):
         self.results = results
 
     def getLists(self, *keys):
         """
-            Generate lists on demand as there are many iterations
+            Generate lists on demand as there are many iterations.  Returns a TopTimesTable class
+            that wraps all the TopTimesLists together.
+            For each key passed in, the following values may be set:
                 net     = True for indexed times, False for penalized but raw times
                 counted = True for to only included 'counted' runs and non-second run classes
                 course  = 0 for combined course total, >0 for specific course

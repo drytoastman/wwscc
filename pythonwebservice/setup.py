@@ -16,7 +16,8 @@ x = setup(
         "Flask-Compress",
         "ReportLab",
         "icalendar",
-        "python-dateutil"
+        "python-dateutil",
+        "libsass"
     ],
 
     packages=find_packages(),

@@ -21,17 +21,6 @@ class Event(AttrBase):
             cur.execute("select * from events order by date")
             return [cls(**x) for x in cur.fetchall()]
 
-    """
-    def _get_count(self):
-        from registration import Registration
-        return object_session(self).query(Registration.id).filter(Registration.eventid==self.id).count()
-    count = property(_get_count)
-
-    def _get_drivers_count(self):
-        return object_session(self).execute("select count(distinct(c.driverid)) from cars as c, registered as r where r.carid=c.id and r.eventid=%d"%self.id).fetchone()[0]
-    drivercount = property(_get_drivers_count)
-    """
-
     def getSegments(self):
         val = self.attr.get('segments', '')
         sp  = val.strip().split(',').remove('')

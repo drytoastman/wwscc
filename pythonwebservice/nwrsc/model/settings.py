@@ -65,3 +65,12 @@ class Settings(object):
                     ret.__dict__[n] = v
         return ret
 
+    def getPublicFeed(self):
+        """ Return a single level dict of the attributes and values to create a feed for this object """
+        d = dict()
+        for k,v in self.__dict__.items():
+            if k[0] == '_' or v is None: continue
+            d[k] = v
+        return d
+
+

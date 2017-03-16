@@ -151,6 +151,8 @@ class DBSeriesWrapper(object):
         try:
             print("series setup starting ...")
             self.series_setup()
+            if g.seriestype == Series.INVALID:
+                return "%s is not a valid series" % g.series
             print("... done")
         except OperationalError as e:
             print(".. exception ", e)
@@ -161,13 +163,12 @@ class DBSeriesWrapper(object):
     def series_setup(self):
         """ Check if we have the series in the URL, set the schema path if available, return an error message otherwise """
         g.db =  self.app.pool.getconn() 
+        g.seriestype = Series.UNKNOWN
         if hasattr(g, 'series') and g.series:
             # Set up the schema path if we have a series
-            if Series.exists(g.series):
-                with g.db.cursor() as cur:
-                    cur.execute("SET search_path=%s,'public'", (g.series,))
-            else:
-                return "%s is not a valid series" % g.series
+            g.seriestype = Series.type(g.series)
+            with g.db.cursor() as cur:
+                cur.execute("SET search_path=%s,'public'", (g.series,))
 
     def teardown(self, exc=None):
         """ Put the connection back in the pool, this will close any open transactions """

@@ -13,7 +13,7 @@ ul { list-style: none; }
 {% block content %}
 <h2>Select Event:</h2>
 <ul>
-{% for e in eventlist %}
+{% for e in events %}
 	<li><a href='{{url_for('.event', eventid=e.eventid)}}'>{{e.name}}</a></li>
 {% endfor %}
 <li>&nbsp;</li>

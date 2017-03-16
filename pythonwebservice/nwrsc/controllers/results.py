@@ -4,7 +4,7 @@
 """
 
 from flask import Blueprint, request, abort, render_template, get_template_attribute, make_response, g
-from nwrsc.model import *
+from nwrsc.model import Result
 from nwrsc.lib.bracket import Bracket
 
 Results = Blueprint("Results", __name__)
@@ -13,14 +13,16 @@ Results = Blueprint("Results", __name__)
 
 @Results.route("/")
 def index():
-    return render_template('results/eventlist.html', eventlist=Event.byDate())
+    return render_template('results/eventlist.html', events=Result.getSeriesInfo()['events'])
 
 @Results.route("/<int:eventid>/")
 def event():
-    g.event = Event.get(g.eventid)
-    g.active = Class.activeClasses(g.eventid)
-    g.challenges = Challenge.getForEvent(g.eventid)
-    return render_template('results/eventindex.html')
+    info = Result.getSeriesInfo()
+    for e in info['events']:
+        if e['eventid'] == g.eventid:
+            event = e
+            break
+    return render_template('results/eventindex.html', event=event)
 
 
 ## Basic results display
@@ -32,12 +34,12 @@ def _resultsforclasses(clslist=None):
 
     g.event     = Event.get(g.eventid)
     g.classdata = ClassData.get()
-    results     = EventResult.get(g.event)
+    results     = Result.getEventResults(g.eventid)
     ispost      = clslist is None
 
     if ispost:
         g.results      = results
-        g.toptimes     = TopTimesAccessor(g.event, g.results)
+        g.toptimes     = TopTimesAccessor(g.results)
         g.entrantcount = sum([len(x) for x in g.results.values()])
         g.settings     = Settings.get()
     else:
@@ -71,7 +73,7 @@ def audit():
     group  = request.args.get('group', 1)
     order  = request.args.get('order', 'runorder')
     event  = Event.get(g.eventid)
-    audit  = EventResult.audit(event, course, group)
+    audit  = Audit.audit(event, course, group)
 
     if order in ['firstname', 'lastname']:
         audit.sort(key=lambda obj: str.lower(str(getattr(obj, order))))
@@ -90,8 +92,8 @@ def tt():
     course   = int(request.args.get('course', '0'))
 
     event    = Event.get(g.eventid)
-    results  = EventResult.get(event)
-    toptimes = TopTimesAccessor(event, results)
+    results  = Result.getEventResults(g.eventid)
+    toptimes = TopTimesAccessor(results)
     header   = "Top {} Times ({} Runs) for {}".format(net and "Net" or "Raw", counted and "Counted" or "All", event.name)
 
     if event.courses > 1:

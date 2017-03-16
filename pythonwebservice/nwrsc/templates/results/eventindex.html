@@ -43,7 +43,7 @@ padding: 0;
 {% block content %}
 {{ super() }}
 
-<h2>Results for {{g.event.name}}</h2>
+<h2>Results for {{event.name}}</h2>
 
 <h3>Active Classes</h3>
 <ul class='classlist'>
@@ -61,7 +61,7 @@ padding: 0;
 </ul>
 <br style='clear:both;'/>
 
-{%if g.event.ispro %}
+{%if event.ispro %}
 	{%for ch in g.challenges %}
 		<h3>{{ch.name}}</h3>
 		<ul class='classlist'>
@@ -93,7 +93,7 @@ padding: 0;
 </tr>
 </table>
 
-{%if g.event.getSegmentCount() > 0 %}
+{%if event.segments > 0 %}
 <h3>Other Top Times Lists</h3>
 <ul class='classlist'>
 <li><a href='{{url_for('.tt', tttype='seg')}}'>Segment</a></li>
@@ -112,11 +112,11 @@ padding: 0;
 <li><a href='{{url_for('.champ')}}'>Championship</a></li>
 <li><a href='{{url_for('Xml.scca')}}'>SCCA Report</a></li>
 
-{%if g.event.ispro and config.SHOWGRID %}
+{%if event.ispro and config.SHOWGRID %}
 	<li><a href='{{url_for('.grid', order='number')}}'>Grid By Number</a></li>
 	<li><a href='{{url_for('.grid', order='position')}}'>Grid By Position</a></li>
 {% endif %}
-{%if g.event.ispro %}
+{%if event.ispro %}
 	<li><a href='{{url_for('.dialins', order='net')}}'>Dialins By Net</a></li>
 	<li><a href='{{url_for('.dialins', order='diff')}}'>Dialins By Diff</a></li>
 {% endif %}

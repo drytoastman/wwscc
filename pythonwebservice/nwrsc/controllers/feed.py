@@ -1,12 +1,13 @@
 """
   This is the code for all the JSON and XML feeds.  Like the results interface, everything
   should be taken from the results table so that it continues to work after old series are
-  expunged.
+  expunged.  In general, JSON goes directly to the encoder, XML has to have some meta
+  information posted in it to create meaningful tags (no anonymous lists or objects)
 """
 
 import logging
 from flask import Blueprint, request, g, escape, make_response
-from nwrsc.model import *
+from nwrsc.model import Result, BaseEncoder
 
 log  = logging.getLogger(__name__)
 Xml  = Blueprint("Xml", __name__)
@@ -16,51 +17,52 @@ Json = Blueprint("Json", __name__)
 @Json.route("/")
 @Xml.route("/")
 def eventlist():
-    return feed_encode("info", Event.byDate())
-    return feed_encode("seriesclasses", Class.getAll())
-    return feed_encode("seriesindicies", Index.getAll())
-    return feed_encode("challengelist", Challenge.getForEvent(g.eventid))
+    info = Result.getSeriesInfo()
+    if request.blueprint == 'Json':
+        return json_encode(info)
+
+    info['_type'] = 'info'
+    for x in info['challenges']: x['_type'] = 'Challenge'
+    for x in info['events']:     x['_type'] = 'Event'
+    for x in info['classes']:    x['_type'] = 'Class'
+    for x in info['indexes']:    x['_type'] = 'Index'
+    return xml_encode(info)
 
 @Json.route("/<int:eventid>")
 @Xml.route("/<int:eventid>")
 def eventresults():
-    res = EventResult.get(Event.get(g.eventid))
+    res = Result.getEventResults(g.eventid)
     if request.blueprint == 'Json':
-        return feed_encode("classlist", res)
+        return json_encode(res)
 
-    # Need to rewrap raw dict/list output into classes for XML tag output
-    class Result(AttrBase):
-        pass
-    forencoding = dict()
-    for cls in res:
-        forencoding[cls] = list()
-        for e in res[cls]:
-            newruns = []
+    for entries in res.values():
+        for e in entries:
+            e['_type'] = 'Entrant'
             for c in e['runs']:
-                newcourse = []
-                newruns.append(newcourse)
                 for r in c:
-                    newcourse.append(Run(**r))
+                    r['_type'] = 'Run'
 
-            e['runs'] = newruns
-            forencoding[cls].append(Result(**e))
-
-    return feed_encode("classlist", forencoding)
+    res['_type'] = 'classlist'
+    return xml_encode(res)
 
 @Json.route("/challenge/<int:challengeid>")
 @Xml.route("/challenge/<int:challengeid>")
 def challenge(challengeid):
-    return feed_encode("roundlist", Challenge.getResults(challengeid))
+    rounds = Result.getChallengeResults(challengeid)
+    if request.blueprint == 'Json':
+        return json_encode(rounds)
+
+    for rnd in rounds:
+        rnd['_type'] = 'Round'
+    return xml_encode(rounds, wrapper='Rounds')
 
 @Xml.route("/<int:eventid>/scca")
 def scca():
-    class Entry(AttrBase):
-        pass
-    results = EventResult.get(Event.get(g.eventid))
+    results = Result.getEventResults(g.eventid)
     entries = list()
     for cls in results:
         for res in results[cls]:
-            entries.append(Entry(FirstName=res['firstname'],
+            entries.append(dict(FirstName=res['firstname'],
                                  LastName=res['lastname'],
                                  MemberNo=res['membership'],
                                  Class=res['classcode'],
@@ -68,18 +70,20 @@ def scca():
                                  Pos=res['position'],
                                  CarModel="%s %s %s %s" % (res['year'], res['make'], res['model'], res['color']),
                                  CarNo="%s" % (res['number']),
-                                 TotalTm="%0.3lf" % res['net']))
-    return feed_encode("Entries", entries)
+                                 TotalTm="%0.3lf" % res['net'],
+                                 _type='Entry'
+                            ))
+    return xml_encode(entries, wrapper="Entries")
 
 
-def feed_encode(wrapper, data):
-    if request.blueprint == 'Xml':
-        response = make_response(XMLEncoder().encode(wrapper, data))
-        response.headers['Content-type'] = 'text/xml'
-    else:
-        response = make_response(BaseEncoder(indent=1).encode(data))
-        response.headers['Content-type'] = 'text/javascript'
+def xml_encode(data, wrapper=None):
+    response = make_response(XMLEncoder().encode(data, wrapper))
+    response.headers['Content-type'] = 'text/xml'
+    return response
 
+def json_encode(data):
+    response = make_response(BaseEncoder(indent=1).encode(data))
+    response.headers['Content-type'] = 'text/javascript'
     return response
 
 
@@ -89,10 +93,12 @@ class XMLEncoder(object):
         self.bits = list()
         self.indent = indent
 
-    def encode(self, outertag, data):
-        self.bits.append('<%s>'  % outertag)
+    def encode(self, data, wrapper=None):
+        if wrapper:
+            self.bits.append('<%s>' % wrapper)
         self.toxml(data)
-        self.bits.append('</%s>' % outertag)
+        if wrapper:
+            self.bits.append('</%s>' % wrapper)
         return str(''.join(self.bits))
 
     def toxml(self, data):
@@ -106,10 +112,17 @@ class XMLEncoder(object):
             self.toxml(v)
 
     def _encodedict(self, data):
+        tag = data.get('_type', None)
+        if tag:
+            self.bits.append('<%s>'  % tag)
         for k,v in sorted(data.items()):
+            if len(k) > 0 and k[0] == '_': 
+                continue
             self.bits.append('<%s>'  % k)
             self.toxml(v)
             self.bits.append('</%s>' % k)
+        if tag:
+            self.bits.append('</%s>'  % tag)
 
     def _encodefeed(self, data):
         self.bits.append('<%s>'  % data.__class__.__name__)
