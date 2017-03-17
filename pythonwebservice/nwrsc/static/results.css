@@ -39,7 +39,7 @@ tr.entrantrow td {
 }
 
 tr.missingmin td {
-	text-decoration: line-through;
+	color: #CCC;
 }
 
 td.run, td.points {

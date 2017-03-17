@@ -397,6 +397,13 @@ class Result(object):
                 entrant.points.calc(bestof)
                 ret[classcode].append(entrant)
             ret[classcode].sort(key=attrgetter(*sortkeys), reverse=True)
+            ii = 1
+            for e in ret[classcode]:
+                if e.events < settings.minevents:
+                    e.position = ''
+                else:
+                    e.position = ii
+                    ii += 1
 
         return ChampResults(settings, info['events'], classdata, ret)
 
@@ -580,7 +587,6 @@ class ChampEntrant(object):
 
     def __repr__(self):
         return "%s %s: %s" % (self.firstname, self.lastname, self.points.total)
-
 
 class ChampClass(list):
     @property

@@ -7,7 +7,10 @@
 
 {% block content %}
 <!-- Series info -->
-<div id='seriestitle'>{{seriesname}}</div>
+<div id='seriestitle'>{{champ.settings.seriesname}}</div>
+{% if champ.settings.minevents > 0 %}
+<div id='minwarning'>(Min Attendance of {{champ.settings.minevents}} Events To Place)</div>
+{% endif %}
 <hr />
 <!-- Results -->
 
@@ -16,7 +19,7 @@
 {% set cls = champ.classdata.classlist[code] %}
 
 <tr><th class='classhead' colspan='{{champ.events|length + 4}}'>{{cls.classcode}} - {{cls.descrip}} -
-            Number of Entries: {{entrants.entries}} - Average Per Event: {{"%.2lf"%(entrants.entries/(champ.events|length))}}</th></tr>
+            Average Per Event: {{"%.2lf"%(entrants.entries/(champ.events|length))}}</th></tr>
 <tr>
 <th>#</th>
 <th>Name</th>
@@ -28,8 +31,12 @@
 </tr>
         
 {% for e in entrants %}
-	<tr{{e.events < champ.settings.minevents and " class='missingmin'"|safe or ""}}>
-    <td>{{loop.index}}</td>
+	{% if e.events < champ.settings.minevents %}
+	<tr class='missingmin'>
+	{% else %}
+	<tr>
+	{% endif %}
+    <td>{{e.position}}</td>
     <td class='name'>{{e.firstname}} {{e.lastname}}</td>
     <td class='attend'>{{e.events}}</td>
     {% for event in champ.events %}
