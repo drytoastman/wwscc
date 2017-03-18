@@ -21,18 +21,6 @@ class Event(AttrBase):
             cur.execute("select * from events order by date")
             return [cls(**x) for x in cur.fetchall()]
 
-    """
-    def getSegments(self):
-        val = self.attr.get('segments', '')
-        sp  = val.strip().split(',').remove('')
-        if sp is None:
-            return []
-        return [int(x) for x in sp]
-
-    def getSegmentCount(self):
-        return len(self.getSegments())
-    """
-
     def getCountedRuns(self):
         if self.countedruns <= 0:
             return 999

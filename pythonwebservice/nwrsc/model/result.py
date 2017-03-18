@@ -54,6 +54,7 @@ class Result(object):
 
     @classmethod
     def getTopTimesTable(cls, results, *keys):
+        """ Get top times.  Pass in results from outside as in some cases, they are already loaded """
         return cls._loadTopTimeTable(results, *keys)
 
 
@@ -160,6 +161,7 @@ class Result(object):
         
             # For every entrant, calculate their best runs (raw,net,allraw,allnet) and event sum(net)
             for e in cptrs.values():
+                e.dialraw = 0
                 e.net = 0
                 e.pen = 0
                 counted = min(classdata.getCountedRuns(e.classcode), event.getCountedRuns())
@@ -168,15 +170,23 @@ class Result(object):
                 def marklist(lst, label):
                     for ii, entry in enumerate(lst):
                         setattr(entry, label, ii+1)
+
+                # When sorting raw, we need to ignore non-OK status runs
+                def rawgetter(obj):
+                    if obj.status == "OK":
+                        return obj.raw
+                    return 999.999
         
                 for course in range(event.courses):
-                    marklist (sorted(e.runs[course], key=attrgetter('raw')), 'allraworder')
+                    marklist (sorted(e.runs[course], key=rawgetter), 'allraworder')
                     marklist (sorted(e.runs[course], key=attrgetter('net')), 'allnetorder')
-                    marklist (sorted(e.runs[course][0:counted], key=attrgetter('raw')), 'raworder')
+                    bestraw = sorted(e.runs[course][0:counted], key=rawgetter)
                     bestnet = sorted(e.runs[course][0:counted], key=attrgetter('net'))
-                    marklist(bestnet, 'netorder')
+                    marklist (bestraw, 'raworder')
+                    marklist (bestnet, 'netorder')
                     e.net += bestnet[0].net
                     e.pen += bestnet[0].pen
+                    e.dialraw += bestraw[0].raw
         
             # Now for each class we can sort and update position, trophy, points(both types) and diffs
             for clas in results:
@@ -188,19 +198,32 @@ class Result(object):
                     e.position = ii+1
                     e.trophy = eventtrophy and (ii < trophydepth)
                     if ii == 0:
-                        e.diff       = 0
+                        e.diff1      = 0
+                        e.diffn      = 0
                         e.diffpoints = 100.0
                         e.pospoints  = ppoints[0]
                     else:
-                        e.diff       = res[ii-1].net - e.net
+                        e.diff1      = e.net - res[0].net
+                        e.diffn      = e.net - res[ii-1].net
                         e.diffpoints = res[0].net*100/e.net;
                         e.pospoints  = ii >= len(ppoints) and ppoints[-1] or ppoints[ii]
         
                     # quick access for templates
                     e.points = settings.usepospoints and e.pospoints or e.diffpoints
-        
-        cls._insertResults(name, results)
+
+                    # Dialins for pros
+                    if event.ispro:
+                        e.bonusdial = e.dialraw / 2.0
+                        if ii == 0:
+                            e.prodiff = len(res) > 1 and e.net - res[1].net or 0.0
+                            e.prodial = e.bonusdial
+                        else:
+                            e.prodiff = e.net - res[0].net
+                            e.prodial = res[0].dialraw * res[0].indexval / e.indexval / 2.0
+
     
+        cls._insertResults(name, results)
+
         """
         data.eventid = eventid
         data.carid = carid
@@ -414,7 +437,7 @@ class Result(object):
             Generate lists on demand as there are many iterations.  Returns a TopTimesTable class
             that wraps all the TopTimesLists together.
             For each key passed in, the following values may be set:
-                net     = True for indexed times, False for penalized but raw times
+                indexed = True for indexed times, False for penalized but raw times
                 counted = True for to only included 'counted' runs and non-second run classes
                 course  = 0 for combined course total, >0 for specific course
                Extra fields that have standard defaults we stick with:
@@ -424,7 +447,7 @@ class Result(object):
         """
         lists = list()
         for key in keys:
-            net     = key.get('net', True)
+            indexed = key.get('indexed', True)
             counted = key.get('counted', True)
             course  = key.get('course', 0)
             title   = key.get('title', None)
@@ -432,7 +455,7 @@ class Result(object):
             fields  = key.get('fields', None)
 
             if title is None:
-                title  = "Top {} Times ({} Runs)".format(net and "Net" or "Raw", counted and "Counted" or "All")
+                title  = "Top {}Times ({} Runs)".format(indexed and "Indexed " or "", counted and "Counted" or "All")
                 if course > 0: title += " Course {}".format(course)
 
             if cols is None:   cols   = ['Name', 'Class',     'Index',    '',         'Time']
@@ -444,9 +467,9 @@ class Result(object):
                     if course > 0:
                         for r in e['runs'][course-1]:
                             if r['netorder'] == 1:
-                                time = net and r['net'] or r['pen']
+                                time = indexed and r['net'] or r['pen']
                     else:
-                        time = net and e['net'] or e['pen']
+                        time = indexed and e['net'] or e['pen']
 
                     ttl.append(TopTimeEntry(fields,
                         name="{} {}".format(e['firstname'], e['lastname']),

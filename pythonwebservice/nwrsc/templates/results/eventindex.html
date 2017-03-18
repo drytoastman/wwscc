@@ -47,7 +47,7 @@ padding: 0;
 
 <h3>Active Classes</h3>
 <ul class='classlist'>
-{% for code in active %}
+{% for code in active|sort %}
 	<li><a href='{{url_for('.byclass', list=code)}}'>{{code}}</a></li>
 {% endfor %}
 </ul>
@@ -83,25 +83,21 @@ padding: 0;
 </tr>
 <tr>
 	<th>Indexed</th>
-	<td><a href='{{url_for('.tt', net=1, counted=1)}}'>List</a></td>
-	<td><a href='{{url_for('.tt', net=1, counted=0)}}'>List</a></td>
+	<td><a href='{{url_for('.tt', indexed=1, counted=1)}}'>List</a></td>
+	<td><a href='{{url_for('.tt', indexed=1, counted=0)}}'>List</a></td>
 </tr>
 <tr>
-	<th>Raw</th>
-	<td><a href='{{url_for('.tt', net=0, counted=1)}}'>List</a></td>
-	<td><a href='{{url_for('.tt', net=0, counted=0)}}'>List</a></td>
+	<th>Unindexed</th>
+	<td><a href='{{url_for('.tt', indexed=0, counted=1)}}'>List</a></td>
+	<td><a href='{{url_for('.tt', indexed=0, counted=0)}}'>List</a></td>
 </tr>
-</table>
-
-{#
-{%if event.segments > 0 %}
-<h3>Other Top Times Lists</h3>
-<ul class='classlist'>
-<li><a href='{{url_for('.tt', tttype='seg')}}'>Segment</a></li>
-</ul>
-<br style='clear:both;'/>
+{%if event.segments > 1 %}
+<tr>
+	<th>Segments</th>
+	<td colspan=2><a href='{{url_for('.tt', indexed=0, counted=0, segments=1)}}'>List</a></td>
+</tr>
 {% endif %}
-#}
+</table>
 
 <h3>Other</h3>
 <ul>
@@ -118,8 +114,8 @@ padding: 0;
 	<li><a href='{{url_for('.grid', order='position')}}'>Grid By Position</a></li>
 {% endif %}
 {%if event.ispro %}
-	<li><a href='{{url_for('.dialins', order='net')}}'>Dialins By Net</a></li>
-	<li><a href='{{url_for('.dialins', order='diff')}}'>Dialins By Diff</a></li>
+	<li><a href='{{url_for('.dialins', order='net')}}'>Dialins By Net Time</a></li>
+	<li><a href='{{url_for('.dialins', order='prodiff')}}'>Dialins By Class Diff</a></li>
 {% endif %}
 </ul>
 

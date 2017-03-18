@@ -111,6 +111,7 @@ def convert(sourcefile, name, password):
         newe['courses']     = e.courses
         newe['runs']        = e.runs
         newe['countedruns'] = e.countedruns
+        newe['segments']    = e.segments
         newe['perlimit']    = e.perlimit
         newe['totlimit']    = e.totlimit
         newe['conepen']     = e.conepen
@@ -120,14 +121,15 @@ def convert(sourcefile, name, password):
         newe['attr']        = dict()
         maxeid = max(maxeid, e.id)
 
-        for a in ('location', 'sponsor', 'host', 'chair', 'designer', 'segments', 'paypal', 'snail', 'cost', 'notes', 'doublespecial'):
+        for a in ('location', 'sponsor', 'host', 'chair', 'designer', 'paypal', 'snail', 'cost', 'notes', 'doublespecial'):
             if hasattr(e, a) and getattr(e, a) is not None:
                 newe['attr'][a] = getattr(e, a)
 
         cur.execute("insert into events values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", 
             (newe['eventid'], newe['name'], newe['date'], newe['regopened'], newe['regclosed'], newe['courses'], newe['runs'], newe['countedruns'],
             newe['perlimit'], newe['totlimit'], newe['conepen'], newe['gatepen'], newe['ispro'], newe['ispractice'], json.dumps(newe['attr'])))
-#    cur.execute("ALTER SEQUENCE events_eventid_seq RESTART WITH %s", (maxeid+1,))
+    # Make sure database sequence is on the same page as us
+    cur.execute("ALTER SEQUENCE events_eventid_seq RESTART WITH %s", (maxeid+1,))
 
     #REGISTERED (map carid)
     for r in old.execute("select * from registered"):
@@ -198,7 +200,8 @@ def convert(sourcefile, name, password):
         check1.add((cid, r.round))
         maxcid = max(maxcid, cid)
         cur.execute("insert into challengerounds values (%s, %s, %s, %s, %s, %s, %s, now())", (cid, r.round, ss, c1id, c1d, c2id, c2d))
-#    cur.execute("ALTER SEQUENCE challenges_challengeid_seq RESTART WITH %s", (maxcid+1,))
+    # Make sure database sequence is on the same page as us
+    cur.execute("ALTER SEQUENCE challenges_challengeid_seq RESTART WITH %s", (maxcid+1,))
 
 
     #CHALLENGERUNS (now in ther own table)
