@@ -31,6 +31,38 @@ class CardPrinting(object):
 		return loadenv[func]
 
 
+	def csv(self, filename, titles, objects):
+		# CSV data, just use a template and return
+		response.headers['Content-type'] = "application/octet-stream"
+		response.headers['Content-Disposition'] = 'attachment;filename=%s.csv' % filename
+		response.charset = 'utf8'
+
+		def wrapper():
+			# output title line
+			yield ','.join(titles)
+			yield '\n'
+	
+			for obj in objects:
+				line = []
+				for ii, t in enumerate(titles):
+					try:
+						s = getattr(obj, t) 
+					except:
+						s = obj[ii]
+
+					if s is None:
+						line.append("\"\"")
+					elif hasattr(s, 'replace'):
+						line.append("\"%s\""%s.replace('\n', ' ').replace('"', '""'))
+					else:
+						line.append("%s"%s)
+	
+				yield(','.join(line))
+				yield('\n')
+
+		return wrapper()
+
+
 	def printcards(self):
 
 		drawCard = self.loadPythonFunc('drawCard', self.session.query(Data).get('card.py').data)

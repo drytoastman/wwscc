@@ -2,23 +2,23 @@
 {% macro roundReport(round) %}
 	<table class='challengeround'>
 	<tr><th>Entrant<th><th>Reaction<th>Sixty<th>Time<th>Diff<th>Total<th>NewDial</tr>
-	<tr{{round.winner > 0 and " class='winner'"|safe or ""}}>
+	<tr{{round.winner == 1 and " class='winner'"|safe or ""}}>
 	{{driverCell(round.e1)}}
 	<td>L</td>
 	{{runRow(round.e1.dial, round.e1.left)}}
 	{{runTotal(round.e1.dial, round.e1.left, round.e1.right, round.e1.newdial)}}
 	</tr>
-	<tr{{round.winner > 0 and " class='winner'"|safe or ""}}>
+	<tr{{round.winner == 1 and " class='winner'"|safe or ""}}>
 	<td>R</td>
 	{{runRow(round.e1.dial, round.e1.right)}}
 	</tr>
-	<tr{{round.winner < 0 and " class='winner'"|safe or ""}}>
+	<tr{{round.winner == 2 and " class='winner'"|safe or ""}}>
 	{{driverCell(round.e2)}}
 	<td>L</td>
 	{{runRow(round.e2.dial, round.e2.left)}}
 	{{runTotal(round.e2.dial, round.e2.left, round.e2.right, round.e2.newdial)}}
 	</tr>
-	<tr{{round.winner < 0 and " class='winner'"|safe or ""}}>
+	<tr{{round.winner == 2 and " class='winner'"|safe or ""}}>
 	<td>R</td>
 	{{runRow(round.e2.dial, round.e2.right)}}
 	</tr>

@@ -109,10 +109,6 @@ padding: 0;
 <li><a href='{{url_for('.champ')}}'>Championship</a></li>
 <li><a href='{{url_for('Xml.scca')}}'>SCCA Report</a></li>
 
-{%if event.ispro and config.SHOWGRID %}
-	<li><a href='{{url_for('.grid', order='number')}}'>Grid By Number</a></li>
-	<li><a href='{{url_for('.grid', order='position')}}'>Grid By Position</a></li>
-{% endif %}
 {%if event.ispro %}
 	<li><a href='{{url_for('.dialins', order='net')}}'>Dialins By Net Time</a></li>
 	<li><a href='{{url_for('.dialins', order='prodiff')}}'>Dialins By Class Diff</a></li>

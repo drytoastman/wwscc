@@ -211,7 +211,7 @@ REVOKE ALL ON runorder FROM public;
 GRANT  ALL ON runorder TO <seriesname>;
 CREATE TRIGGER ordermod AFTER INSERT OR UPDATE OR DELETE ON runorder FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 CREATE TRIGGER orderuni BEFORE UPDATE ON runorder FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
-COMMENT ON TABLE runorder IS 'the ordering of cars in each runorder';
+COMMENT ON TABLE runorder IS 'This is the list of cars in each rungroup as seen in data entry';
 
 
 CREATE TABLE payments (
@@ -247,7 +247,7 @@ REVOKE ALL ON classorder FROM public;
 GRANT  ALL ON classorder TO <seriesname>;
 CREATE TRIGGER classordermod AFTER INSERT OR UPDATE OR DELETE ON classorder FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 CREATE TRIGGER classorderuni BEFORE UPDATE ON classorder FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
-COMMENT ON TABLE classorder IS 'the ordering of classes in a runorder, generally only used in the Pro event for grid ordering';
+COMMENT ON TABLE classorder IS 'the ordering of classes inside each run group, generally only used in the Pro event for grid ordering';
 
 
 CREATE TABLE challenges (

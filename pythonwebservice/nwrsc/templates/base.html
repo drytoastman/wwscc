@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>{{g.title}}</title>
-<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-<!-- <meta http-equiv="X-UA-Compatible" content="IE=9"/> -->
+<meta charset='UTF-8' />
+<title>{{g.title or "Scorekeeper"}}</title>
 {% block headers %}{% endblock %}
 <script type='text/javascript'>
-{% if g.series %}
+{% if g.series -%}
 $.nwr.urlbase = {{url_for('.index')}};
-{% endif %}
+{%- endif %}
 </script>
 </head>
-
 <body>
 {% block content %}{% endblock %}
 </body>

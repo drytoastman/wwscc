@@ -30,8 +30,8 @@
 <!-- Results -->
 
 <div id='classlinks'>
-{% for cls in g.results|sort -%}
-<a href='#{{cls}}'>{{cls}}</a>
+{% for cls in results|sort -%}
+<a href='#classtable{{cls}}'>{{cls}}</a>
 {% endfor %}
 </div>
 

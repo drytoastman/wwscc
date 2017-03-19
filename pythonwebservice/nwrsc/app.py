@@ -13,6 +13,7 @@ from werkzeug.contrib.profiler import ProfilerMiddleware
 from flask import Flask, request, abort, g, current_app, render_template, send_from_directory
 from flask_compress import Compress
 
+from nwrsc.controllers.admin import Admin
 from nwrsc.controllers.results import Results
 from nwrsc.controllers.feed import Xml, Json
 from nwrsc.model import Series
@@ -30,6 +31,7 @@ class FlaskWithPool(Flask):
 
     def reset_pool(self):
         """ First person here gets to reset it, others can continue on and try again """
+        raise Exception("WHO CALLED ME")
         if self.resetlock.acquire(False):
             try:
                 if not self.pool.closed:
@@ -61,12 +63,6 @@ def create_app(config=None):
             if u not in values and getattr(g, u) and current_app.url_map.is_endpoint_expecting(endpoint, u):
                 values[u] = getattr(g, u)
 
-    def serieslist(subapp):
-        """ Render a list of series available in the current database """
-        if subapp not in ('results', 'xml', 'json'):
-            abort(404)
-        return render_template('serieslist.html', subapp=subapp, serieslist=Series.list())
-
     def t3(val):
         """ Wrapper to safely print floats as XXX.123 format """
         if val is None: return ""
@@ -90,7 +86,6 @@ def create_app(config=None):
         "DBUSER":"wwwuser",
         "DBPASS":"wwwuser",
         "SHOWLIVE":True,
-        "SHOWGRID":True,
         "INSTALLROOT": installroot
     })
 
@@ -105,16 +100,19 @@ def create_app(config=None):
     theapp.url_value_preprocessor(preprocessor)
     theapp.url_defaults(urldefaults)
     theapp.add_url_rule('/',           'toresults',  redirect_to='/results')
-    theapp.add_url_rule('/<subapp>/',  'serieslist', serieslist)
+    theapp.register_blueprint(Admin,   url_prefix="/admin/<series>")
+    theapp.register_blueprint(Json,    url_prefix="/json/<series>")
     theapp.register_blueprint(Results, url_prefix="/results/<series>")
     theapp.register_blueprint(Xml,     url_prefix="/xml/<series>")
-    theapp.register_blueprint(Json,    url_prefix="/json/<series>")
 
     # Some static things that need to show up at the root level
     @theapp.route('/favicon.ico')
     def favicon(): return send_from_directory('static', 'cone.png')
     @theapp.route('/robots.txt')
     def robots(): return send_from_directory('static', 'robots.txt')
+    @theapp.route('/<subapp>/')
+    def serieslist(subapp): return render_template('serieslist.html', subapp=subapp, serieslist=Series.list())
+
 
     # Create a PG connection pool and extra Jinja bits
     theapp.create_pool()

@@ -32,8 +32,11 @@ def convert(sourcefile, name, password):
     old.row_factory = sqlite3.Row
 
     psycopg2.extras.register_uuid()
-    new = psycopg2.connect("host='127.0.0.1' user='{}' password='{}' dbname='scorekeeper'".format(name, password))
+    #new = psycopg2.connect("host='127.0.0.1' user='{}' password='{}' dbname='scorekeeper'".format(name, password))
+    new = psycopg2.connect("user='postgres' dbname='scorekeeper'")
     cur = new.cursor()
+
+    cur.execute("set search_path=%s,%s", (name, 'public'))
 
     #DRIVERS, add to global list and remap ids as necessary
     for r in old.execute('select * from drivers'):
@@ -101,7 +104,10 @@ def convert(sourcefile, name, password):
     maxeid = 1
     for r in old.execute("select * from events"):
         e = AttrWrapper(r, r.keys())
-
+        if not e.segments.strip():
+            segments = 0
+        else:
+            segments = len(e.segments.replace(" ", "").split(","))
         newe = dict()
         newe['eventid']     = e.id
         newe['name']        = e.name
@@ -111,7 +117,7 @@ def convert(sourcefile, name, password):
         newe['courses']     = e.courses
         newe['runs']        = e.runs
         newe['countedruns'] = e.countedruns
-        newe['segments']    = e.segments
+        newe['segments']    = segments
         newe['perlimit']    = e.perlimit
         newe['totlimit']    = e.totlimit
         newe['conepen']     = e.conepen
@@ -125,8 +131,8 @@ def convert(sourcefile, name, password):
             if hasattr(e, a) and getattr(e, a) is not None:
                 newe['attr'][a] = getattr(e, a)
 
-        cur.execute("insert into events values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", 
-            (newe['eventid'], newe['name'], newe['date'], newe['regopened'], newe['regclosed'], newe['courses'], newe['runs'], newe['countedruns'],
+        cur.execute("insert into events values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", 
+            (newe['eventid'], newe['name'], newe['date'], newe['regopened'], newe['regclosed'], newe['courses'], newe['runs'], newe['countedruns'], newe['segments'],
             newe['perlimit'], newe['totlimit'], newe['conepen'], newe['gatepen'], newe['ispro'], newe['ispractice'], json.dumps(newe['attr'])))
     # Make sure database sequence is on the same page as us
     cur.execute("ALTER SEQUENCE events_eventid_seq RESTART WITH %s", (maxeid+1,))
@@ -137,6 +143,12 @@ def convert(sourcefile, name, password):
         if oldr.eventid > 0x0FFFF:
             continue
         cur.execute("insert into registered values (%s, %s, %s, now())", (oldr.eventid, remapcar[oldr.carid], oldr.paid and True or False))
+
+
+    #CLASSORDER
+    for r in old.execute("select * from rungroups"):
+        oldr = AttrWrapper(r, r.keys())
+        cur.execute("insert into classorder values (%s, %s, %s, %s, now())", (oldr.eventid, oldr.classcode, oldr.rungroup, oldr.gorder))
 
 
     #RUNORDER 

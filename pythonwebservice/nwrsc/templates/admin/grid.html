@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block headers %}
+{{super()}}
+<style>
+table  { width: 600px; border-collapse: collapse; }
+th     { width: 30px; background-color: #dcdcdc; }
+th, td { border: 1px solid #777; padding: 2px; }
+td.class,td.num { text-align: center; }
+td.name { width: 180px; }
+.break { page-break-before: always; }
+</style>
+{% endblock headers %}
+
+{% macro entries(lst, offset) %}
+{% for cls in lst.values() %}
+{% for e in cls %}
+{% if (e.grid % 2) %}
+<tr>
+{% endif %}
+<th>{{e.grid+offset}}</th>
+<td class='class'>{{e.classcode}}</td><td class='num'>{{e.number}}</td><td class='name'>{{e.firstname}} {{e.lastname}}</td>
+{%if order=='position' %}
+<td>{{e.net|t3}}</td>
+{% endif %}
+{% if not (e.grid % 2) %}
+</tr>
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% endmacro %}
+
+
+{% block content %}
+{% for start in starts %}
+
+<h3>Group {{start}}</h3>
+<table>
+{{entries(groups[start], 0)}}
+</table>
+
+<h3>Group {{start}} Dual</h3>
+<table>
+{{entries(groups[start+100], 100)}}
+</table>
+
+{% if not loop.last %}
+<p class='break'>
+{% endif %}
+
+{% endfor %}
+{% endblock content %}

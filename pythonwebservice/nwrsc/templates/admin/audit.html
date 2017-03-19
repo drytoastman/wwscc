@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block headers %}
+{{super()}}
+<style type='text/css'>
+h3     { text-align: center; }
+table  { border-collapse: collapse; margin: 0px auto; }
+td, th { border: 1px solid #AAA; padding: 5px 3px; font-size: 0.9em; }
+.bold  { font-weight: bold; }
+</style>
+{% endblock headers %}
+
+{% block content %}
+<h3>
+Audit -
+{% if event.courses > 1 %}
+Course {{course}} - 
+{% endif %}
+Run Group {{group}} - By {{order}}
+</h3>
+
+<table class='auditreport'>
+<thead><tr>
+<th>First</th>
+<th>Last</th>
+<th>#</th>
+<th>Cls</th>
+{% for ii in range(event.runs) %}
+    <th>Run{{ii+1}}</th>
+{% endfor %}
+</tr>
+</thead>
+<tbody>
+
+{% for entrant in audit %}
+    <tr>
+    <td class='{{order == "firstname" and "bold" or ""}}'>{{entrant.firstname[:8]}}</td>
+    <td class='{{order == "lastname" and "bold" or ""}}'>{{entrant.lastname[:8]}}</td>
+    <td>{{entrant.number}}</td>
+    <td>{{entrant.classcode}} ({{entrant.indexcode}})</td>
+
+    {% for run in entrant.runs %}
+        <td>
+        {% if run %}
+            {% if run.status != "OK" %}
+                {{run.status}}
+            {% else %}
+                {{run.raw|t3}}
+                ({{run.cones}},{{run.gates}})
+            {% endif %}
+        {% endif %}
+        </td>
+    {% endfor %}
+    
+    </tr>
+{% endfor %}
+
+</tbody>
+</table>
+
+{% endblock content %}

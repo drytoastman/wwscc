@@ -25,7 +25,7 @@
 {% set colcount = 6 + g.event.runs %}
 <tr>
 	<th class='classhead' colspan='{{colcount}}'>
-	<a name='{{classcode}}'>{{classcode}}</a> - {{g.classdata.classlist[classcode].descrip}}
+	<a id='classtable{{classcode}}'>{{classcode}}</a> - {{g.classdata.classlist[classcode].descrip}}
 	</th>
 </tr>
 <tr>
@@ -48,7 +48,7 @@
 <tr class='entrantrow'>
 	<td class='pos' {{rowspan|safe}}>{{entrant.position}}</td>
 	<td class='trophy' {{rowspan|safe}}>{{entrant.trophy and 'T' or ''}}</td>
-	<td class='name' align='center' {{rowspan|safe}}>#{{entrant.number}} - {{entrant.firstname}} {{entrant.lastname}}<br/>
+	<td class='name' {{rowspan|safe}}>#{{entrant.number}} - {{entrant.firstname}} {{entrant.lastname}}<br/>
 		{{entrant.make}} {{entrant.model}} {{entrant.color}} {{entrant.indexstr and "(%s)"%entrant.indexstr or ""}}</td>
 	{% for run in entrant.runs[0] -%}
 		{{runcell(run)}}

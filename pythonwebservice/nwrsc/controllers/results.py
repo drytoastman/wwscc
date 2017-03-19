@@ -5,31 +5,24 @@
 from operator import itemgetter
 
 from flask import Blueprint, request, abort, render_template, get_template_attribute, make_response, g
-from nwrsc.model import Result, ClassData, Event, Challenge
+from nwrsc.model import Result
 from nwrsc.lib.bracket import Bracket
 
 Results = Blueprint("Results", __name__)
 
 ## The indexes and lists
 
-def eventfromlist(info, eventid):
-    for e in info['events']:
-        if e['eventid'] == eventid:
-            return Event(**e)
-    return None
-
-
 @Results.route("/")
 def index():
     return render_template('results/eventlist.html', events=Result.getSeriesInfo()['events'])
 
-@Results.route("/<int:eventid>/")
+@Results.route("/<int:eventid>")
 def event():
     info    = Result.getSeriesInfo()
     results = Result.getEventResults(g.eventid)
     active  = results.keys()
-    event   = eventfromlist(info, g.eventid)
-    challenges = [Challenge(**c) for c in info['challenges'] if c['eventid'] == event.eventid]
+    event   = info.getEvent(g.eventid)
+    challenges = info.getChallengesForEvent(g.eventid)
     return render_template('results/eventindex.html', event=event, active=active, challenges=challenges)
 
 
@@ -39,15 +32,15 @@ def _resultsforclasses(clslist=None, grplist=None):
     """ Show our class results """
     info        = Result.getSeriesInfo()
     resultsbase = Result.getEventResults(g.eventid)
-    g.classdata = ClassData(info['classes'], info['indexes'])
-    g.event     = eventfromlist(info, g.eventid)
+    g.classdata = info.getClassData() 
+    g.event     = info.getEvent(g.eventid)
 
     if clslist is None and grplist is None:
         ispost         = True
         results        = resultsbase
         g.toptimes     = Result.getTopTimesTable(results, {'indexed':True}, {'indexed':False})
         g.entrantcount = sum([len(x) for x in results.values()])
-        g.settings     = info['settings']
+        g.settings     = info.getSettings()
     elif grplist is not None:
         ispost         = False
         results        = dict()
@@ -83,9 +76,6 @@ def post():
 def champ():
     return render_template('/results/champ.html', champ=Result.getChampResults())
 
-
-## Special display for toptimes, brackets, grids, etc
-
 @Results.route("/<int:eventid>/tt")
 def tt():
     indexed  = bool(int(request.args.get('indexed', '1')))
@@ -94,7 +84,7 @@ def tt():
     course   = int(request.args.get('course', '0'))
 
     info     = Result.getSeriesInfo()
-    event    = eventfromlist(info, g.eventid)
+    event    = info.getEvent(g.eventid)
 
     keys = []
     if segments:
@@ -112,12 +102,11 @@ def tt():
     return render_template('/results/toptimes.html', header=header, table=table)
 
 
+## ProSolo related data (Challenge and Dialins)
+
 def _loadChallengeResults(challengeid, load=True):
     info = Result.getSeriesInfo()
-    challenge = None
-    for c in info['challenges']:
-        if c['challengeid'] == challengeid:
-            challenge = Challenge(**c)
+    challenge = info.getChallenge(challengeid)
     if challenge is None:
         abort(404, "Invalid or no challenge id")
     return (challenge, load and Result.getChallengeResults(challengeid) or None)
@@ -154,30 +143,8 @@ def dialins():
 
     info    = Result.getSeriesInfo()
     results = Result.getEventResults(g.eventid)
-    event   = eventfromlist(info, g.eventid)
+    event   = info.getEvent(g.eventid)
     entrants = [e for cls in results.values() for e in cls]
     entrants.sort(key=itemgetter(orderkey))
     return render_template('/challenge/dialins.html', orderkey=orderkey, event=event, entrants=entrants)
-
-
-## Perhaps move these to an admin like site?
-
-@Results.route("/<int:eventid>/audit")
-def audit():
-    course = request.args.get('course', 1)
-    group  = request.args.get('group', 1)
-    order  = request.args.get('order', 'runorder')
-    event  = Event.get(g.eventid)
-    audit  = Audit.audit(event, course, group)
-
-    if order in ['firstname', 'lastname']:
-        audit.sort(key=lambda obj: str.lower(str(getattr(obj, order))))
-    if order in ['runorder']:
-        audit.sort(key=lambda obj: obj.row)
-
-    return render_template('/results/audit.html', audit=audit, event=event, course=course, group=group, order=order)
-
-@Results.route("/<int:eventid>/grid")
-def grid():
-    return "grid"
 

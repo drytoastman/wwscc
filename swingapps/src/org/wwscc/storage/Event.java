@@ -29,6 +29,7 @@ public class Event extends AttrBase implements Serializable
 	protected int       courses;
 	protected int       runs;
 	protected int       countedruns;
+	protected int       segments;
 	protected int       perlimit; // per person
 	protected int       totlimit; // for whole event
 	protected double    conepen;
@@ -58,6 +59,7 @@ public class Event extends AttrBase implements Serializable
 		courses     = rs.getInt("courses");
 		runs		= rs.getInt("runs");
 		countedruns = rs.getInt("countedruns");
+		segments    = rs.getInt("segments");
 		perlimit 	= rs.getInt("perlimit");
 		totlimit 	= rs.getInt("totlimit");
 		conepen     = rs.getDouble("conepen");
@@ -68,13 +70,6 @@ public class Event extends AttrBase implements Serializable
 
 	public int getEventId() { return eventid; }
 	public int getRuns() { return runs; }
-	public int getCountedRuns()
-	{
-		if (countedruns <= 0)
-			return Integer.MAX_VALUE;
-		else
-			return countedruns;
-	}
 	public int getCourses() { return courses; }
 	public boolean isPro() { return ispro; }
 	public double getConePenalty() { return conepen; }

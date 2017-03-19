@@ -9,7 +9,7 @@ class Settings(object):
     STRS   = ["pospointlist", "champsorting", "seriesname", "sponsorlink", "schema", "parentseries", "classinglink"]
  
 
-    def __init__(self, **initial):
+    def __init__(self, initial):
         self.__dict__.update({
             'locked': False,
             'superuniquenumbers': False,
@@ -50,7 +50,7 @@ class Settings(object):
 
     @classmethod
     def get(cls):
-        ret = Settings()
+        ret = Settings({})
         with g.db.cursor() as cur:
             cur.execute("select * from settings")
             for row in cur.fetchall():

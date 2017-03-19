@@ -14,6 +14,7 @@ x = setup(
         "Flask",
         "Flask-Assets",
         "Flask-Compress",
+        "formencode",
         "ReportLab",
         "icalendar",
         "python-dateutil",

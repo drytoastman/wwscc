@@ -11,14 +11,14 @@ class SDate(FancyValidator):
 	def _to_python(self, value, state):
 		try:
 			return datetime.strptime(value, "%m/%d/%Y")
-		except ValueError, v:
+		except ValueError as v:
 			raise Invalid(str(v), value, state)
 
 class SDateTime(FancyValidator):
 	def _to_python(self, value, state):
 		try:
 			return datetime.strptime(value, "%m/%d/%Y %H:%M")
-		except ValueError, v:
+		except ValueError as v:
 			raise Invalid(str(v), value, state)
 
 

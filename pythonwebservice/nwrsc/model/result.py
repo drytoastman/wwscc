@@ -8,10 +8,9 @@ from datetime import datetime
 
 from .base import AttrBase, BaseEncoder, Entrant
 from .classlist import ClassData
-from .event import Event, Challenge
-from .runs import Run
 from .series import Series
 from .settings import Settings
+from .simple import Challenge, Event , Run
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class Result(object):
         name = "info"
         if cls._needUpdate(('classlist', 'indexlist', 'events', 'settings'), name):
             cls._updateSeriesInfo(name)
-        return cls._loadResults(name)
+        return SeriesInfo(cls._loadResults(name))
 
     @classmethod
     def getEventResults(cls, eventid):
@@ -389,7 +388,7 @@ class Result(object):
             Return a ChampResults object
         """
         info      = cls.getSeriesInfo()
-        settings  = Settings(**info['settings'])
+        settings  = Settings(info['settings'])
         classdata = ClassData(info['classes'], info['indexes'])
         completed = 0
 
@@ -485,6 +484,38 @@ class Result(object):
 
         return TopTimesTable(*lists)
 
+
+###################################################################################
+
+
+class SeriesInfo(dict):
+    """
+        We wrap the returned JSON series info data in this for easier access 
+        and returning of core model objects rather than a raw dict
+    """
+    def __init__(self, obj):
+        self.update(obj)
+
+    def getClassData(self):
+        return ClassData(self['classes'], self['indexes'])
+
+    def getSettings(self):
+        return Settings(self['settings'])
+
+    def getEvent(self, eventid):
+        for e in self['events']:
+            if e['eventid'] == eventid:
+                return Event(**e)
+        return None
+
+    def getChallengesForEvent(self, eventid):
+        return [Challenge(**c) for c in self['challenges'] if c['eventid'] == eventid]
+
+    def getChallenge(self, challengeid):
+        for c in self['challenges']:
+            if c['challengeid'] == challengeid:
+                return Challenge(**c)
+        return None
 
 
 class TopTimesList(list):

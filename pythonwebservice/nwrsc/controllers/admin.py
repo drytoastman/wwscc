@@ -1,30 +1,25 @@
 import logging
 import operator
 import re
-
-import cStringIO
+import io
 
 from datetime import datetime, timedelta
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
+from operator import attrgetter, itemgetter
 
-from pylons import request, response, session, config, tmpl_context as c
-from pylons.templating import render_mako
-from pylons.controllers.util import redirect, url_for
-from pylons.decorators import jsonify, validate
+#from nwrsc.controllers.lib.entranteditor import EntrantEditor
+#from nwrsc.controllers.lib.objecteditors import ObjectEditor
+#from nwrsc.controllers.lib.cardprinting import CardPrinting
+#from nwrsc.controllers.lib.purgecopy import PurgeCopy
+from flask import Blueprint, request, render_template, g
 
-from nwrsc.controllers.lib.base import BaseController, BeforePage
-from nwrsc.controllers.lib.entranteditor import EntrantEditor
-from nwrsc.controllers.lib.objecteditors import ObjectEditor
-from nwrsc.controllers.lib.cardprinting import CardPrinting
-from nwrsc.controllers.lib.purgecopy import PurgeCopy
-
-from nwrsc.lib.digest import authCheck
 from nwrsc.lib.schema import *
 from nwrsc.model import *
 
 log = logging.getLogger(__name__)
 nummatch = re.compile('(\d{6}_\d)|(\d{6})')
 
+Admin = Blueprint("Admin", __name__)
 
 def _validateNumber(num):
 	try:
@@ -36,18 +31,56 @@ def _validateNumber(num):
 	raise IndexError("nothing found")
 			
 
-class WeekendReport(object):
-	pass
+## Perhaps move these to an admin like site?
+
+@Admin.route("/")
+def index():
+    return "indexpage"
+
+@Admin.route("/<int:eventid>")
+def event():
+    return "eventpage {}".format(g.eventid)
+
+@Admin.route("/<int:eventid>/audit")
+def audit():
+    course = request.args.get('course', 1)
+    group  = request.args.get('group', 1)
+    order  = request.args.get('order', 'runorder')
+    event  = Event.get(g.eventid)
+    audit  = Audit.audit(event, course, group)
+
+    if order in ['firstname', 'lastname']:
+        audit.sort(key=lambda obj: str.lower(str(getattr(obj, order))))
+    else:
+        order = 'runorder'
+        audit.sort(key=lambda obj: obj.row)
+
+    return render_template('/admin/audit.html', audit=audit, event=event, course=course, group=group, order=order)
 
 
-class RegObj(object):
-	def __init__(self, d, c, r):
-		self.driver = d
-		self.car = c
-		self.reg = r
+@Admin.route("/<int:eventid>/grid")
+def grid():
+    order = request.args.get('order', 'number')
+    groups = RunGroups.getForEvent(g.eventid)
+
+    # Create a list of entrants in order of rungroup, classorder and [net/number]
+    if order == 'position': 
+        for l in Result.getEventResults(g.eventid).values():
+            for d in l:
+                groups.put(Entrant(**d))
+    else: # number
+        for e in Registration.getForEvent(g.eventid):
+            groups.put(e)
+
+    groups.sort(order)
+    for go in groups.values():
+        go.pad()
+        go.number()
+
+    return render_template('/admin/grid.html', groups=groups, order=order, starts=[k for k in groups if k < 100])
 
 
-class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting, PurgeCopy):
+class AdminController(): #BaseController, EntrantEditor, ObjectEditor, CardPrinting, PurgeCopy):
 
 	def __before__(self):
 		c.stylesheets = ['/css/admin.css']
@@ -210,7 +243,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		return render_mako('/admin/seriessettings.mako')
 
 
-	@validate(schema=SettingsSchema(), form='seriessettings', prefix_error=False)
+	#@validate(schema=SettingsSchema(), form='seriessettings', prefix_error=False)
 	def updatesettings(self):
 		""" Process settings form submission """
 		self.settings.set(self.form_result)
@@ -225,7 +258,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 					from PIL import Image
 				except:
 					import Image
-				output = cStringIO.StringIO()
+				output = io.BytesIO()
 				Image.new('RGB', (4,4), (255,255,255)).save(output, "PNG")
 				Data.set(self.session, key[5:], output.getvalue(), 'image/png')
 				output.close()
@@ -343,7 +376,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 						g.gorder = ii
 						self.session.add(g)
 			self.session.commit()
-		except Exception, e:
+		except Exception as e:
 			log.error("setRunGroups failed: %s" % e)
 			self.session.rollback()
 		redirect(url_for(action='rungroups'))
@@ -356,7 +389,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		c.button = 'Update'
 		return render_mako('/admin/eventedit.mako')
 
-	@validate(schema=EventSchema(), form='editevent', prefix_error=False)
+	#@validate(schema=EventSchema(), form='editevent', prefix_error=False)
 	def updateevent(self):
 		""" Process edit event form submission """
 		c.event.merge(**self.form_result)
@@ -380,7 +413,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		c.event.regclosed = datetime.today()
 		return render_mako('/admin/eventedit.mako')
 
-	@validate(schema=EventSchema(), form='createevent', prefix_error=False)
+	#@validate(schema=EventSchema(), form='createevent', prefix_error=False)
 	def newevent(self):
 		""" Process new event form submission """
 		ev = Event(**self.form_result)
@@ -429,7 +462,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		c.fieldlist = self.session.query(DriverField).all()
 		return render_mako('/admin/fieldlist.mako')
 
-	@validate(schema=DriverFieldListSchema(), form='fieldlist')
+	#@validate(schema=DriverFieldListSchema(), form='fieldlist')
 	def processFieldList(self):
 		data = self.form_result['fieldlist']
 		if len(data) > 0:
@@ -449,7 +482,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		return render_mako('/admin/classlist.mako')
 
 
-	@validate(schema=ClassListSchema(), form='classlist')
+	#@validate(schema=ClassListSchema(), form='classlist')
 	def processClassList(self):
 		data = self.form_result['clslist']
 		if len(data) > 0:
@@ -467,7 +500,7 @@ class AdminController(BaseController, EntrantEditor, ObjectEditor, CardPrinting,
 		c.indexlist = self.session.query(Index).order_by(Index.code).all()
 		return render_mako('/admin/indexlist.mako')
 
-	@validate(schema=IndexListSchema(), form='indexlist')
+	#@validate(schema=IndexListSchema(), form='indexlist')
 	def processIndexList(self):
 		data = self.form_result['idxlist']
 		if len(data) > 0:
