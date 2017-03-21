@@ -1,6 +1,7 @@
 /** Some misc stuff, center divs, headers, no boders on linked images, **/
 
 div, h1, h2, h3, h4 { text-align:center; }
+
 a img { border: none; }
 
 
@@ -21,10 +22,9 @@ table.toptimes tr:nth-child(even) {
 
 table.toptimes {
 	border: 1px solid #bbb;
-}
-
-table.toptimes td.pos {
-	border-left: 1px solid #bbb;
+	td.pos {
+		border-left: 1px solid #bbb;
+	}
 }
 
 /** Various TD types and their span internals **/
@@ -140,31 +140,41 @@ div#classlinks a {
 table.challengeround {
     margin-bottom: 20px;
     width: 650px;
+
+	th {
+    	border: 1px solid grey;
+	}
+
+	td.entrant {
+	    width: 180px;
+	}
+	
+	td {
+	    padding: 2px 6px;
+	    border: 1px solid grey;
+	}
+	
+	tr.winner {
+	    background: #EE9;
+	}
+	
+	td.result {
+	    text-align:center;
+	    font-size: 1.2em;
+	}
+	
+	span.dial {
+		font-weight: bold;
+	}
 }
 
-table.challengeround th {
-    border: 1px solid grey;
-}
-
-table.challengeround td.entrant {
-    width: 180px;
-}
-
-table.challengeround td {
-    padding: 2px 6px;
-    border: 1px solid grey;
-}
-
-table.challengeround tr.winner {
-    background: #EE8;
-}
-
-table.challengeround td.result {
-    text-align:center;
-    font-size: 1.2em;
-}
-
-table.challengeround span.dial {
-    font-weight: bold;
+table.dialins {
+	td { 
+		border-top: 1px dashed black;
+		padding: 2px 10px 1px 10px; 
+	}
+	td.sort { 
+		font-weight: bold; 
+	}
 }
 
