@@ -4,7 +4,7 @@ from math import ceil
 from copy import copy
 from collections import defaultdict
 from operator import attrgetter
-from datetime import datetime
+from datetime import date
 
 from .base import AttrBase, BaseEncoder, Entrant
 from .classlist import ClassData
@@ -49,7 +49,11 @@ class Result(object):
 
     @classmethod
     def getChampResults(cls):
-        return cls._loadChampInfo()
+        """ returns a ChampClass list object """
+        name = "champ"
+        if cls._needUpdate(('classlist', 'indexlist', 'events', 'cars', 'runs'), name):
+            cls._updateChampResults(name)
+        return cls._loadResults(name)
 
     @classmethod
     def getTopTimesTable(cls, results, *keys):
@@ -383,29 +387,34 @@ class Result(object):
 
 
     @classmethod
-    def _loadChampInfo(cls):
+    def _updateChampResults(cls, name):
         """
-            Return a ChampResults object
+            Create the cached result for champ results.  
+            If justeventid is None, we load all event results and create the champ results.
+            If justeventid is not None, we use the previous champ results and just update the event
+                (saves loading/parsing all events again)
+            Returns a dict of ChampClass objects
         """
-        info      = cls.getSeriesInfo()
-        settings  = Settings(info['settings'])
-        classdata = ClassData(info['classes'], info['indexes'])
+        settings  = Settings.get()
+        classdata = ClassData.get()
+        events = Event.byDate()
+
         completed = 0
 
         # Interm storage while we distribute result data by driverid
         store = defaultdict(lambda : defaultdict(ChampEntrant))
-        for event in info['events']:
-            if event['ispractice']: continue
-            if datetime.today() >= datetime.strptime(event['date'], "%Y-%m-%d"):
+        for event in events:
+            if event.ispractice: continue
+            if date.today() >= event.date:
                 completed += 1
 
-            eventresults = cls.getEventResults(event['eventid'])
+            eventresults = cls.getEventResults(event.eventid)
             for classcode in eventresults:
                 if not classdata.classlist[classcode].champtrophy:  # class doesn't get champ trophies, ignore
                     continue
                 classmap = store[classcode]
                 for entrant in eventresults[classcode]:
-                    classmap[entrant['driverid']].addResults(event['eventid'], entrant)
+                    classmap[entrant['driverid']].addResults(event, entrant)
 
         todrop   = settings.dropevents
         bestof   = max(todrop, completed - todrop)
@@ -421,13 +430,13 @@ class Result(object):
             ret[classcode].sort(key=attrgetter(*sortkeys), reverse=True)
             ii = 1
             for e in ret[classcode]:
-                if e.events < settings.minevents:
+                if e.eventcount < settings.minevents:
                     e.position = ''
                 else:
                     e.position = ii
                     ii += 1
 
-        return ChampResults(settings, info['events'], classdata, ret)
+        cls._insertResults(name, ret)
 
              
     @classmethod
@@ -572,26 +581,31 @@ class TopTimesTable(object):
             self.rows[ii].append(ttl[ii])
 
 
-class PointStorage(object):
+class PointStorage(AttrBase):
 
     def __init__(self):
-        self.storage = {}
+        self.events = {}
         self.total = 0
         self.drop = []
         self.usingbest = 0
+        AttrBase.__init__(self)
+
+    def feedFilter(self, k, v):
+        if k == 'usingbest': return None
+        return v
 
     def get(self, eventid):
-        return self.storage.get(eventid, None)
+        return self.events.get(eventid, None)
 
     def set(self, eventid, points):
-        self.storage[eventid] = points
+        self.events[eventid] = points
 
     def theory(self, eventid, points):
-        save = self.storage[eventid]
-        self.storage[eventid] = points
+        save = self.events[eventid]
+        self.events[eventid] = points
         self.calc(self.usingbest)
         ret = self.total
-        self.storage[eventid] = save
+        self.events[eventid] = save
         self.calc(self.usingbest)
         return ret
         
@@ -599,7 +613,7 @@ class PointStorage(object):
         self.total = 0
         self.drop = []
         self.usingbest = bestof
-        for ii, points in enumerate(sorted(self.storage.items(), key=lambda x:x[1], reverse=True)):
+        for ii, points in enumerate(sorted(self.events.items(), key=lambda x:x[1], reverse=True)):
             if ii < bestof:
                 self.total += points[1]  # Add to total points
             else:
@@ -613,31 +627,34 @@ class PointStorage(object):
         return self.total < other.total
 
 
-class ChampEntrant(object):
+class ChampEntrant(AttrBase):
 
     AvailableSubKeys = ['firsts', 'seconds', 'thirds', 'fourths', 'attended']
 
     def __init__(self):
-        self.points   = PointStorage()
-        self.finishes = defaultdict(int)
-        self.events   = 0
+        self.points       = PointStorage()
+        self.tiebreakers  = [0]*4
+        self.eventcount   = 0
+        AttrBase.__init__(self)
 
     def __getattr__(self, key):
         """ Implement getattr to match firsts, seconds, thirds, etc. """
         try:
             # 100 - turns ordering into reverse
-            if key == 'attended': return 100 - self.events
-            return 100 - self.finishes[{ 'firsts':1, 'seconds':2, 'thirds':3, 'fourths':4 }[key]]
+            if key == 'attended': return 100 - self.eventcount
+            return 100 - self.tiebreakers[{ 'firsts':0, 'seconds':1, 'thirds':2, 'fourths':3 }[key]]
         except:
             raise AttributeError("No known key %s" % key)
 
-    def addResults(self, eventid, entry): 
+    def addResults(self, event, entry): 
         self.firstname = entry['firstname']
         self.lastname  = entry['lastname']
-        #self.driverid  = entry['driverid']
-        self.finishes[entry['position']] += 1
-        self.events += 1
-        self.points.set(eventid, entry['points'])
+        self.driverid  = entry['driverid']
+        idx = entry['position']-1
+        if idx < len(self.tiebreakers):
+            self.tiebreakers[idx] += 1
+        self.eventcount += 1
+        self.points.set("d-%s"%event.date, entry['points'])
 
     def __repr__(self):
         return "%s %s: %s" % (self.firstname, self.lastname, self.points.total)
@@ -645,12 +662,14 @@ class ChampEntrant(object):
 class ChampClass(list):
     @property
     def entries(self):
-        return sum([e.events for e in self])
+        return sum([e.eventcount for e in self])
 
+"""
 class ChampResults(object):
     def __init__(self, settings, events, classdata, results):
         self.settings  = settings
         self.events    = events
         self.classdata = classdata
         self.results   = results
+"""
 

@@ -18,7 +18,6 @@ x = setup(
         "ReportLab",
         "icalendar",
         "python-dateutil",
-        "libsass"
     ],
 
     packages=find_packages(),

@@ -1,25 +1,14 @@
-{% extends "base.html" %}
-
-{% block headers %}
-<link rel="stylesheet" href="/static/results.css" />
-<style type='text/css'>
-td { border-top: 1px dashed black; padding: 2px 10px 1px 10px; }
-td.sort { font-weight: bold; }
-h2 { margin-bottom: 0px; }
-h4 { margin-top: 0px; }
-</style>
-{% endblock headers %}
-
+{% extends "results/rbase.html" %}
 
 {% block content %}
-<h2>{{event.name}} - Dialins</h2>
-<h4>Ordered by {{orderkey}}</h4>
+<h2 style='margin-bottom:0px'>{{event.name}} - Dialins</h2>
+<h4 style='margin-top:0px'>Ordered by {{orderkey}}</h4>
 
-<table class='dialins sortable'>
+<table class='dialins'>
 <tr>
-<th class='sorttable_nosort'>A</th>
-<th class='sorttable_nosort'>O</th>
-<th class='sorttable_nosort'>L</th>
+<th>A</th>
+<th>O</th>
+<th>L</th>
 <th>Name</th>
 <th>Class</th>
 <th>Index</th>

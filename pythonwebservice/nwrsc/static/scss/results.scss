@@ -16,14 +16,13 @@ table.classresults, table.toptimes, table.auditreport, table.champ {
 	font-size:0.9em; 
 }
 
-table.toptimes tr:nth-child(even) {
-	background-color: #eee
-}
-
 table.toptimes {
 	border: 1px solid #bbb;
 	td.pos {
 		border-left: 1px solid #bbb;
+	}
+	tr:nth-child(even) {
+		background-color: #eee
 	}
 }
 
@@ -64,19 +63,13 @@ td.attend {
 
 span { 
 	padding: 2px; 
-}
-
-span.net {
-	display: block;
-}
-
-span.raw {
-	display: block; 
-}
-
-span.reaction {
-	display: block;
-	font-size: 0.8em;
+	&.raw, &.net {
+		display: block;
+	}
+	&.reaction {
+		display: block;
+		font-size: 0.8em;
+	}
 }
 
 /** Table header entries **/

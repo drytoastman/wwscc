@@ -1,10 +1,5 @@
-{% extends "base.html" %}
+{% extends "/results/rbase.html" %}
 {% import '/results/macros.html' as res %}
-
-{% block headers %}
-{{super()}}
-<link rel="stylesheet" href="/static/results.css" />
-{% endblock %}
 
 {% block content %}
 {% if not ispost %}

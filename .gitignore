@@ -5,7 +5,9 @@
 swingapps/*.dll
 swingapps/*.so
 swingapps/bin
-pythonwebservice/nwrsc/static/jquery*
+pythonwebservice/nwrsc/static/*.js
+pythonwebservice/nwrsc/static/*.css
+pythonwebservice/nwrsc/static/.webassets-cache
 pythonwebservice/nwrsc.egg-info
 pythonwebservice/build
 pythonwebservice/dist

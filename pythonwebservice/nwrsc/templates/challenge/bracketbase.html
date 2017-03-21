@@ -1,8 +1,9 @@
-{% extends "base.html" %}
+{% extends "results/rbase.html" %}
 
 {% block headers %}
-<link rel="stylesheet" href="/static/results.css" />
+{{super()}}
 <style type="text/css">
+/* Override a few things just for the popup display */
 #popup {
 	display:none;
 	position: absolute; 

@@ -3,12 +3,14 @@
 {% block headers %}
 {{super()}}
 <style>
-table  { width: 600px; border-collapse: collapse; }
-th     { width: 30px; background-color: #dcdcdc; }
-th, td { border: 1px solid #777; padding: 2px; }
-td.class,td.num { text-align: center; }
-td.name { width: 180px; }
-.break { page-break-before: always; }
+h3 { text-align: center; }
+table  { border-collapse: collapse; margin: 0px auto; }
+td.grid { background-color: #dcdcdc; font-weight: bold; }
+td      { border: 1px solid #999; padding: 2px; }
+td.grid, td.class,td.num { text-align: center; width: 35px; }
+td.name { width: 170px; }
+td.net  { text-align: center; width: 60px; }
+.break  { page-break-before: always; }
 </style>
 {% endblock headers %}
 
@@ -18,10 +20,10 @@ td.name { width: 180px; }
 {% if (e.grid % 2) %}
 <tr>
 {% endif %}
-<th>{{e.grid+offset}}</th>
+<td class='grid'>{{e.grid+offset}}</td>
 <td class='class'>{{e.classcode}}</td><td class='num'>{{e.number}}</td><td class='name'>{{e.firstname}} {{e.lastname}}</td>
 {%if order=='position' %}
-<td>{{e.net|t3}}</td>
+<td class='net'>{{e.net|t3}}</td>
 {% endif %}
 {% if not (e.grid % 2) %}
 </tr>

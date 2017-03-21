@@ -12,6 +12,7 @@ from werkzeug.debug.tbtools import get_current_traceback
 from werkzeug.contrib.profiler import ProfilerMiddleware
 from flask import Flask, request, abort, g, current_app, render_template, send_from_directory
 from flask_compress import Compress
+from flask_assets import Environment, Bundle
 
 from nwrsc.controllers.admin import Admin
 from nwrsc.controllers.results import Results
@@ -113,7 +114,6 @@ def create_app(config=None):
     @theapp.route('/<subapp>/')
     def serieslist(subapp): return render_template('serieslist.html', subapp=subapp, serieslist=Series.list())
 
-
     # Create a PG connection pool and extra Jinja bits
     theapp.create_pool()
     theapp.jinja_env.filters['t3'] = t3
@@ -126,7 +126,8 @@ def create_app(config=None):
     theapp.logger.addHandler(handler)
     theapp.logger.setLevel(logging.INFO)
 
-    # Create some wrapping pieces for setting up PG connection, response logging, compression and profiling
+    # Create some wrapping pieces for setting up WebAssets, PG connection, response logging, compression and profiling
+    Environment(theapp)
     DBSeriesWrapper(theapp)
     ResponseLogger(theapp)
     Compress(theapp)

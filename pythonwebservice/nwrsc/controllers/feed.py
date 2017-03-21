@@ -16,7 +16,7 @@ Json = Blueprint("Json", __name__)
 
 @Json.route("/")
 @Xml.route("/")
-def eventlist():
+def eventinfo():
     info = Result.getSeriesInfo()
     if request.blueprint == 'Json':
         return json_encode(info)
@@ -26,7 +26,7 @@ def eventlist():
     for x in info['events']:     x['_type'] = 'Event'
     for x in info['classes']:    x['_type'] = 'Class'
     for x in info['indexes']:    x['_type'] = 'Index'
-    return xml_encode(info)
+    return xml_encode(dict(info)) # force back to base dict type
 
 @Json.route("/<int:eventid>")
 @Xml.route("/<int:eventid>")
@@ -41,9 +41,22 @@ def eventresults():
             for c in e['runs']:
                 for r in c:
                     r['_type'] = 'Run'
+    return xml_encode(res, wrapper='classlist')
 
-    res['_type'] = 'classlist'
+@Json.route("/champ")
+@Xml.route("/champ")
+def champresults():
+    res = Result.getChampResults()
+    if request.blueprint == 'Json':
+        return json_encode(res)
+
+    res['_type'] = 'ChampClasses'
+    for y in res.values():
+        if type(y) is not list: continue
+        for x in y: x['_type'] = 'ChampEntrant'
+
     return xml_encode(res)
+
 
 @Json.route("/challenge/<int:challengeid>")
 @Xml.route("/challenge/<int:challengeid>")
@@ -82,8 +95,8 @@ def xml_encode(data, wrapper=None):
     return response
 
 def json_encode(data):
-    response = make_response(BaseEncoder(indent=1).encode(data))
-    response.headers['Content-type'] = 'text/javascript'
+    response = make_response(BaseEncoder(indent=1, sort_keys=True).encode(data))
+    response.headers['Content-type'] = 'application/json'
     return response
 
 
@@ -102,14 +115,17 @@ class XMLEncoder(object):
         return str(''.join(self.bits))
 
     def toxml(self, data):
-        if type(data) in (list, tuple):      self._encodelist(data)
-        elif hasattr(data, 'getPublicFeed'): self._encodefeed(data)
-        elif type(data) in (dict,):          self._encodedict(data)
-        else:                                self._encodedata(data)
+        if hasattr(data, 'getPublicFeed'): self._encodefeed(data)
+        elif type(data) in (list, tuple):  self._encodelist(data)
+        elif type(data) in (dict,):        self._encodedict(data)
+        else:                              self._encodedata(data)
 
     def _encodelist(self, data):
-        for v in data:
-            self.toxml(v)
+        if all(isinstance(x, (int,str)) for x in data):
+            self.bits.append(escape(','.join(map(str, data))))
+        else:
+            for v in data:
+                self.toxml(v)
 
     def _encodedict(self, data):
         tag = data.get('_type', None)
@@ -125,6 +141,7 @@ class XMLEncoder(object):
             self.bits.append('</%s>'  % tag)
 
     def _encodefeed(self, data):
+        print("name is %s"%data.__class__.__name__)
         self.bits.append('<%s>'  % data.__class__.__name__)
         self._encodedict(data.getPublicFeed())
         self.bits.append('</%s>' % data.__class__.__name__)
