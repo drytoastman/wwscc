@@ -2,40 +2,41 @@
 
 {% block content %}
 <!-- Series info -->
-<div id='seriestitle'>{{champ.settings.seriesname}}</div>
-{% if champ.settings.minevents > 0 %}
-<div id='minwarning'>(Min Attendance of {{champ.settings.minevents}} Events To Place)</div>
+<div id='seriestitle'>{{settings.seriesname}}</div>
+{% if settings.minevents > 0 %}
+<div id='minwarning'>(Min Attendance of {{settings.minevents}} Events To Place)</div>
 {% endif %}
 <hr />
 <!-- Results -->
 
 <table class='champ'>
-{% for code, entrants in champ.results.items()|sort %}
-{% set cls = champ.classdata.classlist[code] %}
+{% for code, entrants in results.items()|sort %}
+{% set cls = classdata.classlist[code] %}
 
-<tr><th class='classhead' colspan='{{champ.events|length + 4}}'>{{cls.classcode}} - {{cls.descrip}} -
-            Average Per Event: {{"%.2lf"%(entrants.entries/(champ.events|length))}}</th></tr>
+<tr><th class='classhead' colspan='{{events|length + 4}}'>{{cls.classcode}} - {{cls.descrip}} -
+            Average Per Event: {{"%.2lf"%(entrants.entries/(events|length))}}</th></tr>
 <tr>
 <th>#</th>
 <th>Name</th>
 <th>Attended</th>
-{% for event in champ.events %}
+{% for event in events %}
 <th>Event {{loop.index}}</th>
 {% endfor %}
 <th>Total</th>
 </tr>
         
 {% for e in entrants %}
-	{% if e.events < champ.settings.minevents %}
+	{% if e.eventcount < settings.minevents %}
 	<tr class='missingmin'>
 	{% else %}
 	<tr>
 	{% endif %}
     <td>{{e.position}}</td>
     <td class='name'>{{e.firstname}} {{e.lastname}}</td>
-    <td class='attend'>{{e.events}}</td>
-    {% for event in champ.events %}
-        <td class='points {{event.eventid in e.points.drop and "drop" or ""}}'>{{e.points.get(event.eventid)|t3}}</td>
+    <td class='attend'>{{e.eventcount}}</td>
+    {% for event in events %}
+		{% set key = "d-"+event.date %}
+        <td class='points {{key in e.points.drop and "drop" or ""}}'>{{e.points.events[key]|t3}}</td>
     {% endfor %}
     <td class='points'>{{e.points.total|t3}}</td>
     </tr>

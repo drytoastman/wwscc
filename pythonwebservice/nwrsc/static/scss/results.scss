@@ -45,6 +45,11 @@ td.run, td.points {
 	text-align:center;
 }
 
+td.drop {
+	text-decoration: line-through;
+	color: #BBB;
+}
+
 td.carnum {
 	text-align:right;
 }
@@ -77,6 +82,7 @@ span {
 th { 
 	background-color: #bbb; 
 	text-align: center;
+	padding: 1px 3px;
 }
 
 th.classhead { 

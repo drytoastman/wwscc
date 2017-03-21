@@ -53,7 +53,10 @@ class Result(object):
         name = "champ"
         if cls._needUpdate(('classlist', 'indexlist', 'events', 'cars', 'runs'), name):
             cls._updateChampResults(name)
-        return cls._loadResults(name)
+        res = cls._loadResults(name)
+        for k, v in res.items():
+            res[k] = ChampClass(v) # Rewrap the list with ChampClass for template function
+        return res
 
     @classmethod
     def getTopTimesTable(cls, results, *keys):
@@ -662,14 +665,5 @@ class ChampEntrant(AttrBase):
 class ChampClass(list):
     @property
     def entries(self):
-        return sum([e.eventcount for e in self])
-
-"""
-class ChampResults(object):
-    def __init__(self, settings, events, classdata, results):
-        self.settings  = settings
-        self.events    = events
-        self.classdata = classdata
-        self.results   = results
-"""
+        return sum([e['eventcount'] for e in self])
 

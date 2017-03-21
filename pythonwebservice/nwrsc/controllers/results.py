@@ -74,7 +74,10 @@ def post():
 
 @Results.route("/champ")
 def champ():
-    return render_template('/results/champ.html', champ=Result.getChampResults())
+    info    = Result.getSeriesInfo()
+    results = Result.getChampResults()
+    events  = [x for x in info['events'] if not x['ispractice']]
+    return render_template('/results/champ.html', results=results, settings=info.getSettings(), classdata=info.getClassData(), events=events)
 
 @Results.route("/<int:eventid>/tt")
 def tt():
