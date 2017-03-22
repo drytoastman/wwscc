@@ -35,10 +35,15 @@ class Challenge(AttrBase):
 class Event(AttrBase):
 
     def feedFilter(self, key, value):
-        if key in ('paypal', 'snail', 'cost'):
+        if key in ('paypal', 'snail'):
             return None
         return value
-    def getCountedRuns(self): return 999
+
+    def getCountedRuns(self):
+        ret = getattr(self, 'counted', 0)
+        if ret <= 0:
+            return 999
+        return ret
 
     @classmethod
     def get(cls, eventid):
@@ -65,8 +70,7 @@ class Registration(AttrBase):
 class Run(AttrBase):
 
     def feedFilter(self, key, value):
-        if key in ('carid', 'eventid', 'modified') or (isinstance(value, int) and value < 0):
+        if key in ('carid', 'eventid'):
             return None
         return value
-       
 

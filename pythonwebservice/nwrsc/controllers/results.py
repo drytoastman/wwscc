@@ -38,7 +38,7 @@ def _resultsforclasses(clslist=None, grplist=None):
     if clslist is None and grplist is None:
         ispost         = True
         results        = resultsbase
-        g.toptimes     = Result.getTopTimesTable(results, {'indexed':True}, {'indexed':False})
+        g.toptimes     = Result.getTopTimesTable(g.classdata, results, {'indexed':True}, {'indexed':False})
         g.entrantcount = sum([len(x) for x in results.values()])
         g.settings     = info.getSettings()
     elif grplist is not None:
@@ -86,8 +86,9 @@ def tt():
     segments = bool(int(request.args.get('segments', '0')))
     course   = int(request.args.get('course', '0'))
 
-    info     = Result.getSeriesInfo()
-    event    = info.getEvent(g.eventid)
+    info      = Result.getSeriesInfo()
+    event     = info.getEvent(g.eventid)
+    classdata = info.getClassData() 
 
     keys = []
     if segments:
@@ -100,7 +101,7 @@ def tt():
         keys.append({'indexed':indexed, 'counted':counted, 'course':course, 'title':'Course {}'.format(course)})
 
     header   = "Top {} Times ({} Runs) for {}".format(indexed and "Indexed" or "", counted and "Counted" or "All", event.name)
-    table    = Result.getTopTimesTable(Result.getEventResults(g.eventid), *keys)
+    table    = Result.getTopTimesTable(classdata, Result.getEventResults(g.eventid), *keys)
 
     return render_template('/results/toptimes.html', header=header, table=table)
 

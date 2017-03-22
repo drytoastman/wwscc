@@ -15,6 +15,17 @@ from .simple import Challenge, Event , Run
 log = logging.getLogger(__name__)
 
 
+class PosPoints(object):
+    def __init__(self, settingsvalue):
+        self.ppoints = list(map(int, settingsvalue.split(',')))
+    def get(self, position):
+        idx = position - 1
+        if idx >= len(self.ppoints):
+            return self.ppoints[-1]
+        else:
+            return self.ppoints[idx]
+
+
 class Result(object):
     """ 
         Interface into the results table for cached results.  This is the primary source of information
@@ -59,9 +70,13 @@ class Result(object):
         return res
 
     @classmethod
-    def getTopTimesTable(cls, results, *keys):
+    def getTopTimesTable(cls, classdata, results, *keys):
         """ Get top times.  Pass in results from outside as in some cases, they are already loaded """
-        return cls._loadTopTimeTable(results, *keys)
+        return cls._loadTopTimesTable(classdata, results, *keys)
+
+    @classmethod
+    def applyAnnouncerDetails(cls, settings, eventresults, carid):
+        cls._applyAnnouncerDetails(settings, eventresults, carid)
 
 
     #####################  Everything below here is for internal use, use the API above ##############
@@ -133,7 +148,7 @@ class Result(object):
         event     = Event.get(eventid)
         classdata = ClassData.get()
         settings  = Settings.get()
-        ppoints   = list(map(int, settings.pospointlist.split(',')))
+        ppoints   = PosPoints(settings.pospointlist)
     
         with g.db.cursor() as cur:
             # Fetch all of the entrants (driver/car combo), place in class lists, save pointers for quicker access
@@ -151,6 +166,7 @@ class Result(object):
 
             # Fetch all of the runs, calc net and assign to the correct entrant
             cur.execute("select * from runs where eventid=%s", (eventid,))
+            lastcourse = 0
             for r in [Run(**x) for x in cur.fetchall()]:
                 match = cptrs[r.carid]
                 match.runs[r.course-1][r.run - 1] = r
@@ -167,9 +183,12 @@ class Result(object):
         
             # For every entrant, calculate their best runs (raw,net,allraw,allnet) and event sum(net)
             for e in cptrs.values():
-                e.dialraw = 0
-                e.net = 0
-                e.pen = 0
+                e.net = 0      # Best counted net overall time
+                e.pen = 0      # Best counted unindexed overall time (includes penalties)
+                e.netall = 0   # Best net of all runs (same as net when counted not active)
+                e.penall = 0   # Best unindexed of all runs (same as pen when counted not active)
+                if event.ispro:
+                    e.dialraw = 0  # Best raw times (OK status) used for dialin calculations
                 counted = min(classdata.getCountedRuns(e.classcode), event.getCountedRuns())
 
                 # Creates an attribute for each entry in the list with the value of index+1 """
@@ -184,38 +203,33 @@ class Result(object):
                     return 999.999
         
                 for course in range(event.courses):
-                    marklist (sorted(e.runs[course], key=rawgetter), 'allraworder')
-                    marklist (sorted(e.runs[course], key=attrgetter('net')), 'allnetorder')
-                    bestraw = sorted(e.runs[course][0:counted], key=rawgetter)
-                    bestnet = sorted(e.runs[course][0:counted], key=attrgetter('net'))
-                    marklist (bestraw, 'raworder')
-                    marklist (bestnet, 'netorder')
+                    bestrawall = sorted(e.runs[course], key=rawgetter)
+                    bestnetall = sorted(e.runs[course], key=attrgetter('net'))
+                    bestraw    = sorted(e.runs[course][0:counted], key=rawgetter)
+                    bestnet    = sorted(e.runs[course][0:counted], key=attrgetter('net'))
+                    marklist (bestrawall, 'arorder')
+                    marklist (bestnetall, 'anorder')
+                    marklist (bestraw, 'rorder')
+                    marklist (bestnet, 'norder')
+                    e.netall += bestnetall[0].net
+                    e.penall += bestnetall[0].pen
                     e.net += bestnet[0].net
                     e.pen += bestnet[0].pen
-                    e.dialraw += bestraw[0].raw
-        
-            # Now for each class we can sort and update position, trophy, points(both types) and diffs
+                    if event.ispro:
+                        e.dialraw += bestraw[0].raw
+
+            # Now for each class we can sort and update position, trophy, points(both types)
             for clas in results:
                 res = results[clas]
                 res.sort(key=attrgetter('net'))
                 trophydepth = ceil(len(res) / 3.0)
                 eventtrophy = classdata.classlist[clas].eventtrophy
                 for ii, e in enumerate(res):
-                    e.position = ii+1
-                    e.trophy = eventtrophy and (ii < trophydepth)
-                    if ii == 0:
-                        e.diff1      = 0
-                        e.diffn      = 0
-                        e.diffpoints = 100.0
-                        e.pospoints  = ppoints[0]
-                    else:
-                        e.diff1      = e.net - res[0].net
-                        e.diffn      = e.net - res[ii-1].net
-                        e.diffpoints = res[0].net*100/e.net;
-                        e.pospoints  = ii >= len(ppoints) and ppoints[-1] or ppoints[ii]
-        
-                    # quick access for templates
-                    e.points = settings.usepospoints and e.pospoints or e.diffpoints
+                    e.position   = ii+1
+                    e.trophy     = eventtrophy and (ii < trophydepth)
+                    e.pospoints  = ppoints.get(e.position)
+                    e.diffpoints = res[0].net*100/e.net;
+                    e.points     = settings.usepospoints and e.pospoints or e.diffpoints
 
                     # Dialins for pros
                     if event.ispro:
@@ -230,60 +244,65 @@ class Result(object):
     
         cls._insertResults(name, results)
 
-        """
-        data.eventid = eventid
-        data.carid = carid
-        data.classcode = classcode
-        data.lastcourse = course
-        data.updated = datetime.datetime.now()
 
-        # Just get runs from last course that was recorded
-        runs = {}
-        for r in session.query(Run).filter(Run.carid==carid).filter(Run.eventid==eventid).filter(Run.course==course):
-                runs[r.run] = r
+    @classmethod
+    def _applyAnnouncerDetails(cls, settings, eventresults, carid):
+        # Calculate things for the announcer/info displays
+        ppoints = PosPoints(settings.pospointlist)
+        for clscode, entrants in eventresults.items():
+            for e in entrants:
+                if e['carid'] != carid:
+                    continue
 
-        if not len(runs):
-                return  # Nothing to do
+                lastcourse = 1
+                lastrun = 4
+                lastentry = e['runs'][lastcourse-1][lastrun-1] 
+                ann = dict()
 
-        runlist = sorted(runs.keys())
-        lastrun = runs[runlist[-1]]
+                def norderrun(n):
+                    # Find the run with norder == n 
+                    return next((x for x in e['runs'][lastcourse-1] if x['norder'] == n), None)
 
-        if len(runs) > 1:
-                if lastrun.norder == 1:  # we improved our position
-                        # find run with norder = 2, create the old entry with sum - lastrun + prevrun
-                        prevbest = [x for x in runs.values() if x.norder == 2][0]
-                        data.rawdiff = lastrun.raw - prevbest.raw
-                        data.netdiff = lastrun.net - prevbest.net
-                        data.oldsum = mysum - lastrun.net + prevbest.net
+                if lastentry['norder'] == 1:
+                    # New best net, note net improvement, mark the old info with sum - lastrun + prevrun
+                    prevbest = norderrun(2) 
+                    if prevbest:
+                        ann['netimp'] = lastentry['net'] - prevbest['net']
+                        ann['oldnet'] = e['net'] - lastentry['net'] + prevbest['net']
 
-                if lastrun.cones != 0 or lastrun.gates != 0:
-                        # add table entry with what could have been without penalties
-                        car = session.query(Car).get(carid)
-                        index = ClassData(session).getEffectiveIndex(car)
-                        curbest = [x for x in runs.values() if x.norder == 1][0]
-                        theory = mysum - curbest.net + ( lastrun.raw * index )
-                        if theory < mysum:
-                                data.rawdiff = lastrun.raw - curbest.raw
-                                data.netdiff = lastrun.net - curbest.net
-                                data.potentialsum = theory
+                if lastentry['rorder'] == 1:
+                    # New best raw, note raw improvement over previous run
+                    # This can be n=2 for overall improvement, or n=1 if only raw, not net improvement
+                    prevbest = norderrun(lastentry['norder'] == 1 and 2 or 1)
+                    if prevbest:
+                        ann['rawimp'] = lastentry['raw'] - prevbest['raw']
 
+                if lastentry['cones'] != 0 or lastentry['gates'] != 0:
+                    # add data for run without penalties
+                    ann['potnet'] = e['net'] - lastentry['net'] + (lastentry['raw'] * e['indexval'])
 
-        sumlist.remove(mysum);
-        if data.oldsum > 0:
-                sumlist.append(data.oldsum);
-                sumlist.sort();
-                position = sumlist.index(data.oldsum)+1
-                data.oldpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
-                data.olddiffpoints = min(100, sumlist[0]/data.oldsum*100);
-                sumlist.remove(data.oldsum);
+                # Figure out points changes
+                sumlist = [x['net'] for x in entrants]
+                sumlist.remove(e['net'])
 
-        if data.potentialsum > 0:
-                sumlist.append(data.potentialsum)
-                sumlist.sort()
-                position = sumlist.index(data.potentialsum)+1
-                data.potentialpospoints = position >= len(PPOINTS) and PPOINTS[-1] or PPOINTS[position-1]
-                data.potentialdiffpoints = min(100, sumlist[0]/data.potentialsum*100);
-            """
+                if 'oldnet' in ann:
+                    sumlist.append(ann['oldnet'])
+                    sumlist.sort()
+                    position = sumlist.index(ann['oldnet'])+1
+                    ann['oldpospoints']  = ppoints.get(position)
+                    ann['olddiffpoints'] = sumlist[0]*100/ann['oldnet']
+                    sumlist.remove(ann['oldnet'])
+
+                if 'potnet' in ann:
+                    sumlist.append(ann['potnet'])
+                    sumlist.sort()
+                    position = sumlist.index(ann['potnet'])+1
+                    ann['potentialpospoints']  = ppoints.get(position)
+                    ann['potentialdiffpoints'] = sumlist[0]*100/ann['potnet']
+
+                e['ann'] = ann
+                return # we are done, break out and return from here
+
 
     @classmethod
     def _updateChallengeResults(cls, name, challengeid):
@@ -443,7 +462,7 @@ class Result(object):
 
              
     @classmethod
-    def _loadTopTimeTable(cls, results, *keys):
+    def _loadTopTimesTable(cls, classdata, results, *keys):
         """
             Generate lists on demand as there are many iterations.  Returns a TopTimesTable class
             that wraps all the TopTimesLists together.
@@ -474,20 +493,27 @@ class Result(object):
 
             ttl = TopTimesList(title, cols, fields)
             for cls in results:
+                if classdata.classlist[cls].secondruns and counted:
+                    continue
+
                 for e in results[cls]:
                     if course > 0:
                         for r in e['runs'][course-1]:
-                            if r['netorder'] == 1:
+                            if (counted and r['norder'] == 1) or (not counted and r['anorder'] == 1):
                                 time = indexed and r['net'] or r['pen']
+                                break
                     else:
-                        time = indexed and e['net'] or e['pen']
+                        if counted:
+                            time = indexed and e['net'] or e['pen']
+                        else:
+                            time = indexed and e['netall'] or e['penall']
 
                     ttl.append(TopTimeEntry(fields,
                         name="{} {}".format(e['firstname'], e['lastname']),
                         classcode = e['classcode'],
-                        indexstr  =  e['indexstr'],
-                        indexval  =  e['indexval'],
-                        time      =  time
+                        indexstr  = e['indexstr'],
+                        indexval  = e['indexval'],
+                        time      = time
                     ))
 
             # Sort and set 'pos' attribute, then add to the mass table

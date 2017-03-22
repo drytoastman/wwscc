@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import '/results/macros.html' as res %}
+{% import '/results/ttmacros.html' as tt %}
 
 {% block headers %}
 {{super()}}
@@ -8,6 +8,6 @@
 
 {% block content %}
 <h3>{{header}}</h3>
-{{res.toptimestable(table)}}
+{{tt.toptimestable(table)}}
 {% endblock content %}
 

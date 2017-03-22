@@ -2,19 +2,19 @@
 {% macro classtables(results) -%}
 <table class='classresults'>
 {% for code,entrants in results.items()|sort %}
-	{{headerrow(code)}}
-	{% for e in entrants %}
-		{{entrantrow(e)}}
-		{%- for runs in e.runs[1:] -%}
-			<tr>
-			{% for run in runs -%}
-				{{runcell(run)}}
+    {{headerrow(code)}}
+    {% for e in entrants %}
+        {{entrantrow(e)}}
+        {%- for runs in e.runs[1:] -%}
+            <tr>
+            {% for run in runs -%}
+                {{runcell(run, e.indexstr and True or False)}}
             {%- endfor -%}
-			</tr>
+            </tr>
         {%- endfor -%}
     {% endfor %}
 {% else %}
-	<tr><td>No results found</td></tr>
+    <tr><td>No results found</td></tr>
 {% endfor %}
 </table>
 {%- endmacro %}
@@ -22,92 +22,82 @@
 
 
 {% macro headerrow(classcode) -%}
-{% set colcount = 6 + g.event.runs %}
+{% if g.event.courses > 1 %}
+{% set colcount = 9 + g.event.runs %}
+{% else %}
+{% set colcount = 8 + g.event.runs %}
+{% endif %}
 <tr>
-	<th class='classhead' colspan='{{colcount}}'>
-	<a id='classtable{{classcode}}'>{{classcode}}</a> - {{g.classdata.classlist[classcode].descrip}}
-	</th>
+    <th class='classhead' colspan='{{colcount}}'>
+    <a id='classtable{{classcode}}'>{{classcode}}</a> - {{g.classdata.classlist[classcode].descrip}}
+    </th>
 </tr>
 <tr>
-<th class='pos'>#</th>
-<th class='trophy'>T</th>
-<th class='name'>Entrant</th>
+    <th class='pos'></th>
+    <th class='trophy'></th>
+    <th class='name'>Name</th>
+    <th class='carnum'>#</th>
+    <th class='caryear'>Year</th>
+    <th class='cardesc'>Make/Model</th>
 {% for ii in range(1, g.event.runs+1) -%}
-	<th class='run'>Run {{ii}}</th>
+    <th class='run'>Run {{ii}}</th>
 {% endfor %}
-<th></th>  {# Extra col to fix firefox border bug #}
-<th class='total'>Total</th>
-<th class='points'>Points</th>
+    <th></th>  {# Extra col to fix firefox border bug #}
+{% if g.event.courses > 1 %}
+    <th class='total'>Total</th>
+{% endif %}
+    <th class='points'>Points</th>
 </tr>
-{%- endmacro %}
+{% endmacro %}
 
 
 
 {%- macro entrantrow(entrant) %}
+{% if g.event.courses > 1 %}
+{% set colcount = 9 + g.event.runs %}
 {% set rowspan = "rowspan='%s'" % (g.event.courses) %}
+{% else %}
+{% set colcount = 8 + g.event.runs %}
+{% set rowspan = "" %}
+{% endif %}
 <tr class='entrantrow'>
-	<td class='pos' {{rowspan|safe}}>{{entrant.position}}</td>
-	<td class='trophy' {{rowspan|safe}}>{{entrant.trophy and 'T' or ''}}</td>
-	<td class='name' {{rowspan|safe}}>#{{entrant.number}} - {{entrant.firstname}} {{entrant.lastname}}<br/>
-		{{entrant.make}} {{entrant.model}} {{entrant.color}} {{entrant.indexstr and "(%s)"%entrant.indexstr or ""}}</td>
-	{% for run in entrant.runs[0] -%}
-		{{runcell(run)}}
-	{%- endfor %}
-	<td {{rowspan|safe}}></td> {# Extra col to fix firefox border bug #}
-	<td class='total' {{rowspan|safe}}>{{entrant.net | t3}}</td>
-	<td class='points' {{rowspan|safe}}>{{entrant.points | t3}}</td>
-	{# Can reference entrant.pospoints or entrant.diffpoints to bypass series setting for points type #}
+    <td class='pos' {{rowspan|safe}}>{{entrant.position}}</td>
+    <td class='trophy' {{rowspan|safe}}>{{entrant.trophy and 'T' or ''}}</td>
+    <td class='name' {{rowspan|safe}}>{{entrant.firstname}} {{entrant.lastname}}</td>
+
+    <td class='carnum' {{rowspan|safe}}>{{entrant.number}}</td>
+    <td class='caryear' {{rowspan|safe}}>{{entrant.year}}</td>
+    <td class='cardesc' {{rowspan|safe}}>{{entrant.make}} {{entrant.model}} {{entrant.color}} {{entrant.indexstr and "(%s)"%entrant.indexstr or ""}}</td>
+    {% for run in entrant.runs[0] -%}
+        {{runcell(run, entrant.indexstr and True or False)}}
+    {%- endfor %}
+    <td {{rowspan|safe}}></td> {# Extra col to fix firefox border bug #}
+    {% if g.event.courses > 1 %}
+    <td class='total' {{rowspan|safe}}>{{entrant.net | t3}}</td>
+    {% endif %}
+    <td class='points' {{rowspan|safe}}>{{entrant.points | t3}}</td>
+    {# Can reference entrant.pospoints or entrant.diffpoints to bypass series setting for points type #}
 </tr>
 {% endmacro %}
 
 
-
-{%- macro runcell(run) %}
+{%- macro runcell(run, showraw) %}
 {%- if not run -%}
 <td class='run'>
 no data
 {%- else -%}
-<td class='run {{run.netorder==1 and "bestnet"}} {{run.raworder==1 and "bestraw"}}'>
+<td class='run{{run.norder==1 and " bestnet" or ""}}{{run.rorder==1 and " bestraw" or ""}}'>
 {%- if run.status == "OK" -%}
-	<span class='net'>{{run.net | t3}}</span>
+    <span class='net'>{{run.net | t3}} ({{run.cones}},{{run.gates}})</span>
+    {%if showraw %}
+        <span class='raw'>[{{run.raw|t3}}]</span>
+    {% endif %}
+    {# FINISH ME, segment times here #}
 {%- else -%}
-	<span class='net'>{{run.status}}</span>
+    <span class='net'>{{run.status}}</span>
 {%- endif -%}
-{%- if run.raw != 999.999 -%} <span class='raw'>{{run.raw|t3}} ({{run.cones}},{{run.gates}})</span> {%- endif -%}
-{%- if run.reaction or run.sixty -%} <span class='reaction'>{{run.reaction|t3}}/{{run.sixty | t3}}</span> {%- endif -%}
 {%- endif -%}
 </td>
 {% endmacro -%}
 
-
-
-{% macro toptimestable(table) %}
-<table class='toptimes'>
-<tr>
-{% for title in table.titles -%}
-<th class='toptimeshead' colspan='{{table.colcount[loop.index0]+1}}'>{{title}}</th>
-{%- endfor -%}
-</tr>
-
-<tr>
-{% for ttlcols in table.cols -%}
-<th>#</th>
-{%- for col in ttlcols -%}
-<th>{{col}}</th>
-{%- endfor -%}
-{%- endfor -%}
-</tr>
-{% for ttlrow in table.rows %}
-<tr>
-{% set pos=loop.index %}
-{%- for row in ttlrow -%}
-<td class='pos'>{{pos}}</td>
-{%- for item in row -%}
-<td>{{item|t3}}</td>
-{%- endfor -%}
-{%- endfor -%}
-</tr>
-{%- endfor %}
-</table>
-{% endmacro %}
 

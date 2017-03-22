@@ -1,30 +1,137 @@
-from pylons import request, response
+
+from flask import request, make_template, g
 from nwrsc.model import *
-from nwrsc.controllers.lib.base import BeforePage, BaseController
-from nwrsc.lib.helpers import t3
-from simplejson import JSONEncoder
-import time
-from decimal import Decimal
-import operator
+
+class AnnouncerController(object):
+
+	def index(self):
+		c.title = 'Scorekeeper Announcer'
+
+		if self.eventid:
+			c.javascript = ['/js/announcer.js']
+			c.stylesheets = ['/css/announcer.css']
+			c.event = self.event
+			return render_mako('/announcer/main.mako')
+		elif self.database is not None:
+			c.events = self.session.query(Event).all()
+			return render_mako('/results/eventselect.mako')
+		else:
+			return self.databaseSelector()
+
+	def runorder(self):
+		"""
+			Returns the HTML to render the NextToFinish box
+		"""
+		c.order = loadNextRunOrder(self.session, self.event, int(request.GET.get('carid', 0)))
+		return render_mako('/announcer/runorder.mako')
+
+
+	@jsonify
+	def toptimes(self):
+		"""
+			Returns the top times tables that are shown in the announer panel
+		"""
+		carid = int(request.GET.get('carid', 0))
+		##data = self._toptimes(int(request.GET.get('carid', 0)))
+		c.e2label = self.e2label
+
+		ret = {}
+		ret['updated'] = int(request.GET.get('updated', 0)) # Return it
+
+		c.toptimes = self._loadTopTimes(carid, raw=False) #data['topnet']
+		ret['topnet'] = render_mako('/announcer/topnettimes.mako').replace('\n', '')
+
+		c.toptimes = self._loadTopTimes(carid, raw=True) #data['topraw']
+		ret['topraw'] = render_mako('/announcer/toprawtimes.mako').replace('\n', '')
+
+		if self.event.getSegmentCount() > 0:
+			for ii in range(1, self.event.getSegmentCount()+1):
+				c.toptimes = data['topseg%d' % ii]
+				ret['topseg%d' % ii] = render_mako('/announcer/topsegtimes.mako').replace('\n', '')
+
+		return ret
+
+
+	def nexttofinish(self):
+		nextid = getNextCarIdInOrder(self.session, self.event, int(request.GET.get('carid', 0)))
+		return self._allentrant(nextid)
+
+	def results(self):
+		return self._allentrant(int(request.GET.get('carid', 0)))
+
+	@jsonify
+	def _allentrant(self, carid):
+		"""
+			Returns the collection of tables shown for a single entrant
+		"""
+		data = self._entrant(carid)
+		c.event = self.event
+		c.runs = data['runlist']
+		c.results = data['classlist']
+		c.champ = data['champlist']
+		c.driver = self.driver
+		c.cls = self.cls
+		c.e2label = self.e2label
+		
+		ret = {}
+		ret['updated'] = int(request.GET.get('updated', 0)) # Return it
+		ret['entrantresult'] = render_mako('/announcer/entrant.mako').replace('\n', '')
+		return ret
+
+
+class LiveController(object):
+
+	def index(self):
+		if self.eventid:
+			return self._browser()
+		elif self.database is not None:
+			return self._events()
+		else:
+			return self._database()
+
+
+	def _database(self):
+		c.dblist = self._databaseList(archived=False)
+		return render_mako('/live/database.mako')
+
+	def _events(self):
+		c.events = self.session.query(Event).all()
+		return render_mako('/live/events.mako')
+
+	def _browser(self):
+		c.event = self.event
+		c.classes = [x[0] for x in self.session.query(Class.code).all()]
+		return render_mako('/live/browser.mako')
+
+
+	def Event(self):
+		carid = int(self.routingargs.get('other', 0))
+		c.results = self._classlist(carid)
+		c.e2label = self.e2label
+		return render_mako_def('/live/tables.mako', 'classlist')
+
+	def Champ(self):
+		carid = int(self.routingargs.get('other', 0))
+		c.champ = self._champlist(carid)
+		c.cls = self.cls
+		c.e2label = self.e2label
+		return render_mako_def('/live/tables.mako', 'champlist')
+
+	def PAX(self):
+		carid = int(self.routingargs.get('other', 0))
+		c.e2label = self.e2label
+		c.toptimes = self._loadTopTimes(carid, raw=False)
+		return render_mako('/announcer/topnettimes.mako').replace('\n', '')
+
+	def Raw(self):
+		carid = int(self.routingargs.get('other', 0))
+		c.e2label = self.e2label
+		c.toptimes = self._loadTopTimes(carid, raw=True)
+		return render_mako('/announcer/toprawtimes.mako').replace('\n', '')
+
+
 
 CONVERT = {'old':'improvedon', 'raw':'couldhave', 'current':'highlight'}
-
-class JEncoder(JSONEncoder):
-	def default(self, o):
-		if hasattr(o, 'getFeed'):
-			return o.getFeed()
-		else:
-			return str(o)
-
-def _extract(obj, *keys):
-	if type(obj) is dict:
-		ret = dict([(k, obj[k]) for k in keys])
-	else:
-		ret = dict([(k, getattr(obj,k)) for k in keys])
-	for k, v in ret.iteritems():
-		if type(v) is float:
-			ret[k] = t3(v)
-	return ret
 
 class MobileController(BaseController):
 

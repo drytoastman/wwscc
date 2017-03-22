@@ -1,0 +1,29 @@
+{% macro toptimestable(table) %}
+<table class='toptimes'>
+<tr>
+{% for title in table.titles -%}
+<th class='toptimeshead' colspan='{{table.colcount[loop.index0]+1}}'>{{title}}</th>
+{%- endfor -%}
+</tr>
+
+<tr>
+{% for ttlcols in table.cols -%}
+<th>#</th>
+{%- for col in ttlcols -%}
+<th>{{col}}</th>
+{%- endfor -%}
+{%- endfor -%}
+</tr>
+{% for ttlrow in table.rows %}
+<tr>
+{% set pos=loop.index %}
+{%- for row in ttlrow -%}
+<td class='pos'>{{pos}}</td>
+{%- for item in row -%}
+<td>{{item|t3}}</td>
+{%- endfor -%}
+{%- endfor -%}
+</tr>
+{%- endfor %}
+</table>
+{% endmacro %}

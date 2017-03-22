@@ -1,5 +1,10 @@
 {% extends "/results/rbase.html" %}
+{% import '/results/ttmacros.html' as tt %}
+{% if g.event.ispro %}
+{% import '/results/promacros.html' as res %}
+{% else %}
 {% import '/results/macros.html' as res %}
+{% endif %}
 
 {% block content %}
 {% if not ispost %}
@@ -33,7 +38,7 @@
 {{res.classtables(results)}}
 <br/>
 <br/>
-{{res.toptimestable(g.toptimes)}}
+{{tt.toptimestable(g.toptimes)}}
 
 {% endif %}
 {% endblock content %}

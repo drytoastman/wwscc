@@ -7,7 +7,7 @@
 
 import logging
 from flask import Blueprint, request, g, escape, make_response
-from nwrsc.model import Result, BaseEncoder
+from nwrsc.model import Result, BaseEncoder, Settings 
 
 log  = logging.getLogger(__name__)
 Xml  = Blueprint("Xml", __name__)
@@ -56,6 +56,13 @@ def champresults():
         for x in y: x['_type'] = 'ChampEntrant'
 
     return xml_encode(res)
+
+
+@Json.route("/<int:eventid>/test")
+def test():
+    res = Result.getEventResults(g.eventid)
+    Result.applyAnnouncerDetails(Settings.get(), res, "fc68104e-0bc7-11e7-b879-d4bed9906ed9")
+    return json_encode(res)
 
 
 @Json.route("/challenge/<int:challengeid>")
