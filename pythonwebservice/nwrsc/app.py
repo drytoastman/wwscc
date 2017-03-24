@@ -17,6 +17,7 @@ from flask_assets import Environment, Bundle
 from nwrsc.controllers.admin import Admin
 from nwrsc.controllers.results import Results
 from nwrsc.controllers.feed import Xml, Json
+from nwrsc.controllers.mobile import Announcer, Timer
 from nwrsc.model import Series
 
 
@@ -32,7 +33,6 @@ class FlaskWithPool(Flask):
 
     def reset_pool(self):
         """ First person here gets to reset it, others can continue on and try again """
-        raise Exception("WHO CALLED ME")
         if self.resetlock.acquire(False):
             try:
                 if not self.pool.closed:
@@ -87,7 +87,8 @@ def create_app(config=None):
         "DBUSER":"wwwuser",
         "DBPASS":"wwwuser",
         "SHOWLIVE":True,
-        "INSTALLROOT": installroot
+        "INSTALLROOT": installroot,
+        "ASSETS_DEBUG":False
     })
 
     # Let the site config override what it wants
@@ -101,14 +102,16 @@ def create_app(config=None):
     theapp.url_value_preprocessor(preprocessor)
     theapp.url_defaults(urldefaults)
     theapp.add_url_rule('/',           'toresults',  redirect_to='/results')
-    theapp.register_blueprint(Admin,   url_prefix="/admin/<series>")
-    theapp.register_blueprint(Json,    url_prefix="/json/<series>")
-    theapp.register_blueprint(Results, url_prefix="/results/<series>")
-    theapp.register_blueprint(Xml,     url_prefix="/xml/<series>")
+    theapp.register_blueprint(Admin,     url_prefix="/admin/<series>")
+    theapp.register_blueprint(Announcer, url_prefix="/announcer/<series>")
+    theapp.register_blueprint(Json,      url_prefix="/json/<series>")
+    theapp.register_blueprint(Results,   url_prefix="/results/<series>")
+    theapp.register_blueprint(Timer,     url_prefix="/timer")
+    theapp.register_blueprint(Xml,       url_prefix="/xml/<series>")
 
     # Some static things that need to show up at the root level
     @theapp.route('/favicon.ico')
-    def favicon(): return send_from_directory('static', 'cone.png')
+    def favicon(): return send_from_directory('static/images', 'cone.png')
     @theapp.route('/robots.txt')
     def robots(): return send_from_directory('static', 'robots.txt')
     @theapp.route('/<subapp>/')

@@ -112,7 +112,7 @@ public class StupidSimpleDataService implements Runnable
                 
                 out.write("HTTP/1.0 200 OK\r\n".getBytes());
                 out.write("Content-Type: text/json\r\n".getBytes());
-            	out.write("Server: Scorekeeper DataEntry 1.0e-10\r\n\r\n".getBytes());
+            	out.write("Server: Scorekeeper DataEntry\r\n\r\n".getBytes());
             	
                 // wait until the data changes to something that wasn't provided in the get argument
                 while (data.get(parts[1]).equals(parts[2]))
@@ -136,7 +136,7 @@ public class StupidSimpleDataService implements Runnable
 	
 	public static void main(String args[])
 	{
-		StupidSimpleDataService s = new StupidSimpleDataService(8080);
+		StupidSimpleDataService s = new StupidSimpleDataService(9090);
 		new Thread(s).start();
 		while (true)
 		{

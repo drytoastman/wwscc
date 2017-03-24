@@ -74,3 +74,20 @@ class Run(AttrBase):
             return None
         return value
 
+class LastRun(AttrBase):
+    """ Separate from run as we have a different limited set of attributes from a regular run and include carid """
+    @classmethod
+    def getLast(self, eventid, lasttime, classcodes=[]):
+        base = "SELECT {} c.classcode,MAX(r.modified) as modified, r.carid FROM runs r JOIN cars c ON r.carid=c.carid " \
+                "WHERE {} r.eventid=%s and r.modified > %s GROUP BY r.carid, c.classcode ORDER BY {} "
+        if len(classcodes) > 0:
+            sql = base.format("DISTINCT ON (c.classcode) ", "c.classcode IN %s AND ", "c.classcode,modified DESC")
+            val = (tuple(classcodes), g.eventid, lasttime)
+        else:
+            sql = base.format("", "", "modified DESC LIMIT 1")
+            val = (g.eventid, lasttime)
+        with g.db.cursor() as cur:
+            cur.execute(sql, val)
+            return [LastRun(**x) for x in cur.fetchall()]
+
+

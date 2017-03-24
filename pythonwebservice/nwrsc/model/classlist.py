@@ -6,6 +6,7 @@ import re
 from flask import g
 
 from .base import AttrBase
+from nwrsc.lib.misc import csvlist
 
 log = logging.getLogger(__name__)
 
@@ -31,10 +32,13 @@ class Class(AttrBase):
     def _processList(self, results, fullset):
         ret = set(fullset)
         for ii, pair in enumerate(results):
+            if pair[0] not in ('+','-'):
+                log.warning("Index limit script: excepted + or -, found {}".format(pair[0]))
+                continue
             ADD = (pair[0] == '+')
             if ii == 0 and ADD:
                 ret = set()
-            for item in pair[1].split(','):
+            for item in csvlist(pair[1]):
                 if ADD:
                     ret |= self._globItem(item, fullset)
                 else:

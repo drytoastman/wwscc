@@ -7,6 +7,7 @@ from operator import itemgetter
 from flask import Blueprint, request, abort, render_template, get_template_attribute, make_response, g
 from nwrsc.model import Result
 from nwrsc.lib.bracket import Bracket
+from nwrsc.lib.misc import csvlist
 
 Results = Blueprint("Results", __name__)
 
@@ -58,15 +59,15 @@ def _resultsforclasses(clslist=None, grplist=None):
 
 @Results.route("/<int:eventid>/byclass")
 def byclass():
-    classes = request.args.get('list', '')
-    g.title = "Results For Class {}".format(classes)
-    return _resultsforclasses(clslist=classes.split(','))
+    classes = csvlist(request.args.get('list', ''))
+    g.title = "Results For Class {}".format(','.join(classes))
+    return _resultsforclasses(clslist=classes)
 
 @Results.route("/<int:eventid>/bygroup")
 def bygroup():
-    groups = request.args.get('list', '')
-    g.title = "Results For Group {}".format(groups)
-    return _resultsforclasses(grplist=[int(x) for x in groups.split(',')])
+    groups = csvlist(request.args.get('list', ''), int)
+    g.title = "Results For Group {}".format(','.join(map(str, groups)))
+    return _resultsforclasses(grplist=groups)
 
 @Results.route("/<int:eventid>/post")
 def post():

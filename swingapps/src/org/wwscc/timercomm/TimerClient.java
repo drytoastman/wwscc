@@ -155,6 +155,10 @@ public final class TimerClient implements RunServiceInterface, ThreadedClass
 			{
 				log.log(Level.INFO, "read failure: " + ex, ex);
 			}
+			catch (Exception e)
+			{
+				log.log(Level.WARNING, "Unexpected timer connection failure: " + e, e);
+			}
 			finally
 			{
 				try { sock.close(); } catch (IOException ioe)  {}

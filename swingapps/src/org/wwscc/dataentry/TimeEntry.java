@@ -259,7 +259,7 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 		sixty.addKeyListener(this);
 		enter.addKeyListener(this);
 		
-		server = new StupidSimpleDataService(8080);
+		server = new StupidSimpleDataService(9090);
 		new Thread(server).start();
 		server.setData("timer", "0.000");
 	}

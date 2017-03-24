@@ -7,6 +7,7 @@
 
 import logging
 from flask import Blueprint, request, g, escape, make_response
+from nwrsc.lib.encoding import json_encode, json_raw, xml_encode
 from nwrsc.model import Result, BaseEncoder, Settings 
 
 log  = logging.getLogger(__name__)
@@ -15,12 +16,12 @@ Json = Blueprint("Json", __name__)
 
 
 @Json.route("/")
-@Xml.route("/")
-def eventinfo():
-    info = Result.getSeriesInfo()
-    if request.blueprint == 'Json':
-        return json_encode(info)
+def jsoninfo():
+    return json_raw(Result.getSeriesInfo(asstring=True))
 
+@Xml.route("/")
+def xmlinfo():
+    info = Result.getSeriesInfo()
     info['_type'] = 'info'
     for x in info['challenges']: x['_type'] = 'Challenge'
     for x in info['events']:     x['_type'] = 'Event'
@@ -28,13 +29,14 @@ def eventinfo():
     for x in info['indexes']:    x['_type'] = 'Index'
     return xml_encode(dict(info)) # force back to base dict type
 
-@Json.route("/<int:eventid>")
-@Xml.route("/<int:eventid>")
-def eventresults():
-    res = Result.getEventResults(g.eventid)
-    if request.blueprint == 'Json':
-        return json_encode(res)
 
+@Json.route("/<int:eventid>")
+def jsonevent():
+    return json_raw(Result.getEventResults(g.eventid, asstring=True))
+
+@Xml.route("/<int:eventid>")
+def xmlevent():
+    res = Result.getEventResults(g.eventid)
     for entries in res.values():
         for e in entries:
             e['_type'] = 'Entrant'
@@ -43,38 +45,31 @@ def eventresults():
                     r['_type'] = 'Run'
     return xml_encode(res, wrapper='classlist')
 
+
 @Json.route("/champ")
+def jsonchamp():
+    return json_raw(Result.getChampResults(asstring=True))
+
 @Xml.route("/champ")
-def champresults():
+def xmlchamp():
     res = Result.getChampResults()
-    if request.blueprint == 'Json':
-        return json_encode(res)
-
-    res['_type'] = 'ChampClasses'
     for y in res.values():
-        if type(y) is not list: continue
         for x in y: x['_type'] = 'ChampEntrant'
-
+    res['_type'] = 'ChampClasses'
     return xml_encode(res)
 
 
-@Json.route("/<int:eventid>/test")
-def test():
-    res = Result.getEventResults(g.eventid)
-    Result.applyAnnouncerDetails(Settings.get(), res, "fc68104e-0bc7-11e7-b879-d4bed9906ed9")
-    return json_encode(res)
-
-
 @Json.route("/challenge/<int:challengeid>")
-@Xml.route("/challenge/<int:challengeid>")
-def challenge(challengeid):
-    rounds = list(Result.getChallengeResults(challengeid).values())
-    if request.blueprint == 'Json':
-        return json_encode(rounds)
+def jsonchallenge(challengeid):
+    return json_encode(list(Result.getChallengeResults(challengeid).values()))
 
+@Xml.route("/challenge/<int:challengeid>")
+def xmlchallenge(challengeid):
+    rounds = list(Result.getChallengeResults(challengeid).values())
     for rnd in rounds:
         rnd['_type'] = 'Round'
     return xml_encode(rounds, wrapper='Rounds')
+
 
 @Xml.route("/<int:eventid>/scca")
 def scca():
@@ -88,71 +83,10 @@ def scca():
                                  Class=res['classcode'],
                                  Index=res['indexcode'],
                                  Pos=res['position'],
-                                 CarModel="%s %s %s %s" % (res['year'], res['make'], res['model'], res['color']),
+                                 CarModel="%s %s %s %s" % (res.get('year',''), res.get('make',''), res.get('model',''), res.get('color','')),
                                  CarNo="%s" % (res['number']),
                                  TotalTm="%0.3lf" % res['net'],
                                  _type='Entry'
                             ))
     return xml_encode(entries, wrapper="Entries")
-
-
-def xml_encode(data, wrapper=None):
-    response = make_response(XMLEncoder().encode(data, wrapper))
-    response.headers['Content-type'] = 'text/xml'
-    return response
-
-def json_encode(data):
-    response = make_response(BaseEncoder(indent=1, sort_keys=True).encode(data))
-    response.headers['Content-type'] = 'application/json'
-    return response
-
-
-class XMLEncoder(object):
-    """ XML in python doesn't have easy encoding or custom getter options like JSONEncoder so we do it ourselves. """
-    def __init__(self, indent=False):
-        self.bits = list()
-        self.indent = indent
-
-    def encode(self, data, wrapper=None):
-        if wrapper:
-            self.bits.append('<%s>' % wrapper)
-        self.toxml(data)
-        if wrapper:
-            self.bits.append('</%s>' % wrapper)
-        return str(''.join(self.bits))
-
-    def toxml(self, data):
-        if hasattr(data, 'getPublicFeed'): self._encodefeed(data)
-        elif type(data) in (list, tuple):  self._encodelist(data)
-        elif type(data) in (dict,):        self._encodedict(data)
-        else:                              self._encodedata(data)
-
-    def _encodelist(self, data):
-        if all(isinstance(x, (int,str)) for x in data):
-            self.bits.append(escape(','.join(map(str, data))))
-        else:
-            for v in data:
-                self.toxml(v)
-
-    def _encodedict(self, data):
-        tag = data.get('_type', None)
-        if tag:
-            self.bits.append('<%s>'  % tag)
-        for k,v in sorted(data.items()):
-            if len(k) > 0 and k[0] == '_': 
-                continue
-            self.bits.append('<%s>'  % k)
-            self.toxml(v)
-            self.bits.append('</%s>' % k)
-        if tag:
-            self.bits.append('</%s>'  % tag)
-
-    def _encodefeed(self, data):
-        print("name is %s"%data.__class__.__name__)
-        self.bits.append('<%s>'  % data.__class__.__name__)
-        self._encodedict(data.getPublicFeed())
-        self.bits.append('</%s>' % data.__class__.__name__)
-
-    def _encodedata(self, data):
-        self.bits.append(escape(str(data)))
 

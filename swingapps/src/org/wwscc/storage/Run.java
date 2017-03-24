@@ -12,9 +12,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
 import org.wwscc.util.IdGenerator;
 
 
@@ -25,6 +29,8 @@ import org.wwscc.util.IdGenerator;
 @SuppressWarnings("unchecked")
 public class Run extends AttrBase implements Serial, Cloneable
 {
+	private static final Logger log = Logger.getLogger(Run.class.getName());
+
 	public static final int LEFT = 1;
 	public static final int RIGHT = 2;
 
@@ -210,11 +216,15 @@ public class Run extends AttrBase implements Serial, Cloneable
 	@Override
 	public void decode(String str) throws ParseException
 	{
-		JSONObject in = (JSONObject)(new JSONParser().parse(str));
-		course = (Integer)in.getOrDefault("course", -1);
-		run    = (Integer)in.getOrDefault("run", -1);
-		raw    = (Double)in.getOrDefault("raw", -1);
-		status = (String)in.getOrDefault("status", "OK");
-		attr   = (JSONObject)in.getOrDefault("attr", new JSONObject());
+		try {
+			JSONObject in = (JSONObject)(new JSONParser().parse(str));
+			course = (int)(long)in.getOrDefault("course", -1);
+			run    = (int)(long)in.getOrDefault("run", -1);
+			raw    = (double)in.getOrDefault("raw", -1);
+			status = (String)in.getOrDefault("status", "OK");
+			attr   = (JSONObject)in.getOrDefault("attr", new JSONObject());
+		} catch (Exception e) {
+			log.log(Level.INFO, String.format("Can't decode run from %s: %s", str, e), e);
+		}
 	}
 }

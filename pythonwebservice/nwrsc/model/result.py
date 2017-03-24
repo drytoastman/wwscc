@@ -4,20 +4,21 @@ from math import ceil
 from copy import copy
 from collections import defaultdict
 from operator import attrgetter
-from datetime import date
+from datetime import date, datetime
 
 from .base import AttrBase, BaseEncoder, Entrant
 from .classlist import ClassData
 from .series import Series
 from .settings import Settings
 from .simple import Challenge, Event , Run
+from nwrsc.lib.misc import csvlist
 
 log = logging.getLogger(__name__)
 
 
 class PosPoints(object):
     def __init__(self, settingsvalue):
-        self.ppoints = list(map(int, settingsvalue.split(',')))
+        self.ppoints = csvlist(settingsvalue, int)
     def get(self, position):
         idx = position - 1
         if idx >= len(self.ppoints):
@@ -35,18 +36,21 @@ class Result(object):
     """
 
     @classmethod
-    def getSeriesInfo(cls):
+    def getSeriesInfo(cls, asstring=False):
         name = "info"
         if cls._needUpdate(('classlist', 'indexlist', 'events', 'settings'), name):
             cls._updateSeriesInfo(name)
-        return SeriesInfo(cls._loadResults(name))
+        res = cls._loadResults(name, asstring)
+        if asstring:
+            return res
+        return SeriesInfo(res)
 
     @classmethod
-    def getEventResults(cls, eventid):
+    def getEventResults(cls, eventid, asstring=False):
         name = "e%d"%eventid
         if cls._needUpdate(('classlist', 'indexlist', 'events', 'cars', 'runs'), name):
             cls._updateEventResults(name, eventid)
-        return cls._loadResults(name)
+        return cls._loadResults(name, asstring)
 
     @classmethod
     def getChallengeResults(cls, challengeid):
@@ -54,19 +58,20 @@ class Result(object):
         if cls._needUpdate(('challengerounds', 'challengeruns'), name):
             cls._updateChallengeResults(name, challengeid)
         ret = dict() # Have to convert back to dict as JSON can't store using ints as keys
-        for rnd in cls._loadResults(name):
+        for rnd in cls._loadResults(name, asstring=False):
             ret[rnd['round']] = rnd
         return ret
 
     @classmethod
-    def getChampResults(cls):
+    def getChampResults(cls, asstring=False):
         """ returns a ChampClass list object """
         name = "champ"
         if cls._needUpdate(('classlist', 'indexlist', 'events', 'cars', 'runs'), name):
             cls._updateChampResults(name)
-        res = cls._loadResults(name)
-        for k, v in res.items():
-            res[k] = ChampClass(v) # Rewrap the list with ChampClass for template function
+        res = cls._loadResults(name, asstring)
+        if not asstring:
+            for k, v in res.items():
+                res[k] = ChampClass(v) # Rewrap the list with ChampClass for template function
         return res
 
     @classmethod
@@ -75,8 +80,9 @@ class Result(object):
         return cls._loadTopTimesTable(classdata, results, *keys)
 
     @classmethod
-    def applyAnnouncerDetails(cls, settings, eventresults, carid):
-        cls._applyAnnouncerDetails(settings, eventresults, carid)
+    def getAnnouncerDetails(cls, settings, eventresults, carid):
+        """ Get old and potential results for the announcer information """
+        return cls._loadAnnouncerDetails(settings, eventresults, carid)
 
 
     #####################  Everything below here is for internal use, use the API above ##############
@@ -98,9 +104,11 @@ class Result(object):
         return False
 
     @classmethod
-    def _loadResults(cls, name):
+    def _loadResults(cls, name, asstring):
         with g.db.cursor() as cur:
-            cur.execute("select data from results where series=%s and name=%s", (g.series, name))
+            key = "data"
+            if asstring: key += "::text"
+            cur.execute("select "+key+" from results where series=%s and name=%s", (g.series, name))
             res = cur.fetchone()
             if res is not None:
                 return res['data']
@@ -246,39 +254,47 @@ class Result(object):
 
 
     @classmethod
-    def _applyAnnouncerDetails(cls, settings, eventresults, carid):
-        # Calculate things for the announcer/info displays
+    def _loadAnnouncerDetails(cls, settings, eventresults, carid):
+        """ Calculate things for the announcer/info displays """
         ppoints = PosPoints(settings.pospointlist)
         for clscode, entrants in eventresults.items():
             for e in entrants:
                 if e['carid'] != carid:
                     continue
 
-                lastcourse = 1
-                lastrun = 4
-                lastentry = e['runs'][lastcourse-1][lastrun-1] 
-                ann = dict()
+                # initialize our basic data struct
+                ann = {k:e[k] for k in ('net', 'pospoints', 'diffpoints')}
 
+                # Find the last run and last course information
+                lastentry = None
+                lasttime = datetime.fromtimestamp(0)
+                for c in e['runs']:
+                    for r in c:
+                        mod = datetime.strptime(r['modified'], "%Y-%m-%d %H:%M:%S.%f")
+                        if mod > lasttime:
+                            lasttime = mod
+                            lastentry = r
+
+                # Macro to find the run with norder == n 
                 def norderrun(n):
-                    # Find the run with norder == n 
-                    return next((x for x in e['runs'][lastcourse-1] if x['norder'] == n), None)
+                    return next((x for x in e['runs'][lastentry['course']-1] if x['norder'] == n), None)
 
+                # If new best net, note net improvement, mark the old info with sum - lastrun + prevrun
                 if lastentry['norder'] == 1:
-                    # New best net, note net improvement, mark the old info with sum - lastrun + prevrun
                     prevbest = norderrun(2) 
                     if prevbest:
                         ann['netimp'] = lastentry['net'] - prevbest['net']
                         ann['oldnet'] = e['net'] - lastentry['net'] + prevbest['net']
 
+                # If new best raw, note raw improvement over previous run
+                # This can be n=2 for overall improvement, or n=1 if only raw, not net improvement
                 if lastentry['rorder'] == 1:
-                    # New best raw, note raw improvement over previous run
-                    # This can be n=2 for overall improvement, or n=1 if only raw, not net improvement
                     prevbest = norderrun(lastentry['norder'] == 1 and 2 or 1)
                     if prevbest:
                         ann['rawimp'] = lastentry['raw'] - prevbest['raw']
 
+                # If last run had penalties, add data for run without penalties
                 if lastentry['cones'] != 0 or lastentry['gates'] != 0:
-                    # add data for run without penalties
                     ann['potnet'] = e['net'] - lastentry['net'] + (lastentry['raw'] * e['indexval'])
 
                 # Figure out points changes
@@ -300,8 +316,8 @@ class Result(object):
                     ann['potentialpospoints']  = ppoints.get(position)
                     ann['potentialdiffpoints'] = sumlist[0]*100/ann['potnet']
 
-                e['ann'] = ann
-                return # we are done, break out and return from here
+                # we are done, break out and return from here
+                return ann 
 
 
     @classmethod
@@ -441,7 +457,7 @@ class Result(object):
         todrop   = settings.dropevents
         bestof   = max(todrop, completed - todrop)
         sortkeys = ['points']
-        sortkeys.extend([x for x in map(str.strip, settings.champsorting.split(',')) if x in ChampEntrant.AvailableSubKeys])
+        sortkeys.extend([x for x in csvlist(settings.champsorting) if x in ChampEntrant.AvailableSubKeys])
 
         # Final storage where results are an ordered list rather than map
         ret = defaultdict(ChampClass)
