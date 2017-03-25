@@ -57,6 +57,15 @@ span.header {
   text-align: center;
 }
 
+span.change {
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+span.status {
+  font-weight: bold;
+}
+
 tr {
   &.header th {
     font-weight: bold;

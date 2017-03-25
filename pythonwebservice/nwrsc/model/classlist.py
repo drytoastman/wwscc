@@ -57,6 +57,12 @@ class Class(AttrBase):
         return (indexrestrict, flagrestrict)
 
     @classmethod
+    def get(cls, code):
+        with g.db.cursor() as cur:
+            cur.execute("select * from classlist where classcode=%s", (code,))
+            return Class(**cur.fetchone())
+
+    @classmethod
     def getAll(cls):
         with g.db.cursor() as cur:
             cur.execute("select * from classlist order by classcode")

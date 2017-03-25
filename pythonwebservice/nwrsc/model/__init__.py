@@ -1,5 +1,5 @@
 
-from .base import AttrBase, BaseEncoder, Entrant
+from .base import AttrBase, Entrant
 from .classlist import Class, Index, ClassData
 from .result import Result
 from .rungroups import RunGroups

@@ -5,8 +5,8 @@
 <title>{{g.title or "Scorekeeper"}}</title>
 {% block headers %}{% endblock %}
 <script type='text/javascript'>
-{% if g.series -%}
-$.nwr.urlbase = {{url_for('.index')}};
+{% if g.series and g.eventid -%}
+$.nwr.urlbase = "{{url_for('.index', eventid=g.eventid)}}/";
 {%- endif %}
 </script>
 </head>

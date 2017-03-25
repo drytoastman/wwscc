@@ -8,7 +8,7 @@
 import logging
 from flask import Blueprint, request, g, escape, make_response
 from nwrsc.lib.encoding import json_encode, json_raw, xml_encode
-from nwrsc.model import Result, BaseEncoder, Settings 
+from nwrsc.model import Result, Settings 
 
 log  = logging.getLogger(__name__)
 Xml  = Blueprint("Xml", __name__)

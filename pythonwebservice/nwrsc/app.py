@@ -15,9 +15,9 @@ from flask_compress import Compress
 from flask_assets import Environment, Bundle
 
 from nwrsc.controllers.admin import Admin
+from nwrsc.controllers.dynamic import Announcer, Timer
 from nwrsc.controllers.results import Results
 from nwrsc.controllers.feed import Xml, Json
-from nwrsc.controllers.mobile import Announcer, Timer
 from nwrsc.model import Series
 
 
@@ -64,12 +64,12 @@ def create_app(config=None):
             if u not in values and getattr(g, u) and current_app.url_map.is_endpoint_expecting(endpoint, u):
                 values[u] = getattr(g, u)
 
-    def t3(val):
+    def t3(val, sign=False):
         """ Wrapper to safely print floats as XXX.123 format """
         if val is None: return ""
         if type(val) is not float: return str(val)
         try:
-            return "%0.3f" % (val)
+            return (sign and "%+0.3f" or "%0.3f") % (val,)
         except:
             return str(val)
 

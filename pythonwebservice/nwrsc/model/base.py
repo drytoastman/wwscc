@@ -1,13 +1,5 @@
 import json
 
-class BaseEncoder(json.JSONEncoder):
-    """ Helper that calls getPublicFeed if available for getting json encoding """
-    def default(self, o):
-        if hasattr(o, 'getPublicFeed'):
-            return o.getPublicFeed()
-        else:
-            return str(o)
-
 
 class AttrBase(object):
 

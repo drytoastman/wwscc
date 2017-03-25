@@ -1,6 +1,6 @@
 
+import json
 from flask import escape, make_response
-from nwrsc.model import BaseEncoder
 
 def xml_encode(data, wrapper=None):
     response = make_response(XMLEncoder().encode(data, wrapper))
@@ -8,7 +8,7 @@ def xml_encode(data, wrapper=None):
     return response
 
 def json_encode(data):
-    response = make_response(BaseEncoder(indent=1, sort_keys=True).encode(data))
+    response = make_response(JSONEncoder().encode(data))
     response.headers['Content-type'] = 'application/json'
     return response
 
@@ -18,11 +18,19 @@ def json_raw(data):
     return response
 
 
+class JSONEncoder(json.JSONEncoder):
+    """ Helper that calls getPublicFeed if available for getting json encoding """
+    def default(self, o):
+        if hasattr(o, 'getPublicFeed'):
+            return o.getPublicFeed()
+        else:
+            return str(o)
+
+
 class XMLEncoder(object):
     """ XML in python doesn't have easy encoding or custom getter options like JSONEncoder so we do it ourselves. """
-    def __init__(self, indent=False):
+    def __init__(self):
         self.bits = list()
-        self.indent = indent
 
     def encode(self, data, wrapper=None):
         if wrapper:

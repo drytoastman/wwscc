@@ -1,0 +1,88 @@
+<!-- runs -->
+<table id='resultstable' class='res'>
+<tbody>
+<tr class='header'><th colspan='{{5 + event.segments}}'>{{driver.firstname}} {{driver.lastname}} - Course {{driver.lastcourse}}</th></tr>
+<tr class='titles'><th>#</th><th>Raw</th>
+{%for jj in range(1, event.segments+1) %}
+<th>Seg {{jj}}</th>
+{%endfor%}
+<th>C</th><th>G</th><th>Net</th></tr>
+
+{% for run in driver.runs[driver.lastcourse-1] %}
+
+<tr class='{{run.norder==1 and 'highlight' or ''}} {{run.oldbest and 'improvedon' or ''}} {{run.potential and 'couldhave' or ''}}'>
+<td>{{run.run}}</td>
+<td>{{run.raw|t3}}
+{% if run.rawimp is defined %}<span class='change'>[{{run.rawimp|t3(sign=True)}}]</span>{% endif %}
+</td>
+{% for jj in range(event.segments) %}
+<td>TBD</td>
+{% endfor %}
+<td>{{run.cones}}</td>
+<td>{{run.gates}}</td>
+{% if run.status != "OK" %}
+<td><span class='status'>{{run.status}}</td>
+{% else %}
+<td>{{run.net|t3}} {% if run.netimp %}<span class='change'>[{{run.netimp|t3(sign=True)}}]</span>{% endif %}</td>
+{% endif %}
+</tr>
+
+{% endfor %}
+
+</tbody>
+</table>
+
+
+<!-- end runs -->
+
+<table style='width:100%; margin-top:5px;'><tr><td width=50%>
+
+<!-- class list -->
+
+<table id='classtable' class='res'>
+<tbody>
+<tr class='header'><th colspan='6'>Event - {{driver.classcode}}</th></tr>
+<tr class='titles'><th>#</th><th>Name</th><th>Idx</th><th>Net</th><th colspan='2'>Need (Raw)</th></tr>
+{% for e in group %}
+<tr class='{{e.current and 'highlight' or ''}} {{e.ispotential and 'couldhave' or ''}} {{e.isold and 'improvedon' or ''}}'>
+<td>{{e.position}}</td>
+<td>{{e.firstname}} {{e.lastname}}</td>
+<td>{{e.indexstr}}</td>
+<td>{{e.net|t3}}</td>
+<td>{{e.diffn|t3}}</td>
+<td>{{e.diff1|t3}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<!-- end class list -->
+
+</td><td width=50%>
+
+<!-- champlist -->
+
+{% if champ is string %}
+{{champ}}
+{% else %}
+<table id='champtable' class='res'>
+<tbody>
+<tr class='header'><th colspan='4'>Champ - {{driver.classcode}}</th></tr>
+<tr class='titles'><th>#</th><th>Name</th><th></th><th>Points</th></tr>
+{% for e in champ %}
+<tr class='{{e.current and 'highlight' or ''}} {{e.ispotential and 'couldhave' or ''}} {{e.isold and 'improvedon' or ''}}'>
+<td>{{e.position}}</td>
+<td>{{e.firstname}} {{e.lastname}}</td>
+<td>{{e.eventcount}}</td>
+<td>{{e.points.total}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
+
+<!-- end champ list -->
+
+</td></tr></table>
+
+

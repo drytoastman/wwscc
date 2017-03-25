@@ -2,31 +2,31 @@
 function moveresults(from, to)
 {
 	$(to).html($(from).html());
-	$(to).attr('updated', $(from).attr('updated'));
+	$(to).attr('modified', $(from).attr('modified'));
 }
 
 function processNext(json)
 {
-	if (json.updated > $('#nexte').attr('updated'))
+	if (json.modified > $('#nexte').attr('modified'))
 	{
 		$('#nexte').html(json.entrantresult);
-		$('#nexte').attr('updated', json.updated);
+		$('#nexte').attr('modified', json.modified);
 	}
 }
 
 function processResults(json)
 {
-	if (json.updated > $('#firste').attr('updated'))
+	if (json.modified > $('#firste').attr('modified'))
 	{
 		moveresults('#firste', '#seconde');
 		$('#firste').html(json.entrantresult);
-		$('#firste').attr('updated', json.updated);
+		$('#firste').attr('modified', json.modified);
 		$('#entranttabs').tabs('option', 'active', 1);
 	}
-	else if (json.updated > $('#seconde').attr('updated'))
+	else if (json.modified > $('#seconde').attr('modified'))
 	{
 		$('#seconde').html(json.entrantresult);
-		$('#seconde').attr('updated', json.updated);
+		$('#seconde').attr('modified', json.modified);
 	}
 }
 
@@ -34,7 +34,7 @@ function processTopTimes(json)
 {
 	var key;
 	for (key in json) {
-		if (key != "updated") {
+		if (key != "modified") {
 			$('#'+key+'cell').html(json[key]);
 		}
 	}
@@ -45,11 +45,12 @@ function processLast(json)
 	if (json.length == 0)
 		return;
 
-	if (json[0].updated > lasttime)
+	if (json[0].modified > lasttime)
 	{
 		data = json[0];
+		lasttime = data.modified;
+
 		delete data['classcode'];
-		lasttime = data.updated;
 		$.getJSON($.nwr.url_for('results'), data,  processResults);
 		$('#runorder').load($.nwr.url_for('runorder')+'?carid='+data.carid);
 		$.getJSON($.nwr.url_for('toptimes'), data,  processTopTimes);
@@ -62,7 +63,7 @@ function updateCheck()
 	$.ajax({
 			dataType: "json",
 			url: $.nwr.url_for('last'),
-			data: { time: lasttime },
+			data: { modified: lasttime },
 			success: function(data) { processLast(data); updateCheck(); },
 			error: function(xhr) { if (xhr.status != 403) { setTimeout('updateCheck()', 3000); } }
 			});

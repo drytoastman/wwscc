@@ -3,15 +3,16 @@ from flask import g
 from math import ceil
 from copy import copy
 from collections import defaultdict
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 from datetime import date, datetime
 
-from .base import AttrBase, BaseEncoder, Entrant
+from .base import AttrBase, Entrant
 from .classlist import ClassData
 from .series import Series
 from .settings import Settings
 from .simple import Challenge, Event , Run
 from nwrsc.lib.misc import csvlist
+from nwrsc.lib.encoding import JSONEncoder
 
 log = logging.getLogger(__name__)
 
@@ -80,10 +81,13 @@ class Result(object):
         return cls._loadTopTimesTable(classdata, results, *keys)
 
     @classmethod
-    def getAnnouncerDetails(cls, settings, eventresults, carid):
-        """ Get old and potential results for the announcer information """
-        return cls._loadAnnouncerDetails(settings, eventresults, carid)
+    def getDecoratedClassResults(cls, settings, eventresults, carid):
+        """ Decorate the objects with old and potential results for the announcer information """
+        return cls._decorateClassResults(settings, eventresults, carid)
 
+    @classmethod
+    def getDecorateChampResults(cls, champresults, entrant):
+        return cls._decorateChampResults(champresults, entrant)
 
     #####################  Everything below here is for internal use, use the API above ##############
 
@@ -122,7 +126,7 @@ class Result(object):
         with g.db.cursor() as cur:
             cur.execute("set role %s", (g.series,))
             cur.execute("insert into results values (%s, %s, '{}', now()) ON CONFLICT (series, name) DO NOTHING", (g.series, name))
-            cur.execute("update results set data=%s, modified=now() where series=%s and name=%s", (BaseEncoder().encode(data), g.series, name))
+            cur.execute("update results set data=%s, modified=now() where series=%s and name=%s", (JSONEncoder().encode(data), g.series, name))
             cur.execute("reset role")
             g.db.commit()
 
@@ -238,6 +242,9 @@ class Result(object):
                     e.pospoints  = ppoints.get(e.position)
                     e.diffpoints = res[0].net*100/e.net;
                     e.points     = settings.usepospoints and e.pospoints or e.diffpoints
+                    if ii != 0:
+                        e.diff1  = (e.net - res[0].net)/e.indexval
+                        e.diffn  = (e.net - res[ii-1].net)/e.indexval
 
                     # Dialins for pros
                     if event.ispro:
@@ -254,7 +261,7 @@ class Result(object):
 
 
     @classmethod
-    def _loadAnnouncerDetails(cls, settings, eventresults, carid):
+    def _decorateClassResults(cls, settings, eventresults, carid):
         """ Calculate things for the announcer/info displays """
         ppoints = PosPoints(settings.pospointlist)
         for clscode, entrants in eventresults.items():
@@ -262,62 +269,85 @@ class Result(object):
                 if e['carid'] != carid:
                     continue
 
-                # initialize our basic data struct
-                ann = {k:e[k] for k in ('net', 'pospoints', 'diffpoints')}
-
-                # Find the last run and last course information
-                lastentry = None
+                # Find the last course information
                 lasttime = datetime.fromtimestamp(0)
                 for c in e['runs']:
                     for r in c:
                         mod = datetime.strptime(r['modified'], "%Y-%m-%d %H:%M:%S.%f")
                         if mod > lasttime:
                             lasttime = mod
-                            lastentry = r
+                            e['lastcourse'] = r['course']
 
-                # Macro to find the run with norder == n 
-                def norderrun(n):
-                    return next((x for x in e['runs'][lastentry['course']-1] if x['norder'] == n), None)
+                # Always work with the last run by run number, then get first and second bestnet
+                runs = e['runs'][e['lastcourse']-1]
+                lastentry = max(runs, key=itemgetter('run'))
+                norder1 = next((x for x in runs if x['norder'] == 1), None)
+                norder2 = next((x for x in runs if x['norder'] == 2), None)
 
-                # If new best net, note net improvement, mark the old info with sum - lastrun + prevrun
-                if lastentry['norder'] == 1:
-                    prevbest = norderrun(2) 
-                    if prevbest:
-                        ann['netimp'] = lastentry['net'] - prevbest['net']
-                        ann['oldnet'] = e['net'] - lastentry['net'] + prevbest['net']
+                # Note net improvement, mark what the old net would have been
+                if lastentry['norder'] == 1 and norder2:
+                    lastentry['netimp'] = lastentry['net'] - norder2['net']
+                    norder2['oldbest'] = True
+                    e['oldnet'] = e['net'] - lastentry['net'] + norder2['net']
 
-                # If new best raw, note raw improvement over previous run
+                # Note raw improvement over previous best run
                 # This can be n=2 for overall improvement, or n=1 if only raw, not net improvement
-                if lastentry['rorder'] == 1:
-                    prevbest = norderrun(lastentry['norder'] == 1 and 2 or 1)
-                    if prevbest:
-                        ann['rawimp'] = lastentry['raw'] - prevbest['raw']
+                if lastentry['norder'] == 1:
+                    lastentry['rawimp'] = lastentry['raw'] - norder2['raw']
+                else:
+                    lastentry['rawimp'] = lastentry['raw'] - norder1['raw']
 
-                # If last run had penalties, add data for run without penalties
+                # If last run had penalties, add data for potential run without penalties
                 if lastentry['cones'] != 0 or lastentry['gates'] != 0:
-                    ann['potnet'] = e['net'] - lastentry['net'] + (lastentry['raw'] * e['indexval'])
+                    e['potnet'] = e['net'] - norder1['net'] + (lastentry['raw'] * e['indexval'])
+                    if lastentry['norder'] != 1:
+                        lastentry['potential'] = e['potnet'] < e['net']
 
                 # Figure out points changes
                 sumlist = [x['net'] for x in entrants]
                 sumlist.remove(e['net'])
+                newlist = list(entrants)
 
-                if 'oldnet' in ann:
-                    sumlist.append(ann['oldnet'])
+                if 'oldnet' in e:
+                    sumlist.append(e['oldnet'])
                     sumlist.sort()
-                    position = sumlist.index(ann['oldnet'])+1
-                    ann['oldpospoints']  = ppoints.get(position)
-                    ann['olddiffpoints'] = sumlist[0]*100/ann['oldnet']
-                    sumlist.remove(ann['oldnet'])
+                    position = sumlist.index(e['oldnet'])+1
+                    e['oldpoints'] = settings.usepospoints and ppoints.get(position) or sumlist[0]*100/e['oldnet']
+                    sumlist.remove(e['oldnet'])
+                    newlist.append({'firstname':e['firstname'], 'lastname':e['lastname'], 'net':e['oldnet'], 'isold':True})
 
-                if 'potnet' in ann:
-                    sumlist.append(ann['potnet'])
+                if 'potnet' in e:
+                    sumlist.append(e['potnet'])
                     sumlist.sort()
-                    position = sumlist.index(ann['potnet'])+1
-                    ann['potentialpospoints']  = ppoints.get(position)
-                    ann['potentialdiffpoints'] = sumlist[0]*100/ann['potnet']
+                    position = sumlist.index(e['potnet'])+1
+                    e['potpoints'] = settings.usepospoints and ppoints.get(position) or sumlist[0]*100/e['potnet']
+                    newlist.append({'firstname':e['firstname'], 'lastname':e['lastname'], 'net':e['potnet'], 'ispotential':True})
 
+                e['current'] = True
+                newlist.sort(key=itemgetter('net'))
                 # we are done, break out and return from here
-                return ann 
+                return (newlist, e)
+
+    @classmethod
+    def _decorateChampResults(cls, champresults, entrant):
+        """ Calculate things for the announcer/info displays """
+        champclass = champresults[entrant['classcode']]
+        for e in champclass:
+            if e['driverid'] != entrant['driverid']:
+                continue
+
+            newlist = list(champclass)
+            if 'oldpoints' in entrant and entrant['oldpoints'] < entrant['points']:
+                total = e['points']['total'] - entrant['points'] + entrant['oldpoints']
+                newlist.append({'firstname':e['firstname'], 'lastname':e['lastname'], 'points':{'total':total}, 'isold':True})
+
+            if 'potpoints' in entrant and entrant['potpoints'] > entrant['points']:
+                total = e['points']['total'] - entrant['points'] + entrant['potpoints']
+                newlist.append({'firstname':e['firstname'], 'lastname':e['lastname'], 'points':{'total':total}, 'ispotential':True})
+
+            e['current'] = True
+            newlist.sort(key=lambda x: x['points']['total'], reverse=True)
+            return newlist
 
 
     @classmethod
@@ -435,7 +465,7 @@ class Result(object):
         """
         settings  = Settings.get()
         classdata = ClassData.get()
-        events = Event.byDate()
+        events    = Event.byDate()
 
         completed = 0
 
@@ -465,6 +495,7 @@ class Result(object):
             for entrant in classmap.values():
                 entrant.points.calc(bestof)
                 ret[classcode].append(entrant)
+            # Magic in PointsStorage makes this sort happen (total then first, seconds, thirds, etc based on settings
             ret[classcode].sort(key=attrgetter(*sortkeys), reverse=True)
             ii = 1
             for e in ret[classcode]:

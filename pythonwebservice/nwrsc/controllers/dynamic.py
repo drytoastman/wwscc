@@ -1,7 +1,13 @@
-
+"""
+    Handlers for dynamically updated pages like the announcer page.  This will take
+    a lot of results of the results table but is also free to the use other series
+    tables as needed.  It will not function with offline series
+"""
 import logging
 import time
 import urllib
+import uuid
+import math
 
 from flask import Blueprint, abort, current_app, g, request, render_template
 from nwrsc.lib.encoding import json_encode
@@ -29,23 +35,23 @@ def timer(lasttime):
             
 
 @Announcer.route("/")
-def index():
-    return "indexpage"
+def eventlist():
+    return "event list here someday"
 
 @Announcer.route("/<int:eventid>")
-def base():
+def index():
     g.event = Event.get(g.eventid)
     return render_template('/announcer/main.html')
 
 @Announcer.route("/<int:eventid>/last")
 def last():
     classes  = csvlist(request.args.get('classcodes',''))
-    lasttime = request.args.get('time','2000-01-01')
+    modified = math.ceil(float(request.args.get('modified', '0'))) # don't let round off cause an infinite loop
 
     # Long polling, hold the connection until something is actually new
     then = time.time()
     while True:
-        result = LastRun.getLast(g.eventid, lasttime, classes)
+        result = LastRun.getLast(g.eventid, modified, classes)
         if result != []:
             break
         if time.time() > then + 30:  # 30 second wait max to stop forever threads
@@ -54,7 +60,27 @@ def last():
 
     return json_encode(result)
 
-    
+
+@Announcer.route("/<int:eventid>/results")
+def results():
+    carid = request.args.get('carid', '')
+    modified = float(request.args.get('modified', '0'))
+
+    event = Event.get(g.eventid)
+    results = Result.getEventResults(g.eventid)
+    (group, driver) = Result.getDecoratedClassResults(Settings.get(), Result.getEventResults(g.eventid), carid)
+
+    if Class.get(driver['classcode']).champtrophy:
+        champ = Result.getDecorateChampResults(Result.getChampResults(), driver)
+    else:
+        champ = "Not a champ class"
+
+    ret = {}
+    ret['modified'] = modified
+    ret['entrantresult'] = render_template('/announcer/entrant.html', event=event, driver=driver, group=group, champ=champ)
+    return json_encode(ret)
+
+
 class AnnouncerController(object):
 
     def index(self):
@@ -109,27 +135,6 @@ class AnnouncerController(object):
         nextid = getNextCarIdInOrder(self.session, self.event, int(request.GET.get('carid', 0)))
         return self._allentrant(nextid)
 
-    def results(self):
-        return self._allentrant(int(request.GET.get('carid', 0)))
-
-    def _allentrant(self, carid):
-        res = Result.getEventResults(g.eventid)
-        ann = Result.getAnnouncerDetails(Settings.get(), res, carid)
-
-        data = self._entrant(carid)
-        c.event = self.event
-        c.runs = data['runlist']
-        c.results = data['classlist']
-        c.champ = data['champlist']
-        c.driver = self.driver
-        c.cls = self.cls
-        c.e2label = self.e2label
-        
-        ret = {}
-        ret['updated'] = int(request.GET.get('updated', 0)) # Return it
-        ret['entrantresult'] = render_mako('/announcer/entrant.mako').replace('\n', '')
-        return ret
-
 
 class LiveController(object):
 
@@ -159,25 +164,21 @@ class LiveController(object):
     def Event(self):
         carid = int(self.routingargs.get('other', 0))
         c.results = self._classlist(carid)
-        c.e2label = self.e2label
         return render_mako_def('/live/tables.mako', 'classlist')
 
     def Champ(self):
         carid = int(self.routingargs.get('other', 0))
         c.champ = self._champlist(carid)
         c.cls = self.cls
-        c.e2label = self.e2label
         return render_mako_def('/live/tables.mako', 'champlist')
 
     def PAX(self):
         carid = int(self.routingargs.get('other', 0))
-        c.e2label = self.e2label
         c.toptimes = self._loadTopTimes(carid, raw=False)
         return render_mako('/announcer/topnettimes.mako').replace('\n', '')
 
     def Raw(self):
         carid = int(self.routingargs.get('other', 0))
-        c.e2label = self.e2label
         c.toptimes = self._loadTopTimes(carid, raw=True)
         return render_mako('/announcer/toprawtimes.mako').replace('\n', '')
 
@@ -194,23 +195,6 @@ class MobileController(object):
             self.event = self.session.query(Event).get(self.eventid)
         except (ValueError, TypeError):
             pass
-
-    def _encode(self, head, o):
-        response.headers['Content-type'] = 'text/javascript'
-        return JEncoder(indent=1).encode(o)
-
-    def index(self):
-        if self.database is None:
-            return self._encode("serieslist", self._databaseList())
-        elif self.eventid is None:
-            return self._encode("events", self.session.query(Event).all())
-        elif self.eventid == 'classes':
-            return self._encode("classes", self.session.query(Class).all())
-        elif self.eventid == 'indexes':
-            return self._encode("indexes", self.session.query(Index).all())
-        else:
-            return self._encode("nothing", [])
-
 
     def topnet(self):
         carid = int(self.routingargs.get('other', 0))
@@ -258,39 +242,6 @@ class MobileController(object):
             tts.rows.sort(key=lambda x: int(x.courses), reverse=True)
 
         return tts.rows
-
-
-    def _entrant(self, carid):
-        return {
-            'runlist': self._runlist(carid),
-            'classlist': self._classlist(carid),
-            'champlist': self._champlist(carid)
-        }
-        
-
-    def runlist(self):
-        carid = int(self.routingargs.get('other', 0))
-        return self._encode("runlist", self._runlist(int(carid)))
-
-    def _runlist(self, carid):
-        self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
-        if self.announcer is None:
-            raise BeforePage('no announcer data')
-
-        query = self.session.query(Run).filter(Run.carid==carid).filter(Run.eventid==self.eventid)
-        query = query.filter(Run.course==self.announcer.lastcourse).filter(Run.course==self.announcer.lastcourse).order_by(Run.run)
-        runs = query.all()
-        if self.announcer.rawdiff:
-            runs[-1].rawdiff = self.announcer.rawdiff
-        if self.announcer.netdiff:
-            runs[-1].netdiff = self.announcer.netdiff
-        for r in runs:
-            if r.norder == 1: r.label = 'current'
-            if r.norder == 2 and self.announcer.oldsum > 0: r.label = 'old'
-        if runs[-1].norder != 1 and self.announcer.potentialsum > 0:
-            runs[-1].label = 'raw'
-            
-        return runs
 
 
     def classlist(self):

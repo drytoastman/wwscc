@@ -75,17 +75,23 @@ class Run(AttrBase):
         return value
 
 class LastRun(AttrBase):
-    """ Separate from run as we have a different limited set of attributes from a regular run and include carid """
+    """ Separate from run as we have a different limited set of attributes/format from a regular run and include carid """
+
+    def feedFilter(self, key, value):
+        if key == 'modified':
+            return value.timestamp()
+        return value
+
     @classmethod
-    def getLast(self, eventid, lasttime, classcodes=[]):
+    def getLast(self, eventid, modified=0, classcodes=[]):
         base = "SELECT {} c.classcode,MAX(r.modified) as modified, r.carid FROM runs r JOIN cars c ON r.carid=c.carid " \
-                "WHERE {} r.eventid=%s and r.modified > %s GROUP BY r.carid, c.classcode ORDER BY {} "
+                "WHERE {} r.eventid=%s and r.modified > to_timestamp(%s) GROUP BY r.carid, c.classcode ORDER BY {} "
         if len(classcodes) > 0:
             sql = base.format("DISTINCT ON (c.classcode) ", "c.classcode IN %s AND ", "c.classcode,modified DESC")
-            val = (tuple(classcodes), g.eventid, lasttime)
+            val = (tuple(classcodes), g.eventid, modified)
         else:
             sql = base.format("", "", "modified DESC LIMIT 1")
-            val = (g.eventid, lasttime)
+            val = (g.eventid, modified)
         with g.db.cursor() as cur:
             cur.execute(sql, val)
             return [LastRun(**x) for x in cur.fetchall()]
