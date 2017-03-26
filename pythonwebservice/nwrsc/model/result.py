@@ -1,10 +1,12 @@
 import logging
+import dateutil.parser
+import datetime
+
 from flask import g
 from math import ceil
 from copy import copy
 from collections import defaultdict
 from operator import attrgetter, itemgetter
-from datetime import date, datetime
 
 from .base import AttrBase, Entrant
 from .classlist import ClassData
@@ -27,6 +29,17 @@ class PosPoints(object):
         else:
             return self.ppoints[idx]
 
+# Creates an attribute for each entry in the list with the value of index+1 """
+def marklist(lst, label):
+    for ii, entry in enumerate(lst):
+        setattr(entry, label, ii+1)
+
+# When sorting raw, we need to ignore non-OK status runs
+def rawgetter(obj):
+    if obj.status == "OK":
+        return obj.raw
+    return 999.999
+        
 
 class Result(object):
     """ 
@@ -76,9 +89,9 @@ class Result(object):
         return res
 
     @classmethod
-    def getTopTimesTable(cls, classdata, results, *keys):
+    def getTopTimesTable(cls, classdata, results, *keys, **kwargs):
         """ Get top times.  Pass in results from outside as in some cases, they are already loaded """
-        return cls._loadTopTimesTable(classdata, results, *keys)
+        return cls._loadTopTimesTable(classdata, results, *keys, **kwargs)
 
     @classmethod
     def getDecoratedClassResults(cls, settings, eventresults, carid):
@@ -88,6 +101,7 @@ class Result(object):
     @classmethod
     def getDecorateChampResults(cls, champresults, entrant):
         return cls._decorateChampResults(champresults, entrant)
+
 
     #####################  Everything below here is for internal use, use the API above ##############
 
@@ -167,18 +181,15 @@ class Result(object):
             cur.execute("select distinct d.firstname,d.lastname,d.membership,c.*,r.rungroup from drivers d " + 
                         "join cars c on c.driverid=d.driverid join runorder r on r.carid=c.carid " +
                         "where r.eventid=%s", (eventid,))
-            ii = 0
             for e in [Entrant(**x) for x in cur.fetchall()]:
                 e.indexstr = classdata.getIndexStr(e)
                 e.indexval = classdata.getEffectiveIndex(e)
-                e.runs = [[Run(raw=999.999,pen=999.999,net=999.999,status='DNS') for x in range(event.runs)] for x in range(event.courses)]
+                e.runs = [[Run(course=x+1,run=y+1,raw=999.999,cones=0,gates=0,pen=999.999,net=999.999,status='PLC') for y in range(event.runs)] for x in range(event.courses)]
                 results[e.classcode].append(e)
-                ii = ii + 1
                 cptrs[e.carid] = e
 
             # Fetch all of the runs, calc net and assign to the correct entrant
-            cur.execute("select * from runs where eventid=%s", (eventid,))
-            lastcourse = 0
+            cur.execute("select * from runs where eventid=%s and course<=%s and run<=%s", (eventid, event.courses, event.runs))
             for r in [Run(**x) for x in cur.fetchall()]:
                 match = cptrs[r.carid]
                 match.runs[r.course-1][r.run - 1] = r
@@ -203,17 +214,6 @@ class Result(object):
                     e.dialraw = 0  # Best raw times (OK status) used for dialin calculations
                 counted = min(classdata.getCountedRuns(e.classcode), event.getCountedRuns())
 
-                # Creates an attribute for each entry in the list with the value of index+1 """
-                def marklist(lst, label):
-                    for ii, entry in enumerate(lst):
-                        setattr(entry, label, ii+1)
-
-                # When sorting raw, we need to ignore non-OK status runs
-                def rawgetter(obj):
-                    if obj.status == "OK":
-                        return obj.raw
-                    return 999.999
-        
                 for course in range(event.courses):
                     bestrawall = sorted(e.runs[course], key=rawgetter)
                     bestnetall = sorted(e.runs[course], key=attrgetter('net'))
@@ -242,7 +242,10 @@ class Result(object):
                     e.pospoints  = ppoints.get(e.position)
                     e.diffpoints = res[0].net*100/e.net;
                     e.points     = settings.usepospoints and e.pospoints or e.diffpoints
-                    if ii != 0:
+                    if ii == 0:
+                        e.diff1  = 0.0
+                        e.diffn  = 0.0
+                    else:
                         e.diff1  = (e.net - res[0].net)/e.indexval
                         e.diffn  = (e.net - res[ii-1].net)/e.indexval
 
@@ -261,6 +264,52 @@ class Result(object):
 
 
     @classmethod
+    def _decorateEntrant(cls, e):
+        """ Calculate things that apply to just the entrant in question (used by class and toptimes) """
+
+        # Find the last course/run information for an entrant """
+        lasttime = dateutil.parser.parse("2000-01-01")
+        e['lastcourse'] = 0
+        for c in e['runs']:
+            for r in c:
+                mod = dateutil.parser.parse(r.get('modified', '2000-01-02')) # Catch JSON placeholders
+                if mod > lasttime:
+                    lasttime = mod
+                    e['lastcourse'] = r['course']
+
+        # Always work with the last run by run number (Non Placeholder), then get first and second bestnet
+        runs = [x for x in e['runs'][e['lastcourse']-1] if x['status'] != 'PLC']
+        if len(runs) <= 0:
+            return
+
+        lastrun = max(runs, key=itemgetter('run'))
+        norder1 = next((x for x in runs if x['norder'] == 1 and x['status'] != 'PLC'), None)
+        norder2 = next((x for x in runs if x['norder'] == 2 and x['status'] != 'PLC'), None)
+
+        # Can't have any improvement if we only have one run
+        if norder2:
+            # Note net improvement, mark what the old net would have been
+            if lastrun['norder'] == 1 and norder2:
+                lastrun['netimp'] = lastrun['net'] - norder2['net']
+                norder2['oldbest'] = True
+                e['oldnet'] = e['net'] - lastrun['net'] + norder2['net']
+    
+            # Note raw improvement over previous best run
+            # This can be n=2 for overall improvement, or n=1 if only raw, not net improvement
+            if lastrun['norder'] == 1:
+                lastrun['rawimp'] = lastrun['raw'] - norder2['raw']
+            else:
+                lastrun['rawimp'] = lastrun['raw'] - norder1['raw']
+
+        # If last run had penalties, add data for potential run without penalties
+        if lastrun['cones'] != 0 or lastrun['gates'] != 0:
+            potnet = e['net'] - norder1['net'] + (lastrun['raw'] * e['indexval'])
+            if potnet < e['net']:
+                lastrun['ispotential'] = True
+                e['potnet'] = potnet
+
+
+    @classmethod
     def _decorateClassResults(cls, settings, eventresults, carid):
         """ Calculate things for the announcer/info displays """
         ppoints = PosPoints(settings.pospointlist)
@@ -269,41 +318,10 @@ class Result(object):
                 if e['carid'] != carid:
                     continue
 
-                # Find the last course information
-                lasttime = datetime.fromtimestamp(0)
-                for c in e['runs']:
-                    for r in c:
-                        mod = datetime.strptime(r['modified'], "%Y-%m-%d %H:%M:%S.%f")
-                        if mod > lasttime:
-                            lasttime = mod
-                            e['lastcourse'] = r['course']
+                # Decorate this entrant with run change information
+                cls._decorateEntrant(e)
 
-                # Always work with the last run by run number, then get first and second bestnet
-                runs = e['runs'][e['lastcourse']-1]
-                lastentry = max(runs, key=itemgetter('run'))
-                norder1 = next((x for x in runs if x['norder'] == 1), None)
-                norder2 = next((x for x in runs if x['norder'] == 2), None)
-
-                # Note net improvement, mark what the old net would have been
-                if lastentry['norder'] == 1 and norder2:
-                    lastentry['netimp'] = lastentry['net'] - norder2['net']
-                    norder2['oldbest'] = True
-                    e['oldnet'] = e['net'] - lastentry['net'] + norder2['net']
-
-                # Note raw improvement over previous best run
-                # This can be n=2 for overall improvement, or n=1 if only raw, not net improvement
-                if lastentry['norder'] == 1:
-                    lastentry['rawimp'] = lastentry['raw'] - norder2['raw']
-                else:
-                    lastentry['rawimp'] = lastentry['raw'] - norder1['raw']
-
-                # If last run had penalties, add data for potential run without penalties
-                if lastentry['cones'] != 0 or lastentry['gates'] != 0:
-                    e['potnet'] = e['net'] - norder1['net'] + (lastentry['raw'] * e['indexval'])
-                    if lastentry['norder'] != 1:
-                        lastentry['potential'] = e['potnet'] < e['net']
-
-                # Figure out points changes
+                # Figure out points changes for the class
                 sumlist = [x['net'] for x in entrants]
                 sumlist.remove(e['net'])
                 newlist = list(entrants)
@@ -327,6 +345,7 @@ class Result(object):
                 newlist.sort(key=itemgetter('net'))
                 # we are done, break out and return from here
                 return (newlist, e)
+
 
     @classmethod
     def _decorateChampResults(cls, champresults, entrant):
@@ -473,7 +492,7 @@ class Result(object):
         store = defaultdict(lambda : defaultdict(ChampEntrant))
         for event in events:
             if event.ispractice: continue
-            if date.today() >= event.date:
+            if datetime.date.today() >= event.date:
                 completed += 1
 
             eventresults = cls.getEventResults(event.eventid)
@@ -507,9 +526,9 @@ class Result(object):
 
         cls._insertResults(name, ret)
 
-             
+
     @classmethod
-    def _loadTopTimesTable(cls, classdata, results, *keys):
+    def _loadTopTimesTable(cls, classdata, results, *keys, **kwargs):
         """
             Generate lists on demand as there are many iterations.  Returns a TopTimesTable class
             that wraps all the TopTimesLists together.
@@ -535,36 +554,58 @@ class Result(object):
                 title  = "Top {}Times ({} Runs)".format(indexed and "Indexed " or "", counted and "Counted" or "All")
                 if course > 0: title += " Course {}".format(course)
 
-            if cols is None:   cols   = ['Name', 'Class',     'Index',    '',         'Time']
-            if fields is None: fields = ['name', 'classcode', 'indexstr', 'indexval', 'time']
+            if cols is None:   cols   = ['#',   'Name', 'Class',     'Index',    '',         'Time']
+            if fields is None: fields = ['pos', 'name', 'classcode', 'indexstr', 'indexval', 'time']
 
             ttl = TopTimesList(title, cols, fields)
-            for cls in results:
-                if classdata.classlist[cls].secondruns and counted:
+            for classcode in results:
+                if classdata.classlist[classcode].secondruns and counted:
                     continue
 
-                for e in results[cls]:
+                for e in results[classcode]:
+                    name="{} {}".format(e['firstname'], e['lastname'])
+
+                    # For the selected car, highlight and throw in any old/potential results if available
+                    if e['carid'] == kwargs.get('carid'):
+                        e['current'] = True
+                        cls._decorateEntrant(e)
+                        if course == 0: # don't do old/potential single course stuff at this point
+                            divisor = indexed and 1.0 or e['indexval']
+                            if 'potnet' in e:
+                                ttl.append(TopTimeEntry(fields, name=name, time=e['potnet']/divisor, ispotential=True))
+                            if 'oldnet' in e:
+                                ttl.append(TopTimeEntry(fields, name=name, time=e['oldnet']/divisor, isold=True))
+
+                    # Extract appropriate time for this entrant
+                    time = 999.999
                     if course > 0:
                         for r in e['runs'][course-1]:
                             if (counted and r['norder'] == 1) or (not counted and r['anorder'] == 1):
                                 time = indexed and r['net'] or r['pen']
-                                break
                     else:
                         if counted:
                             time = indexed and e['net'] or e['pen']
                         else:
                             time = indexed and e['netall'] or e['penall']
 
+
                     ttl.append(TopTimeEntry(fields,
-                        name="{} {}".format(e['firstname'], e['lastname']),
+                        name      = name,
                         classcode = e['classcode'],
                         indexstr  = e['indexstr'],
                         indexval  = e['indexval'],
-                        time      = time
+                        time      = time,
+                        current   = e.get('current', None)
                     ))
 
             # Sort and set 'pos' attribute, then add to the mass table
             ttl.sort(key=attrgetter('time'))
+            pos = 1
+            for entry in ttl:
+                if hasattr(entry, 'classcode'):
+                    entry.pos = pos
+                    pos += 1
+
             lists.append(ttl)
 
         return TopTimesTable(*lists)
@@ -620,7 +661,7 @@ class TopTimeEntry(object):
     def __iter__(self):
         """ return a set of attributes as determined by original fields """
         for f in self._fields:
-            yield getattr(self, f, "missing")
+            yield getattr(self, f, "")
 
     def __repr__(self):
         return "{}, {}".format(self._fields, self.__dict__)

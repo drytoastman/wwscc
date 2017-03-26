@@ -8,9 +8,11 @@
 {%endfor%}
 <th>C</th><th>G</th><th>Net</th></tr>
 
-{% for run in driver.runs[driver.lastcourse-1] %}
+{% for ii in range(event.runs) %}
+{% set run = driver.runs[driver.lastcourse-1][ii] %}
 
-<tr class='{{run.norder==1 and 'highlight' or ''}} {{run.oldbest and 'improvedon' or ''}} {{run.potential and 'couldhave' or ''}}'>
+{% if run.status != 'PLC' %}
+<tr class='{{run.norder==1 and 'highlight' or ''}} {{run.oldbest and 'improvedon' or ''}} {{run.ispotential and 'couldhave' or ''}}'>
 <td>{{run.run}}</td>
 <td>{{run.raw|t3}}
 {% if run.rawimp is defined %}<span class='change'>[{{run.rawimp|t3(sign=True)}}]</span>{% endif %}
@@ -26,6 +28,7 @@
 <td>{{run.net|t3}} {% if run.netimp %}<span class='change'>[{{run.netimp|t3(sign=True)}}]</span>{% endif %}</td>
 {% endif %}
 </tr>
+{% endif %}
 
 {% endfor %}
 

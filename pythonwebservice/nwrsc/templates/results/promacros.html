@@ -70,6 +70,8 @@ no data
 <td class='run{{run.norder==1 and " bestnet" or ""}}{{run.rorder==1 and " bestraw" or ""}}'>
 {%- if run.status == "OK" -%}
 	<span class='net'>{{run.net | t3}}</span>
+{%- elif run.status == "PLC" -%}
+
 {%- else -%}
 	<span class='net'>{{run.status}}</span>
 {%- endif -%}

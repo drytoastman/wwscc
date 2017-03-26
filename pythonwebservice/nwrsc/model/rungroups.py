@@ -59,26 +59,3 @@ class RunGroups(defaultdict):
         return ret
 
 
-"""
-class RunOrder(AttrBase):
-    pass
-
-def getNextCarIdInOrder(session, event, carid):
-    order = # runorder carids (in order) for this cars rungroup
-    for ii, row in enumerate(order):
-        if row == carid:
-            return order[(ii+1)%len(order)]
-
-def loadNextRunOrder(session, event, carid):
-    order = # runorder carids (in order) for this cars rungroup
-    for ii, row in enumerate(order):
-        if row == carid:
-            for jj in range(ii+1, ii+4):
-                carid = order[jj%len(order)]
-                entrant = # get driver,car info
-                result =  # get diff, position, rungroup, row 
-                ret.append(entrant, result)
-            break
-"""
-
-

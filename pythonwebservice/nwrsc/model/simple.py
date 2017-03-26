@@ -74,14 +74,6 @@ class Run(AttrBase):
             return None
         return value
 
-class LastRun(AttrBase):
-    """ Separate from run as we have a different limited set of attributes/format from a regular run and include carid """
-
-    def feedFilter(self, key, value):
-        if key == 'modified':
-            return value.timestamp()
-        return value
-
     @classmethod
     def getLast(self, eventid, modified=0, classcodes=[]):
         base = "SELECT {} c.classcode,MAX(r.modified) as modified, r.carid FROM runs r JOIN cars c ON r.carid=c.carid " \
@@ -94,6 +86,37 @@ class LastRun(AttrBase):
             val = (g.eventid, modified)
         with g.db.cursor() as cur:
             cur.execute(sql, val)
-            return [LastRun(**x) for x in cur.fetchall()]
+            return [Run(**x) for x in cur.fetchall()]
 
+
+class RunOrder(AttrBase):
+
+    @classmethod
+    def getNextCarIdInOrder(cls, carid, eventid, course=1):
+        """ returns the carid of the next car in order after the given carid """
+        with g.db.cursor() as cur:
+            cur.execute("SELECT carid FROM runorder WHERE eventid=%s AND course=%s AND rungroup=" +
+                        "(SELECT rungroup FROM runorder WHERE carid=%s AND eventid=%s AND course=%s LIMIT 1) " +
+                        "ORDER BY row", (eventid, course, carid, eventid, course))
+            order = [x[0] for x in cur.fetchall()]
+            for ii, rid in enumerate(order):
+                if rid == carid:
+                    return order[(ii+1)%len(order)]
+
+    @classmethod
+    def getNextRunOrder(cls, carid, eventid, course=1):
+        """ Returns a list of objects (classcode, carid, row) for the next cars in order after carid """
+        with g.db.cursor() as cur:
+            cur.execute("SELECT c.classcode,r.carid,r.row FROM runorder r JOIN cars c on r.carid=c.carid " +
+                        "WHERE eventid=%s AND course=%s AND rungroup=" +
+                        "(SELECT rungroup FROM runorder WHERE carid=%s AND eventid=%s AND course=%s LIMIT 1) " +
+                        "ORDER BY r.row", (eventid, course, carid, eventid, course))
+            order = [RunOrder(**x) for x in cur.fetchall()]
+            ret = []
+            for ii, row in enumerate(order):
+                if row.carid == carid:
+                    for jj in range(ii+1, ii+4):
+                        ret.append(order[jj%len(order)])
+                    break
+            return ret
 

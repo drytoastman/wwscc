@@ -1,29 +1,37 @@
 {% macro toptimestable(table) %}
 <table class='toptimes'>
-<tr>
+
+<!-- Section Titles -->
+<tr class='header'>
 {% for title in table.titles -%}
 <th class='toptimeshead' colspan='{{table.colcount[loop.index0]+1}}'>{{title}}</th>
 {%- endfor -%}
 </tr>
 
-<tr>
-{% for ttlcols in table.cols -%}
-<th>#</th>
-{%- for col in ttlcols -%}
+<!-- Column headers -->
+<tr class='titles'>
+{% for colgroups in table.cols -%}
+{%- for col in colgroups -%}
 <th>{{col}}</th>
 {%- endfor -%}
 {%- endfor -%}
 </tr>
-{% for ttlrow in table.rows %}
-<tr>
-{% set pos=loop.index %}
-{%- for row in ttlrow -%}
-<td class='pos'>{{pos}}</td>
-{%- for item in row -%}
+
+<!-- Data rows -->
+{% for fullrows in table.rows %}
+{% set e = fullrows[0] %}  {# This is only used by dynamic displays for adding coloring info below #}
+<tr class='{{e.current and 'highlight' or ''}} {{e.ispotential and 'couldhave' or ''}} {{e.isold and 'improvedon' or ''}}'>
+{%- for section in fullrows -%}
+{%- for item in section -%}
+{% if loop.first or loop.last %}
+<td class='{{loop.first and 'pos' or (loop.last and 'time' or '')}}'>{{item|t3}}</td>
+{% else %}
 <td>{{item|t3}}</td>
+{% endif %}
 {%- endfor -%}
 {%- endfor -%}
 </tr>
 {%- endfor %}
 </table>
+
 {% endmacro %}

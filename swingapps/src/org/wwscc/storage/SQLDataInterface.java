@@ -101,7 +101,7 @@ public abstract class SQLDataInterface implements DataInterface
 	{
 		try
 		{
-			executeUpdate("update events set runs=? where id=?", newList(runs, eventid));
+			executeUpdate("update events set runs=? where eventid=?", newList(runs, eventid));
 			return true;
 		}
 		catch (Exception ioe)

@@ -1,0 +1,24 @@
+<table class='runorder'>
+<tbody>
+<tr class='header'><th colspan='6'>Next To Finish</th></tr>
+<tr class='titles'><th>Name</th><th>Car</th><th>Class</th><th>Best</th><th>Pos</th><th>Need</th></tr>
+{%for (e,r) in order %}
+<tr>
+{%if e is none %}
+<td colspan='3'>Missing Data, Database Corrupted?</td>
+{% else %}
+<td>{{e.firstname}} {{e.lastname}}</td>
+<td>{{e.year}} {{e.model}} {{e.color}}</td>
+<td>{{e.classcode}}</td>
+{% if r is none %}
+<td></td>
+{% else %}
+<td>{{"%0.3f (%d,%d)" % (r.raw, r.cones, r.gates)}}</td>
+{% endif %}
+<td>{{e.position}}</td>
+<td>{{e.diffn|t3}}</td>
+{% endif %}
+</tr>
+{% endfor %}
+</tbody>
+</table>

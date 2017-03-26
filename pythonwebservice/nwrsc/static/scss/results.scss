@@ -21,6 +21,12 @@ table.toptimes {
 	td.pos {
 		border-left: 1px solid #bbb;
 	}
+	td.time {
+		font-size: 1.1em;
+		font-weight: bold;
+		padding-left: 8px;
+		padding-right: 5px;
+	}
 	tr:nth-child(even) {
 		background-color: #ddd
 	}
@@ -53,6 +59,12 @@ td.drop {
 
 td.carnum {
 	text-align:right;
+}
+
+@media print {
+	th.caryear, th.carnum, th.cardesc, td.caryear, td.carnum, td.cardesc {
+		display: none;
+	}
 }
 
 td.bestnet { 

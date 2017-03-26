@@ -173,6 +173,7 @@ CREATE TABLE runs (
     CONSTRAINT validrundata CHECK (course > 0 AND run > 0 and raw >= 0.0)
 );
 CREATE INDEX ON runs(eventid);
+CREATE INDEX ON runs(modified);
 REVOKE ALL ON runs FROM public;
 GRANT  ALL ON runs TO <seriesname>;
 CREATE TRIGGER runmod AFTER INSERT OR UPDATE OR DELETE ON runs FOR EACH ROW EXECUTE PROCEDURE logseriesmods();

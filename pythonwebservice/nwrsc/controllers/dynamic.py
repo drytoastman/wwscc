@@ -9,7 +9,7 @@ import urllib
 import uuid
 import math
 
-from flask import Blueprint, abort, current_app, g, request, render_template
+from flask import Blueprint, abort, current_app, g, get_template_attribute, request, render_template
 from nwrsc.lib.encoding import json_encode
 from nwrsc.model import *
 from nwrsc.lib.misc import csvlist
@@ -43,97 +43,57 @@ def index():
     g.event = Event.get(g.eventid)
     return render_template('/announcer/main.html')
 
-@Announcer.route("/<int:eventid>/last")
-def last():
-    classes  = csvlist(request.args.get('classcodes',''))
-    modified = math.ceil(float(request.args.get('modified', '0'))) # don't let round off cause an infinite loop
+@Announcer.route("/<int:eventid>/next")
+def nextresult():
+    # use ceil so round off doesn't cause an infinite loop
+    modified = math.ceil(float(request.args.get('modified', '0')))
 
     # Long polling, hold the connection until something is actually new
     then = time.time()
     while True:
-        result = LastRun.getLast(g.eventid, modified, classes)
+        result = Run.getLast(g.eventid, modified)
         if result != []:
-            break
+            data = loadAnnouncerResults(result[0].carid)
+            data['modified'] = result[0].modified.timestamp()
+            return json_encode(data)
         if time.time() > then + 30:  # 30 second wait max to stop forever threads
-            break
+            return json_encode({})
         time.sleep(0.8)
 
-    return json_encode(result)
+def loadAnnouncerResults(carid):
+    settings  = Settings.get()
+    classdata = ClassData.get()
+    event     = Event.get(g.eventid)
+    results   = Result.getEventResults(g.eventid)
+    champ     = Result.getChampResults()
+    nextid    = RunOrder.getNextCarIdInOrder(carid, g.eventid)
+    tttable   = get_template_attribute('/results/ttmacros.html', 'toptimestable')
+    order     = list()
 
-
-@Announcer.route("/<int:eventid>/results")
-def results():
-    carid = request.args.get('carid', '')
-    modified = float(request.args.get('modified', '0'))
-
-    event = Event.get(g.eventid)
-    results = Result.getEventResults(g.eventid)
-    (group, driver) = Result.getDecoratedClassResults(Settings.get(), Result.getEventResults(g.eventid), carid)
-
-    if Class.get(driver['classcode']).champtrophy:
-        champ = Result.getDecorateChampResults(Result.getChampResults(), driver)
-    else:
-        champ = "Not a champ class"
-
-    ret = {}
-    ret['modified'] = modified
-    ret['entrantresult'] = render_template('/announcer/entrant.html', event=event, driver=driver, group=group, champ=champ)
-    return json_encode(ret)
-
-
-class AnnouncerController(object):
-
-    def index(self):
-        c.title = 'Scorekeeper Announcer'
-
-        if self.eventid:
-            c.javascript = ['/js/announcer.js']
-            c.stylesheets = ['/css/announcer.css']
-            c.event = self.event
-            return render_mako('/announcer/main.mako')
-        elif self.database is not None:
-            c.events = self.session.query(Event).all()
-            return render_mako('/results/eventselect.mako')
+    def entrant_set(cid):
+        (group, driver) = Result.getDecoratedClassResults(settings, results, cid)
+        if classdata.classlist[driver['classcode']].champtrophy:
+            decchamp = Result.getDecorateChampResults(champ, driver)
         else:
-            return self.databaseSelector()
+            decchamp = "Not a champ class"
+        return render_template('/announcer/entrant.html', event=event, driver=driver, group=group, champ=decchamp)
 
-    def runorder(self):
-        """
-            Returns the HTML to render the NextToFinish box
-        """
-        c.order = loadNextRunOrder(self.session, self.event, int(request.GET.get('carid', 0)))
-        return render_mako('/announcer/runorder.mako')
+    for n in RunOrder.getNextRunOrder(carid, g.eventid):
+        for e in results[n.classcode]:
+            if e['carid'] == n.carid:
+                order.append((e, None))
+                break
 
+    data = {}
+    data['last']   = entrant_set(carid)
+    data['next']   = entrant_set(nextid)
+    data['order']  = render_template('/announcer/runorder.html', order=order)
+    data['topnet'] = tttable(Result.getTopTimesTable(classdata, results, {'indexed':True}, carid=carid))
+    data['topraw'] = tttable(Result.getTopTimesTable(classdata, results, {'indexed':False}, carid=carid))
+    for ii in range(1, event.segments+1):
+        ret['topseg%d'% ii] = toptimestable(Result.getTopTimesTable(classdata, results, {'seg':ii}, carid=carid))
 
-    #@jsonify
-    def toptimes(self):
-        """
-            Returns the top times tables that are shown in the announer panel
-        """
-        carid = int(request.GET.get('carid', 0))
-        ##data = self._toptimes(int(request.GET.get('carid', 0)))
-        c.e2label = self.e2label
-
-        ret = {}
-        ret['updated'] = int(request.GET.get('updated', 0)) # Return it
-
-        c.toptimes = self._loadTopTimes(carid, raw=False) #data['topnet']
-        ret['topnet'] = render_mako('/announcer/topnettimes.mako').replace('\n', '')
-
-        c.toptimes = self._loadTopTimes(carid, raw=True) #data['topraw']
-        ret['topraw'] = render_mako('/announcer/toprawtimes.mako').replace('\n', '')
-
-        if self.event.getSegmentCount() > 0:
-            for ii in range(1, self.event.getSegmentCount()+1):
-                c.toptimes = data['topseg%d' % ii]
-                ret['topseg%d' % ii] = render_mako('/announcer/topsegtimes.mako').replace('\n', '')
-
-        return ret
-
-
-    def nexttofinish(self):
-        nextid = getNextCarIdInOrder(self.session, self.event, int(request.GET.get('carid', 0)))
-        return self._allentrant(nextid)
+    return data
 
 
 class LiveController(object):
@@ -145,7 +105,6 @@ class LiveController(object):
             return self._events()
         else:
             return self._database()
-
 
     def _database(self):
         c.dblist = self._databaseList(archived=False)
@@ -159,7 +118,6 @@ class LiveController(object):
         c.event = self.event
         c.classes = [x[0] for x in self.session.query(Class.code).all()]
         return render_mako('/live/browser.mako')
-
 
     def Event(self):
         carid = int(self.routingargs.get('other', 0))
@@ -181,157 +139,3 @@ class LiveController(object):
         carid = int(self.routingargs.get('other', 0))
         c.toptimes = self._loadTopTimes(carid, raw=True)
         return render_mako('/announcer/toprawtimes.mako').replace('\n', '')
-
-
-
-CONVERT = {'old':'improvedon', 'raw':'couldhave', 'current':'highlight'}
-
-class MobileController(object):
-
-    def __before__(self):
-        self.eventid = self.routingargs.get('eventid', None)
-        try:
-            self.eventid = int(self.eventid)
-            self.event = self.session.query(Event).get(self.eventid)
-        except (ValueError, TypeError):
-            pass
-
-    def topnet(self):
-        carid = int(self.routingargs.get('other', 0))
-        return self._encode("toptimes", self._loadTopTimes(carid, False))
-
-
-    def topraw(self):
-        carid = int(self.routingargs.get('other', 0))
-        return self._encode("toptimes", self._loadTopTimes(carid, True))
-
-
-    def _loadTopTimes(self, carid, raw=False):
-        classdata = ClassData(self.session)
-        car = self.session.query(Car).get(carid)
-        self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
-        if self.announcer is None:
-            raise BeforePage('')
-        index = classdata.getEffectiveIndex(car)
-
-        toptimes = TopTimesStorage(self.session, self.event, classdata)
-        if raw:
-            ret = self._convertTTS(toptimes.getList(allruns=False, raw=True, course=0), carid, self.announcer.oldsum/index, self.announcer.potentialsum/index)
-        else:
-            ret = self._convertTTS(toptimes.getList(allruns=False, raw=False, course=0), carid, self.announcer.oldsum, self.announcer.potentialsum)
-        return ret
-
-
-    def _convertTTS(self, tts, carid, oldsum, rawsum):
-        position = 1
-        additions = list()
-        
-        for entry in tts.rows:
-            entry.position = position
-            position += 1
-            if entry.carid == carid:
-                entry.label = 'current'
-                if oldsum is not None and oldsum > 0:
-                    additions.append(entry.copyWith(position='old', toptime=t3(oldsum), label='old'))
-                if rawsum is not None and rawsum > 0:
-                    additions.append(entry.copyWith(position='raw', toptime=t3(rawsum), label='raw'))
-
-        if additions:
-            tts.rows.extend(additions)
-            tts.rows.sort(key=lambda x: float(x.toptime))
-            tts.rows.sort(key=lambda x: int(x.courses), reverse=True)
-
-        return tts.rows
-
-
-    def classlist(self):
-        carid = int(self.routingargs.get('other', 0))
-        return self._encode("classlist", self._classlist(int(carid)))
-
-    def _classlist(self, carid):
-        (self.driver, self.car) = self.session.query(Driver,Car).join('cars').filter(Car.id==carid).first()
-        if self.driver.alias and not config['nwrsc.private']:
-            self.driver.firstname = self.driver.alias
-            self.driver.lastname = ""
-        self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
-        if self.announcer is None:
-            raise BeforePage('no announcer data')
-
-        ret = []
-        classdata = ClassData(self.session)
-        savecourses = 0
-        for res in getClassResultsShort(self.session, self.settings, self.event, classdata, self.car.classcode):
-            ret.append(_extract(res, 'sum', 'pospoints', 'diffpoints', 'carid', 'firstname', 'lastname', 'indexstr', 'position', 'trophy', 'diff', 'courses'))
-            if res.carid == carid:
-                ret[-1]['label'] = "current"
-                savecourses = ret[-1]['courses']
-
-        if self.announcer.oldsum > 0:
-            ret.append({'sum': t3(self.announcer.oldsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'old', 'label':'old', 'courses':savecourses})
-        if self.announcer.potentialsum > 0:
-            ret.append({'sum': t3(self.announcer.potentialsum), 'firstname':self.driver.firstname, 'lastname':self.driver.lastname, 'position':'raw', 'label':'raw', 'courses':savecourses})
-        ret.sort(key=lambda x: float(x['sum']))
-        ret.sort(key=lambda x: int(x['courses']), reverse=True)
-        return ret
-
-
-    def champlist(self):
-        carid = int(self.routingargs.get('other', 0))
-        return self._encode("champlist", self._champlist(int(carid)))
-
-    def _champlist(self, carid):
-        self.car = self.session.query(Car).get(carid)
-        self.cls = self.session.query(Class).filter(Class.code==self.car.classcode).first()
-        self.announcer = self.session.query(AnnouncerData).filter(AnnouncerData.eventid==self.eventid).filter(AnnouncerData.carid==carid).first()
-        if self.announcer is None:
-            raise BeforePage('no announcer data')
-
-        ret = []
-        pos = 1
-        for res in getChampResults(self.session, self.settings, self.cls.code).get(self.cls.code, []):
-            entry = dict()
-            entry['points'] = t3(res.points.total)
-            entry['carid'] = res.carid
-            entry['driverid'] = res.id
-            entry['firstname'] = res.firstname
-            entry['lastname'] = res.lastname
-            entry['events'] = res.events
-            entry['position'] = pos
-            ret.append(entry)
-            pos += 1
-
-            if res.id != self.car.driverid:
-                continue
-            
-            entry['label'] = 'current'
-            if res.points == res.pospoints:
-                if self.announcer.oldpospoints > 0:
-                    entry = entry.copy()
-                    entry['position'] = "old"
-                    entry['label'] = "old"
-                    entry['points'] = res.pospoints.theory(self.eventid, self.announcer.oldpospoints)
-                    ret.append(entry)
-                if self.announcer.potentialpospoints > 0:
-                    entry = entry.copy()
-                    entry['position'] = "raw"
-                    entry['label'] = "raw"
-                    entry['points'] = res.pospoints.theory(self.eventid, self.announcer.potentialpospoints)
-                    ret.append(entry)
-
-            if res.points == res.diffpoints:
-                if self.announcer.olddiffpoints > 0:
-                    entry = entry.copy()
-                    entry['position'] = "old"
-                    entry['label'] = "old"
-                    entry['points'] = t3(res.diffpoints.theory(self.eventid, self.announcer.olddiffpoints))
-                    ret.append(entry)
-                if self.announcer.potentialdiffpoints > 0:
-                    entry = entry.copy()
-                    entry['position'] = "raw"
-                    entry['label'] = "raw"
-                    entry['points'] = t3(res.diffpoints.theory(self.eventid, self.announcer.potentialdiffpoints))
-                    ret.append(entry)
-
-        ret.sort(key=lambda x: float(x['points']), reverse=True)
-        return ret
-

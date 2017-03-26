@@ -44,7 +44,7 @@ class AttrBase(object):
         return d
 
     def __repr__(self):
-        return "<{}>".format(self.__class__.__name__)
+        return "{}: {}".format(self.__class__.__name__, self.__dict__)
 
 
 class Entrant(AttrBase):
