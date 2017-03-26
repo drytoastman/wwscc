@@ -70,10 +70,10 @@ def loadAnnouncerResults(carid):
     tttable   = get_template_attribute('/results/ttmacros.html', 'toptimestable')
     order     = list()
 
-    def entrant_set(cid):
+    def entrant_tables(cid):
         (group, driver) = Result.getDecoratedClassResults(settings, results, cid)
         if classdata.classlist[driver['classcode']].champtrophy:
-            decchamp = Result.getDecorateChampResults(champ, driver)
+            decchamp = Result.getDecoratedChampResults(champ, driver)
         else:
             decchamp = "Not a champ class"
         return render_template('/announcer/entrant.html', event=event, driver=driver, group=group, champ=decchamp)
@@ -81,12 +81,12 @@ def loadAnnouncerResults(carid):
     for n in RunOrder.getNextRunOrder(carid, g.eventid):
         for e in results[n.classcode]:
             if e['carid'] == n.carid:
-                order.append((e, None))
+                order.append((e, Result.getBestNetRun(e)))
                 break
 
     data = {}
-    data['last']   = entrant_set(carid)
-    data['next']   = entrant_set(nextid)
+    data['last']   = entrant_tables(carid)
+    data['next']   = entrant_tables(nextid)
     data['order']  = render_template('/announcer/runorder.html', order=order)
     data['topnet'] = tttable(Result.getTopTimesTable(classdata, results, {'indexed':True}, carid=carid))
     data['topraw'] = tttable(Result.getTopTimesTable(classdata, results, {'indexed':False}, carid=carid))

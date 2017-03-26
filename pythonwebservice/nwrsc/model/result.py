@@ -99,8 +99,43 @@ class Result(object):
         return cls._decorateClassResults(settings, eventresults, carid)
 
     @classmethod
-    def getDecorateChampResults(cls, champresults, entrant):
+    def getDecoratedChampResults(cls, champresults, entrant):
+        """ Decorate the objects with old and potential results for the announcer information """
         return cls._decorateChampResults(champresults, entrant)
+
+    @classmethod
+    def getLastCourse(cls, e):
+        """ Find the last course information for an entrant based on mod tags of runs """
+        lasttime = dateutil.parser.parse("2000-01-01")
+        lastcourse = 0
+        for c in e['runs']:
+            for r in c:
+                mod = dateutil.parser.parse(r.get('modified', '2000-01-02')) # Catch JSON placeholders
+                if mod > lasttime:
+                    lasttime = mod
+                    lastcourse = r['course']
+        return lastcourse
+
+    @classmethod
+    def getBestNetRun(cls, e, course=0, norder=1):
+        """ Get the best net run for last course run by an entrant
+            If course is specified, overrides default of last
+            If norder is specified, overrides default of 1
+        """
+        if course == 0:
+            # Order picked (1: arg, 2: entrant key, 3: recalculate)
+            course = e.get('lastcourse', cls.getLastCourse(e))
+        return next((x for x in e['runs'][course-1] if x['norder'] == norder and x['status'] != 'PLC'), None)
+
+    @classmethod
+    def getLastRun(cls, e):
+        """ Get the last recorded run on any course """
+        course = e.get('lastcourse', cls.getLastCourse(e))
+        # Separate list here to catch empty list, max doesn't like that
+        runs = [x for x in e['runs'][course-1] if x['status'] != 'PLC']
+        if not len(runs):
+            return None
+        return max(runs, key=itemgetter('run'))
 
 
     #####################  Everything below here is for internal use, use the API above ##############
@@ -262,29 +297,15 @@ class Result(object):
     
         cls._insertResults(name, results)
 
-
     @classmethod
     def _decorateEntrant(cls, e):
         """ Calculate things that apply to just the entrant in question (used by class and toptimes) """
 
-        # Find the last course/run information for an entrant """
-        lasttime = dateutil.parser.parse("2000-01-01")
-        e['lastcourse'] = 0
-        for c in e['runs']:
-            for r in c:
-                mod = dateutil.parser.parse(r.get('modified', '2000-01-02')) # Catch JSON placeholders
-                if mod > lasttime:
-                    lasttime = mod
-                    e['lastcourse'] = r['course']
-
         # Always work with the last run by run number (Non Placeholder), then get first and second bestnet
-        runs = [x for x in e['runs'][e['lastcourse']-1] if x['status'] != 'PLC']
-        if len(runs) <= 0:
-            return
-
-        lastrun = max(runs, key=itemgetter('run'))
-        norder1 = next((x for x in runs if x['norder'] == 1 and x['status'] != 'PLC'), None)
-        norder2 = next((x for x in runs if x['norder'] == 2 and x['status'] != 'PLC'), None)
+        e['lastcourse'] = cls.getLastCourse(e)
+        lastrun = cls.getLastRun(e)
+        norder1 = cls.getBestNetRun(e)
+        norder2 = cls.getBestNetRun(e, norder=2)
 
         # Can't have any improvement if we only have one run
         if norder2:
@@ -305,8 +326,9 @@ class Result(object):
         if lastrun['cones'] != 0 or lastrun['gates'] != 0:
             potnet = e['net'] - norder1['net'] + (lastrun['raw'] * e['indexval'])
             if potnet < e['net']:
-                lastrun['ispotential'] = True
                 e['potnet'] = potnet
+                if lastrun['norder'] != 1:
+                    lastrun['ispotential'] = True
 
 
     @classmethod
@@ -341,6 +363,8 @@ class Result(object):
                     e['potpoints'] = settings.usepospoints and ppoints.get(position) or sumlist[0]*100/e['potnet']
                     newlist.append({'firstname':e['firstname'], 'lastname':e['lastname'], 'net':e['potnet'], 'ispotential':True})
 
+                # Mark this entrant as current, clear others if decorate is called multiple times
+                for ex in entrants: ex.pop('current',None)
                 e['current'] = True
                 newlist.sort(key=itemgetter('net'))
                 # we are done, break out and return from here
@@ -364,6 +388,8 @@ class Result(object):
                 total = e['points']['total'] - entrant['points'] + entrant['potpoints']
                 newlist.append({'firstname':e['firstname'], 'lastname':e['lastname'], 'points':{'total':total}, 'ispotential':True})
 
+            # Mark this entrant as current, clear others if decorate is called multiple times
+            for ex in champclass: ex.pop('current', None)
             e['current'] = True
             newlist.sort(key=lambda x: x['points']['total'], reverse=True)
             return newlist
@@ -564,10 +590,11 @@ class Result(object):
 
                 for e in results[classcode]:
                     name="{} {}".format(e['firstname'], e['lastname'])
+                    current = False
 
                     # For the selected car, highlight and throw in any old/potential results if available
                     if e['carid'] == kwargs.get('carid'):
-                        e['current'] = True
+                        current = True
                         cls._decorateEntrant(e)
                         if course == 0: # don't do old/potential single course stuff at this point
                             divisor = indexed and 1.0 or e['indexval']
@@ -595,7 +622,7 @@ class Result(object):
                         indexstr  = e['indexstr'],
                         indexval  = e['indexval'],
                         time      = time,
-                        current   = e.get('current', None)
+                        current   = current
                     ))
 
             # Sort and set 'pos' attribute, then add to the mass table
