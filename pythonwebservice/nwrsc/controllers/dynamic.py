@@ -23,6 +23,8 @@ MAX_WAIT = 30
 @Timer.route("/<float:lasttime>")
 def timer(lasttime):
     """ Proxy this request to local data entry machine if we can """
+    # Don't hang onto the database pooled connection, don't need it
+    current_app.db_return()
     try :
         if current_app.config['SHOWLIVE']:
             f = urllib.request.urlopen("http://127.0.0.1:9090/timer/%0.3lf" % lasttime, timeout=MAX_WAIT);
@@ -60,7 +62,7 @@ def nextresult():
             return json_encode(data)
         if time.time() > then + MAX_WAIT:  # wait max to stop forever threads
             return json_encode({})
-        time.sleep(0.8)
+        time.sleep(1.0)
 
 def loadAnnouncerResults(carid):
     settings  = Settings.get()

@@ -8,7 +8,6 @@ from logging.handlers import RotatingFileHandler
 from psycopg2 import OperationalError
 from psycopg2.pool import ThreadedConnectionPool
 from psycopg2.extras import DictCursor
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from werkzeug.debug.tbtools import get_current_traceback
 from werkzeug.contrib.profiler import ProfilerMiddleware
 from flask import Flask, request, abort, g, current_app, render_template, send_from_directory
@@ -29,10 +28,43 @@ class FlaskWithPool(Flask):
         Flask.__init__(self, name)
         self.resetlock = threading.Lock()
 
-    def create_pool(self):
-        self.pool = ThreadedConnectionPool(5, 10, cursor_factory=DictCursor, host="127.0.0.1", dbname="scorekeeper",
-                                             user=self.config['DBUSER'], password=self.config['DBPASS'])
+    def _series_setup(self):
+        """ Check if we have the series in the URL, set the schema path if available, return an error message otherwise """
+        g.seriestype = Series.UNKNOWN
+        g.db =  self.pool.getconn() 
+        #log.debug("{} setup: {} connections used".format(threading.current_thread(), len(self.pool._used)))
+        if hasattr(g, 'series') and g.series:
+            # Set up the schema path if we have a series
+            g.seriestype = Series.type(g.series)
+            with g.db.cursor() as cur:
+                cur.execute("SET search_path=%s,'public'", (g.series,))
 
+    def db_prepare(self):
+        """ Get a database connection from the pool and setup the schema path """
+        if hasattr(g, 'db'):
+            raise EnvironmentError('Database has already been prepared.  Preparing again is an error.')
+        try:
+            self._series_setup()
+            if g.seriestype == Series.INVALID:
+                raise EnvironmentError("%s is not a valid series" % g.series)
+        except OperationalError as e:
+            log.warning("Possible database restart.  Reseting pool and trying again!")
+            try: 
+                self.reset_pool()
+                self._series_setup()
+            except OperationalError as e:
+                raise EnvironmentError("Errors with postgresql connection pool.  Bailing")
+
+    def db_return(self):
+        """ Return a connection to the pool and clear the attribute """
+        if hasattr(g, 'db'):
+            self.pool.putconn(g.db) 
+            del g.db
+
+    def create_pool(self):
+        """ Create a new pool of connections.  Server should support 100, leave 10 for applications """
+        self.pool = ThreadedConnectionPool(5, 90, cursor_factory=DictCursor, host="127.0.0.1", dbname="scorekeeper",
+                                             user=self.config['DBUSER'], password=self.config['DBPASS'])
     def reset_pool(self):
         """ First person here gets to reset it, others can continue on and try again """
         if self.resetlock.acquire(False):
@@ -83,7 +115,7 @@ def create_app(config=None):
     theapp = FlaskWithPool("nwrsc")
     theapp.config.update({
         "PORT": 80,
-        "DEBUG": False,
+        "DEBUG": True,
         "PROFILE": False,
         "LOGGER_HANDLER_POLICY":"None",
         "DBUSER":"wwwuser",
@@ -92,7 +124,8 @@ def create_app(config=None):
         "INSTALLROOT": installroot,
         "ASSETS_DEBUG":False,
         "LOG_STDERR":False,
-        "LOG_LEVEL":"INFO"
+        "LOG_LEVEL":"INFO",
+        "TEMPLATES_AUTO_RELOAD":True
     })
 
     # Let the site config override what it wants
@@ -157,48 +190,19 @@ def create_app(config=None):
 
 
 class DBSeriesWrapper(object):
-    """ Get a database connection from the pool and setup the schema path, teardown on request end """
-    def __init__(self, app):
-        self.app = app
-        self.app.before_request(self.onrequest)
-        self.app.teardown_request(self.teardown)
-
+    def __init__(self, towrap):
+        towrap.before_request(self.onrequest)
+        towrap.teardown_request(self.teardown)
     def onrequest(self):
-        try:
-            self.series_setup()
-            if g.seriestype == Series.INVALID:
-                return "%s is not a valid series" % g.series
-        except OperationalError as e:
-            log.warning("Possible database restart.  Reseting pool and trying again!")
-            self.app.reset_pool()
-            self.series_setup()
-
-    def series_setup(self):
-        """ Check if we have the series in the URL, set the schema path if available, return an error message otherwise """
-        g.db =  self.app.pool.getconn() 
-        log.debug(" STARTUP({}): {} connections used".format(threading.current_thread(), len(self.app.pool._used)))
-        g.seriestype = Series.UNKNOWN
-        if hasattr(g, 'series') and g.series:
-            # Set up the schema path if we have a series
-            g.seriestype = Series.type(g.series)
-            with g.db.cursor() as cur:
-                cur.execute("SET search_path=%s,'public'", (g.series,))
-
+        current_app.db_prepare()
     def teardown(self, exc=None):
-        """ Put the connection back in the pool, this will close any open transactions """
-        self.app.pool.putconn(g.db) 
-        log.debug("TEARDOWN({}): {} connections used".format(threading.current_thread(), len(self.app.pool._used)))
-
+        current_app.db_return()
 
 class ResponseLogger(object):
     """ Extra step so we can log the requests independant of the server used """
     def __init__(self, app):
         app.after_request(self.log_response)
-
     def log_response(self, response):
-        if response.content_encoding is not None:
-            log.info("%s %s?%s %s %s (%s)" % (request.method, request.path, request.query_string, response.status_code, response.content_length, response.content_encoding))
-        else:
-            log.info("%s %s?%s %s %s" % (request.method, request.path, request.query_string, response.status_code, response.content_length))
+        log.info("%s %s?%s %s %s (%s)" % (request.method, request.path, request.query_string, response.status_code, response.content_length, response.content_encoding))
         return response
 
