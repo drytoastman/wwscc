@@ -2,51 +2,34 @@
 
 import signal
 import os, sys
+from cheroot import wsgi
 from nwrsc import create_app
 
-def writepid():
-    with open(pidfile, 'w') as fp:
-        fp.write(str(os.getpid()))
+server = None
 
 def removepid(signum, frame):
+    global server
+    if server:
+        server.stop()
     os.remove(pidfile)
     sys.exit(0)
 
-def run_flask_debug_server(port):
-    # If set to debug, use the flask development server
-    app.run(host='0.0.0.0', port=port, threaded=True)
-
-def run_cherrypy_server(port):
-    # Otherwise we run the cherrypy server
-    import cherrypy
-    cherrypy.tree.graft(app, "/")
-    cherrypy.server.unsubscribe()
-    cherrypy.config.update({'engine.autoreload.on': False})
-
-    server = cherrypy._cpserver.Server()
-    server.socket_host = "0.0.0.0"
-    server.socket_port = port
-    server.thread_pool = 60
-    server.shutdown_timeout = 1
-    server.subscribe()
-    cherrypy.engine.start()
-    cherrypy.engine.block()
-
-
 if __name__ == '__main__':
-    app = create_app()
-    port = app.config['PORT']
-    pidfile = os.path.join(app.config['INSTALLROOT'], 'logs/webserver.pid')
+    theapp = create_app()
+    port = theapp.config['PORT']
+    pidfile = os.path.join(theapp.config['INSTALLROOT'], 'logs', 'webserver.pid')
 
     signal.signal(signal.SIGABRT, removepid)
     signal.signal(signal.SIGINT,  removepid)
     signal.signal(signal.SIGTERM, removepid)
-    writepid()
+    with open(pidfile, 'w') as fp:
+        fp.write(str(os.getpid()))
 
-    if app.debug:
-        run_flask_debug_server(port)
+    if theapp.debug:
+        theapp.run(host='0.0.0.0', port=port, threaded=True)
     else:
-        run_cherrypy_server(port)
+        server = wsgi.Server(('0.0.0.0', port), theapp, numthreads=60, shutdown_timeout=1, server_name="Scorekeeper 2.0")
+        server.start()
 
     removepid(0, 0) # just in case we get here somehow
 

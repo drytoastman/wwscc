@@ -10,10 +10,10 @@ x = setup(
 
     install_requires=[
         "psycopg2",
-        "CherryPy",
         "Flask",
         "Flask-Assets",
         "Flask-Compress",
+        "cheroot",
         "formencode",
         "ReportLab",
         "icalendar",

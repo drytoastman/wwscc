@@ -18,12 +18,14 @@ log = logging.getLogger(__name__)
 Timer = Blueprint("Timer", __name__)
 Announcer = Blueprint("Announcer", __name__) 
 
+MAX_WAIT = 30
+
 @Timer.route("/<float:lasttime>")
 def timer(lasttime):
     """ Proxy this request to local data entry machine if we can """
     try :
         if current_app.config['SHOWLIVE']:
-            f = urllib.request.urlopen("http://127.0.0.1:9090/timer/%0.3lf" % lasttime);
+            f = urllib.request.urlopen("http://127.0.0.1:9090/timer/%0.3lf" % lasttime, timeout=MAX_WAIT);
             return f.read()
         else:
             time.sleep(1)
@@ -56,7 +58,7 @@ def nextresult():
             data = loadAnnouncerResults(result[0].carid)
             data['modified'] = result[0].modified.timestamp()
             return json_encode(data)
-        if time.time() > then + 30:  # 30 second wait max to stop forever threads
+        if time.time() > then + MAX_WAIT:  # wait max to stop forever threads
             return json_encode({})
         time.sleep(0.8)
 
@@ -88,8 +90,8 @@ def loadAnnouncerResults(carid):
     data['last']   = entrant_tables(carid)
     data['next']   = entrant_tables(nextid)
     data['order']  = render_template('/announcer/runorder.html', order=order)
-    data['topnet'] = tttable(Result.getTopTimesTable(classdata, results, {'indexed':True}, carid=carid))
-    data['topraw'] = tttable(Result.getTopTimesTable(classdata, results, {'indexed':False}, carid=carid))
+    data['topnet'] = tttable(Result.getTopTimesTable(classdata, results, {'indexed':True, 'counted':False}, carid=carid))
+    data['topraw'] = tttable(Result.getTopTimesTable(classdata, results, {'indexed':False, 'counted':False}, carid=carid))
     for ii in range(1, event.segments+1):
         ret['topseg%d'% ii] = toptimestable(Result.getTopTimesTable(classdata, results, {'seg':ii}, carid=carid))
 

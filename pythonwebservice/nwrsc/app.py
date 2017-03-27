@@ -2,6 +2,7 @@ import sys
 import os.path
 import logging
 import threading
+from logging import StreamHandler
 from logging.handlers import RotatingFileHandler
 
 from psycopg2 import OperationalError
@@ -20,6 +21,7 @@ from nwrsc.controllers.results import Results
 from nwrsc.controllers.feed import Xml, Json
 from nwrsc.model import Series
 
+log = logging.getLogger(__name__)
 
 class FlaskWithPool(Flask):
     """ Add some PGPool operations so we can reset from a request context when the DB is restarted on us """
@@ -48,7 +50,7 @@ def create_app(config=None):
     def errorlog(exception):
         """ We want to log exception information to file for later investigation """
         traceback = get_current_traceback(ignore_system_exceptions=True, show_hidden_frames=True)
-        theapp.logger.error(traceback.plaintext)
+        log.error(traceback.plaintext)
         last = traceback.frames[-1]
         return "%s:%s %s" % (os.path.basename(last.filename), last.lineno, exception);
 
@@ -88,7 +90,9 @@ def create_app(config=None):
         "DBPASS":"wwwuser",
         "SHOWLIVE":True,
         "INSTALLROOT": installroot,
-        "ASSETS_DEBUG":False
+        "ASSETS_DEBUG":False,
+        "LOG_STDERR":False,
+        "LOG_LEVEL":"INFO"
     })
 
     # Let the site config override what it wants
@@ -101,7 +105,7 @@ def create_app(config=None):
     # Setup basic top level URL handling followed by Blueprints for the various sections
     theapp.url_value_preprocessor(preprocessor)
     theapp.url_defaults(urldefaults)
-    theapp.add_url_rule('/',           'toresults',  redirect_to='/results')
+    theapp.add_url_rule('/',             'toresults', redirect_to='/results')
     theapp.register_blueprint(Admin,     url_prefix="/admin/<series>")
     theapp.register_blueprint(Announcer, url_prefix="/announcer/<series>")
     theapp.register_blueprint(Json,      url_prefix="/json/<series>")
@@ -121,13 +125,24 @@ def create_app(config=None):
     theapp.create_pool()
     theapp.jinja_env.filters['t3'] = t3
 
-    # Configure our logging to use webserver.log with rotation
-    path = os.path.join(installroot, 'logs/webserver.log')
-    handler = RotatingFileHandler(path, maxBytes=1000000, backupCount=10)
-    handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m/%d/%Y %H:%M:%S'))
-    handler.setLevel(logging.DEBUG)
-    theapp.logger.addHandler(handler)
-    theapp.logger.setLevel(logging.INFO)
+    # Configure our logging to use webserver.log with rotation and optionally stderr
+    level = getattr(logging, theapp.config['LOG_LEVEL'], logging.INFO)
+    fmt = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m/%d/%Y %H:%M:%S')
+    root = logging.getLogger()
+    root.setLevel(level)
+    root.handlers = []
+
+    fhandler = RotatingFileHandler(os.path.join(installroot, 'logs/webserver.log'), maxBytes=1000000, backupCount=10)
+    fhandler.setFormatter(fmt)
+    fhandler.setLevel(level)
+    root.addHandler(fhandler)
+    logging.getLogger('werkzeug').setLevel(logging.WARN)
+
+    if theapp.config.get('LOG_STDERR', False):
+        shandler = StreamHandler()
+        shandler.setFormatter(fmt)
+        shandler.setLevel(level)
+        root.addHandler(shandler)
 
     # Create some wrapping pieces for setting up WebAssets, PG connection, response logging, compression and profiling
     Environment(theapp)
@@ -137,8 +152,7 @@ def create_app(config=None):
     if theapp.config.get('PROFILE', False):
         theapp.wsgi_app = ProfilerMiddleware(theapp.wsgi_app, restrictions=[30])
 
-    # Good to go
-    theapp.logger.info("Scorekeeper App created")
+    log.info("Scorekeeper App created")
     return theapp
 
 
@@ -155,13 +169,14 @@ class DBSeriesWrapper(object):
             if g.seriestype == Series.INVALID:
                 return "%s is not a valid series" % g.series
         except OperationalError as e:
-            self.app.logger.warning("Possible database restart.  Reseting pool and trying again!")
+            log.warning("Possible database restart.  Reseting pool and trying again!")
             self.app.reset_pool()
             self.series_setup()
 
     def series_setup(self):
         """ Check if we have the series in the URL, set the schema path if available, return an error message otherwise """
         g.db =  self.app.pool.getconn() 
+        log.debug(" STARTUP({}): {} connections used".format(threading.current_thread(), len(self.app.pool._used)))
         g.seriestype = Series.UNKNOWN
         if hasattr(g, 'series') and g.series:
             # Set up the schema path if we have a series
@@ -172,18 +187,18 @@ class DBSeriesWrapper(object):
     def teardown(self, exc=None):
         """ Put the connection back in the pool, this will close any open transactions """
         self.app.pool.putconn(g.db) 
+        log.debug("TEARDOWN({}): {} connections used".format(threading.current_thread(), len(self.app.pool._used)))
 
 
 class ResponseLogger(object):
     """ Extra step so we can log the requests independant of the server used """
     def __init__(self, app):
-        self.app = app
-        self.app.after_request(self.log_response)
+        app.after_request(self.log_response)
 
     def log_response(self, response):
         if response.content_encoding is not None:
-            self.app.logger.info("%s %s?%s %s %s (%s)" % (request.method, request.path, request.query_string, response.status_code, response.content_length, response.content_encoding))
+            log.info("%s %s?%s %s %s (%s)" % (request.method, request.path, request.query_string, response.status_code, response.content_length, response.content_encoding))
         else:
-            self.app.logger.info("%s %s?%s %s %s" % (request.method, request.path, request.query_string, response.status_code, response.content_length))
+            log.info("%s %s?%s %s %s" % (request.method, request.path, request.query_string, response.status_code, response.content_length))
         return response
 
