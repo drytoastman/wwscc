@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block headers %}
+<style type='text/css'>
+ul { list-style-type: none; }
+li { margin: 5px; }
+</style>
+{% endblock headers %}
+
+{% block content %}
+<h3>An error occured in the application.  Please report the following:</h3>
+<ul>
+<li>{{now}}</li>
+<li>{{name}}:{{line}}</li>
+<li>{{exception}}</li>
+</ul>
+{% endblock content %}

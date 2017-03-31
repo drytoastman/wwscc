@@ -7,14 +7,6 @@ class AttrWrapper(object):
         for k,v in zip(headers, tup):
             setattr(self, k, v)
 
-class JustPrint(object):
-    def __init__(self): pass
-    def close(self):    pass
-    def commit(self):   pass
-    def cursor(self):   return self
-    def execute(self, cmd, tup=None): print(cmd, tup)
-
-
 def convert(sourcefile, name, password):
     import sqlite3
     import json
@@ -32,7 +24,6 @@ def convert(sourcefile, name, password):
     old.row_factory = sqlite3.Row
 
     psycopg2.extras.register_uuid()
-    #new = psycopg2.connect("host='127.0.0.1' user='{}' password='{}' dbname='scorekeeper'".format(name, password))
     new = psycopg2.connect("user='postgres' dbname='scorekeeper'")
     cur = new.cursor()
 
@@ -47,15 +38,16 @@ def convert(sourcefile, name, password):
         newd['firstname']  = d.firstname.strip()
         newd['lastname']   = d.lastname.strip()
         newd['email']      = d.email.strip()
-        newd['password']   = d.email.strip()
+        newd['username']   = ""
+        newd['password']   = ""
         newd['membership'] = d.membership and d.membership.strip() or ""
         newd['attr']       = dict()
         for a in ('alias', 'address', 'city', 'state', 'zip', 'phone', 'brag', 'sponsor', 'notes'):
             if hasattr(d, a) and getattr(d, a) is not None:
                 newd['attr'][a] = getattr(d, a).strip()
 
-        cur.execute("insert into drivers values (%s, %s, %s, %s, %s, %s, %s, now())", 
-            (newd['driverid'], newd['firstname'], newd['lastname'], newd['email'], newd['password'], newd['membership'], json.dumps(newd['attr'])))
+        cur.execute("insert into drivers values (%s, %s, %s, %s, %s, %s, %s, %s, now())", 
+            (newd['driverid'], newd['firstname'], newd['lastname'], newd['email'], newd['username'], newd['password'], newd['membership'], json.dumps(newd['attr'])))
         remapdriver[d.id] = newd['driverid']
 
 

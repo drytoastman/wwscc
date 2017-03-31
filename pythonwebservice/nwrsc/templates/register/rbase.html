@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block headers %}
+{%- assets filters="libsass,cssmin", output="register.css", "scss/register.scss" -%}
+<link rel="stylesheet" href="{{ASSET_URL}}" /> 
+{%- endassets -%}
+
+{% assets filters="rjsmin", output="register.js", "js/jquery-3.2.0.js", "js/jquery.validate-1.16.js", "js/tether.js", "js/bootstrap-4a6.js",
+								"js/nwr.js", "js/careditor.js", "js/drivereditor.js", "js/regeditor.js", "js/register.js" %}
+	<script type="text/javascript" src="{{ASSET_URL}}"></script>
+{% endassets %}
+{% endblock %}

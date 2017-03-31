@@ -1,5 +1,6 @@
 import sys
 import os.path
+import datetime
 import logging
 import threading
 from logging import StreamHandler
@@ -16,8 +17,9 @@ from flask_assets import Environment, Bundle
 
 from nwrsc.controllers.admin import Admin
 from nwrsc.controllers.dynamic import Announcer, Timer
-from nwrsc.controllers.results import Results
 from nwrsc.controllers.feed import Xml, Json
+from nwrsc.controllers.register import Register
+from nwrsc.controllers.results import Results
 from nwrsc.model import Series
 
 log = logging.getLogger(__name__)
@@ -46,7 +48,7 @@ class FlaskWithPool(Flask):
         try:
             self._series_setup()
             if g.seriestype == Series.INVALID:
-                raise EnvironmentError("%s is not a valid series" % g.series)
+                abort(404, "%s is not a valid series" % g.series)
         except OperationalError as e:
             log.warning("Possible database restart.  Reseting pool and trying again!")
             try: 
@@ -84,7 +86,8 @@ def create_app(config=None):
         traceback = get_current_traceback(ignore_system_exceptions=True, show_hidden_frames=True)
         log.error(traceback.plaintext)
         last = traceback.frames[-1]
-        return "%s:%s %s" % (os.path.basename(last.filename), last.lineno, exception);
+        now = datetime.datetime.now().replace(microsecond=0)
+        return render_template("error.html", now=now, name=os.path.basename(last.filename), line=last.lineno, exception=exception)
 
     def preprocessor(endpoint, values):
         """ Remove the requirement for blueprint functions to put series/eventid in their function definitions """
@@ -125,15 +128,12 @@ def create_app(config=None):
         "ASSETS_DEBUG":False,
         "LOG_STDERR":False,
         "LOG_LEVEL":"INFO",
+        "SECRET_KEY":'secret stuff here',
         "TEMPLATES_AUTO_RELOAD":True
     })
 
     # Let the site config override what it wants
     theapp.config.from_json(os.path.join(installroot, 'siteconfig.json'))
-
-    # If not using Flask debugging webserver, log our exceptions to the regular errorlog
-    if not theapp.debug:
-        theapp.register_error_handler(Exception, errorlog)
 
     # Setup basic top level URL handling followed by Blueprints for the various sections
     theapp.url_value_preprocessor(preprocessor)
@@ -142,6 +142,7 @@ def create_app(config=None):
     theapp.register_blueprint(Admin,     url_prefix="/admin/<series>")
     theapp.register_blueprint(Announcer, url_prefix="/announcer/<series>")
     theapp.register_blueprint(Json,      url_prefix="/json/<series>")
+    theapp.register_blueprint(Register,  url_prefix="/register")
     theapp.register_blueprint(Results,   url_prefix="/results/<series>")
     theapp.register_blueprint(Timer,     url_prefix="/timer")
     theapp.register_blueprint(Xml,       url_prefix="/xml/<series>")
@@ -159,6 +160,9 @@ def create_app(config=None):
     theapp.jinja_env.filters['t3'] = t3
 
     # Configure our logging to use webserver.log with rotation and optionally stderr
+    if not theapp.debug:
+        theapp.register_error_handler(Exception, errorlog)
+
     level = getattr(logging, theapp.config['LOG_LEVEL'], logging.INFO)
     fmt = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m/%d/%Y %H:%M:%S')
     root = logging.getLogger()

@@ -1,120 +1,114 @@
 import datetime
 import logging
 import operator
+import uuid
+import time
+import itsdangerous
 
-from pylons import request, response, session, config, tmpl_context as c
-from pylons.templating import render_mako, render_mako_def
-from pylons.controllers.util import redirect, url_for, abort
-from pylons.decorators import validate
-from sqlalchemy import create_engine, func
+from itsdangerous import URLSafeTimedSerializer
+from flask import abort, Blueprint, current_app, g, redirect, request, render_template, session, url_for
 
-from nwrsc.controllers.lib.base import BaseController, BeforePage
-from nwrsc.controllers.lib.paypal import PayPalIPN
-from nwrsc.controllers.lib.objecteditors import ObjectEditor
-
-from nwrsc.lib.schema import *
 from nwrsc.model import *
 
 log = logging.getLogger(__name__)
 
+Register = Blueprint("Register", __name__) 
 
-class Cred(object):
-	def __init__(self, firstname, lastname, email):
-		self.firstname = firstname
-		self.lastname = lastname
-		self.email = email
+@Register.route("/")
+def index():
+    if 'driverid' not in session: return login()
+    return "this is the base page"
 
-	def __hash__(self):
-		return hash((self.firstname, self.lastname, self.email))
+@Register.route("/<series>/")
+def series():
+    if 'driverid' not in session: return login()
+    return ("this is the series page for %s" % g.series)
 
-	def __eq__(self, other):
-		return (self.firstname, self.lastname, self.email) == (other.firstname, other.lastname, other.email)
+   
+@Register.route("/login", methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        submit = request.form.get('submit', '')
+        if submit == "Login":
+            return process_login()
+        elif submit == "Send Reset Information":
+            return process_reset()
+        elif submit == "Register":
+            return process_register()
+    else:
+        return render_template('/register/login.html', loginactive=True, gotoseries=g.series)
+            
 
-	def __repr__(self):
-		return "%s, %s, %s" % (self.firstname, self.lastname, self.email)
+@Register.route("/confirm")
+def confirm():
+    usts  = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+    token = request.args.get('token', '')
+    req   = {}
+    try:
+        req = usts.loads(token, max_age=10800) # 3 hour expiry
+    except itsdangerous.SignatureExpired as e:
+        return "Sorry, this confirmation token has expired (%s)" % e.args[0]
 
+    return "Confirmation OK (%s, %s)" % (req['request'], req['email'])
 
+ 
+def process_login():
+    username   = request.form.get('username', '')
+    password   = request.form.get('password', '')
+    # verify series
+    gotoseries = request.form.get('gotoseries', '')
+    if gotoseries and gotoseries not in Series.active():
+        gotoseries = ""
 
-class UserSession(object):
-
-	def __init__(self, data, active):
-		self.data = data
-		self.active = active
-
-	def _series(self, series=None):
-		if series is None: series = self.active
-		return self.data.setdefault(series.upper(), {})
-
-	def getDriverId(self):
-		return self._series().get('driverid', -1)
-
-	def getPreviousError(self):
-		db = self._series()
-		ret = db.get('previouserror', '')
-		db['previouserror'] = ''
-		session.save()
-		return ret
-
-	def setPreviousError(self, error):
-		db = self._series()
-		db['previouserror'] = error
-		session.save()
-
-	def setLoginInfo(self, driver=None, series=None):
-		db = self._series(series)
-		db['driverid'] = driver.id
-		db['creds'] = Cred(driver.firstname, driver.lastname, driver.email)
-		session.save()
-
-	def hasCreds(self, series):
-		db = self._series(series)
-		return db.get('driverid', -1) > 0
-
-	def activeSeries(self):
-		seriesmap = dict()
-		for name, db in self.data.iteritems():
-			creds = db.get('creds', None)
-			if creds is not None:
-				seriesmap[name] = creds
-		return seriesmap
-
-	def activeCreds(self):
-		ids = set()
-		for db in self.data.itervalues():
-			creds = db.get('creds', None)
-			if creds is not None:
-				ids.add(creds)
-		return ids
-
-	def clear(self):
-		""" Remove all active creds """
-		for name in self.data:
-			self.data[name] = {}
-		session.save()
-
-	def clearSeries(self):
-		""" Clear just the data from this active series (if something is kajigered) """
-		self._series().clear()
-
-	def __repr__(self):
-		return repr(self.data)
-		
+    # verify login
+    if password != 'goodpass':
+        return render_template('/register/login.html', loginactive=True, gotoseries=g.series, loginerror='Invalid username/password')
+        
+    # Load and verify driver with username and password, getting driverid
+    session['driverid'] = uuid.uuid1()
+    if gotoseries:
+        return redirect(url_for(".series", series=gotoseries))
+    return redirect(url_for(".index"))
 
 
-class RegisterController(BaseController, PayPalIPN, ObjectEditor):
+def process_reset():
+    if request.form.get('message'): # super simple bot test (advanced bots will get by this)
+        abort(404)
+    usts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+    first = request.form.get('firstname').strip()
+    last  = request.form.get('lastname').strip()
+    email = request.form.get('email').strip()
+    for d in Driver.find(first, last):
+        if d.email == email:
+            token = usts.dumps({  'request': 'reset', 
+                        'firstname': first,
+                         'lastname': last,
+                            'email': email
+                        })
+            return "An email as been sent with a link to reset your username/password., token=(%s)" % (token)
+
+    return "No user could be found with those parameters"
+
+
+def process_register():
+    if request.form.get('message'): # super simple bot test (advanced bots will get by this)
+        abort(404)
+    usts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+    token = usts.dumps({'request':'newuser', 'form':request.form})
+    return "An email as been sent with a link to confirm your email. token=(%s)" % (token)
+
+
+
+class RegisterController(): #BaseController, PayPalIPN, ObjectEditor):
 
 	def __before__(self):
 		action = self.routingargs.get('action', '')
 		if action == 'ipn': # nothing else needs to be done for IPN
 			return
 
-		c.title = 'Scorekeeper Registration'
+		g.title = 'Scorekeeper Registration'
 		c.stylesheets = ['/css/register.css']
 		c.javascript = ['/js/register.js']
-
-		c.activeSeries = self._activeSeries()
-		if self.database is None:
-			return
 
 		self.user = UserSession(session.setdefault(('register', self.srcip), {}), self.database) 
 
@@ -209,7 +203,7 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 				reg = Registration(eventid, carid)
 				self.session.add(reg)
 			self.session.commit()
-		except Exception, e:
+		except Exception as e:
 			response.status = '400 Car registration failed. Possible stale browser state, try reloading page'
 			log.error("registerevents", exc_info=1)
 
@@ -227,7 +221,7 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 				self.session.add(reg)
 
 			self.session.commit()
-		except Exception, e:
+		except Exception as e:
 			response.status = '400 Event registration failed. Possible stale browser state, try reloading page'
 			log.error("registercars", exc_info=1)
 
@@ -237,12 +231,12 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 			regid = int(request.POST.get('regid', 0))
 			self.session.delete(self.session.query(Registration).get(regid))
 			self.session.commit()
-		except Exception, e:
+		except Exception as e:
 			response.status = '400 Unregister failed. Possible stale browser state, try reloading page'
 			log.error("unregistercar", exc_info=1)
 
 		 
-	@validate(schema=LoginSchema(), form='login', prefix_error=False)
+	#@validate(schema=LoginSchema(), form='login', prefix_error=False)
 	def checklogin(self):
 		fr = self.form_result
 
@@ -274,7 +268,7 @@ class RegisterController(BaseController, PayPalIPN, ObjectEditor):
 
 
 
-	@validate(schema=DriverSchema(), form='profile', prefix_error=False)
+	#@validate(schema=DriverSchema(), form='profile', prefix_error=False)
 	def newprofile(self):
 		query = self.session.query(Driver)
 		query = query.filter(Driver.firstname.like(self.form_result['firstname'])) # no case compare

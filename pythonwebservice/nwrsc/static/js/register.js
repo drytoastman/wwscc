@@ -157,24 +157,14 @@ function loginPage()
 {
     $("#loginForm").validate();
     $("#loginsubmit").button();
-
-	$("button.copylogin").button().click( function() {
-		var creds = $(this).data('creds');
-		$("#loginForm [name=firstname]").val(creds.firstname);
-		$("#loginForm [name=lastname]").val(creds.lastname);
-		$("#loginForm [name=email]").val(creds.email);
-		$("#loginForm [name=otherseries]").val(creds.series);
-		$("#loginForm").submit();
-	});
-
-	$("button.createdriver").button().click( function() {
+	$("#createdriver").button().click( function() {
 		$('#drivereditor').DriverEdit("doDialog", {}, function() {
 			$("#drivereditor").submit();
 		});
 	});
 }
 
-
+/*
 $(document).ready(function() {
 
 	loginPage();
@@ -197,4 +187,6 @@ $(document).ready(function() {
 	$(".cartablink").click(function() { $("#tabs").tabs('option', 'active', 1); });
 
 });
+*/
+
 

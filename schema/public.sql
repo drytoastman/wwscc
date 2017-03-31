@@ -102,6 +102,7 @@ CREATE TABLE drivers (
     firstname  TEXT        NOT NULL, 
     lastname   TEXT        NOT NULL, 
     email      TEXT        NOT NULL,
+    username   TEXT        NOT NULL,
     password   TEXT        NOT NULL,
     membership TEXT        NOT NULL,
     attr       JSONB       NOT NULL, 

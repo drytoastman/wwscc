@@ -20,6 +20,12 @@ class Series(object):
         return Series.INVALID
 
     @classmethod
+    def active(cls):
+        with g.db.cursor() as cur:
+            cur.execute("select schema_name from information_schema.schemata")
+            return [x[0] for x in cur.fetchall() if x[0] not in ('pg_catalog', 'information_schema', 'public')]
+
+    @classmethod
     def list(cls):
         with g.db.cursor() as cur:
             cur.execute("select schema_name from information_schema.schemata union select series from results")

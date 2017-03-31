@@ -4,7 +4,7 @@ $eventsborder: 1px solid #ccc;
 $containerborder: 1px solid #aaa;
 $linkblue: rgb(40,40,255);
 
-@import "jqueryui.scss";
+@import "bootstrap.scss";
 @import "forms.scss";
 
 body {
@@ -17,98 +17,48 @@ body {
 }
 
 a:active, a:focus, a {
-	outline: none;
-	border: 0;
-	ie-dummy: expression(this.hideFocus=true);
+    outline: none;
+    border: 0;
+    ie-dummy: expression(this.hideFocus=true);
 }
 
-.tabcontainer {
-  position: absolute;
-  right: 10px;
-  top: 0px;
-  z-index: 3;
+
+#tabs {
+    margin-top: 10px;
 }
 
-.tablist {
-  overflow: hidden;
-  float: right;
-  background: white;
+#loginouter {
+    margin: auto;
+    max-width: 20rem;
+    margin-top: 2rem;
 
-  a {
-    padding: 0px 6px;
-    font-weight: bold;
-    text-decoration: none;
-    color: $linkblue;
-  }
-
-  ul {
-    list-style: none;
-  	border: $grayborder;
-	margin: 0;
-	padding: 0;
-  }
-
-  li {
-	padding: 2px;
-  }
-
-  .tab {
-    border-top: 0;
-    border-left: $widgetStateDefaultBorder;
-    border-bottom: $widgetStateDefaultBorder;
-    border-right: $widgetStateDefaultBorder;
-    border-radius: 0px 0px 6px 6px;
-    padding: 5px 13px 8px 13px;
-    text-align: center;
-	@extend .ui-widget;
-	@extend .ui-state-default;
-
-	 &:hover {
-		@extend .ui-state-hover;
-		border-top: 0;
-	 }
-  }
-}
-
-#loginrow {
-  margin-left: 20px;
-  margin-top: 20px;
-}
-
-#orcell {
-  font-weight: bold;
-  font-size: 1.4em;
-  padding-left: 30px;
-  padding-right: 30px;
-}
-
-#othercell {
-  ul {
-    list-style: none;
-    padding: 0px;
-    margin: 0px;
-  }
-  li {
-    padding: 3px;
-    button {
-      width: 100%;
-      text-align: left;
+    label.error {
+        position: relative;
+        height: 0;
+        margin: 0;
+        top: -2rem;
+        right: 1rem;
+        float: right;
     }
-  }
+
+    h1 {
+        text-align: center;
+    }
+
+    input[type=text], input[type=email], input[type=password] {
+        margin: 0.3rem 0px;
+        height: 2rem;
+    }
+
+    input[type=submit] {
+        margin-top: 0.5rem;
+    }
+
+    input[name=message] {
+        display: none;
+    }
 }
 
-#logintable th {
-  text-align: right;
-}
-
-#submit {
-  margin-top: 5px;
-  text-align: right;
-}
-
-#header {
-  padding: 4px;
-}
 
 #sponsorimg {
   margin-left: 10px;
@@ -127,9 +77,9 @@ a:active, a:focus, a {
 }
 
 .errorlog {
-	color: #F00;
-	margin-left: 40px;
-	font-weight: bold;
+    color: #F00;
+    margin-left: 40px;
+    font-weight: bold;
 }
 
 
@@ -142,7 +92,7 @@ a:active, a:focus, a {
   color: #666;
   display: inline-block;
   ul {
-	list-style: none;
+    list-style: none;
   }
 }
 
@@ -169,17 +119,17 @@ a:active, a:focus, a {
   }
 
   .registeredlink {
-	display: block;
-	font-weight: bold;
-	text-decoration: none;
-	color: $linkblue;
-	margin-top: 5px;
-	margin-bottom: 5px;
+    display: block;
+    font-weight: bold;
+    text-decoration: none;
+    color: $linkblue;
+    margin-top: 5px;
+    margin-bottom: 5px;
     img {
-		display: inline-block;
-		vertical-align: middle;
-		margin-right: 3px;
-	}
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 3px;
+    }
   }
 
 }
@@ -279,7 +229,7 @@ table.eventdetails {
   th {
     vertical-align: top;
     text-align: right;
-	font-size: 1.2em;
+    font-size: 1.2em;
     &:after {
       content: ":";
     }
@@ -309,45 +259,45 @@ table.eventdetails {
 }
 
 #eventsinner {
-	h3 {
-		border-top: $eventsborder;
-		border-left: $eventsborder;
-		border-right: $eventsborder;
-		border-radius: 0.5em 0.5em 0em 0em;
-		margin: 0px;
-		margin-top: -1px;
-		padding: 5px;
-		cursor: pointer;
+    h3 {
+        border-top: $eventsborder;
+        border-left: $eventsborder;
+        border-right: $eventsborder;
+        border-radius: 0.5em 0.5em 0em 0em;
+        margin: 0px;
+        margin-top: -1px;
+        padding: 5px;
+        cursor: pointer;
 
-		a {
-			font-size: 1.2em;
-		}
+        a {
+            font-size: 1.2em;
+        }
 
-		&.eventopen a {
-			color: $linkblue;
-		}
+        &.eventopen a {
+            color: $linkblue;
+        }
 
-		&.lastevent.collapsed {
-			border-bottom: $eventsborder;
-			border-radius: 0.5em 0.5em 0.5em 0.5em !important;
-		}
+        &.lastevent.collapsed {
+            border-bottom: $eventsborder;
+            border-radius: 0.5em 0.5em 0.5em 0.5em !important;
+        }
 
-		&.eventclosed span {
-			color: #999;
-		}
+        &.eventclosed span {
+            color: #999;
+        }
 
-		.eventday, .eventmonth {
-			display: inline-block;
-			width: 30px;
-			margin-right: 2px;
-		}
-	
-		.eventdate {
-			display: inline-block;
-			width: 23px;
-			margin-right: 2px;
-		}
-	}
+        .eventday, .eventmonth {
+            display: inline-block;
+            width: 30px;
+            margin-right: 2px;
+        }
+    
+        .eventdate {
+            display: inline-block;
+            width: 23px;
+            margin-right: 2px;
+        }
+    }
 }
 
 
@@ -359,9 +309,9 @@ table.eventdetails {
 }
 
 .limit {
-	display: block;
-	margin-top: 3px;
-	margin-bottom: 3px;
+    display: block;
+    margin-top: 3px;
+    margin-bottom: 3px;
 }
 
 a.viewlink {
@@ -389,7 +339,7 @@ a.viewlink {
 .ui-button {
  .cardisplay {
   .desc {
-	color: rgb(200,200,200);
+    color: rgb(200,200,200);
   }
  }
 }
@@ -397,7 +347,7 @@ a.viewlink {
 .ui-button.ui-state-active {
  .cardisplay {
   .desc {
-	color: rgb(100,100,204);
+    color: rgb(100,100,204);
   }
  }
 }
@@ -405,11 +355,11 @@ a.viewlink {
 .ui-button.ui-state-hover {
  .cardisplay {
   .desc {
-	color: rgb(110,120,204);
+    color: rgb(110,120,204);
   }
  }
 }
-	
+    
 
 .ui-button-icon-only {
   width: 25px !important;
@@ -435,7 +385,7 @@ div.eventholder {
   border-left: $eventsborder;
   border-right: $eventsborder;
   border-bottom: $eventsborder;
-  @extend .ui-helper-clearfix;
+  //@extend .ui-helper-clearfix;
 }
 
 div.detailscontainer, div.carcontainer {
@@ -450,25 +400,25 @@ div.detailscontainer, div.carcontainer {
   box-sizing: border-box; 
 
   .header {
-	font-size: 1.3em;
-	font-weight: bold;
-	margin-bottom: 3px;
-	color: $widgetHeaderBackground;
-	display: block;
-	text-align: center;
-	border-bottom: 1px solid gray;
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-bottom: 3px;
+    //color: $widgetHeaderBackground;
+    display: block;
+    text-align: center;
+    border-bottom: 1px solid gray;
   }
 
   @media screen and (min-width: 751px) {
-	vertical-align: top;
-	float: left;
+    vertical-align: top;
+    float: left;
     width: 49%;
-  	min-height: 100px;
+      min-height: 100px;
   }
   @media screen and (max-width: 750px) {
-  	display: block;
-	margin-top: 3px;
-	margin-bottom: 3px;
+      display: block;
+    margin-top: 3px;
+    margin-bottom: 3px;
   }
 }
 
@@ -505,18 +455,18 @@ div.detailscontainer, div.carcontainer {
 }
 
 .hidden {
-	display: none;
+    display: none;
 }
 
 button {
-	margin: 1px;
+    margin: 1px;
 }
 
 .statuslabel {
-	display: block;
-	text-align: center;
-	font-size: 1.1em;
-	font-weight: bold;
-	color: #611;
+    display: block;
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #611;
 }
 

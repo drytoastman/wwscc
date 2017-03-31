@@ -32,6 +32,22 @@ class Challenge(AttrBase):
             return [cls(**x) for x in cur.fetchall()]
 
 
+class Driver(AttrBase):
+
+    @classmethod
+    def get(cls, driverid):
+        with g.db.cursor() as cur:
+            cur.execute("SELECT * FROM drivers WHERE driverid=%s", (driverid,))
+            assert(cur.rowcount <= 1) # If we get multiple, postgresql primary key indexing failed
+            return cur.rowcount == 1 and cls(**cur.fetchone()) or None
+
+    @classmethod
+    def find(cls, first, last):
+        with g.db.cursor() as cur:
+            cur.execute("SELECT * FROM drivers WHERE lower(firstname)=%s and lower(lastname)=%s", (first.strip().lower(), last.strip().lower()))
+            return [Driver(**x) for x in cur.fetchall()]
+        
+
 class Event(AttrBase):
 
     def feedFilter(self, key, value):
@@ -49,7 +65,8 @@ class Event(AttrBase):
     def get(cls, eventid):
         with g.db.cursor() as cur:
             cur.execute("select * from events where eventid=%s", (eventid,))
-            return cls(**cur.fetchone())
+            assert(cur.rowcount <= 1)
+            return cur.rowcount == 1 and cls(**cur.fetchone()) or None
 
     @classmethod
     def byDate(cls):
