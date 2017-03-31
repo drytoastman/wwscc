@@ -5,50 +5,51 @@
 	<link rel="stylesheet" href="{{ASSET_URL}}" /> 
 {% endassets %}
 
-{% assets filters="rjsmin", output="announcer.js", "js/jquery-1.9.0.js", "js/jquery-ui-1.10.0.custom.js", "js/nwr.js", "js/announcer.js" %}
+{% assets filters="rjsmin", output="announcer.js", "js/jquery-3.2.0.js", "js/tether.js", "js/bootstrap-4a6.js", "js/nwr.js", "js/announcer.js" %}
 	<script type="text/javascript" src="{{ASSET_URL}}"></script>
 {% endassets %}
+
 {% endblock %}
 
 {% block content %}
 
 <table class='layout' id='mainlayout'><tr><td>
 
-<div id='lasttimebox' class='ui-widget'>
 <span class='header'>Timer</span>
 <span id='timeroutput'>0.000</span>
-</div>
 
 <div id='runorder' class='ui-widget'></div>
 
-<div id="entranttabs">
-    <ul>
-        <li><a href="#nexte"><span>Next to Finish</span></a></li>
-        <li><a href="#firste"><span>Last to Finish</span></a></li>
-        <li><a href="#seconde"><span>Second to Last</span></a></li>
-    </ul>
-    <div id="nexte" modified='0'></div>
-    <div id="firste" modified='0'></div>
-    <div id="seconde" modified='0'></div>
+<nav class="nav nav-tabs justify-content-center" role="tablist">
+    <a class="nav-link"        role="tab" data-toggle="tab" href="#nexte">Next To Finish</a>
+    <a class="nav-link active" role="tab" data-toggle="tab" href="#firste">Last To Finish</a>
+    <a class="nav-link"        role="tab" data-toggle="tab" href="#seconde">Second To Last</a>
+</nav>
+
+<div id="entranttabs" class="tab-content">
+    <div id="nexte"   role="tabpanel" class="tab-pane"        modified='0'></div>
+    <div id="firste"  role="tabpanel" class="tab-pane active" modified='0'></div>
+    <div id="seconde" role="tabpanel" class="tab-pane"        modified='0'></div>
 </div>
 
 </td><td>
 
-<div id="toptimetabs">
-	<span class='header'>Top Times</span>
-    <ul>
-        <li><a href="#toprawcell"><span>Unindexed</span></a></li>
-        <li><a href="#topnetcell"><span>Indexed</span></a></li>
-		{% for ii in range(g.event.segments) %}
-        <li><a href="#topseg{{ii}}cell"><span>Seg {{ii}}</span></a></li>
-		{% endfor %}
-    </ul>
-    <div id="toprawcell"></div>
-    <div id="topnetcell"></div>
+<span class='header'>Top Times</span>
+<nav class="nav nav-tabs justify-content-center" role="tablist">
+    <a class="nav-link"        role="tab" data-toggle="tab" href="#toprawcell">Unindexed</a>
+    <a class="nav-link active" role="tab" data-toggle="tab" href="#topnetcell">Indexed</a>
+    {% for ii in range(g.event.segments) %}
+    <a class="nav-link"        role="tab" data-toggle="tab" href="#topseg{{ii}}cell">Seg {{ii}}</a>
+    {% endfor %}
+</nav>
+<div id="toptimetabs" class="tab-content">
+    <div id="toprawcell" role="tabpanel"       class="tab-pane"></div>
+    <div id="topnetcell" role="tabpanel"       class="tab-pane active"></div>
 	{%for ii in range(g.event.segments) %}
-    <div id="topseg{{ii}}cell"></div>
+    <div id="topseg{{ii}}cell" role="tabpanel" class="tab-pane"></div>
 	{% endfor %}
 </div>
 
 </td></tr></table>
 {% endblock content %}
+

@@ -11,7 +11,7 @@ function processData(json)
         $('#topnetcell').html(json.topnet);
         $('#toprawcell').html(json.topraw);
         $('#runorder').html(json.order);
-        $('#entranttabs').tabs('option', 'active', 1);
+        $('a[href="#firste"]').tab('show');
     }
 }
 
@@ -46,8 +46,6 @@ function timerUpdate()
 }
 
 $(document).ready(function(){
-    $('#toptimetabs').tabs();
-    $('#entranttabs').tabs();
     lasttime = 0;
     lasttimer = "0.000";
     updateCheck();

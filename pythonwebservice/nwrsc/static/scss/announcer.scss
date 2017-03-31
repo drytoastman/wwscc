@@ -1,82 +1,77 @@
-@import "jqueryui.scss";
+$bootstrapblue: #0275d8;
+$headerfill: $bootstrapblue;
+$titlesfill: lighten( $bootstrapblue, 10% );
+$tabcolor: darken( $bootstrapblue, 10% );
+
+@import "bootstrap.scss";
 
 .layout {
+  font-size: 0.9rem;
+  margin: 4px;
   td {
     vertical-align: top;
-	padding: 0px;
+	padding: 1px;
 	padding-top: 5px;
-  }
-  td.spacer {
-	padding: 2px;
   }
   table {
     width: 100%;
-    padding: 2px;
   }
 }
 
-#entranttabs, #toptimetabs, #lasttimebox {
-  padding: 1px;
-  background: none;
-  border-width: 0px;
-  .ui-tabs-nav {
-    padding: 0px;
-    background: transparent;
-    border-width: 0px 0px 1px 0px;
-    border-radius: 0px;
-	margin: 13px 2px 0px;
-  }
+
+.nav-link.active {
+  background-color: $tabcolor !important;
+  color: white !important;
+}
+
+.nav-link {
+  border-color: #BBB !important;
 }
 
 #timeroutput {
-	font-size: 3em;
+	font-size: 2.5rem;
 	color: #444;
 	display: block;
 	text-align: center;
 }
 
 #runorder {
-  margin-bottom: 10px;
+  margin-bottom: 0.5rem;
 }
 
-#classtable, #champtable, div.champfiller {
-  min-width: 300px;
+#classtable, #champtable, div.halffiller {
+  min-width: 23rem;
 }
 
 #classtable td, #champtable td {
   white-space: nowrap;
 }
 
-div.champfiller {
-  margin: 15px;
+div.halffiller {
+  padding-top: 2rem;
   text-align: center;
 }
 
-table {
-  border-collapse: collapse;
-  &.runorder th, &.res th, &.stats th, &.toptimes th, &.runorder td, &.res td, &.stats td, &.toptimes td {
-    border: 1px black solid;
-    padding: 3px;
-  }
-}
 
-.ui-tabs .ui-tabs-panel {
-  padding-top: 0px;
-  padding-left: 2px;
-  padding-right: 2px;
+.layout {
+    table {
+        td, th {
+            border: 1px grey solid;
+            padding: 0 0.3rem;
+        }
+        td.fullwidth, td.halfwidth {
+            border: 0;
+            padding: 0.2rem;
+        }
+    }
 }
-
-.ui-widget-content {
-  background: white;
-}
-
+  
 span.header {
   font-weight: bold;
-  background: $widgetHeaderBackground;
-  color: $widgetHeaderColor;
+  background-color: $headerfill;
+  color: white;
   display: block;
-  border: 1px solid black;
-  padding: 2px;
+  border: 1px solid gray;
   text-align: center;
 }
 
@@ -91,41 +86,33 @@ span.status {
 
 tr {
   &.header th {
+    text-align: center;
     font-weight: bold;
-    background: $widgetHeaderBackground;
-    color: $widgetHeaderColor;
+    background-color: $headerfill;
+    border-color: $headerfill;
+    color: #fff;
   }
   &.titles th {
+    text-align: center;
     font-weight: bold;
-    background: $widgetStateDefaultBackground; 
-	color: $widgetStateDefaultColor;
+    background-color: $titlesfill;
+    border-color: $titlesfill;
+    color: #fff;
   }
-  &.highlight td {
+  &.highlight td, &.improvedon, &.couldhave {
     font-size: 110%;
     font-weight: bold;
+  }
+  &.highlight td {
     background: #DDD;
   }
   &.improvedon td {
-    font-size: 110%;
-    font-weight: bold;
     background: #EEF;
     color: #99E;
   }
   &.couldhave td {
-    font-size: 110%;
-    font-weight: bold;
     background: #EDD;
     color: #E77;
-  }
-}
-
-table {
-  &.stats td {
-    background: #EEE;
-    + td {
-      font-family: monospace;
-      background: #FFF;
-    }
   }
 }
 
