@@ -13,7 +13,6 @@ from operator import attrgetter, itemgetter
 #from nwrsc.controllers.lib.purgecopy import PurgeCopy
 from flask import Blueprint, request, render_template, g
 
-from nwrsc.lib.schema import *
 from nwrsc.model import *
 
 log = logging.getLogger(__name__)

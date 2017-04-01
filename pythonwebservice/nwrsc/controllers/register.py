@@ -4,6 +4,7 @@ import operator
 import uuid
 import time
 import itsdangerous
+from collections import defaultdict
 
 from flask import abort, Blueprint, current_app, g, redirect, request, render_template, session, url_for
 from flask_wtf import FlaskForm
@@ -43,16 +44,46 @@ class RegisterForm(FlaskForm):
     password  = PasswordField('password',  [Length(min=6, max=32)])
     submit    = SubmitField(  'Register')
     
+@Register.before_request
+def setup():
+    g.title = 'Scorekeeper Registration'
 
 @Register.route("/")
 def index():
     if 'driverid' not in session: return login()
-    return "this is the series select page"
+    return render_template('serieslist.html', subapp='register', serieslist=Series.list())
 
 @Register.route("/<series>/")
 def series():
+    """ First load of page gets all data along with it so no need for lots of ajax requests """
     if 'driverid' not in session: return login()
-    return ("this is the series page for %s" % g.series)
+
+    g.driver = Driver.get(session['driverid'])
+    events = Event.byDate()
+    cars = dict()
+    registered = defaultdict(list)
+    payments = defaultdict(list)
+    for c in Car.getForDriver(g.driver.driverid):
+        cars[c.carid] = c
+    for r in Registration.getForDriver(g.driver.driverid):
+        registered[r.eventid].append(r.carid)
+    for p in Payment.getForDriver(g.driver.driverid):
+        payments[p.eventid] = p
+
+    return render_template('register/main.html', events=events, cars=cars, registered=registered, payments=payments)
+
+
+@Register.route("/<series>/view/<int:eventid>")
+def view():
+    return "view %d" % g.eventid
+
+@Register.route("/<series>/ipn")
+def ipn():
+    return "ipn"
+
+@Register.route("/ical/<driverid>")
+def ical(driverid):
+    return "ical for %s" % driverid
 
 
 @Register.route("/login", methods=['POST', 'GET'])
@@ -67,7 +98,6 @@ def login():
     loginerror = ""
     active = "login"
 
-    print(request.form)
     if login.submit.data:
         if login.validate_on_submit():
             user = Driver.byusername(login.username.data)
@@ -110,13 +140,16 @@ def login():
 @Register.route("/reset", methods=['GET', 'POST'])
 def reset():
     form = ResetPasswordForm()
-    if form.validate_on_submit():
+    if form.submit.data and form.validate_on_submit():
         if 'driverid' not in session: 
             abort(400, 'No driverid present during reset, how?')
         Driver.updatepassword(session['driverid'], form.username.data, form.password.data)
         return redirect_series("")
 
     elif request.method == 'GET':
+        if 'token' not in request.args:
+            return render_template("simple.html", header="Reset Error", content="This URL is meant to be loaded from a link with a reset token")
+            
         token = request.args.get('token', '')
         req   = {}
         try:
@@ -128,10 +161,10 @@ def reset():
     
         if req['request'] == 'reset':
             session['driverid'] = uuid.UUID(req['driverid'])
-            return render_template("register/reset.html", form=form)
+            return render_template("register/reset.html", form=form, loginerror="")
 
     elif form.errors:
-        return str(form.errors)
+        return render_template("register/reset.html", form=form, loginerror = form.errors)
 
     abort(400)
 
@@ -148,10 +181,6 @@ class RegisterController(): #BaseController, PayPalIPN, ObjectEditor):
 		action = self.routingargs.get('action', '')
 		if action == 'ipn': # nothing else needs to be done for IPN
 			return
-
-		g.title = 'Scorekeeper Registration'
-		c.stylesheets = ['/css/register.css']
-		c.javascript = ['/js/register.js']
 
 		self.user = UserSession(session.setdefault(('register', self.srcip), {}), self.database) 
 
@@ -214,7 +243,6 @@ class RegisterController(): #BaseController, PayPalIPN, ObjectEditor):
 						.filter(Registration.eventid==e.id).filter(Car.driverid==c.driverid).all()
 			e.payments = self.session.query(Payment) \
 						.filter(Payment.eventid==e.id).filter(Payment.driverid==c.driverid).all()
-
 
 		return render_mako('/register/layout.mako')
 

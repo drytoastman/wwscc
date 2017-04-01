@@ -1,0 +1,57 @@
+{% extends "register/rbase.html" %}
+{% import '/register/macros.html' as m %}
+
+{% block content %}
+<div id='tabs'>
+	<ul>
+		<li><a href="#profile"><span>Profile</span></a></li>
+		<li><a href="#cars"><span>Cars</span></a></li>
+		<li><a href="#eventsinner"><span>Events</span></a></li>
+	</ul>
+	<button class='logout'>Logout</button>
+
+
+<div id='profile'>
+{{m.driverDisplay(g.driver)}}
+</div>
+
+
+<div id='cars'>
+{% for c in cars.values(): %}
+{{m.carDisplay(c)}}
+{% endfor %}
+</div>
+
+
+<div id='eventsinner'>
+{% for ev in events %}
+    {% set eclass = ev.isOpen() and "eventopen" or "eventclosed" %}
+			
+	<h3 class='{{eclass}}'>
+	<span class='rightarrow' style='display:none'>&#9658;</span>
+	<span class='downarrow'>&#9660;</span>
+	<a>
+	<span class='eventday'>{{ev.date.strftime('%a')}}</span>
+	<span class='eventmonth'>{{ev.date.strftime('%b')}}</span>
+	<span class='eventdate'>{{ev.date.strftime('%d')}}</span>
+	<span class='eventname'>{{ev.name}}</span>
+	</a>
+	</h3>
+
+	<div id='event{{ev.eventid}}' data-eventid='{{ev.eventid}}' class='eventholder {{eclass}}'>
+	{{m.eventdisplay(ev, cars, registered[ev.eventid], payments[ev.eventid])}}
+	</div>
+
+{% endfor %}
+</div>
+
+
+</div> <!-- tabs -->
+
+{% endblock content %}
+
+{#
+{{driverform()}}
+{{carform(True)}}
+{{eventregisterform()}}
+#}

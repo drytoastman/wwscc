@@ -9,11 +9,23 @@ class AttrBase(object):
         self.merge(**kwargs)
 
     @classmethod
-    def getunique(cls, sql, args):
+    def getval(cls, sql, args=None):
+        with g.db.cursor() as cur:
+            cur.execute(sql, args)
+            return cur.rowcount == 1 and cur.fetchone()[0] or None
+
+    @classmethod
+    def getunique(cls, sql, args=None):
         with g.db.cursor() as cur:
             cur.execute(sql, args)
             assert(cur.rowcount <= 1) # If we get multiple, postgresql primary key indexing failed
             return cur.rowcount == 1 and cls(**cur.fetchone()) or None
+
+    @classmethod
+    def getall(cls, sql, args=None):
+        with g.db.cursor() as cur:
+            cur.execute(sql, args)
+            return [cls(**x) for x in cur.fetchall()]
 
     def merge(self, **kwargs):
         """ Merge these values into this object, attr gets merged with the attr dict """

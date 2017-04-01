@@ -1,3 +1,4 @@
+from datetime import datetime
 import uuid
 
 from flask import g
@@ -25,13 +26,17 @@ class Audit(object):
 
             return list(hold.values())
 
-class Challenge(AttrBase):
 
+class Car(AttrBase):
+    @classmethod
+    def getForDriver(cls, driverid):
+        return cls.getall("select * from cars where driverid=%s order by classcode,number", (driverid,))
+
+
+class Challenge(AttrBase):
     @classmethod
     def getAll(cls):
-        with g.db.cursor() as cur:
-            cur.execute("select * from challenges order by challengeid")
-            return [cls(**x) for x in cur.fetchall()]
+        return cls.getAll("select * from challenges order by challengeid")
 
 
 class Driver(AttrBase):
@@ -46,9 +51,7 @@ class Driver(AttrBase):
 
     @classmethod
     def find(cls, first, last):
-        with g.db.cursor() as cur:
-            cur.execute("SELECT * FROM drivers WHERE lower(firstname)=%s and lower(lastname)=%s", (first.strip().lower(), last.strip().lower()))
-            return [Driver(**x) for x in cur.fetchall()]
+        return cls.getall("SELECT * FROM drivers WHERE lower(firstname)=%s and lower(lastname)=%s", (first.strip().lower(), last.strip().lower()))
 
     @classmethod
     def new(cls, first, last, email, user, pwhash):
@@ -79,18 +82,25 @@ class Event(AttrBase):
             return 999
         return ret
 
+    def hasOpened(self): return datetime.now() > self.regopened
+    def hasClosed(self): return datetime.now() > self.regclosed
+    def isOpen(self):    return self.hasOpened() and not self.hasClosed()
+    def getCount(self):  return self.getval("SELECT count(carid) FROM registered WHERE eventid=%s", (self.eventid,))
+    def getDriverCount(self): return self.getval("SELECT count(distinct(c.driverid)) FROM registered r JOIN cars c ON r.carid=c.carid WHERE r.eventid=%s", (self.eventid,))
+
     @classmethod
     def get(cls, eventid):
-        with g.db.cursor() as cur:
-            cur.execute("select * from events where eventid=%s", (eventid,))
-            assert(cur.rowcount <= 1)
-            return cur.rowcount == 1 and cls(**cur.fetchone()) or None
+        return cls.getunique("select * from events where eventid=%s", (eventid,))
 
     @classmethod
     def byDate(cls):
-        with g.db.cursor() as cur:
-            cur.execute("select * from events order by date")
-            return [cls(**x) for x in cur.fetchall()]
+        return cls.getall("select * from events order by date")
+
+
+class Payment(AttrBase):
+    @classmethod
+    def getForDriver(cls, driverid):
+        return cls.getall("SELECT * FROM payments WHERE driverid=%s", (driverid,))
 
 
 class Registration(AttrBase):
@@ -100,6 +110,10 @@ class Registration(AttrBase):
         with g.db.cursor() as cur:
             cur.execute("SELECT d.*,c.*,r.* FROM cars c JOIN drivers d ON c.driverid=d.driverid JOIN registered r ON r.carid=c.carid WHERE r.eventid=%s ORDER BY c.number", (eventid,))
             return [Entrant(**x) for x in cur.fetchall()]
+
+    @classmethod
+    def getForDriver(cls, driverid):
+        return cls.getall("SELECT r.* FROM registered r JOIN cars c on r.carid=c.carid WHERE c.driverid=%s", (driverid,))
 
 
 class Run(AttrBase):

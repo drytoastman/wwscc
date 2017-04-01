@@ -25,7 +25,7 @@ $(document).ready(function() {
     <a class="nav-link {{active=='register' and 'active' or ''}}" role="tab" data-toggle="tab" href="#register">Register</a>
 </nav>
 
-<div id='tabs' class='tab-content'>
+<div class='tab-content'>
 <div class='error'>
 {% if loginerror is string: %}
 {{loginerror}}

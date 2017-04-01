@@ -19,16 +19,16 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 <tr><th></th><th></th><th><span>Cars</span></th><th><span>Registered/Used In</span></th></tr>
 %for car in c.cars:
 	<tr>
-	<td><button class='editcar' data-driverid='${c.driverid}' data-carid='${car.id}' ${disablecar(car)} >Edit</button></td>
-	<td><button class='deletecar' data-carid='${car.id}' ${disablecar(car)}>Delete</button></td>
-	<td class='car'>${carDisplay(car)}</td>
+	<td><button class='editcar' data-driverid='{{c.driverid}}' data-carid='{{car.id}}' {{disablecar(car)}} >Edit</button></td>
+	<td><button class='deletecar' data-carid='{{car.id}}' {{disablecar(car)}}>Delete</button></td>
+	<td class='car'>{{carDisplay(car)}}</td>
 	<td class='carevents'>
 		%if len(car.regevents) > 0:
 		<ul>
 		%for (event, regid) in car.regevents:
 			<li>
-			<button class='unregbutton' data-eventid='${event.id}' data-regid='${regid}' ${disableevent(event)}>Unregister</button>
-			<span class='regevent'>${event.name}</span>
+			<button class='unregbutton' data-eventid='{{event.id}}' data-regid='{{regid}}' {{disableevent(event)}}>Unregister</button>
+			<span class='regevent'>{{event.name}}</span>
 			</li>
 		%endfor
 		</ul>
@@ -38,21 +38,21 @@ disabled='disabled' title='Event registration is not open or car has runs so thi
 %endfor
 </table>
 
-<button class='createcar' data-driverid='${c.driverid}'>Create New Car</button>
+<button class='createcar' data-driverid='{{c.driverid}}'>Create New Car</button>
 
 <%doc> registration forms are recreated  when a new car is created, edited or deleted </%doc>
-${carregisterform()}
+{{carregisterform()}}
 
 <script type='text/javascript'>
 var cars = {
 %for car in c.cars:
-${car.id}: ${h.encodesqlobj(car)|n},
+{{car.id}}: {{h.encodesqlobj(car)|n}},
 %endfor
 }
 var seriesevents = {
 %for event in c.events:
- ${event.id}: { id: ${event.id}, name: "${event.name}", doublespecial: ${event.doublespecial and "true" or "false"}, \
-			totlimit: ${event.totlimit or 9999}, perlimit: ${event.perlimit or 9999}, count: ${event.count}, drivercount: ${event.drivercount} },
+ {{event.id}}: { id: {{event.id}}, name: "{{event.name}}", doublespecial: {{event.doublespecial and "true" or "false"}}, \
+			totlimit: {{event.totlimit or 9999}}, perlimit: {{event.perlimit or 9999}}, count: {{event.count}}, drivercount: {{event.drivercount}} },
 %endfor
 }
 
