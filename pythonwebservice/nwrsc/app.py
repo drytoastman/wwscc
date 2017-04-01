@@ -6,14 +6,16 @@ import threading
 from logging import StreamHandler
 from logging.handlers import RotatingFileHandler
 
-from psycopg2 import OperationalError
-from psycopg2.pool import ThreadedConnectionPool
-from psycopg2.extras import DictCursor
-from werkzeug.debug.tbtools import get_current_traceback
-from werkzeug.contrib.profiler import ProfilerMiddleware
 from flask import Flask, request, abort, g, current_app, render_template, send_from_directory
 from flask_compress import Compress
 from flask_assets import Environment, Bundle
+from flask_bcrypt import Bcrypt
+from itsdangerous import URLSafeTimedSerializer
+from psycopg2 import OperationalError
+from psycopg2.pool import ThreadedConnectionPool
+from psycopg2.extras import DictCursor, register_uuid
+from werkzeug.debug.tbtools import get_current_traceback
+from werkzeug.contrib.profiler import ProfilerMiddleware
 
 from nwrsc.controllers.admin import Admin
 from nwrsc.controllers.dynamic import Announcer, Timer
@@ -65,7 +67,7 @@ class FlaskWithPool(Flask):
 
     def create_pool(self):
         """ Create a new pool of connections.  Server should support 100, leave 10 for applications """
-        self.pool = ThreadedConnectionPool(5, 90, cursor_factory=DictCursor, host="127.0.0.1", dbname="scorekeeper",
+        self.pool = ThreadedConnectionPool(5, 80, cursor_factory=DictCursor, host="127.0.0.1", dbname="scorekeeper",
                                              user=self.config['DBUSER'], password=self.config['DBPASS'])
     def reset_pool(self):
         """ First person here gets to reset it, others can continue on and try again """
@@ -113,6 +115,8 @@ def create_app(config=None):
 
     # Figure out where we are
     installroot = os.path.abspath(os.path.join(sys.executable, "../../../"))
+    # setup uuid for postgresql
+    register_uuid()
 
     # Setup the application with default configuration
     theapp = FlaskWithPool("nwrsc")
@@ -154,6 +158,14 @@ def create_app(config=None):
     def robots(): return send_from_directory('static', 'robots.txt')
     @theapp.route('/<subapp>/')
     def serieslist(subapp): return render_template('serieslist.html', subapp=subapp, serieslist=Series.list())
+    @theapp.before_request
+    def onrequest(): current_app.db_prepare()
+    @theapp.teardown_request
+    def teardown(exc=None): current_app.db_return()
+    @theapp.after_request
+    def logrequest(response):
+        log.info("%s %s?%s %s %s (%s)" % (request.method, request.path, request.query_string, response.status_code, response.content_length, response.content_encoding))
+        return response
 
     # Create a PG connection pool and extra Jinja bits
     theapp.create_pool()
@@ -164,7 +176,7 @@ def create_app(config=None):
         theapp.register_error_handler(Exception, errorlog)
 
     level = getattr(logging, theapp.config['LOG_LEVEL'], logging.INFO)
-    fmt = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m/%d/%Y %H:%M:%S')
+    fmt  = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m/%d/%Y %H:%M:%S')
     root = logging.getLogger()
     root.setLevel(level)
     root.handlers = []
@@ -181,32 +193,14 @@ def create_app(config=None):
         shandler.setLevel(level)
         root.addHandler(shandler)
 
-    # Create some wrapping pieces for setting up WebAssets, PG connection, response logging, compression and profiling
+    # Setting up WebAssets, crypto stuff, compression and profiling
     Environment(theapp)
-    DBSeriesWrapper(theapp)
-    ResponseLogger(theapp)
     Compress(theapp)
     if theapp.config.get('PROFILE', False):
         theapp.wsgi_app = ProfilerMiddleware(theapp.wsgi_app, restrictions=[30])
+    theapp.hasher = Bcrypt(theapp)
+    theapp.usts = URLSafeTimedSerializer(theapp.config["SECRET_KEY"])
 
     log.info("Scorekeeper App created")
     return theapp
-
-
-class DBSeriesWrapper(object):
-    def __init__(self, towrap):
-        towrap.before_request(self.onrequest)
-        towrap.teardown_request(self.teardown)
-    def onrequest(self):
-        current_app.db_prepare()
-    def teardown(self, exc=None):
-        current_app.db_return()
-
-class ResponseLogger(object):
-    """ Extra step so we can log the requests independant of the server used """
-    def __init__(self, app):
-        app.after_request(self.log_response)
-    def log_response(self, response):
-        log.info("%s %s?%s %s %s (%s)" % (request.method, request.path, request.query_string, response.status_code, response.content_length, response.content_encoding))
-        return response
 

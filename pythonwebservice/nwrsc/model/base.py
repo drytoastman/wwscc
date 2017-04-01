@@ -1,4 +1,5 @@
 import json
+from flask import g
 
 
 class AttrBase(object):
@@ -6,6 +7,13 @@ class AttrBase(object):
     def __init__(self, **kwargs):
         self.attr = dict()
         self.merge(**kwargs)
+
+    @classmethod
+    def getunique(cls, sql, args):
+        with g.db.cursor() as cur:
+            cur.execute(sql, args)
+            assert(cur.rowcount <= 1) # If we get multiple, postgresql primary key indexing failed
+            return cur.rowcount == 1 and cls(**cur.fetchone()) or None
 
     def merge(self, **kwargs):
         """ Merge these values into this object, attr gets merged with the attr dict """

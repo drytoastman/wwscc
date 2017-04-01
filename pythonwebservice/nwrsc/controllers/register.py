@@ -5,8 +5,11 @@ import uuid
 import time
 import itsdangerous
 
-from itsdangerous import URLSafeTimedSerializer
 from flask import abort, Blueprint, current_app, g, redirect, request, render_template, session, url_for
+from flask_wtf import FlaskForm
+from wtforms import HiddenField, PasswordField, StringField, SubmitField
+from wtforms.fields.html5 import EmailField
+from wtforms.validators import Length, Email
 
 from nwrsc.model import *
 
@@ -14,89 +17,129 @@ log = logging.getLogger(__name__)
 
 Register = Blueprint("Register", __name__) 
 
+class ResetPasswordForm(FlaskForm):
+    username = StringField(  'username', [Length(min=6, max=32)])
+    password = PasswordField('password', [Length(min=6, max=32)])
+    submit   = SubmitField(  'Reset')
+
+class LoginForm(FlaskForm):
+    gotoseries = HiddenField(  'gotoseries')
+    username   = StringField(  'username', [Length(min=6, max=32)])
+    password   = PasswordField('password', [Length(min=6, max=32)])
+    submit     = SubmitField(  'Login')
+
+class ResetForm(FlaskForm):
+    firstname = StringField('firstname', [Length(min=2, max=32)])
+    lastname  = StringField('lastname',  [Length(min=2, max=32)])
+    email     = EmailField( 'email',     [Email()])
+    submit    = SubmitField('Send Reset Information')
+
+class RegisterForm(FlaskForm):
+    gotoseries = HiddenField( 'gotoseries')
+    firstname = StringField(  'firstname', [Length(min=2, max=32)])
+    lastname  = StringField(  'lastname',  [Length(min=2, max=32)])
+    email     = EmailField(   'email',     [Email()])
+    username  = StringField(  'username',  [Length(min=6, max=32)])
+    password  = PasswordField('password',  [Length(min=6, max=32)])
+    submit    = SubmitField(  'Register')
+    
+
 @Register.route("/")
 def index():
     if 'driverid' not in session: return login()
-    return "this is the base page"
+    return "this is the series select page"
 
 @Register.route("/<series>/")
 def series():
     if 'driverid' not in session: return login()
     return ("this is the series page for %s" % g.series)
 
-   
+
 @Register.route("/login", methods=['POST', 'GET'])
 def login():
-    if request.method == 'POST':
-        submit = request.form.get('submit', '')
-        if submit == "Login":
-            return process_login()
-        elif submit == "Send Reset Information":
-            return process_reset()
-        elif submit == "Register":
-            return process_register()
-    else:
-        return render_template('/register/login.html', loginactive=True, gotoseries=g.series)
-            
+    if 'driverid' in session: return redirect_series()
+    if request.form.get('message'): # super simple bot test (advanced bots will get by this)
+        abort(404)
 
-@Register.route("/confirm")
-def confirm():
-    usts  = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
-    token = request.args.get('token', '')
-    req   = {}
-    try:
-        req = usts.loads(token, max_age=10800) # 3 hour expiry
-    except itsdangerous.SignatureExpired as e:
-        return "Sorry, this confirmation token has expired (%s)" % e.args[0]
+    login = LoginForm(prefix='login')
+    reset = ResetForm(prefix='reset')
+    register = RegisterForm(prefix='register')
+    loginerror = ""
+    active = "login"
 
-    return "Confirmation OK (%s, %s)" % (req['request'], req['email'])
+    print(request.form)
+    if login.submit.data:
+        if login.validate_on_submit():
+            user = Driver.byusername(login.username.data)
+            if user and user.password == login.password.data:
+                session['driverid'] = user.driverid
+                return redirect_series(login.gotoseries.data)
+            loginerror = "Invalid username/password"
+        else:
+            loginerror = login.errors
+
+    elif reset.submit.data:
+        active = "reset"
+        if reset.validate_on_submit():
+            for d in Driver.find(reset.firstname.data, reset.lastname.data):
+                if d.email == reset.email.data:
+                    token = current_app.usts.dumps({'request': 'reset', 'driverid': str(d.driverid)})
+                    link = url_for('.reset', token=token, _external=True)
+                    return render_template("simple.html", content="An email as been sent with a link to reset your username/password. (%s)" % link)
+            loginerror = "No user could be found with those parameters"
+        else:
+            loginerror = reset.errors
+
+    elif register.submit.data:
+        active = "register"
+        if register.validate_on_submit():
+            if Driver.byusername(register.username.data) != None:
+                loginerror = "That username is already taken"
+            else:
+                session['driverid'] = Driver.new(register.firstname.data.strip(), register.lastname.data.strip(), register.email.data.strip(),
+                                            register.username.data.strip(), register.password.data.strip())
+                return redirect_series(register.gotoseries.data)
+        else:
+            loginerror = register.errors
+
+    login.gotoseries.data = g.series
+    register.gotoseries.data = g.series
+    return render_template('/register/login.html', active=active, loginerror=loginerror, login=login, reset=reset, register=register)
+        
+
+@Register.route("/reset", methods=['GET', 'POST'])
+def reset():
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        if 'driverid' not in session: 
+            abort(400, 'No driverid present during reset, how?')
+        Driver.updatepassword(session['driverid'], form.username.data, form.password.data)
+        return redirect_series("")
+
+    elif request.method == 'GET':
+        token = request.args.get('token', '')
+        req   = {}
+        try:
+            req = current_app.usts.loads(token, max_age=3600) # 1 hour expiry
+        except itsdangerous.SignatureExpired as e:
+            return render_template("simple.html", header="Confirmation Error", content="Sorry, this confirmation token has expired (%s)" % e.args[0])
+        except Exception as e:
+            abort(400, e)
+    
+        if req['request'] == 'reset':
+            session['driverid'] = uuid.UUID(req['driverid'])
+            return render_template("register/reset.html", form=form)
+
+    elif form.errors:
+        return str(form.errors)
+
+    abort(400)
 
  
-def process_login():
-    username   = request.form.get('username', '')
-    password   = request.form.get('password', '')
-    # verify series
-    gotoseries = request.form.get('gotoseries', '')
-    if gotoseries and gotoseries not in Series.active():
-        gotoseries = ""
-
-    # verify login
-    if password != 'goodpass':
-        return render_template('/register/login.html', loginactive=True, gotoseries=g.series, loginerror='Invalid username/password')
-        
-    # Load and verify driver with username and password, getting driverid
-    session['driverid'] = uuid.uuid1()
-    if gotoseries:
-        return redirect(url_for(".series", series=gotoseries))
+def redirect_series(series=""):
+    if series and series in Series.active():
+        return redirect(url_for(".series", series=series))
     return redirect(url_for(".index"))
-
-
-def process_reset():
-    if request.form.get('message'): # super simple bot test (advanced bots will get by this)
-        abort(404)
-    usts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
-    first = request.form.get('firstname').strip()
-    last  = request.form.get('lastname').strip()
-    email = request.form.get('email').strip()
-    for d in Driver.find(first, last):
-        if d.email == email:
-            token = usts.dumps({  'request': 'reset', 
-                        'firstname': first,
-                         'lastname': last,
-                            'email': email
-                        })
-            return "An email as been sent with a link to reset your username/password., token=(%s)" % (token)
-
-    return "No user could be found with those parameters"
-
-
-def process_register():
-    if request.form.get('message'): # super simple bot test (advanced bots will get by this)
-        abort(404)
-    usts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
-    token = usts.dumps({'request':'newuser', 'form':request.form})
-    return "An email as been sent with a link to confirm your email. token=(%s)" % (token)
-
 
 
 class RegisterController(): #BaseController, PayPalIPN, ObjectEditor):

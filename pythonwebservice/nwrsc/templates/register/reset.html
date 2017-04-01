@@ -1,0 +1,30 @@
+{% extends "/register/rbase.html" %}
+
+{% block headers %}
+{{super()}}
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#resetform").validate({ onkeyup: false })
+});
+</script>
+<style>
+h1 { font-size: 1.4rem; }
+</style>
+{% endblock headers %}
+
+{% block content %}
+
+<div id='loginouter'>
+
+<h1>Reset Username and Password</h1>
+
+<form id='resetform' action="{{url_for('.reset')}}" method="post">
+{{ form.csrf_token }}
+{{ form.username(class_="col required", minlength="6", placeholder="username") }}
+{{ form.password(class_="col required", minlength="6", placeholder="password") }}
+{{ form.submit(class_="col btn btn-primary") }}
+<small class='form-text text-muted'>Enter a new username and password</small>
+</form>
+
+</div> <!-- loginouter -->
+{% endblock content %}

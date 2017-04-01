@@ -20,48 +20,59 @@ $(document).ready(function() {
 
 <h1>Scorekeeper</h1>
 <nav class="nav nav-tabs justify-content-center" role="tablist">
-    <a class="nav-link {{loginactive and 'active' or ''}}"    role="tab" data-toggle="tab" href="#login">Login</a>
-    <a class="nav-link {{resetactive and 'active' or ''}}"    role="tab" data-toggle="tab" href="#reset">Reset</a>
-    <a class="nav-link {{registeractive and 'active' or ''}}" role="tab" data-toggle="tab" href="#register">Register</a>
+    <a class="nav-link {{active=='login' and 'active' or ''}}"    role="tab" data-toggle="tab" href="#login">Login</a>
+    <a class="nav-link {{active=='reset' and 'active' or ''}}"    role="tab" data-toggle="tab" href="#reset">Reset</a>
+    <a class="nav-link {{active=='register' and 'active' or ''}}" role="tab" data-toggle="tab" href="#register">Register</a>
 </nav>
 
 <div id='tabs' class='tab-content'>
+<div class='error'>
+{% if loginerror is string: %}
+{{loginerror}}
+{% else %}
+{% for field, msg in loginerror.items(): %}
+<div>{{field}} {{msg[0]|replace("Field","")}}</div>
+{% endfor %}
+{% endif %}
+</div>
 
-<div id='login' role="tabpanel" class='tab-pane {{loginactive and 'active' or ''}}'>
-<div class='error'>{{loginerror}}</div>
+<div id='login' role="tabpanel" class='tab-pane {{active=='login' and 'active' or ''}}'>
 <form id='loginform' action="{{url_for('.login')}}" method="post">
-<input type="hidden"   name="gotoseries" value="{{gotoseries}}" class="col"/>
-<input type="text"     name="username"   value=""               class="col required" minlength="6" placeholder="username"/>
-<input type="password" name="password"   value=""               class="col required" minlength="6" placeholder="password"/>
-<input type="submit"   name="submit"     value="Login"          class="col btn btn-primary"/>
+{{ login.csrf_token }}
+{{ login.gotoseries }}
+{{ login.username(class_="col required", minlength="6", placeholder="username") }}
+{{ login.password(class_="col required", minlength="6", placeholder="password") }}
+{{ login.submit(  class_="col btn btn-primary") }}
 <small class='form-text text-muted'>If you had a profile in the previous system, use the Reset tab to set a username and password</small>
 </form>
 </div>
 
-<div id='reset' role="tabpanel" class='tab-pane {{resetactive and 'active' or ''}}'>
+<div id='reset' role="tabpanel" class='tab-pane {{active=='reset' and 'active' or ''}}'>
 <div class='error'>{{reseterror}}</div>
 <form id='resetform' action="{{url_for('.login')}}" method="post">
-<input type="hidden"  name="gotoseries" value="{{gotoseries}}" class="col"/>
-<input type="text"    name="firstname"  value=""               class="col required" minlength="2" placeholder="firstname"/>
-<input type="text"    name="lastname"   value=""               class="col required" minlength="2" placeholder="lastname"/>
-<input type="email"   name="email"      value=""               class="col required"               placeholder="email"/>
-<input type="text"    name="message"    value=""               class="col"/>
-<input type="submit"  name="submit"     value="Send Reset Information" class="col btn btn-primary"/>
+{{ reset.csrf_token }}
+{{ reset.firstname(class_="col required", minlength="2", placeholder="firstname") }}
+{{ reset.lastname( class_="col required", minlength="2", placeholder="lastname") }}
+{{ reset.email(    class_="col required",                placeholder="email") }}
+{{ reset.submit(   class_="col btn btn-primary") }}
+<input type="text" name="message" value="" class="col"/>
 <small class='form-text text-muted'>If you do not have a valid email in your profile, you must contact us to reset your login information</small>
 </form>
 </div>
 
-<div id='register' role="tabpanel" class='tab-pane {{registeractive and 'active' or ''}}'>
+<div id='register' role="tabpanel" class='tab-pane {{active=='register' and 'active' or ''}}'>
 <div class='error'>{{registererror}}</div>
 <form id='registerform' action="{{url_for('.login')}}" method="post">
-<input type="hidden"   name="gotoseries" value="{{gotoseries}}" class="col"/>
-<input type="text"     name="firstname" value=""         class="col required" minlength="2" placeholder="firstname"/>
-<input type="text"     name="lastname"  value=""         class="col required" minlength="2" placeholder="lastname"/>
-<input type="email"    name="email"     value=""         class="col required"               placeholder="email"/>
-<input type="text"     name="username"  value=""         class="col required" minlength="6" placeholder="username"/>
-<input type="password" name="password"  value=""         class="col required" minlength="6" placeholder="password"/>
+{{ register.csrf_token }}
+{{ register.gotoseries }}
+{{ register.firstname(class_="col required", minlength="2", placeholder="firstname") }}
+{{ register.lastname( class_="col required", minlength="2", placeholder="lastname") }}
+{{ register.email(    class_="col required",                placeholder="email") }}
+{{ register.username( class_="col required", minlength="6", placeholder="username") }}
+{{ register.password( class_="col required", minlength="6", placeholder="password") }}
+{{ register.submit(   class_="col btn btn-primary") }}
 <input type="text"     name="message"   value=""         class="col" />
-<input type="submit"   name="submit"    value="Register" class="col btn btn-primary"/>
+<small class='form-text text-muted'>This is for new users who haven't run in an event.  This will not link to any previous profiles</small>
 </form>
 </div>
 

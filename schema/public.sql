@@ -102,11 +102,12 @@ CREATE TABLE drivers (
     firstname  TEXT        NOT NULL, 
     lastname   TEXT        NOT NULL, 
     email      TEXT        NOT NULL,
-    username   TEXT        NOT NULL,
-    password   TEXT        NOT NULL,
-    membership TEXT        NOT NULL,
-    attr       JSONB       NOT NULL, 
-    modified   TIMESTAMP   NOT NULL DEFAULT now()
+    username   TEXT,
+    password   TEXT        NOT NULL DEFAULT '',
+    membership TEXT        NOT NULL DEFAULT '',
+    attr       JSONB       NOT NULL DEFAULT '{}', 
+    modified   TIMESTAMP   NOT NULL DEFAULT now(),
+    CONSTRAINT uniqueuser UNIQUE(username)
 );
 CREATE INDEX ON drivers(lower(firstname));
 CREATE INDEX ON drivers(lower(lastname));
