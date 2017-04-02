@@ -1,6 +1,6 @@
 /** Some misc stuff, center divs, headers, no boders on linked images, **/
 
-div, h1, h2, h3, h4 { text-align:center; }
+div, h1, h2, h3, h4 { text-align:center; margin-top: 0px; margin-bottom: 0px; }
 
 a img { border: none; }
 
@@ -98,7 +98,7 @@ th {
 	padding: 1px 3px;
 }
 
-th.classhead { 
+tr.classhead th { 
 	background-color: #4682B4; 
 	color: white; 
 	text-align: left; 
@@ -115,18 +115,18 @@ th.toptimeshead {
 /** These are all the special items at the top of the results **/
 
 div#seriestitle {
-	font: bold 2.0em Tahoma;
-	color: #3333FF;
+	font: bold 1.5rem Tahoma;
+	color: darken(#4682B4, 20%);
 }
 
 div#sponsortitle {
-	font: bold 1.5em Tahoma;
-	color: #3333FF;
+	font: bold 1.5rem Tahoma;
+	color: darken(#4682B4, 20%);
 }
 
 div#eventtitle {
-	font: bold 1.0em Tahoma;
-	color: #3333FF;
+	font: bold 1.2rem Tahoma;
+	color: darken(#4682B4, 20%);
 }
 
 div#hosttitle {

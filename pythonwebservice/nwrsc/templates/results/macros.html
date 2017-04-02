@@ -29,8 +29,8 @@
 {% else %}
 {% set colcount = 9 + g.event.runs %}
 {% endif %}
-<tr>
-    <th class='classhead' colspan='{{colcount}}'>
+<tr class='classhead'>
+    <th colspan='{{colcount}}'>
     <a>{{classcode}}</a> - {{g.classdata.classlist[classcode].descrip}}
     </th>
 </tr>

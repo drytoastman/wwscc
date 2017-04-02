@@ -36,7 +36,7 @@ class Car(AttrBase):
 class Challenge(AttrBase):
     @classmethod
     def getAll(cls):
-        return cls.getAll("select * from challenges order by challengeid")
+        return cls.getall("select * from challenges order by challengeid")
 
 
 class Driver(AttrBase):

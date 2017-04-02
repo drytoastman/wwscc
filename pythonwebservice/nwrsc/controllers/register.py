@@ -75,7 +75,16 @@ def series():
 
 @Register.route("/<series>/view/<int:eventid>")
 def view():
-    return "view %d" % g.eventid
+    event = Event.get(g.eventid)
+    if event is None:
+        abort(404, "No event found for id %s" % g.eventid)
+    settings = Settings.get()
+    classdata = ClassData.get()
+    registered = defaultdict(list)
+    for r in Registration.getForEvent(g.eventid):
+        registered[r.classcode].append(r)
+    return render_template('register/reglist.html', settings=settings, classdata=classdata, event=event, registered=registered)
+
 
 @Register.route("/<series>/ipn")
 def ipn():
@@ -175,50 +184,8 @@ def redirect_series(series=""):
     return redirect(url_for(".index"))
 
 
-class RegisterController(): #BaseController, PayPalIPN, ObjectEditor):
 
-	def __before__(self):
-		action = self.routingargs.get('action', '')
-		if action == 'ipn': # nothing else needs to be done for IPN
-			return
-
-		self.user = UserSession(session.setdefault(('register', self.srcip), {}), self.database) 
-
-		c.settings = self.settings
-		c.database = self.database
-		c.driverid = self.user.getDriverId()
-		c.previouserror = self.user.getPreviousError()
-		c.classdata = ClassData(self.session)
-		c.eventmap = dict()
-		now = datetime.datetime.now()
-		for event in self.session.query(Event):
-			event.closed = now > event.regclosed 
-			event.opened = now > event.regopened
-			event.isOpen = not event.closed and event.opened
-			c.eventmap[event.id] = event
-
-		c.events = sorted(c.eventmap.values(), key=lambda obj: obj.date)
-
-		if action not in ('view') and self.settings.locked:
-			# Delete any saved session data for this person
-			raise BeforePage(render_mako('/register/locked.mako'))
-
-		if action in ('index', 'events', 'cars', 'profile') and c.driverid < 1:
-			c.activecreds = self.user.activeCreds()
-			for cred in c.activecreds:
-				driver = self._verifyID(**cred.__dict__)
-				if driver is not None:
-					self.user.setLoginInfo(driver)
-					c.driverid = self.user.getDriverId()
-					return # continue on to regular page, we are now verified
-
-			c.fields = self.session.query(DriverField).all()
-			c.otherseries = self.user.activeSeries()
-			raise BeforePage(render_mako('/register/login.mako'))
-
-
-	def login(self):
-		redirect(url_for(action=''))
+class RegisterController():
 
 	def logout(self):
 		# Clear session for database
@@ -307,38 +274,6 @@ class RegisterController(): #BaseController, PayPalIPN, ObjectEditor):
 			log.error("unregistercar", exc_info=1)
 
 		 
-	#@validate(schema=LoginSchema(), form='login', prefix_error=False)
-	def checklogin(self):
-		fr = self.form_result
-
-		# Try and copy user profile from another series
-		if fr['otherseries']:
-			log.info("Copy user profile from %s to %s", fr['otherseries'], self.database)
-			driver = self._loadDriverFrom(fr['otherseries'], fr['firstname'], fr['lastname'], fr['email'])
-			if driver is not None:
-				self.session.add(driver)
-				self.session.commit()
-				self.user.setLoginInfo(driver)
-			else:
-				self.user.setPreviousError("Failed to find profile in %s" % (fr['otherseries']))
-				log.error("Failed to load driver from other series (%s)", fr)
-
-			redirect(url_for(action=''))
-
-		# Try and login to all matching series, may or may not be this one
-		othermatches = list()
-		for series in self._databaseList(archived=False, driver=Driver(**fr)):
-			if series.driver is not None:
-				othermatches.append(series)
-				if not self.user.hasCreds(series.name):
-					self.user.setLoginInfo(series.driver, series.name)
-				
-		if not self.user.hasCreds(c.database.upper()):
-			self.user.setPreviousError("login failed")
-		redirect(url_for(action=''))
-
-
-
 	#@validate(schema=DriverSchema(), form='profile', prefix_error=False)
 	def newprofile(self):
 		query = self.session.query(Driver)
@@ -378,21 +313,6 @@ class RegisterController(): #BaseController, PayPalIPN, ObjectEditor):
 		return render_mako_def('/register/events.mako', 'eventdisplay', ev=event)
 
 		 
-	def view(self):
-		try:
-			id = int(self.routingargs.get('other', 0))
-		except:
-			abort(404, "No event for input provided")
-		if id == 0:
-			redirect(url_for(action=''))
-			
-		c.classdata = ClassData(self.session)
-		c.event = self.session.query(Event).get(id)
-		query = self.session.query(Driver,Car,Registration).join('cars', 'registration').filter(Registration.eventid==id)
-		query = query.order_by(Car.classcode, Car.number)
-		c.reglist = query.all()
-		return render_mako('/register/reglist.mako')
-
 
 	def _loadCars(self):
 		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
