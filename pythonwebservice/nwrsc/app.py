@@ -5,6 +5,7 @@ import logging
 import threading
 from logging import StreamHandler
 from logging.handlers import RotatingFileHandler
+from operator import attrgetter
 
 from flask import Flask, request, abort, g, current_app, render_template, send_from_directory
 from flask_compress import Compress
@@ -112,6 +113,12 @@ def create_app(config=None):
         except:
             return str(val)
 
+    def msort(val, *attr):
+        """ Filter to sort on multiple attributes """
+        ret = list(val)
+        ret.sort(key=attrgetter(*attr))
+        return ret
+
 
     # Figure out where we are
     installroot = os.path.abspath(os.path.join(sys.executable, "../../../"))
@@ -170,6 +177,7 @@ def create_app(config=None):
     # Create a PG connection pool and extra Jinja bits
     theapp.create_pool()
     theapp.jinja_env.filters['t3'] = t3
+    theapp.jinja_env.filters['msort'] = msort
 
     # Configure our logging to use webserver.log with rotation and optionally stderr
     if not theapp.debug:

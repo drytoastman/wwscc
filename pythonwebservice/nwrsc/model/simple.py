@@ -115,6 +115,18 @@ class Registration(AttrBase):
     def getForDriver(cls, driverid):
         return cls.getall("SELECT r.* FROM registered r JOIN cars c on r.carid=c.carid WHERE c.driverid=%s", (driverid,))
 
+    @classmethod
+    def add(cls, eventid, carid):
+        with g.db.cursor() as cur:
+            cur.execute("INSERT INTO registered (eventid, carid) VALUES (%s, %s)", (eventid, carid))
+            g.db.commit()
+
+    @classmethod
+    def delete(cls, eventid, carid):
+        with g.db.cursor() as cur:
+            cur.execute("DELETE FROM registered where eventid=%s and carid=%s", (eventid, carid))
+            g.db.commit()
+
 
 class Run(AttrBase):
 

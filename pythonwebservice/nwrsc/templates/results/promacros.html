@@ -23,8 +23,8 @@
 
 {% macro headerrow(classcode) -%}
 {% set colcount = 6 + g.event.runs %}
-<tr>
-	<th class='classhead' colspan='{{colcount}}'>
+<tr class='classhead'>
+	<th colspan='{{colcount}}'>
 	<a id='classtable{{classcode}}'>{{classcode}}</a> - {{g.classdata.classlist[classcode].descrip}}
 	</th>
 </tr>

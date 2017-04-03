@@ -1,4 +1,21 @@
 
+{% macro navbar(title, current) %}
+<nav class="navbar fixed-top navbar-toggleable-md navbar-inverse bg-primary">
+  <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class='navbar-brand'><img src='/static/images/cone.png'/> {{title}}</div>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+       {% if current != 'profile' %}<li class="nav-item"><a class="nav-link" href="{{url_for(".profile")}}">Profile</a></li>{% endif %}
+       {% if current != 'cars'    %}<li class="nav-item"><a class="nav-link" href="{{url_for(".cars")}}">Cars</a></li>{% endif %}
+       {% if current != 'events'  %}<li class="nav-item"><a class="nav-link" href="{{url_for(".events")}}">Events</a></li>{% endif %}
+                                    <li class="nav-item"><a class="nav-link" href="{{url_for(".logout")}}">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+{% endmacro %}
+
 {% macro driverDisplay(driver) %}
 {% set basic = ('address', 'city', 'state', 'zip', 'phone', 'brag', 'sponsor') %}
 
@@ -22,19 +39,13 @@
 </a> 
 
 <input  type='button' value='Edit' class='editprofile' data-driverid='{{driver.id}}'/> 
-
-{#
-<script type='text/javascript'>
-var drivers = { {{driver.id}}: {{h.encodesqlobj(driver)}} }
-profileTabSetup();
-</script>
-#}
 {% endmacro %}
 
 
 {% macro carDisplay(car) %}
+{% set istr = g.classdata.getIndexStr(car) %}
 <div class='cardisplay'>
-<span class='code'>{{car.classcode}}/{{car.number}} {{car.indexstr}}</span>
+<span class='code'>{{car.classcode}}/{{car.number}} {{istr and "("+istr+")" or ""}}</span>
 <span class='desc'>{{car.attr.year}} {{car.attr.make}} {{car.attr.model}} {{car.attr.color}}</span> 
 </div>
 {% endmacro %}
@@ -56,90 +67,4 @@ profileTabSetup();
 	</form>
 {% endmacro %}
 
-
-{% macro  entryLink(ev, text) %}
-<a class='viewlink' href='{{url_for('.view', eventid=ev.eventid)}}'>{{text}}</a>
-{% endmacro %}
-
-{% macro  eventdisplay(ev, cars, registered, payments) %}
-    {% set drivercount = ev.getDriverCount() %}
-    {% set entrycount  = ev.getCount() %}
-
-    <div class='detailscontainer'>
-	<span class='header'>Details</span>
-	<table class='eventdetails'>
-	{% if not ev.hasOpened() %}
-    <tr><th>Opens</th><td>{{ev.regopened.strftime('%a %b %d at %I:%M%p')}}</td></tr>
-    {% endif %}
-	<tr><th>Closes</th><td>{{ev.regclosed.strftime('%a %b %d at %I:%M%p')}}</td></tr>
-
-    {% for k, v in ev.attr.items() -%}
-    {% if k not in ('paypal', 'cost', 'notes') and v: %}
-    <tr><th>{{k|title}}</th><td>{{v}}</td></tr>
-    {% endif %}
-    {%- endfor %}
-
-	{%if ev.hasOpened() %}
-		{% if ev.totlimit %}
-			{% if ev.attr.doublespecial %}
-				<tr><th>Single Entries</th><td>{{entryLink(ev, "%s/%s" % (drivercount, ev.totlimit))}}</td></tr>
-				<tr><th>Total Entries</th><td>{{entryLink(ev, entrycount)}}</td></tr>
-			{% else %}
-				<tr><th>Entries</th><td>{{entryLink(ev, "%s/%s" % (entrycount, ev.totlimit))}}</td></tr>
-			{% endif %}
-		{% else %}
-			<tr><th>Entries</th><td>{{entryLink(ev, entrycount)}}</td></tr>
-		{% endif %}
-	{% endif %}
-
-	{% if ev.hasOpened() %}
-		{% if ev.attr.cost %}<tr><th>Cost</th><td>{{ev.attr.cost}}</td></tr>{% endif %}
-		{% if ev.attr.paypal %}<tr><th>Paypal</th><td>{{paypalLink(ev)}}</td></tr>{% endif %}
-	{% endif %}
-
-	{% if not ev.hasClosed() and ev.attr.notes %}
-		<tr><th>Notes</th><td>{{ev.attr.notes}}</td></tr>
-	{% endif %}
-
-	</table>
-	</div>
-
-	<div class='carcontainer'>
-		<span class='header'>Cars</span>
-		<ul>
-		{% for carid in registered %}
-			<li>
-			{% if ev.isOpen() %}
-			<button class='unregbutton' data-eventid='{{ev.eventid}}' data-carid='{{carid}}'>Unregister</button>
-			{% endif %}
-			{{carDisplay(cars[carid])}}
-			</li>
-		{% endfor %}
-		</ul>
-
-		{% if ev.isOpen() %}
-			{% if ev.attr.doublespecial and registered|length > 0 %}
-				<span class='limit'>Double entries are allowed but not guaranteed for this event yet</span>
-			{% endif %}
-
-			{% if ev.doublespecial and ev.totlimit and drivercount >= ev.totlimit and registered|length == 0 %}
-				<span class='limit'>This event's single entry limit of {{ev.totlimit}} has been met.</span>
-			{% elif not ev.doublespecial and ev.totlimit and drivercount >= ev.totlimit %}
-				<span class='limit'>This event's prereg limit of {{ev.totlimit}} has been met.</span>
-			{% elif registered|length >= ev.perlimit %}
-				<span class='limit'>You have reached this event's prereg limit of {{ev.perlimit}} car(s).</span>
-			{% else %}
-				<button class='regcarsbutton' data-eventid="{{ev.eventid}}">Register Cars</button>
-			{% endif %}
-	
-    		<ul class='payments'>
-    		{% for p in payments %}
-    			<li>{{p.amount}} ({{p.status}})</li>
-    		{% endfor %}
-    		</ul>
-        {% endif %}
-
-	</div>
-
-{% endmacro %}
 

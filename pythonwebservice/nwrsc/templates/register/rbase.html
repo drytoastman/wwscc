@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block headers %}
-{%- assets filters="libsass,cssmin", output="register.css", "scss/register.scss" -%}
+{%- assets filters="libsass", output="register.css", "scss/register.scss" -%}
 <link rel="stylesheet" href="{{ASSET_URL}}" /> 
 {%- endassets -%}
 

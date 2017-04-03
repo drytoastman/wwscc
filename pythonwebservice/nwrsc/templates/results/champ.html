@@ -13,7 +13,7 @@
 {% for code, entrants in results.items()|sort %}
 {% set cls = classdata.classlist[code] %}
 
-<tr><th class='classhead' colspan='{{events|length + 4}}'>{{cls.classcode}} - {{cls.descrip}} -
+<tr class='classhead'><th colspan='{{events|length + 4}}'>{{cls.classcode}} - {{cls.descrip}} -
             Average Per Event: {{"%.2lf"%(entrants.entries/(events|length))}}</th></tr>
 <tr>
 <th>#</th>

@@ -2,56 +2,129 @@
 {% import '/register/macros.html' as m %}
 
 {% block content %}
-<div id='tabs'>
-	<ul>
-		<li><a href="#profile"><span>Profile</span></a></li>
-		<li><a href="#cars"><span>Cars</span></a></li>
-		<li><a href="#eventsinner"><span>Events</span></a></li>
-	</ul>
-	<button class='logout'>Logout</button>
 
+{{m.navbar('Events for '+g.series, 'events')}}
 
-<div id='profile'>
-{{m.driverDisplay(g.driver)}}
-</div>
+<div id='eventscontainer' class='container'>
 
-
-<div id='cars'>
-{% for c in cars.values(): %}
-{{m.carDisplay(c)}}
-{% endfor %}
-</div>
-
-
-<div id='eventsinner'>
 {% for ev in events %}
-    {% set eclass = ev.isOpen() and "eventopen" or "eventclosed" %}
+    {% set eclass = ev.isOpen() and "eventopen show" or "eventclosed" %}
 			
-	<h3 class='{{eclass}}'>
-	<span class='rightarrow' style='display:none'>&#9658;</span>
-	<span class='downarrow'>&#9660;</span>
-	<a>
-	<span class='eventday'>{{ev.date.strftime('%a')}}</span>
-	<span class='eventmonth'>{{ev.date.strftime('%b')}}</span>
-	<span class='eventdate'>{{ev.date.strftime('%d')}}</span>
-	<span class='eventname'>{{ev.name}}</span>
-	</a>
-	</h3>
+	<div class='eventheader {{eclass}} row justify-content-start'>
+    	<a data-toggle='collapse' href='#event{{ev.eventid}}'>
+    	<span class='eventdate'>{{ev.date.strftime('%a %b %d')}}</span>
+    	<span class='eventname'>{{ev.name}}</span>
+    	</a>
+	</div>
 
-	<div id='event{{ev.eventid}}' data-eventid='{{ev.eventid}}' class='eventholder {{eclass}}'>
-	{{m.eventdisplay(ev, cars, registered[ev.eventid], payments[ev.eventid])}}
+	<div id='event{{ev.eventid}}' data-eventid='{{ev.eventid}}' class='eventholder {{eclass}} collapse row'>
+	{{eventdisplay(ev, cars, registered[ev.eventid], payments[ev.eventid])}}
 	</div>
 
 {% endfor %}
 </div>
-
-
-</div> <!-- tabs -->
-
 {% endblock content %}
 
-{#
-{{driverform()}}
-{{carform(True)}}
-{{eventregisterform()}}
-#}
+
+{% macro  entryLink(ev, text) %}
+<a class='viewlink' href='{{url_for('.view', eventid=ev.eventid)}}'>{{text}}</a>
+{% endmacro %}
+
+{% macro  eventdisplay(ev, cars, registered, payments) %}
+    {% set drivercount = ev.getDriverCount() %}
+    {% set entrycount  = ev.getCount() %}
+
+    <div class='insidewrapper row'> {# have to reset row inside collapse it seems #}
+    <div class='detailscontainer col-5'>
+	<div class='header'>Details</div>
+
+    <dl>
+	{% if not ev.hasOpened() %}
+    <dt>Opens</dt><dd>{{ev.regopened.strftime('%b %d at %I:%M%p')}}</dd>
+    {% endif %}
+	<dt>{{ev.hasClosed() and "Closed" or "Closes"}}</dt><dd>{{ev.regclosed.strftime('%b %d %I:%M %p')}}</dd>
+
+    {% for k, v in ev.attr.items() -%}
+    {% if k not in ('paypal', 'cost', 'notes') and v: %}
+    <dt>{{k|title}}</dt><dd>{{v}}</dd>
+    {% endif %}
+    {%- endfor %}
+
+	{%if ev.hasOpened() %}
+		{% if ev.totlimit %}
+			{% if ev.attr.doublespecial %}
+				<dt>Single Entries</dt><dd>{{entryLink(ev, "%s/%s" % (drivercount, ev.totlimit))}}</dd>
+				<dt>Total Entries</dt><dd>{{entryLink(ev, entrycount)}}</dd>
+			{% else %}
+				<dt>Entries</dt><dd>{{entryLink(ev, "%s/%s" % (entrycount, ev.totlimit))}}</dd>
+			{% endif %}
+		{% else %}
+			<dt>Entries</dt><dd>{{entryLink(ev, entrycount)}}</dd>
+		{% endif %}
+	{% endif %}
+
+	{% if ev.isOpen() %}
+		{% if ev.attr.cost %}<dt>Cost</dt><dd>{{ev.attr.cost}}</dd>{% endif %}
+		{% if ev.attr.paypal %}<dt>Paypal</dt><dd>{{m.paypalLink(ev)}}</dd>{% endif %}
+	{% endif %}
+
+	{% if not ev.hasClosed() and ev.attr.notes %}
+		<dt>Notes</dt><dd>{{ev.attr.notes}}</dd>
+	{% endif %}
+    </dl>
+
+	</div>
+
+	<div class='carcontainer col-7'>
+		<div class='header'>Registered Cars</div>
+		<ul>
+		{% for carid in registered %}
+			<li>
+			{% if ev.isOpen() %}
+            <form action="{{url_for('.unregister')}}" method="post">
+            <input type='hidden' name='eventid' value='{{ev.eventid}}'/>
+            <input type='hidden' name='carid' value='{{carid}}'/>
+			<button class="btn btn-outline-primary fa fa-trash"></button>
+            </form>
+			{% endif %}
+			{{m.carDisplay(cars[carid])}}
+			</li>
+		{% endfor %}
+		</ul>
+
+		{% if ev.isOpen() %}
+			{% if ev.attr.doublespecial and registered|length > 0 %}
+				<span class='limit'>Double entries are allowed but not guaranteed for this event yet</span>
+			{% endif %}
+
+			{% if ev.doublespecial and ev.totlimit and drivercount >= ev.totlimit and registered|length == 0 %}
+				<span class='limit'>This event's single entry limit of {{ev.totlimit}} has been met.</span>
+			{% elif not ev.doublespecial and ev.totlimit and drivercount >= ev.totlimit %}
+				<span class='limit'>This event's prereg limit of {{ev.totlimit}} has been met.</span>
+			{% elif registered|length >= ev.perlimit %}
+				<span class='limit'>You have reached this event's prereg limit of {{ev.perlimit}} car(s).</span>
+			{% else %}
+                <form action="{{url_for('.register')}}" method="post">
+                <select name='carid'>
+                {% for c in cars.values()|msort("classcode","number") %}
+                <option value="{{c.carid}}">{{m.carDisplay(c)}}</option>
+                {% endfor %}
+                </select>
+                <input type='hidden' name='eventid' value='{{ev.eventid}}'/>
+				<input type='submit' value='Register Car'/>
+                </form>
+			{% endif %}
+	
+    		<ul class='payments'>
+    		{% for p in payments %}
+    			<li>{{p.amount}} ({{p.status}})</li>
+    		{% endfor %}
+    		</ul>
+        {% endif %}
+
+	</div>
+    </div>
+
+{% endmacro %}
+
+

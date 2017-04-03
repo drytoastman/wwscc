@@ -3,18 +3,39 @@ $grayborder: 1px solid #bbb;
 $eventsborder: 1px solid #ccc;
 $containerborder: 1px solid #aaa;
 $linkblue: rgb(40,40,255);
+$bordercolor: #CCC;
 
+@import "font-awesome/font-awesome.scss";
 @import "bootstrap.scss";
 @import "forms.scss";
+
+body {
+    padding-top: 75px;
+}
 
 .tab-content {
     margin-top: 1rem;
 }
 
+
+nav {
+    ul {
+        margin-bottom: 5px !important;
+    }
+    .nav-link {
+        font-size: 1.2rem;
+    }
+}
+
+
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
 #loginouter {
-    margin: auto;
-    max-width: 20rem;
-    margin-top: 2rem;
+    max-width: 25rem;
 
     label.error {
         position: relative;
@@ -44,34 +65,108 @@ $linkblue: rgb(40,40,255);
 }
 
 
-#eventsinner {
-    h3 {
-        cursor: pointer;
+#title {
+    text-align:center;
+    font-size: 1.5rem;
+}
+
+#profile {
+    margin: 1rem;
+    .name {
+        font-size: 1.5rem;
+    }
+}
+
+
+#eventscontainer {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+    div.eventheader {
+        border: 1px solid $bordercolor;
+        border-bottom-style: none;
+        background: #FFF;
+        padding-bottom: 10px;
+        margin-bottom: -10px;
+
+        a {
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1.3rem;
+            margin: 0.1rem;
+        }
 
         &.eventopen a {
             color: $linkblue;
         }
 
-        &.lastevent.collapsed {
-            border-bottom: $eventsborder;
-            border-radius: 0.5em 0.5em 0.5em 0.5em !important;
-        }
-
         &.eventclosed span {
-            color: #999;
+            color: #888;
         }
 
-        .eventday, .eventmonth {
-            display: inline-block;
-            width: 30px;
-            margin-right: 2px;
-        }
-    
         .eventdate {
             display: inline-block;
-            width: 23px;
-            margin-right: 2px;
+            width: 8rem;
+            text-align: right;
         }
+    
+        .eventname {
+            display: inline-block;
+            margin-left: 0.5rem;
+            width: 10rem;
+        }
+    }
+
+    div.insidewrapper {
+        padding: 0.5rem;
+    }
+
+}
+
+
+.carcontainer li * {
+    display:inline;
+}
+
+.cardisplay {
+    display:inline;
+    span {
+        white-space: nowrap;
+    }
+}
+
+@media (min-width: 768px) {
+    .detailscontainer {
+        dt {
+            display: inline-block;
+            width: 4rem;
+            text-align: right;
+            margin-right: 0.3rem;
+        }
+        dd {
+            margin-left: 0.3rem;
+            display: inline;
+            > * {
+                display: inline-block;
+                vertical-align: middle;
+                margin-left: -0.3rem;
+            }
+        }
+        dd:after {
+            content:'';
+            display: block;
+        }
+    }
+}
+
+div.eventholder {
+    border-left: 1px solid $bordercolor;
+    border-right: 1px solid $bordercolor;
+    border-top-style: none;
+
+    .header {
+        font-weight: bold;
+        border-bottom: 1px solid $bordercolor;
+        padding-left: 1rem;
     }
 }
 

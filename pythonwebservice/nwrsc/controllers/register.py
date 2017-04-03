@@ -57,8 +57,12 @@ def index():
 def series():
     """ First load of page gets all data along with it so no need for lots of ajax requests """
     if 'driverid' not in session: return login()
+    return redirect(url_for('.events'))
 
+@Register.route("/<series>/events")
+def events():
     g.driver = Driver.get(session['driverid'])
+    g.classdata = ClassData.get()
     events = Event.byDate()
     cars = dict()
     registered = defaultdict(list)
@@ -70,7 +74,7 @@ def series():
     for p in Payment.getForDriver(g.driver.driverid):
         payments[p.eventid] = p
 
-    return render_template('register/main.html', events=events, cars=cars, registered=registered, payments=payments)
+    return render_template('register/events.html', events=events, cars=cars, registered=registered, payments=payments)
 
 
 @Register.route("/<series>/view/<int:eventid>")
@@ -78,12 +82,12 @@ def view():
     event = Event.get(g.eventid)
     if event is None:
         abort(404, "No event found for id %s" % g.eventid)
-    settings = Settings.get()
-    classdata = ClassData.get()
+    g.settings = Settings.get()
+    g.classdata = ClassData.get()
     registered = defaultdict(list)
     for r in Registration.getForEvent(g.eventid):
         registered[r.classcode].append(r)
-    return render_template('register/reglist.html', settings=settings, classdata=classdata, event=event, registered=registered)
+    return render_template('register/reglist.html', event=event, registered=registered)
 
 
 @Register.route("/<series>/ipn")
@@ -93,6 +97,34 @@ def ipn():
 @Register.route("/ical/<driverid>")
 def ical(driverid):
     return "ical for %s" % driverid
+
+@Register.route("/<series>/cars")
+def cars():
+    return "cars"
+
+@Register.route("/<series>/profile")
+def profile():
+    return "profile"
+
+@Register.route("/logout")
+def logout():
+    session.pop('driverid')
+    return redirect(url_for('.index'))
+
+@Register.route("/<series>/register", methods=['POST'])
+def register():
+    return processrv(Registration.add)
+    
+@Register.route("/<series>/unregister", methods=['POST'])
+def unregister():
+    return processrv(Registration.delete)
+
+def processrv(func):
+    if not g.series: abort(404)
+    eventid = int(request.form.get('eventid', ''))
+    carid = uuid.UUID(request.form.get('carid', ''))
+    func(eventid, carid)
+    return redirect_series(g.series)
 
 
 @Register.route("/login", methods=['POST', 'GET'])

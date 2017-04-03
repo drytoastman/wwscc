@@ -7,7 +7,7 @@
 {% endblock headers %}
 
 {% block content %}
-<div id='seriestitle'>{{settings.seriesname}}</div>
+<div id='seriestitle'>{{g.settings.seriesname}}</div>
 <div id='eventtitle'>{{event.name}}</div>
 <div id='entrantcount'>{{event.getCount()}} Entries ({{event.getDriverCount()}} Unique)</div>
 <div style='margin: 1rem;'></div>
@@ -15,7 +15,7 @@
 <table class='classresults'>
 {% for classcode,classentries in registered.items()|sort %}
 <tr class='classhead'>
-    <th colspan='5'>{{classcode}} - {{classdata.classlist[classcode].descrip}}</th>
+    <th colspan='5'>{{classcode}} - {{g.classdata.classlist[classcode].descrip}}</th>
     <th colspan='1'>{{classentries|length}} Entries</th></tr>
 <tr><th></th><th>Name</th><th>#</th><th>Idx</th><th>Year</th><th>Make/Model</th></tr>
 
@@ -24,7 +24,7 @@
 <td class='counter'>{{loop.index}}</td>
 <td class='name'>{{entry.firstname}} {{entry.lastname}}</td>
 <td class='number'>{{entry.number}}</td>
-<td class='index'>{{classdata.getIndexStr(entry)}}</td>
+<td class='index'>{{g.classdata.getIndexStr(entry)}}</td>
 <td class='year'>{{entry.attr.year}}</td>
 <td>{{entry.attr.make}} {{entry.attr.model}} {{entry.attr.color}}</td>
 </tr>
