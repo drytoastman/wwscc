@@ -9,21 +9,13 @@ $bordercolor: #CCC;
 @import "bootstrap.scss";
 @import "forms.scss";
 
-body {
-    padding-top: 75px;
-}
-
 .tab-content {
     margin-top: 1rem;
 }
 
-
 nav {
     ul {
-        margin-bottom: 5px !important;
-    }
-    .nav-link {
-        font-size: 1.2rem;
+        margin-bottom: 1px !important;
     }
 }
 
@@ -34,20 +26,24 @@ ul {
     padding: 0;
 }
 
-#loginouter {
-    max-width: 25rem;
+.col {
+    text-align: center;
+}
 
-    label.error {
-        position: relative;
-        height: 0;
+.container {
+    xmax-width: 800px;
+}
+
+form {
+    label {
+        text-align: right;
+        font-weight: bold;
         margin: 0;
-        top: -2rem;
-        right: 1rem;
-        float: right;
+        padding: 0;
     }
 
-    h1 {
-        text-align: center;
+    input {
+        xwidth: 100%;
     }
 
     input[type=text], input[type=email], input[type=password] {
@@ -64,6 +60,14 @@ ul {
     }
 }
 
+@media (max-width: 768px) {
+    form {
+        label {
+            text-align: left;
+            margin-bottom: -5px;
+        }
+    }
+}
 
 #title {
     text-align:center;
@@ -77,6 +81,13 @@ ul {
     }
 }
 
+#loginouter {
+    margin-top: 3rem;
+    h1 {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+}
 
 #eventscontainer {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -133,6 +144,28 @@ ul {
         white-space: nowrap;
     }
 }
+
+
+.navbar {
+    padding: 0px;
+  
+    .fa-calendar {
+        color: rgba(255, 255, 255, 0.5);
+        xmargin-left: 1rem;
+    }
+    .nav-item a:hover  {
+        color: white !important;
+    }
+ }
+
+div.container {
+    margin-top: 1.5rem;
+}
+
+.navbar-toggler {
+    margin-top: 9px;
+ }
+
 
 @media (min-width: 768px) {
     .detailscontainer {

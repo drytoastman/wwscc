@@ -1,20 +1,46 @@
 
-{% macro navbar(title, current) %}
-<nav class="navbar fixed-top navbar-toggleable-md navbar-inverse bg-primary">
+{% macro navbar(current) %}
+<nav class="navbar navbar-toggleable-md navbar-inverse bg-primary">
   <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
-  <div class='navbar-brand'><img src='/static/images/cone.png'/> {{title}}</div>
+  <div class='navbar-brand'>
+        <img src='/static/images/cone.png'/>
+        Scorekeeper
+  </div>
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav">
-       {% if current != 'profile' %}<li class="nav-item"><a class="nav-link" href="{{url_for(".profile")}}">Profile</a></li>{% endif %}
-       {% if current != 'cars'    %}<li class="nav-item"><a class="nav-link" href="{{url_for(".cars")}}">Cars</a></li>{% endif %}
-       {% if current != 'events'  %}<li class="nav-item"><a class="nav-link" href="{{url_for(".events")}}">Events</a></li>{% endif %}
-                                    <li class="nav-item"><a class="nav-link" href="{{url_for(".logout")}}">Logout</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="http://example.com" id="navbarDropdownMenuLink" data-toggle="dropdown">{{g.series}}</a>
+          <div class="dropdown-menu">
+          {% for s in g.activeseries %}
+          <a class="dropdown-item" href="{{url_for('.index', series=s)}}">{{s}}</a>
+          {% endfor %}
+        </div>
+        </li>
+        <li class="nav-item {{current=='profile' and 'active'}}"><a class="nav-link" href="{{url_for(".profile")}}">Profile</a></li>
+        <li class="nav-item {{current=='cars' and 'active'}}"><a class="nav-link" href="{{url_for(".cars")}}">Cars</a></li>
+        <li class="nav-item {{current=='events' and 'active'}}"><a class="nav-link" href="{{url_for(".events")}}">Events</a></li>
+        {# <li class="nav-item"><a class='registeredlink' href='{{url_for(".ical", driverid=g.driver.driverid)}}'><span class='fa fa-calendar'></span></a></li> #}
+        <li class="nav-item"><a class="nav-link" href="{{url_for(".logout")}}">Logout</a></li>
     </ul>
   </div>
 </nav>
 {% endmacro %}
+
+
+{% macro formerrors(formerror) %}
+<div class='error row'>
+{% if formerror is string: %}
+{{formerror}}
+{% else %}
+{% for field, msg in formerror.items(): %}
+<div>{{field}} {{msg[0]|replace("Field","")}}</div>
+{% endfor %}
+{% endif %}
+</div>
+{% endmacro %}
+
 
 {% macro driverDisplay(driver) %}
 {% set basic = ('address', 'city', 'state', 'zip', 'phone', 'brag', 'sponsor') %}

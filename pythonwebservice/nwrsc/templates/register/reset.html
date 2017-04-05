@@ -14,19 +14,10 @@ h1 { font-size: 1.4rem; }
 
 {% block content %}
 
-<div id='loginouter'>
+<div id='loginouter' class='container'>
 
 <h1>Reset Username and Password</h1>
-
-<div class='error'>
-{% if loginerror is string: %}
-{{loginerror}}
-{% else %}
-{% for field, msg in loginerror.items(): %}
-<div>{{field}} {{msg[0]|replace("Field","")}}</div>
-{% endfor %}
-{% endif %}
-</div>
+{{ m.formerrors(formerror) }}
 
 <form id='resetform' action="{{url_for('.reset')}}" method="post">
 {{ form.csrf_token }}

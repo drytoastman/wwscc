@@ -17,6 +17,8 @@ x = setup(
         "Flask-Mail",
         "Flask-WTF",
         "cheroot",
+        "libsass",
+        "cssmin",
         "ReportLab",
         "icalendar",
         "python-dateutil",

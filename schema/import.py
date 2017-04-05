@@ -38,7 +38,7 @@ def convert(sourcefile, name, password):
         newd['firstname']  = d.firstname.strip()
         newd['lastname']   = d.lastname.strip()
         newd['email']      = d.email.strip()
-        newd['username']   = ""
+        newd['username']   = newd['driverid']
         newd['password']   = ""
         newd['membership'] = d.membership and d.membership.strip() or ""
         newd['attr']       = dict()
@@ -223,7 +223,7 @@ def convert(sourcefile, name, password):
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
-        print("Usage: {} <old db file> <name> <password>")
+        print("Usage: {} <old db file> <name> <password>".format(sys.argv[0]))
     else:
         convert(sys.argv[1], sys.argv[2], sys.argv[3])
 

@@ -5,8 +5,9 @@ from flask import g
 class AttrBase(object):
 
     def __init__(self, **kwargs):
+        self.toplevel = set()
         self.attr = dict()
-        self.merge(**kwargs)
+        self._merge(**kwargs)
 
     @classmethod
     def getval(cls, sql, args=None):
@@ -27,15 +28,17 @@ class AttrBase(object):
             cur.execute(sql, args)
             return [cls(**x) for x in cur.fetchall()]
 
-    def merge(self, **kwargs):
+    def _merge(self, **kwargs):
         """ Merge these values into this object, attr gets merged with the attr dict """
         for k, v in kwargs.items():
             if k == 'attr':
                 self.attr.update(v)
             else:
+                self.toplevel.add(k)
                 setattr(self, k, v)
 
     def cleanAttr(self):
+        """ Remove nulls, blanks, zeros, etc to reduce attr size """
         if hasattr(self, 'attr'):
             for k in list(self.attr.keys()):
                 v = self.attr[k]

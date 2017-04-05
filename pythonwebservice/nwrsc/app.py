@@ -69,7 +69,7 @@ class FlaskWithPool(Flask):
     def create_pool(self):
         """ Create a new pool of connections.  Server should support 100, leave 10 for applications """
         self.pool = ThreadedConnectionPool(5, 80, cursor_factory=DictCursor, host="127.0.0.1", dbname="scorekeeper",
-                                             user=self.config['DBUSER'], password=self.config['DBPASS'])
+                                      user=self.config['DBUSER'], password=self.config['DBPASS'], application_name="webserver")
     def reset_pool(self):
         """ First person here gets to reset it, others can continue on and try again """
         if self.resetlock.acquire(False):

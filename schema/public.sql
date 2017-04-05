@@ -13,11 +13,11 @@ CREATE EXTENSION hstore;
 CREATE TABLE driverslog (
     logid   BIGSERIAL PRIMARY KEY,
     usern   TEXT      NOT NULL,
-    time    TIMESTAMP NOT NULL,
-    addr    INET      NOT NULL,
+    app     TEXT      NOT NULL DEFAULT '',
     action  CHAR(1)   NOT NULL CHECK (action IN ('I', 'D', 'U')),
-    rowdata JSONB     NOT NULL,
-    changed JSONB     NOT NULL
+    time    TIMESTAMP NOT NULL,
+    olddata JSONB     NOT NULL,
+    newdata JSONB     NOT NULL
 );
 REVOKE ALL ON driverslog FROM public;
 GRANT  ALL ON driverslog TO baseaccess;
@@ -31,18 +31,19 @@ CREATE OR REPLACE FUNCTION logdrivermods() RETURNS TRIGGER AS $body$
 DECLARE
     audit_row driverslog;
 BEGIN
-    audit_row = ROW(NULL, session_user::text, CURRENT_TIMESTAMP, inet_client_addr(), SUBSTRING(TG_OP,1,1), '{}', '{}');
-
+    audit_row = ROW(NULL, session_user::text, current_setting('application_name'), SUBSTRING(TG_OP,1,1), CURRENT_TIMESTAMP, '{}', '{}');
     IF (TG_OP = 'UPDATE') THEN
         IF OLD = NEW THEN
             RETURN NULL;
         END IF;
-        audit_row.changed := hstore_to_jsonb(hstore(NEW) - hstore(OLD));
-        audit_row.rowdata := to_jsonb(OLD.*);
+        audit_row.olddata = to_jsonb(OLD.*);
+        audit_row.newdata = to_jsonb(NEW.*);
     ELSIF (TG_OP = 'DELETE') THEN
-        audit_row.rowdata = to_jsonb(OLD.*);
+        audit_row.olddata = to_jsonb(OLD.*);
+        audit_row.newdata = '{}';
     ELSIF (TG_OP = 'INSERT') THEN
-        audit_row.rowdata = to_jsonb(NEW.*);
+        audit_row.olddata = '{}';
+        audit_row.newdata = to_jsonb(NEW.*);
     ELSE
         RETURN NULL;
     END IF;

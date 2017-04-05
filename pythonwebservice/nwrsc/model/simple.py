@@ -1,5 +1,6 @@
 from datetime import datetime
 import uuid
+import json
 
 from flask import g
 from .base import AttrBase, Entrant
@@ -40,6 +41,13 @@ class Challenge(AttrBase):
 
 
 class Driver(AttrBase):
+
+    def update(self):
+        with g.db.cursor() as cur:
+            self.cleanAttr()
+            cur.execute("UPDATE drivers SET firstname=%s,lastname=%s,email=%s,membership=%s,attr=%s where driverid=%s",
+                       (self.firstname, self.lastname, self.email, self.membership, json.JSONEncoder().encode(self.attr), self.driverid))
+            g.db.commit()
 
     @classmethod
     def get(cls, driverid):

@@ -1,22 +1,9 @@
 {% extends "/register/rbase.html" %}
-
-{% block headers %}
-{{super()}}
-<script type="text/javascript">
-$(document).ready(function() {
-    options = { onkeyup: false }
-    $("#loginform").validate(options);
-    $("#resetform").validate(options);
-    $("#registerform").validate(options);
-});
-</script>
-<style>
-</style>
-{% endblock headers %}
+{% import '/register/macros.html' as m %}
 
 {% block content %}
 
-<div id='loginouter' class='container'>
+<div id='loginouter' xclass='container'>
 
 <h1>Scorekeeper</h1>
 <nav class="nav nav-tabs justify-content-center" role="tablist">
@@ -26,56 +13,31 @@ $(document).ready(function() {
 </nav>
 
 <div class='tab-content'>
-<div class='error'>
-{% if loginerror is string: %}
-{{loginerror}}
-{% else %}
-{% for field, msg in loginerror.items(): %}
-<div>{{field}} {{msg[0]|replace("Field","")}}</div>
-{% endfor %}
-{% endif %}
-</div>
+<div class='row justify-content-md-center'><div class='col col-md-auto error'>{{ m.formerrors(formerror) }}</div></div>
 
 <div id='login' role="tabpanel" class='tab-pane {{active=='login' and 'active' or ''}}'>
-<form id='loginform' action="{{url_for('.login')}}" method="post">
-{{ login.csrf_token }}
-{{ login.gotoseries }}
-{{ login.username(class_="col required", minlength="6", placeholder="username") }}
-{{ login.password(class_="col required", minlength="6", placeholder="password") }}
-{{ login.submit(  class_="col btn btn-primary") }}
-<small class='form-text text-muted'>If you had a profile in the previous system, use the Reset tab to set a username and password</small>
-</form>
+{{ login.html('loginform', url_for('.login'), 'post')|safe }}
+<div class='row'>
+<small class='col form-text text-muted'>If you had a profile in the previous system, use the Reset tab to set a username and password</small>
+</div>
 </div>
 
 <div id='reset' role="tabpanel" class='tab-pane {{active=='reset' and 'active' or ''}}'>
-<div class='error'>{{reseterror}}</div>
-<form id='resetform' action="{{url_for('.login')}}" method="post">
-{{ reset.csrf_token }}
-{{ reset.firstname(class_="col required", minlength="2", placeholder="firstname") }}
-{{ reset.lastname( class_="col required", minlength="2", placeholder="lastname") }}
-{{ reset.email(    class_="col required",                placeholder="email") }}
-{{ reset.submit(   class_="col btn btn-primary") }}
-<input type="text" name="message" value="" class="col"/>
-<small class='form-text text-muted'>If you do not have a valid email in your profile, you must contact us to reset your login information</small>
-</form>
+{{ reset.html('resetform', url_for('.login'), 'post')|safe }}
+<div class='row'>
+<small class='col form-text text-muted'>If you do not have a valid email in your profile, you must contact us to reset your login information</small>
+</div>
 </div>
 
 <div id='register' role="tabpanel" class='tab-pane {{active=='register' and 'active' or ''}}'>
-<div class='error'>{{registererror}}</div>
-<form id='registerform' action="{{url_for('.login')}}" method="post">
-{{ register.csrf_token }}
-{{ register.gotoseries }}
-{{ register.firstname(class_="col required", minlength="2", placeholder="firstname") }}
-{{ register.lastname( class_="col required", minlength="2", placeholder="lastname") }}
-{{ register.email(    class_="col required",                placeholder="email") }}
-{{ register.username( class_="col required", minlength="6", placeholder="username") }}
-{{ register.password( class_="col required", minlength="6", placeholder="password") }}
-{{ register.submit(   class_="col btn btn-primary") }}
-<input type="text"     name="message"   value=""         class="col" />
-<small class='form-text text-muted'>This is for new users who haven't run in an event.  This will not link to any previous profiles</small>
-</form>
+<div class='row'><div class='col align-self-center error'>{{registererror}}</div></div>
+{{ register.html('registerform', url_for('.login'), 'post')|safe }}
+<div class='row'>
+<small class='col form-text text-muted'>This is for new users who haven't run in an event.  This will not link to any previous profiles</small>
+</div>
 </div>
 
 </div>
 </div> <!-- loginouter -->
 {% endblock content %}
+

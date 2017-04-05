@@ -7,46 +7,18 @@ import itsdangerous
 from collections import defaultdict
 
 from flask import abort, Blueprint, current_app, g, redirect, request, render_template, session, url_for
-from flask_wtf import FlaskForm
-from wtforms import HiddenField, PasswordField, StringField, SubmitField
-from wtforms.fields.html5 import EmailField
-from wtforms.validators import Length, Email
 
 from nwrsc.model import *
+from nwrsc.lib.forms import *
 
 log = logging.getLogger(__name__)
 
 Register = Blueprint("Register", __name__) 
 
-class ResetPasswordForm(FlaskForm):
-    username = StringField(  'username', [Length(min=6, max=32)])
-    password = PasswordField('password', [Length(min=6, max=32)])
-    submit   = SubmitField(  'Reset')
-
-class LoginForm(FlaskForm):
-    gotoseries = HiddenField(  'gotoseries')
-    username   = StringField(  'username', [Length(min=6, max=32)])
-    password   = PasswordField('password', [Length(min=6, max=32)])
-    submit     = SubmitField(  'Login')
-
-class ResetForm(FlaskForm):
-    firstname = StringField('firstname', [Length(min=2, max=32)])
-    lastname  = StringField('lastname',  [Length(min=2, max=32)])
-    email     = EmailField( 'email',     [Email()])
-    submit    = SubmitField('Send Reset Information')
-
-class RegisterForm(FlaskForm):
-    gotoseries = HiddenField( 'gotoseries')
-    firstname = StringField(  'firstname', [Length(min=2, max=32)])
-    lastname  = StringField(  'lastname',  [Length(min=2, max=32)])
-    email     = EmailField(   'email',     [Email()])
-    username  = StringField(  'username',  [Length(min=6, max=32)])
-    password  = PasswordField('password',  [Length(min=6, max=32)])
-    submit    = SubmitField(  'Register')
-    
 @Register.before_request
 def setup():
     g.title = 'Scorekeeper Registration'
+    g.activeseries = Series.active()
 
 @Register.route("/")
 def index():
@@ -59,8 +31,30 @@ def series():
     if 'driverid' not in session: return login()
     return redirect(url_for('.events'))
 
+@Register.route("/<series>/profile", methods=['POST', 'GET'])
+def profile():
+    if 'driverid' not in session: return login()
+    g.driver = Driver.get(session['driverid'])
+    form = ProfileForm()
+
+    if form.validate_on_submit():
+        formIntoAttrBase(form, g.driver)
+        g.driver.update()
+
+    attrBaseIntoForm(g.driver, form)
+    return render_template('register/profile.html', form=form, formerror=form.errors)
+
+@Register.route("/<series>/cars", methods=['POST', 'GET'])
+def cars():
+    if 'driverid' not in session: return login()
+
+    formerror = ""
+    cars = dict()
+    return render_template('register/cars.html', cars=cars, formerror=formerror)
+
 @Register.route("/<series>/events")
 def events():
+    if 'driverid' not in session: return login()
     g.driver = Driver.get(session['driverid'])
     g.classdata = ClassData.get()
     events = Event.byDate()
@@ -98,14 +92,6 @@ def ipn():
 def ical(driverid):
     return "ical for %s" % driverid
 
-@Register.route("/<series>/cars")
-def cars():
-    return "cars"
-
-@Register.route("/<series>/profile")
-def profile():
-    return "profile"
-
 @Register.route("/logout")
 def logout():
     session.pop('driverid')
@@ -120,7 +106,8 @@ def unregister():
     return processrv(Registration.delete)
 
 def processrv(func):
-    if not g.series: abort(404)
+    if not g.series or 'driverid' not in session: abort(404)
+    # TODO verify carid related to driver
     eventid = int(request.form.get('eventid', ''))
     carid = uuid.UUID(request.form.get('carid', ''))
     func(eventid, carid)
@@ -136,7 +123,7 @@ def login():
     login = LoginForm(prefix='login')
     reset = ResetForm(prefix='reset')
     register = RegisterForm(prefix='register')
-    loginerror = ""
+    formerror = ""
     active = "login"
 
     if login.submit.data:
@@ -145,9 +132,9 @@ def login():
             if user and user.password == login.password.data:
                 session['driverid'] = user.driverid
                 return redirect_series(login.gotoseries.data)
-            loginerror = "Invalid username/password"
+            formerror = "Invalid username/password"
         else:
-            loginerror = login.errors
+            formerror = login.errors
 
     elif reset.submit.data:
         active = "reset"
@@ -157,25 +144,25 @@ def login():
                     token = current_app.usts.dumps({'request': 'reset', 'driverid': str(d.driverid)})
                     link = url_for('.reset', token=token, _external=True)
                     return render_template("simple.html", content="An email as been sent with a link to reset your username/password. (%s)" % link)
-            loginerror = "No user could be found with those parameters"
+            formerror = "No user could be found with those parameters"
         else:
-            loginerror = reset.errors
+            formerror = reset.errors
 
     elif register.submit.data:
         active = "register"
         if register.validate_on_submit():
             if Driver.byusername(register.username.data) != None:
-                loginerror = "That username is already taken"
+                formerror = "That username is already taken"
             else:
                 session['driverid'] = Driver.new(register.firstname.data.strip(), register.lastname.data.strip(), register.email.data.strip(),
                                             register.username.data.strip(), register.password.data.strip())
                 return redirect_series(register.gotoseries.data)
         else:
-            loginerror = register.errors
+            formerror = register.errors
 
     login.gotoseries.data = g.series
     register.gotoseries.data = g.series
-    return render_template('/register/login.html', active=active, loginerror=loginerror, login=login, reset=reset, register=register)
+    return render_template('/register/login.html', active=active, formerror=formerror, login=login, reset=reset, register=register)
         
 
 @Register.route("/reset", methods=['GET', 'POST'])
@@ -202,10 +189,10 @@ def reset():
     
         if req['request'] == 'reset':
             session['driverid'] = uuid.UUID(req['driverid'])
-            return render_template("register/reset.html", form=form, loginerror="")
+            return render_template("register/reset.html", form=form, formerror="")
 
     elif form.errors:
-        return render_template("register/reset.html", form=form, loginerror = form.errors)
+        return render_template("register/reset.html", form=form, formerror=form.errors)
 
     abort(400)
 
