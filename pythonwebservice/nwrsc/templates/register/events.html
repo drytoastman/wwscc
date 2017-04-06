@@ -5,11 +5,19 @@
 
 {{m.navbar('events')}}
 
+<div class='container'>
+<div class='row justify-content-center'>
+<div class='col-8'>
+ical link for all the registrations for all current series
+<a class='registeredlink' href='{{url_for(".ical", driverid=g.driver.driverid)}}'><span class='fa fa-calendar'></span></a>
+</div>
+</div>
+</div>
+
 <div id='eventscontainer' class='container'>
 
 {% for ev in events %}
     {% set eclass = ev.isOpen() and "eventopen show" or "eventclosed" %}
-			
 	<div class='eventheader {{eclass}} row justify-content-start'>
     	<a data-toggle='collapse' href='#event{{ev.eventid}}'>
     	<span class='eventdate'>{{ev.date.strftime('%a %b %d')}}</span>
@@ -75,7 +83,7 @@
 
 	</div>
 
-	<div class='carcontainer col-7'>
+	<div class='eventcarlist col-7'>
 		<div class='header'>Registered Cars</div>
 		<ul>
 		{% for carid in registered %}
@@ -104,15 +112,7 @@
 			{% elif registered|length >= ev.perlimit %}
 				<span class='limit'>You have reached this event's prereg limit of {{ev.perlimit}} car(s).</span>
 			{% else %}
-                <form action="{{url_for('.register')}}" method="post">
-                <select name='carid'>
-                {% for c in cars.values()|msort("classcode","number") %}
-                <option value="{{c.carid}}">{{m.carDisplay(c)}}</option>
-                {% endfor %}
-                </select>
-                <input type='hidden' name='eventid' value='{{ev.eventid}}'/>
-				<input type='submit' value='Register Car'/>
-                </form>
+				<button class='register btn btn-primary'>Register A Car</button>
 			{% endif %}
 	
     		<ul class='payments'>

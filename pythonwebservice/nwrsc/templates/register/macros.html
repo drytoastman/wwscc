@@ -1,27 +1,26 @@
 
 {% macro navbar(current) %}
-<nav class="navbar navbar-toggleable-md navbar-inverse bg-primary">
+<nav class="navbar navbar-toggleable-sm navbar-inverse bg-primary">
   <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class='navbar-brand'>
         <img src='/static/images/cone.png'/>
-        Scorekeeper
+        Scorekeeper Reg
   </div>
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav">
-        <li class="nav-item dropdown">
+        <li id="seriesdropdown" class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="http://example.com" id="navbarDropdownMenuLink" data-toggle="dropdown">{{g.series}}</a>
           <div class="dropdown-menu">
           {% for s in g.activeseries %}
-          <a class="dropdown-item" href="{{url_for('.index', series=s)}}">{{s}}</a>
+            <a class="dropdown-item" href="{{url_for('.index', series=s)}}">{{s}}</a>
           {% endfor %}
-        </div>
+          </div>
         </li>
         <li class="nav-item {{current=='profile' and 'active'}}"><a class="nav-link" href="{{url_for(".profile")}}">Profile</a></li>
         <li class="nav-item {{current=='cars' and 'active'}}"><a class="nav-link" href="{{url_for(".cars")}}">Cars</a></li>
         <li class="nav-item {{current=='events' and 'active'}}"><a class="nav-link" href="{{url_for(".events")}}">Events</a></li>
-        {# <li class="nav-item"><a class='registeredlink' href='{{url_for(".ical", driverid=g.driver.driverid)}}'><span class='fa fa-calendar'></span></a></li> #}
         <li class="nav-item"><a class="nav-link" href="{{url_for(".logout")}}">Logout</a></li>
     </ul>
   </div>

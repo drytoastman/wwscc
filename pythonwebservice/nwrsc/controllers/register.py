@@ -19,21 +19,28 @@ Register = Blueprint("Register", __name__)
 def setup():
     g.title = 'Scorekeeper Registration'
     g.activeseries = Series.active()
+    if 'driverid' in session:
+        g.driver = Driver.get(session['driverid'])
+    else:
+        g.driver = None
+
+####################################################################
+# Authenticated functions
 
 @Register.route("/")
 def index():
-    if 'driverid' not in session: return login()
+    if not g.driver: return login()
     return render_template('serieslist.html', subapp='register', serieslist=Series.list())
 
 @Register.route("/<series>/")
 def series():
     """ First load of page gets all data along with it so no need for lots of ajax requests """
-    if 'driverid' not in session: return login()
+    if not g.driver: return login()
     return redirect(url_for('.events'))
 
 @Register.route("/<series>/profile", methods=['POST', 'GET'])
 def profile():
-    if 'driverid' not in session: return login()
+    if not g.driver: return login()
     g.driver = Driver.get(session['driverid'])
     form = ProfileForm()
 
@@ -46,23 +53,24 @@ def profile():
 
 @Register.route("/<series>/cars", methods=['POST', 'GET'])
 def cars():
-    if 'driverid' not in session: return login()
-
+    if not g.driver: return login()
+    g.classdata = ClassData.get()
+    events = {e.eventid:e for e in Event.byDate()}
+    cars   = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
+    registered = defaultdict(list)
     formerror = ""
-    cars = dict()
-    return render_template('register/cars.html', cars=cars, formerror=formerror)
+    for r in Registration.getForDriver(g.driver.driverid):
+        registered[r.carid].append(r.eventid)
+    return render_template('register/cars.html', events=events, cars=cars, registered=registered, formerror=formerror)
 
 @Register.route("/<series>/events")
 def events():
-    if 'driverid' not in session: return login()
-    g.driver = Driver.get(session['driverid'])
+    if not g.driver: return login()
     g.classdata = ClassData.get()
     events = Event.byDate()
-    cars = dict()
+    cars   = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
     registered = defaultdict(list)
     payments = defaultdict(list)
-    for c in Car.getForDriver(g.driver.driverid):
-        cars[c.carid] = c
     for r in Registration.getForDriver(g.driver.driverid):
         registered[r.eventid].append(r.carid)
     for p in Payment.getForDriver(g.driver.driverid):
@@ -70,6 +78,29 @@ def events():
 
     return render_template('register/events.html', events=events, cars=cars, registered=registered, payments=payments)
 
+@Register.route("/logout")
+def logout():
+    session.pop('driverid')
+    return redirect(url_for('.index'))
+
+@Register.route("/<series>/register", methods=['POST'])
+def register():
+    return processregistration(Registration.add)
+    
+@Register.route("/<series>/unregister", methods=['POST'])
+def unregister():
+    return processregistration(Registration.delete)
+
+def processregistration(func):
+    if not g.series or 'driverid' not in session: abort(404)
+    # TODO verify carid related to driver
+    eventid = int(request.form.get('eventid', ''))
+    carid = uuid.UUID(request.form.get('carid', ''))
+    func(eventid, carid)
+    return redirect_series(g.series)
+
+####################################################################
+# Unauthenticated functions
 
 @Register.route("/<series>/view/<int:eventid>")
 def view():
@@ -83,7 +114,6 @@ def view():
         registered[r.classcode].append(r)
     return render_template('register/reglist.html', event=event, registered=registered)
 
-
 @Register.route("/<series>/ipn")
 def ipn():
     return "ipn"
@@ -92,31 +122,9 @@ def ipn():
 def ical(driverid):
     return "ical for %s" % driverid
 
-@Register.route("/logout")
-def logout():
-    session.pop('driverid')
-    return redirect(url_for('.index'))
-
-@Register.route("/<series>/register", methods=['POST'])
-def register():
-    return processrv(Registration.add)
-    
-@Register.route("/<series>/unregister", methods=['POST'])
-def unregister():
-    return processrv(Registration.delete)
-
-def processrv(func):
-    if not g.series or 'driverid' not in session: abort(404)
-    # TODO verify carid related to driver
-    eventid = int(request.form.get('eventid', ''))
-    carid = uuid.UUID(request.form.get('carid', ''))
-    func(eventid, carid)
-    return redirect_series(g.series)
-
-
 @Register.route("/login", methods=['POST', 'GET'])
 def login():
-    if 'driverid' in session: return redirect_series()
+    if g.driver: return redirect_series()
     if request.form.get('message'): # super simple bot test (advanced bots will get by this)
         abort(404)
 

@@ -1,7 +1,12 @@
+import logging
+
+from flask import request
 from flask_wtf import FlaskForm
 from wtforms import HiddenField, PasswordField, StringField, SubmitField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import Length, Email
+
+log = logging.getLogger(__name__)
 
 def addlengthfields(field, kwargs):
     for v in field.validators:
@@ -9,7 +14,7 @@ def addlengthfields(field, kwargs):
             if v.min > 0: kwargs.setdefault('minlength', field.validators[0].min)
             if v.max > 0: kwargs.setdefault('maxlength', field.validators[0].max)
             if v.min > 0 and v.max > 0: kwargs.setdefault('required', 1)
-    kwargs.setdefault('placeholder', field.name[field.name.find('-')+1:])
+    #kwargs.setdefault('placeholder', field.name[field.name.find('-')+1:])
     return kwargs
 
 class MyStringField(StringField):
@@ -23,7 +28,7 @@ class MyPasswordField(PasswordField):
 class MyEmailField(EmailField):
     def __call__(self, **kwargs):
         kwargs.setdefault('required', 1)
-        kwargs.setdefault('placeholder', self.name[self.name.find('-')+1:])
+        #kwargs.setdefault('placeholder', self.name[self.name.find('-')+1:])
         return EmailField.__call__(self, **kwargs)
 
 
@@ -41,6 +46,10 @@ class MyFlaskForm(FlaskForm):
                 ret.append(f(class_='col-md-6'))
                 ret.append("</div>")
 
+        ret.append("<div class='row align-items-center'>")
+        ret.append("<input type='text' name='message' />")
+        ret.append("</div>")
+
         ret.append("<div class='row'>")
         ret.append("<div class='col-md-3'></div>")
         ret.append(self.submit(class_="col-md-6 btn btn-primary"))
@@ -48,7 +57,12 @@ class MyFlaskForm(FlaskForm):
         ret.append("</form>")
         return '\n'.join(ret)
 
-    
+    def validate(self):
+        if request.form.get('message'): # super simple bot test (advanced bots will get by this)
+            log.warning("Suspect form submission from (put IP here), ignoring")
+            abort(404)
+        return FlaskForm.validate(self)
+
 
 def formIntoAttrBase(form, base):
     """ Take form data and put into an AttrBase object """
@@ -72,14 +86,14 @@ def attrBaseIntoForm(base, form):
 
 
 class ResetPasswordForm(MyFlaskForm):
-    username = MyStringField(  'username', [Length(min=6, max=32)])
-    password = MyPasswordField('password', [Length(min=6, max=32)])
+    username = MyStringField(  'Username', [Length(min=6, max=32)])
+    password = MyPasswordField('Password', [Length(min=6, max=32)])
     submit   = SubmitField(    'Reset')
 
 class LoginForm(MyFlaskForm):
     gotoseries = HiddenField(    'gotoseries')
-    username   = MyStringField(  'username', [Length(min=6, max=32)])
-    password   = MyPasswordField('password', [Length(min=6, max=32)])
+    username   = MyStringField(  'Username', [Length(min=6, max=32)])
+    password   = MyPasswordField('Password', [Length(min=6, max=32)])
     submit     = SubmitField(    'Login')
 
 class ResetForm(MyFlaskForm):
@@ -100,14 +114,14 @@ class RegisterForm(MyFlaskForm):
 class ProfileForm(MyFlaskForm):
     firstname = MyStringField('First Name', [Length(min=2, max=32)])
     lastname  = MyStringField('Last Name',  [Length(min=2, max=32)])
-    email     = MyEmailField( 'Email',     [Email()])
-    membership= MyStringField('Membership',[Length(max=64)])
-    address   = MyStringField('Address',   [Length(max=64)])
-    city      = MyStringField('City   ',   [Length(max=64)])
-    state     = MyStringField('State',     [Length(max=16)])
-    zip       = MyStringField('Zip',       [Length(max=8)])
-    phone     = MyStringField('Phone',     [Length(max=16)])
-    brag      = MyStringField('Brag',      [Length(max=64)])
-    sponsor   = MyStringField('Sponsor',   [Length(max=64)])
+    email     = MyEmailField( 'Email',      [Email()])
+    membership= MyStringField('Membership', [Length(max=64)])
+    address   = MyStringField('Address',    [Length(max=64)])
+    city      = MyStringField('City   ',    [Length(max=64)])
+    state     = MyStringField('State',      [Length(max=16)])
+    zip       = MyStringField('Zip',        [Length(max=8)])
+    phone     = MyStringField('Phone',      [Length(max=16)])
+    brag      = MyStringField('Brag',       [Length(max=64)])
+    sponsor   = MyStringField('Sponsor',    [Length(max=64)])
     submit    = SubmitField(  'Update')
 

@@ -3,45 +3,59 @@
 
 {% macro disablecar(car) %}
 {%if car.regevents|length > 0 %}
-disabled='disabled' title='Cars registered or in use cannot be edited or deleted'
 {% endif %}
 {% endmacro %}
 
 {% macro disableevent(event) %}
 {% if not event.isOpen() %}
-disabled='disabled' title='Event registration is not open or car has runs so this assignment cannot be changed' \
 {% endif %}
 {% endmacro %}
 
 {% block content %}
 {{m.navbar('cars')}}
 
-<div class='container'>
+<div id='carscontainer' class='container'>
+
+<div class='row justify-content-center'>
+<div class='col-8'>
 {{ m.formerrors(formerror) }}
+</div>
+</div>
 
-<table id='carlist'>
-<tr><th></th><th></th><th><span>Cars</span></th><th><span>Registered/Used In</span></th></tr>
-{% for car in cars %}
-	<tr>
-	<td><button class='editcar' data-driverid='{{c.driverid}}' data-carid='{{car.id}}' {{disablecar(car)}} >Edit</button></td>
-	<td><button class='deletecar' data-carid='{{car.id}}' {{disablecar(car)}}>Delete</button></td>
-	<td class='car'>{{carDisplay(car)}}</td>
-	<td class='carevents'>
-		%if len(car.regevents) > 0:
-		<ul>
-		%for (event, regid) in car.regevents:
-			<li>
-			<button class='unregbutton' data-eventid='{{event.id}}' data-regid='{{regid}}' {{disableevent(event)}}>Unregister</button>
-			<span class='regevent'>{{event.name}}</span>
-			</li>
-		%endfor
-		</ul>
-		%endif
-	</td>
-	</tr>
+<div class='row title'>
+<div class='col'>Cars In {{g.series}}</div>
+<div class='col'>Registered/Used In</div>
+</div>
+
+{% for car in cars.values()|msort("classcode","number") %}
+<div class='row'>
+<div class='col'>
+    {% if registered[car.carid]|length > 0 %}
+	    <button class='btn btn-outline-secondary disabled fa fa-pencil' title='Cars registered or in use cannot be edited or deleted'></button>
+    	<button class='btn btn-outline-secondary disabled fa fa-trash' title='Cars registered or in use cannot be edited or deleted'></button>
+    {% else %}
+    	<button class='editcar   btn btn-outline-primary fa fa-pencil' title='Edit Car' data-carid='{{car.id}}'></button>
+    	<button class='deletecar btn btn-outline-primary fa fa-trash' title='Delete Car' data-carid='{{car.id}}'></button>
+    {% endif %}
+	{{m.carDisplay(car)}}
+</div>
+<div class='col'>
+	<ul>
+    {% for eventid in registered[car.carid] %}
+        {% set event = events[eventid] %}
+		<li>
+        {% if not event.isOpen() %}
+    		<button class='unreg btn btn-outline-secondary fa fa-trash disabled' title='Event registration is not open or car has runs so this assignment cannot be changed'></button>
+        {% else %}
+    		<button class='unreg btn btn-outline-primary fa fa-trash' title='Unregister' data-eventid='{{eventid}}' data-carid='{{car.carid}}' {{disableevent(event)}}></button>
+        {% endif %}
+		<span class='regevent'>{{event.name}}</span>
+		</li>
+	{% endfor %}
+	</ul>
+</div>
+</div>
 {% endfor %}
-</table>
-
 
 </div>
 
