@@ -23,6 +23,7 @@ from nwrsc.controllers.dynamic import Announcer, Timer
 from nwrsc.controllers.feed import Xml, Json
 from nwrsc.controllers.register import Register
 from nwrsc.controllers.results import Results
+from nwrsc.lib.encoding import to_json
 from nwrsc.model import Series
 
 log = logging.getLogger(__name__)
@@ -178,6 +179,7 @@ def create_app(config=None):
     theapp.create_pool()
     theapp.jinja_env.filters['t3'] = t3
     theapp.jinja_env.filters['msort'] = msort
+    theapp.jinja_env.filters['to_json'] = to_json
 
     # Configure our logging to use webserver.log with rotation and optionally stderr
     if not theapp.debug:

@@ -17,6 +17,8 @@ def json_raw(data):
     response.headers['Content-type'] = 'application/json'
     return response
 
+def to_json(obj):
+    return JSONEncoder().encode(obj)
 
 class JSONEncoder(json.JSONEncoder):
     """ Helper that calls getPublicFeed if available for getting json encoding """

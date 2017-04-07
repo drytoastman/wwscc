@@ -48,13 +48,20 @@ form {
     }
 
     input[type=submit] {
-        margin-top: 0.5rem;
+        margin-top: 0.8rem;
     }
 
     input[name=message] {
         display: none;
     }
 
+    input[type=checkbox] {
+        margin: 1rem;
+    }
+
+    select {
+        margin-bottom: 0.4rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -157,6 +164,7 @@ form {
         font-size: 1.5rem;
     }
 }
+
 
 .navbar {
     padding: 0px;

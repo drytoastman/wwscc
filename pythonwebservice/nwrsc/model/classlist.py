@@ -12,49 +12,11 @@ log = logging.getLogger(__name__)
 
 class Class(AttrBase):
 
-    RINDEX = re.compile(r'([+-])\((.*?)\)')
-    RFLAG = re.compile(r'([+-])\[(.*?)\]')
-
     def getCountedRuns(self):
         if self.countedruns <= 0:
             return 999
         else:
             return self.countedruns
-
-    def _globItem(self, item, full):
-        tomatch = '^' + item.strip().replace('*', '.*') + '$'
-        ret = set()
-        for x in full:
-            if re.search(tomatch, x):
-                ret.add(x)
-        return ret
-
-    def _processList(self, results, fullset):
-        ret = set(fullset)
-        for ii, pair in enumerate(results):
-            if pair[0] not in ('+','-'):
-                log.warning("Index limit script: excepted + or -, found {}".format(pair[0]))
-                continue
-            ADD = (pair[0] == '+')
-            if ii == 0 and ADD:
-                ret = set()
-            for item in csvlist(pair[1]):
-                if ADD:
-                    ret |= self._globItem(item, fullset)
-                else:
-                    ret -= self._globItem(item, fullset)
-        return fullset - ret
-
-
-    def restrictedIndexes(self):
-        if not self.caridxrestrict:
-            return ([], [])
-        full = self.caridxrestrict.replace(" ", "")
-        idxlist = set([x[0] for x in object_session(self).query(Index.code).all()])
-        indexrestrict = self._processList(self.RINDEX.findall(full), idxlist)
-        flagrestrict = self._processList(self.RFLAG.findall(full), idxlist)
-
-        return (indexrestrict, flagrestrict)
 
     @classmethod
     def get(cls, code):
@@ -119,6 +81,44 @@ class ClassData(object):
                 i = Index(**x)
                 ret.indexlist[i.indexcode] = i
         return ret
+
+
+    def restrictedIndexes(self, classcode):
+
+        RINDEX = re.compile(r'([+-])\((.*?)\)')
+        RFLAG = re.compile(r'([+-])\[(.*?)\]')
+
+        def globItem(item, full):
+            tomatch = '^' + item.strip().replace('*', '.*') + '$'
+            ret = set()
+            for x in full:
+                if re.search(tomatch, x):
+                    ret.add(x)
+            return ret
+ 
+        def processList(results, fullset):
+            ret = set(fullset)
+            for ii, pair in enumerate(results):
+                if pair[0] not in ('+','-'):
+                    log.warning("Index limit script: excepted + or -, found {}".format(pair[0]))
+                    continue
+                ADD = (pair[0] == '+')
+                if ii == 0 and ADD:
+                    ret = set()
+                for item in csvlist(pair[1]):
+                    if ADD:
+                        ret |= globItem(item, fullset)
+                    else:
+                        ret -= globItem(item, fullset)
+            return fullset - ret
+
+        if classcode not in self.classlist or not self.classlist[classcode].caridxrestrict:
+            return ([], [])
+        full = self.classlist[classcode].caridxrestrict.replace(" ", "")
+        indexrestrict = processList(RINDEX.findall(full), self.indexlist.keys())
+        flagrestrict = processList(RFLAG.findall(full), self.indexlist.keys())
+        return (indexrestrict, flagrestrict)
+
 
     def getCountedRuns(self, classcode):
         try:

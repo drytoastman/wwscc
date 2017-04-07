@@ -5,13 +5,12 @@
 		classchange: function() {
 
 			var myform = this;
-			var indexcontainer = myform.find('.indexcodecontainer');
 			var currentclass = myform.find('[name=classcode] option:selected');
 			var indexselect = myform.find('[name=indexcode]');
 
-			if (currentclass.data('indexed')) {
-				indexcontainer.toggle(true);
-				var restrict = currentclass.data('idxrestrict') || "";
+			if (currentclass.car_indexed) {
+				indexselect.toggle(true);
+				var restrict = currentclass.idxrestrict || "";
 				restrict = restrict.split(',')
 				
 				indexselect.find("option").remove();
@@ -24,7 +23,7 @@
 
 			} else {
 				indexselect.val(0);
-				indexcontainer.toggle(false);
+				indexselect.toggle(false);
 			}
 		
 			methods.indexchange.call(myform);
@@ -95,12 +94,12 @@
 		},
 
 
-		doDialog: function(driverid, car, okcallback) {
+		initform: function(driverid, car) {
 
 			var myform = this;
 
 			myform.find('[name=driverid]').val(driverid);
-			myform.find('[name=carid]').val(car.id || -1);
+			myform.find('[name=carid]').val(car.carid || -1);
 			myform.find('[name=year]').val(car.year || "");
 			myform.find('[name=make]').val(car.make || "");
 			myform.find('[name=model]').val(car.model || "");
@@ -113,13 +112,14 @@
 			methods.setnum.call(myform, car.number || "");
 
 
-			if (! myform.data('cardialoginit'))
+			if (!myform.data('cardialoginit'))
 			{
 				myform.data('cardialoginit', true);
 				myform.find('.numberselect').button().click(function() { $(this).blur(); methods.chooseNumber.call(myform); return false; });
 				myform.find('[name=classcode]').change(function() { methods.classchange.call(myform); });
 				myform.find('[name=indexcode]').change(function() { methods.indexchange.call(myform); });
 
+                /*
 				$.validator.setDefaults({ignore:[]});
 				myform.validate({
 					rules: {
@@ -152,27 +152,8 @@
 						$(".carerror").append(error);
 					}
 				});
+                */
 			}
-		
-		
-			myform.dialog({
-				width: "auto",
-				modal: true,
-				title: 'Car Editor',
-				//position: [20, 100],
-				buttons: {
-					'Ok': function() {
-						if (myform.valid()) {
-							myform.dialog('close');
-							okcallback();
-						}
-					},
-					Cancel: function() { myform.dialog('close'); }
-				},
-				close: function() {
-				}
-			});
-
 		}
 	};
 	

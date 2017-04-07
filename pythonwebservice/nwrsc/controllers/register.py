@@ -1,10 +1,10 @@
 import datetime
 import logging
-import operator
 import uuid
 import time
 import itsdangerous
 from collections import defaultdict
+from operator import attrgetter
 
 from flask import abort, Blueprint, current_app, g, redirect, request, render_template, session, url_for
 
@@ -51,17 +51,23 @@ def profile():
     attrBaseIntoForm(g.driver, form)
     return render_template('register/profile.html', form=form, formerror=form.errors)
 
+
 @Register.route("/<series>/cars", methods=['POST', 'GET'])
 def cars():
     if not g.driver: return login()
     g.classdata = ClassData.get()
-    events = {e.eventid:e for e in Event.byDate()}
-    cars   = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
-    registered = defaultdict(list)
-    formerror = ""
+    events      = {e.eventid:e for e in Event.byDate()}
+    cars        = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
+    registered  = defaultdict(list)
+    formerror   = ""
+    carform     = CarForm()
+    carform.classcode.choices = [(c.classcode, "%s - %s" % (c.classcode, c.descrip)) for c in sorted(g.classdata.classlist.values(), key=attrgetter('classcode'))]
+    carform.indexcode.choices = [(i.indexcode, "%s - %s" % (i.indexcode, i.descrip)) for i in sorted(g.classdata.indexlist.values(), key=attrgetter('indexcode'))]
+
     for r in Registration.getForDriver(g.driver.driverid):
         registered[r.carid].append(r.eventid)
-    return render_template('register/cars.html', events=events, cars=cars, registered=registered, formerror=formerror)
+    return render_template('register/cars.html', events=events, cars=cars, registered=registered, carform=carform, formerror=formerror)
+
 
 @Register.route("/<series>/events")
 def events():
@@ -77,6 +83,7 @@ def events():
         payments[p.eventid] = p
 
     return render_template('register/events.html', events=events, cars=cars, registered=registered, payments=payments)
+
 
 @Register.route("/logout")
 def logout():

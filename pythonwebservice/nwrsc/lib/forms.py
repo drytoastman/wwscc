@@ -2,9 +2,9 @@ import logging
 
 from flask import request
 from flask_wtf import FlaskForm
-from wtforms import HiddenField, PasswordField, StringField, SubmitField
-from wtforms.fields.html5 import EmailField
-from wtforms.validators import Length, Email
+from wtforms import BooleanField, HiddenField, PasswordField, SelectField, StringField, SubmitField
+from wtforms.fields.html5 import EmailField, IntegerField
+from wtforms.validators import Length, Email, Required
 
 log = logging.getLogger(__name__)
 
@@ -14,7 +14,6 @@ def addlengthfields(field, kwargs):
             if v.min > 0: kwargs.setdefault('minlength', field.validators[0].min)
             if v.max > 0: kwargs.setdefault('maxlength', field.validators[0].max)
             if v.min > 0 and v.max > 0: kwargs.setdefault('required', 1)
-    #kwargs.setdefault('placeholder', field.name[field.name.find('-')+1:])
     return kwargs
 
 class MyStringField(StringField):
@@ -28,9 +27,7 @@ class MyPasswordField(PasswordField):
 class MyEmailField(EmailField):
     def __call__(self, **kwargs):
         kwargs.setdefault('required', 1)
-        #kwargs.setdefault('placeholder', self.name[self.name.find('-')+1:])
         return EmailField.__call__(self, **kwargs)
-
 
 class MyFlaskForm(FlaskForm):
 
@@ -39,9 +36,9 @@ class MyFlaskForm(FlaskForm):
         ret.append("<form id='{}' action='{}' method='{}'>".format(idx, action, method))
         ret.append(str(self.csrf_token))
         for f in self:
-            if f.widget.input_type != 'submit':
+            if not hasattr(f.widget, 'input_type') or f.widget.input_type != 'submit':
                 ret.append("<div class='row align-items-center'>")
-                if f.widget.input_type != 'hidden':
+                if not hasattr(f.widget, 'input_type') or f.widget.input_type != 'hidden':
                     ret.append(f.label(class_='col-md-3'))
                 ret.append(f(class_='col-md-6'))
                 ret.append("</div>")
@@ -124,4 +121,17 @@ class ProfileForm(MyFlaskForm):
     brag      = MyStringField('Brag',       [Length(max=64)])
     sponsor   = MyStringField('Sponsor',    [Length(max=64)])
     submit    = SubmitField(  'Update')
+
+class CarForm(MyFlaskForm):
+    driverid    = HiddenField(  'driverid')
+    carid       = HiddenField(  'carid')
+    year        = MyStringField('Year',  [Length(max=8)])
+    make        = MyStringField('Make',  [Length(max=16)])
+    model       = MyStringField('Model', [Length(max=16)])
+    color       = MyStringField('Color', [Length(max=16)])
+    classcode   = SelectField(  'Class', [Required()])
+    indexcode   = SelectField(  'Index')
+    tireindexed = BooleanField( 'Is Tire Indexed')
+    number      = IntegerField( 'Number', [Required()])
+    submit      = SubmitField(  'Submit')
 

@@ -1,15 +1,30 @@
 {% extends "register/rbase.html" %}
 {% import '/register/macros.html' as m %}
 
-{% macro disablecar(car) %}
-{%if car.regevents|length > 0 %}
-{% endif %}
-{% endmacro %}
+{% block headers %}
+{{super()}}
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#carmodal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        $('#carform').CarEdit('initform', '{{g.driver.driverid}}', cars[button.data('carid')]);
+    });
+});
+var cars = Array();
+var classes = Array();
+{% for c in cars.values()|msort('classcode', 'number') %}
+cars['{{c.carid}}'] = {{c|to_json|safe}};
+{%- endfor %}
+{% for c in g.classdata.classlist.values()|msort('classcode') -%}
+{% set restrict = g.classdata.restrictedIndexes(c.classcode) %}
+classes['{{c.classcode}}'] = { 'isindexed': {{c.carindexed}}, 'idxrestrict': {{restrict[0]|sort|safe}} };
+{%- endfor %}
+</script>
+<style>
+h1 { font-size: 1.4rem; }
+</style>
+{% endblock headers %}
 
-{% macro disableevent(event) %}
-{% if not event.isOpen() %}
-{% endif %}
-{% endmacro %}
 
 {% block content %}
 {{m.navbar('cars')}}
@@ -34,8 +49,8 @@
 	    <button class='btn btn-outline-secondary disabled fa fa-pencil' title='Cars registered or in use cannot be edited or deleted'></button>
     	<button class='btn btn-outline-secondary disabled fa fa-trash' title='Cars registered or in use cannot be edited or deleted'></button>
     {% else %}
-    	<button class='editcar   btn btn-outline-primary fa fa-pencil' title='Edit Car' data-carid='{{car.id}}'></button>
-    	<button class='deletecar btn btn-outline-primary fa fa-trash' title='Delete Car' data-carid='{{car.id}}'></button>
+    	<button class='editcar   btn btn-outline-primary fa fa-pencil' title='Edit Car' data-carid='{{car.carid}}' data-toggle='modal' data-target='#carmodal'></button>
+    	<button class='deletecar btn btn-outline-primary fa fa-trash' title='Delete Car' data-carid='{{car.carid}}'></button>
     {% endif %}
 	{{m.carDisplay(car)}}
 </div>
@@ -45,9 +60,9 @@
         {% set event = events[eventid] %}
 		<li>
         {% if not event.isOpen() %}
-    		<button class='unreg btn btn-outline-secondary fa fa-trash disabled' title='Event registration is not open or car has runs so this assignment cannot be changed'></button>
+    		<button class='unreg btn btn-outline-secondary fa fa-trash disabled' title='Event registration is no longer open or car has runs so this assignment cannot be changed'></button>
         {% else %}
-    		<button class='unreg btn btn-outline-primary fa fa-trash' title='Unregister' data-eventid='{{eventid}}' data-carid='{{car.carid}}' {{disableevent(event)}}></button>
+    		<button class='unreg btn btn-outline-primary fa fa-trash' title='Unregister' data-eventid='{{eventid}}' data-carid='{{car.carid}}'></button>
         {% endif %}
 		<span class='regevent'>{{event.name}}</span>
 		</li>
@@ -58,5 +73,17 @@
 {% endfor %}
 
 </div>
+
+<div class='modal fade' id='carmodal' tabindex=-1 role='dialog'>
+<div class='modal-dialog' role='document'>
+<div class='modal-content'>
+<h1 class='modal-header'>Car Editor</h1>
+<div class='modal-body'>
+<div class='container-fluid'>
+{{ carform.html('carform', url_for('.cars'), 'post')|safe }}
+</div> {# body #}
+</div> {# content #}
+</div> {# dialog #}
+</div> {# modal #}
 
 {% endblock content %}

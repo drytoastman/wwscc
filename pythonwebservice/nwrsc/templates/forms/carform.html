@@ -1,4 +1,4 @@
-<%def name="carform(numberhidden)">
+{% macro carform(numberhidden) %}
 
 <form id='careditor' method='post' class='ui-helper-hidden'>
 <div class='carerror ui-state-error-text'></div>
@@ -11,10 +11,10 @@
 <tr><th>Model</th> <td><input name='model'  type='text'/></td></tr>
 <tr><th>Color</th> <td><input name='color'  type='text'/></td></tr>
 <tr><th>Class</th> <td>
+{#
 <select name='classcode'>
-<%
-for code in sorted(c.classdata.classlist):
-	cls = c.classdata.classlist[code]
+{% for code in g.classdata.classlist|sort %}
+	cls = g.classdata.classlist[code]
 	restrict = cls.restrictedIndexes()
 	context.write("<option value='%s' " % (cls.code))
 	if cls.carindexed:
@@ -26,13 +26,16 @@ for code in sorted(c.classdata.classlist):
 	if cls.usecarflag:
 		context.write("data-usecarflag='true' ")
 	context.write(">%s - %s</option>\n" % (cls.code, cls.descrip))
-%>
+{% endfor %}
 </select>
+#}
 </td></tr>
 <tr><th></th><td colspan="2">
-%if c.settings.classinglink:
+{#
+{%if g.settings.classinglink %}
 <a target='classinghelp' href='${c.settings.classinglink}'>Click Here for Classing Help</a>
-%endif
+{% endif %}
+#}
 </td></tr>
 
 <script>
@@ -66,5 +69,4 @@ gIndexList = [ "${'","'.join(sorted(c.classdata.indexlist)) |n}" ];
 <div id='numberselection'>
 </div>
 
-</%def>
-
+{% endmacro %}

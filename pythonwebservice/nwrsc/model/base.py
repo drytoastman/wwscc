@@ -58,7 +58,7 @@ class AttrBase(object):
         d = dict()
         self.cleanAttr()
         for k,v in {**self.__dict__, **self.attr}.items():
-            if k[0] == '_' or k == 'attr':
+            if k[0] == '_' or k == 'attr' or k == 'toplevel':
                 continue
             v = self.feedFilter(k, v)
             if v is None:
