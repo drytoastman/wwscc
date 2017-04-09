@@ -11,16 +11,23 @@
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav">
         <li id="seriesdropdown" class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="http://example.com" id="navbarDropdownMenuLink" data-toggle="dropdown">{{g.series}}</a>
+          <a class="nav-link dropdown-toggle" href="http://example.com" id="navbarDropdownMenuLink" data-toggle="dropdown">{{g.series or "<no series>"}}</a>
           <div class="dropdown-menu">
           {% for s in g.activeseries %}
-            <a class="dropdown-item" href="{{url_for('.index', series=s)}}">{{s}}</a>
+            {% if s != g.series %}
+                <a class="dropdown-item" href="{{url_for('.events', series=s)}}">{{s}}</a>
+            {% endif %}
           {% endfor %}
           </div>
         </li>
-        <li class="nav-item {{current=='profile' and 'active'}}"><a class="nav-link" href="{{url_for(".profile")}}">Profile</a></li>
-        <li class="nav-item {{current=='cars' and 'active'}}"><a class="nav-link" href="{{url_for(".cars")}}">Cars</a></li>
-        <li class="nav-item {{current=='events' and 'active'}}"><a class="nav-link" href="{{url_for(".events")}}">Events</a></li>
+        <li class="nav-item {{'active' if current=='profile'}}"><a class="nav-link" href="{{url_for(".profile")}}">Profile</a></li>
+        {% if not g.series  %}
+        <li class="nav-item"><a class="nav-link disabled">Cars</a></li>
+        <li class="nav-item"><a class="nav-link disabled">Events</a></li>
+        {% else %}
+        <li class="nav-item {{'active' if current=='cars'}}"><a class="nav-link" href="{{url_for(".cars")}}">Cars</a></li>
+        <li class="nav-item {{'active' if current=='events'}}"><a class="nav-link" href="{{url_for(".events")}}">Events</a></li>
+        {% endif %}
         <li class="nav-item"><a class="nav-link" href="{{url_for(".logout")}}">Logout</a></li>
     </ul>
   </div>
@@ -29,16 +36,38 @@
 
 
 {% macro formerrors(formerror) %}
-<div class='error row'>
 {% if formerror is string: %}
-{{formerror}}
+<div class='formerror'>{{formerror}}</div>
 {% else %}
 {% for field, msg in formerror.items(): %}
-<div>{{field}} {{msg[0]|replace("Field","")}}</div>
+<div class='formerror'>{{field}}: {{msg[0]}}</div>
 {% endfor %}
 {% endif %}
-</div>
 {% endmacro %}
+
+
+{% macro modal(id, title, body) %}
+<div class='modal fade' id='{{id}}' tabindex=-1 role='dialog'>
+<div class='modal-dialog' role='document'>
+<div class='modal-content'>
+
+<div class='modal-header'>
+<h1 class='modal-title text-center'>{{title}}</h1>
+<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+</div> {# modal-header #}
+
+<div class='modal-body'>
+<div class='container-fluid'>
+<div class='modal-error'></div>
+{{ body|safe }}
+</div> {# modal-body #}
+
+</div> {# modal-content #}
+</div> {# modal-dialog #}
+</div> {# modal #}
+{% endmacro %}
+
+
 
 
 {% macro driverDisplay(driver) %}

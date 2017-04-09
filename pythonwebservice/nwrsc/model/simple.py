@@ -33,6 +33,15 @@ class Car(AttrBase):
     def getForDriver(cls, driverid):
         return cls.getall("select * from cars where driverid=%s order by classcode,number", (driverid,))
 
+    @classmethod
+    def usedNumbers(cls, driverid, classcode, superunique=False):
+        with g.db.cursor() as cur:
+            if superunique:
+                cur.execute("select distinct number from cars where number not in (select number from cars where driverid = %s)", driverid)
+            else:
+                cur.execute("select distinct number from cars where classcode=%s and number not in (select number from cars where classcode=%s and driverid=%s)", (classcode, classcode, driverid))
+            return [x[0] for x in cur.fetchall()]
+
 
 class Challenge(AttrBase):
     @classmethod

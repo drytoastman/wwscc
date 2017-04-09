@@ -1,0 +1,9 @@
+<ul class='numbers'>
+{% for num in range(1, g.settings.largestcarnumber+1) %}
+{% if num in used %}
+	<li>{{num}}</li>
+{% else %}
+	<li><a href='#' data-carnum='{{num}}'>{{num}}</a></li>
+{% endif %}
+{% endfor %}
+</ul>

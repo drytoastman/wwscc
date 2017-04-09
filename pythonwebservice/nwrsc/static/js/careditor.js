@@ -2,103 +2,101 @@
 
 	var methods = {
 
+        currentclass: function() {
+			return gClasses[$(this).find('[name=classcode] option:selected').val()];
+        },
+
 		classchange: function() {
-
-			var myform = this;
-			var currentclass = myform.find('[name=classcode] option:selected');
+            var myform = this;
+			var cc = methods.currentclass.call(myform);
 			var indexselect = myform.find('[name=indexcode]');
-
-			if (currentclass.car_indexed) {
+            
+			if (cc.isindexed) {
 				indexselect.toggle(true);
-				var restrict = currentclass.idxrestrict || "";
-				restrict = restrict.split(',')
+			    myform.find('[name=indexcode]').parent().toggle(true);
+				var restrict = cc.idxrestrict;
+                if (restrict.length == 0) {
+                    restrict = gIndexes;
+                }
 				
 				indexselect.find("option").remove();
-				indexselect.append(new Option("", "", false, false));
-				for (var ii = 0; ii < gIndexList.length; ii++) {
-					if ($.inArray(gIndexList[ii], restrict) < 0) {
-						indexselect.append(new Option(gIndexList[ii], gIndexList[ii], false, false));
-					}
-				}
-
+                indexselect.append(new Option("", "", false, false));
+   				for (var ii = 0; ii < restrict.length; ii++) {
+                    indexselect.append(new Option(restrict[ii], restrict[ii], false, false));
+                }
 			} else {
 				indexselect.val(0);
-				indexselect.toggle(false);
+			    myform.find('[name=indexcode]').parent().toggle(false);
 			}
 		
+            // Clear indexcode and number, they are invalid now
 			methods.indexchange.call(myform);
-			methods.setnum.call(myform, "");
+            myform.find('[name=number]').val("");
+
+            // Get the objects we want and set initial values for the structure
+            var code = myform.find('[name=classcode] option:selected').val();
+            var numobj = myform.find('[name=number]').data('usednumbers', []);
+            $("a[href=\"#usedlist\"] span.label").text(" Unavailable Numbers in " + code);
+            var ul = $("#usedlist ul").html("loading...");
+
+            // Actually make a request for the list and update the UL
+            $.get("usednumbers", {'classcode': code}, function (data) {
+                numobj.data('usednumbers', data);
+                ul.empty();
+                $.each(data, function(ii, num) {
+                    ul.append("<li>"+num+"</li>");
+                });
+            });
 		},
 	
 
 		indexchange: function() {
-			// Need separate function to capture this when only index changes
+            var myform = this;
+			var tireindexcontainer = myform.find('[name=tireindexed]').parent();
+			var cc = methods.currentclass.call(myform);
+			var ci = myform.find('[name=indexcode] option:selected').val() || "noindex";
+			var restrict = cc.flagrestrict;
 
-			var myform = this;
-			var tireindexcontainer = myform.find('.tireindexcontainer');
-			var currentclass = myform.find('[name=classcode] option:selected');
-			var currentindex = myform.find('[name=indexcode] option:selected').val() || "noindex";
-			var restrict = currentclass.data('flagrestrict') || "";
-			restrict = restrict.split(',')
-
-			if (currentclass.data('usecarflag') && ($.inArray(currentindex, restrict) < 0)) {
+			if (cc.usecarflag && ((restrict.length == 0) || ($.inArray(ci, restrict) >= 0))) {
 				tireindexcontainer.toggle(true)
 			} else {
 				myform.find('[name=tireindexed]').prop('checked', false);
 				tireindexcontainer.toggle(false)
 			}
-		
 		},
 
 
-		setnum: function(val) {
+		initform: function(car) {
+            var myform = this;
+			if (!myform.data('cardialoginit'))
+			{
+				myform.data('cardialoginit', true);
+				myform.find('[name=classcode]').change(function() { methods.classchange.call(myform); });
+				myform.find('[name=indexcode]').change(function() { methods.indexchange.call(myform); });
+                myform.find('[name=number]').after("<div style='margin:auto;width:100%'><a data-toggle='collapse' href='#usedlist'><span class='fa'/><span class='label'>Numbers Used By Others</span></a><div id='usedlist' class='collapse'><ul></ul></div></div>");
+                add_collapse_icons('#usedlist');
 
-			var myform = this;
-			input = myform.find('[name=number]');
-			input.val(val);
-			if (input.attr('type') == 'hidden') {
-				myform.find('.numberdisplay').html(val);
-				if (val != "")
-					myform.validate().form();
-			}
+				$.validator.setDefaults({ignore:[]});
+				myform.validate({
+					rules: {
+						indexcode: {
+							required: function(element) { return (methods.currentclass.call(myform).isindexed); }
+						},
+						number: {
+							required: true,
+                            digits: true,
+                            notinused: true,
+							min: 1,
+							max: 1999
+						}
+					},
 			
-		},
-
-
-		chooseNumber: function() {
-			var mainForm = this;
-			var numberForm = $('#numberselection');
-			if (!numberForm) {
-				numberForm = $('<div/>', {id:'numberselection'}).appendTo('body');
+					messages: { 
+						indexcode: 'an index is required for indexed classes',
+					},
+				});
 			}
 
-			var classcode = mainForm.find('[name=classcode] option:selected').val();
-			var driverid = mainForm.find('[name=driverid]').val();
-
-			// set html to loading, open the dialog, load the available numbers and then set click behaviour
-			numberForm.html('loading ...').dialog({
-				height: 400,
-				width: 480,
-				//position: [20, 100],
-				modal: true,
-				title: 'Available Numbers',
-				close: function() {}
-			}).nwr('loadNumbers', classcode, driverid, function() {
-				// when load is complete,  update all the links to call setnum
-				numberForm.find('a').click(function() { 
-					methods.setnum.call(mainForm, $(this).data('carnum')); 
-					numberForm.dialog('close');
-					return false;
-				});
-			});
-		},
-
-
-		initform: function(driverid, car) {
-
-			var myform = this;
-
-			myform.find('[name=driverid]').val(driverid);
 			myform.find('[name=carid]').val(car.carid || -1);
 			myform.find('[name=year]').val(car.year || "");
 			myform.find('[name=make]').val(car.make || "");
@@ -109,54 +107,11 @@
 			myform.find('[name=indexcode]').val(car.indexcode || "");
 			methods.indexchange.call(myform);
 			myform.find('[name=tireindexed]').prop('checked', car.tireindexed);
-			methods.setnum.call(myform, car.number || "");
+            myform.find('[name=number]').val(car.number || "");
 
-
-			if (!myform.data('cardialoginit'))
-			{
-				myform.data('cardialoginit', true);
-				myform.find('.numberselect').button().click(function() { $(this).blur(); methods.chooseNumber.call(myform); return false; });
-				myform.find('[name=classcode]').change(function() { methods.classchange.call(myform); });
-				myform.find('[name=indexcode]').change(function() { methods.indexchange.call(myform); });
-
-                /*
-				$.validator.setDefaults({ignore:[]});
-				myform.validate({
-					rules: {
-						indexcode: {
-							required: function(element) { return (myform.find("[name=classcode] option:selected").data('indexed') == true); }
-						},
-						number: {
-							required: true,
-							min: 1,
-							max: 1999
-						}
-					},
-			
-					messages: { 
-						indexcode: 'an index is required for indexed classes',
-						number: 'a number is required'
-					},
-			
-					invalidHandler: function(e, validator) {
-						var errors = validator.numberOfInvalids();
-						if (errors) {
-							$(".carerror").html("");
-							$(".carerror").show();
-						} else {
-							$(".carerror").hide();
-						}
-					},
-			
-					errorPlacement: function(error, element) {
-						$(".carerror").append(error);
-					}
-				});
-                */
-			}
 		}
 	};
-	
+
 
 	$.fn.CarEdit = function( method ) {
 		if ( methods[method] ) {
@@ -166,6 +121,11 @@
 		}    
 	};
 
-	
 }) (jQuery);
+
+
+$.validator.addMethod("notinused", function( value, element ) {
+    var used = $(element).data("usednumbers") || [];
+    return ($.inArray(parseInt(value), used) < 0);
+},  "that number is already in use");
 

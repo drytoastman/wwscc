@@ -31,25 +31,25 @@ class MyEmailField(EmailField):
 
 class MyFlaskForm(FlaskForm):
 
-    def html(self, idx, action, method):
+    def html(self, idx, action, method, labelcol='col-md-3', inputcol='col-md-9'):
         ret = list()
         ret.append("<form id='{}' action='{}' method='{}'>".format(idx, action, method))
         ret.append(str(self.csrf_token))
         for f in self:
             if not hasattr(f.widget, 'input_type') or f.widget.input_type != 'submit':
-                ret.append("<div class='row align-items-center'>")
+                ret.append("<div class='row'>")
                 if not hasattr(f.widget, 'input_type') or f.widget.input_type != 'hidden':
-                    ret.append(f.label(class_='col-md-3'))
-                ret.append(f(class_='col-md-6'))
+                    ret.append(f.label(class_=labelcol))
+                ret.append(f(class_=inputcol))
                 ret.append("</div>")
 
-        ret.append("<div class='row align-items-center'>")
+        ret.append("<div class='row'>")
         ret.append("<input type='text' name='message' />")
         ret.append("</div>")
 
         ret.append("<div class='row'>")
-        ret.append("<div class='col-md-3'></div>")
-        ret.append(self.submit(class_="col-md-6 btn btn-primary"))
+        ret.append("<div class='{}'></div>".format(labelcol))
+        ret.append(self.submit(class_="{} btn btn-primary".format(inputcol)))
         ret.append("</div>")
         ret.append("</form>")
         return '\n'.join(ret)
@@ -82,37 +82,39 @@ def attrBaseIntoForm(base, form):
             getattr(form, k).data = base.attr[k]
 
 
+"""
 class ResetPasswordForm(MyFlaskForm):
     username = MyStringField(  'Username', [Length(min=6, max=32)])
     password = MyPasswordField('Password', [Length(min=6, max=32)])
     submit   = SubmitField(    'Reset')
+"""
 
-class LoginForm(MyFlaskForm):
+class PasswordForm(MyFlaskForm):
     gotoseries = HiddenField(    'gotoseries')
     username   = MyStringField(  'Username', [Length(min=6, max=32)])
     password   = MyPasswordField('Password', [Length(min=6, max=32)])
     submit     = SubmitField(    'Login')
 
 class ResetForm(MyFlaskForm):
-    firstname = MyStringField('firstname', [Length(min=2, max=32)])
-    lastname  = MyStringField('lastname',  [Length(min=2, max=32)])
-    email     = MyEmailField( 'email',     [Email()])
+    firstname = MyStringField('First Name', [Length(min=2, max=32)])
+    lastname  = MyStringField('Last Name',  [Length(min=2, max=32)])
+    email     = MyEmailField( 'Email',     [Email()])
     submit    = SubmitField(  'Send Reset Information')
 
 class RegisterForm(MyFlaskForm):
     gotoseries = HiddenField( '  gotoseries')
-    firstname = MyStringField('  firstname', [Length(min=2, max=32)])
-    lastname  = MyStringField('  lastname',  [Length(min=2, max=32)])
-    email     = MyEmailField( '  email',     [Email()])
-    username  = MyStringField('  username',  [Length(min=6, max=32)])
-    password  = MyPasswordField('password',  [Length(min=6, max=32)])
+    firstname = MyStringField('  First Name', [Length(min=2, max=32)])
+    lastname  = MyStringField('  Last Name',  [Length(min=2, max=32)])
+    email     = MyEmailField( '  Email',     [Email()])
+    username  = MyStringField('  Username',  [Length(min=6, max=32)])
+    password  = MyPasswordField('Password',  [Length(min=6, max=32)])
     submit    = SubmitField(  '  Register')
     
 class ProfileForm(MyFlaskForm):
     firstname = MyStringField('First Name', [Length(min=2, max=32)])
     lastname  = MyStringField('Last Name',  [Length(min=2, max=32)])
     email     = MyEmailField( 'Email',      [Email()])
-    membership= MyStringField('Membership', [Length(max=64)])
+    membership= MyStringField('Barcode',    [Length(max=16)])
     address   = MyStringField('Address',    [Length(max=64)])
     city      = MyStringField('City   ',    [Length(max=64)])
     state     = MyStringField('State',      [Length(max=16)])
@@ -123,7 +125,6 @@ class ProfileForm(MyFlaskForm):
     submit    = SubmitField(  'Update')
 
 class CarForm(MyFlaskForm):
-    driverid    = HiddenField(  'driverid')
     carid       = HiddenField(  'carid')
     year        = MyStringField('Year',  [Length(max=8)])
     make        = MyStringField('Make',  [Length(max=16)])
@@ -131,7 +132,7 @@ class CarForm(MyFlaskForm):
     color       = MyStringField('Color', [Length(max=16)])
     classcode   = SelectField(  'Class', [Required()])
     indexcode   = SelectField(  'Index')
-    tireindexed = BooleanField( 'Is Tire Indexed')
+    tireindexed = BooleanField( 'TireFlag')
     number      = IntegerField( 'Number', [Required()])
-    submit      = SubmitField(  'Submit')
+    submit      = SubmitField(  'Update')
 

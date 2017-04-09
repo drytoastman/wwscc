@@ -1,13 +1,25 @@
 {% extends "register/rbase.html" %}
 {% import '/register/macros.html' as m %}
 
+{% block headers %}
+{{super()}}
+<script type="text/javascript">
+$(document).ready(function() { $('[id^=eventtog]').each(function (ii, val) {
+        add_collapse_icons('#'+this.id); 
+    });
+});
+</script>
+{% endblock headers %}
+
+
 {% block content %}
 
 {{m.navbar('events')}}
 
 <div class='container'>
+
 <div class='row justify-content-center'>
-<div class='col-8'>
+<div class='col-10 text-center'>
 ical link for all the registrations for all current series
 <a class='registeredlink' href='{{url_for(".ical", driverid=g.driver.driverid)}}'><span class='fa fa-calendar'></span></a>
 </div>
@@ -19,13 +31,14 @@ ical link for all the registrations for all current series
 {% for ev in events %}
     {% set eclass = ev.isOpen() and "eventopen show" or "eventclosed" %}
 	<div class='eventheader {{eclass}} row justify-content-start'>
-    	<a data-toggle='collapse' href='#event{{ev.eventid}}'>
+    	<a data-toggle='collapse' href='#eventtog{{ev.eventid}}'>
+        <span class='fa'></span>
     	<span class='eventdate'>{{ev.date.strftime('%a %b %d')}}</span>
     	<span class='eventname'>{{ev.name}}</span>
     	</a>
 	</div>
 
-	<div id='event{{ev.eventid}}' data-eventid='{{ev.eventid}}' class='eventholder {{eclass}} collapse row'>
+	<div id='eventtog{{ev.eventid}}' data-eventid='{{ev.eventid}}' class='eventholder {{eclass}} collapse row'>
 	{{eventdisplay(ev, cars, registered[ev.eventid], payments[ev.eventid])}}
 	</div>
 
@@ -102,17 +115,17 @@ ical link for all the registrations for all current series
 
 		{% if ev.isOpen() %}
 			{% if ev.attr.doublespecial and registered|length > 0 %}
-				<span class='limit'>Double entries are allowed but not guaranteed for this event yet</span>
+				<div class='alert alert-warning'>Double entries are allowed but not guaranteed for this event yet</div>
 			{% endif %}
 
 			{% if ev.doublespecial and ev.totlimit and drivercount >= ev.totlimit and registered|length == 0 %}
-				<span class='limit'>This event's single entry limit of {{ev.totlimit}} has been met.</span>
+				<div class='alert alert-warning'>This event's single entry limit of {{ev.totlimit}} has been met.</div>
 			{% elif not ev.doublespecial and ev.totlimit and drivercount >= ev.totlimit %}
-				<span class='limit'>This event's prereg limit of {{ev.totlimit}} has been met.</span>
+				<div class='alert alert-warning'>This event's prereg limit of {{ev.totlimit}} has been met.</div>
 			{% elif registered|length >= ev.perlimit %}
-				<span class='limit'>You have reached this event's prereg limit of {{ev.perlimit}} car(s).</span>
+				<div class='alert alert-warning'>You have reached this event's prereg limit of {{ev.perlimit}} car(s).</div>
 			{% else %}
-				<button class='register btn btn-primary'>Register A Car</button>
+				<button class='register btn btn-outline-primary'>Register For This Event</button>
 			{% endif %}
 	
     		<ul class='payments'>

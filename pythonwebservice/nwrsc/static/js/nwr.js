@@ -1,4 +1,13 @@
 
+function add_collapse_icons(cid) 
+{
+    var c = $(cid);
+    var i = $("a[href=\""+cid+"\"] span.fa");
+    c.on('hidden.bs.collapse', function () { i.removeClass("fa-minus-square-o").addClass("fa-plus-square-o"); });
+    c.on('shown.bs.collapse',  function () { i.removeClass("fa-plus-square-o").addClass("fa-minus-square-o"); });
+    i.addClass(c.hasClass("show") ? "fa-minus-square-o" : "fa-plus-square-o");
+}
+
 (function( $ ){
 
     var methods = {

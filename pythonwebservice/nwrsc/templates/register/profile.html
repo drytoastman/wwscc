@@ -4,13 +4,13 @@
 {% block content %}
 {{m.navbar('profile')}}
 
-<div class='container'>
-{{ m.formerrors(formerror) }}
+<div id='profileouter' class='container'>
 
 <div class='row justify-content-center'>
-<div class='col-6'>
-<h4>Make changes to your profile here</h4>
+<div class='col text-center'>
+<div class='title'>Make changes to your profile here</div>
 This applies to all series
+{{ m.formerrors(formerror) }}
 </div>
 </div>
 {{ form.html('profileform', url_for('.profile'), 'post')|safe }}

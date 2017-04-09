@@ -10,6 +10,7 @@ from flask import abort, Blueprint, current_app, g, redirect, request, render_te
 
 from nwrsc.model import *
 from nwrsc.lib.forms import *
+from nwrsc.lib.encoding import json_encode
 
 log = logging.getLogger(__name__)
 
@@ -30,14 +31,15 @@ def setup():
 @Register.route("/")
 def index():
     if not g.driver: return login()
-    return render_template('serieslist.html', subapp='register', serieslist=Series.list())
+    return render_template('register/serieslist.html', subapp='register', serieslist=Series.active())
 
 @Register.route("/<series>/")
 def series():
-    """ First load of page gets all data along with it so no need for lots of ajax requests """
+    """ If logged in, just redirect to events """
     if not g.driver: return login()
     return redirect(url_for('.events'))
 
+@Register.route("/profile", methods=['POST', 'GET'])
 @Register.route("/<series>/profile", methods=['POST', 'GET'])
 def profile():
     if not g.driver: return login()
@@ -87,7 +89,7 @@ def events():
 
 @Register.route("/logout")
 def logout():
-    session.pop('driverid')
+    session.pop('driverid', None)
     return redirect(url_for('.index'))
 
 @Register.route("/<series>/register", methods=['POST'])
@@ -99,12 +101,23 @@ def unregister():
     return processregistration(Registration.delete)
 
 def processregistration(func):
-    if not g.series or 'driverid' not in session: abort(404)
+    if not g.series or not g.driver: abort(404)
     # TODO verify carid related to driver
     eventid = int(request.form.get('eventid', ''))
     carid = uuid.UUID(request.form.get('carid', ''))
     func(eventid, carid)
     return redirect_series(g.series)
+
+@Register.route("/<series>/usednumbers")
+def usednumbers():
+    if not g.driver: abort(404)
+    classcode = request.args.get('classcode', None)
+    if classcode is None:
+        return "missing data in request"
+
+    g.settings = Settings.get()
+    return json_encode(sorted(list(Car.usedNumbers(g.driver.driverid, classcode, g.settings.superuniquenumbers))))
+
 
 ####################################################################
 # Unauthenticated functions
@@ -135,7 +148,7 @@ def login():
     if request.form.get('message'): # super simple bot test (advanced bots will get by this)
         abort(404)
 
-    login = LoginForm(prefix='login')
+    login = PasswordForm(prefix='login')
     reset = ResetForm(prefix='reset')
     register = RegisterForm(prefix='register')
     formerror = ""
@@ -182,7 +195,7 @@ def login():
 
 @Register.route("/reset", methods=['GET', 'POST'])
 def reset():
-    form = ResetPasswordForm()
+    form = PasswordForm()
     if form.submit.data and form.validate_on_submit():
         if 'driverid' not in session: 
             abort(400, 'No driverid present during reset, how?')
@@ -214,7 +227,7 @@ def reset():
  
 def redirect_series(series=""):
     if series and series in Series.active():
-        return redirect(url_for(".series", series=series))
+        return redirect(url_for(".events", series=series))
     return redirect(url_for(".index"))
 
 
@@ -225,29 +238,6 @@ class RegisterController():
 		# Clear session for database
 		self.user.clear()
 		redirect(url_for(action=''))
-
-	def index(self):
-		""" First load of page gets all data along with it so no need for lots of ajax requests """
-		if self.database is None:
-			return self.databaseSelector(archived=False)
-
-		self._loadDriver()
-		self._loadCars()
-		if c.driver is None:
-			c.previouserror = "Invalid driver ID saved in session, that is pretty weird, login again"
-			self.user.clearSeries()
-			c.otherseries = self.user.activeSeries()
-			return render_mako('/register/login.mako')
-
-		for e in c.events:
-			e.regentries = self.session.query(Registration).join('car') \
-						.filter(Registration.eventid==e.id).filter(Car.driverid==c.driverid).all()
-			e.payments = self.session.query(Payment) \
-						.filter(Payment.eventid==e.id).filter(Payment.driverid==c.driverid).all()
-
-		return render_mako('/register/layout.mako')
-
-
 
 	def _checkLimitState(self, event, driverid, setResponse=True):
 		entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
@@ -327,27 +317,6 @@ class RegisterController():
 		redirect(url_for(action=''))
 
 
-	def getprofile(self):
-		self._loadDriver()
-		return render_mako_def('/register/profile.mako', 'profile')
-
-	def getcars(self):
-		self._loadCars()
-		return render_mako_def('/register/cars.mako', 'carlist')
-
-	def getevent(self):
-		eventid = int(self.routingargs.get('other', 0))
-		event = c.eventmap.get(eventid, None)
-		if event is None:
-			return "Event does not exist"
-
-		event.regentries = self.session.query(Registration).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==c.driverid).all()
-		event.payments = self.session.query(Payment).filter(Payment.eventid==event.id).filter(Payment.driverid==c.driverid).all()
-		self._loadCars()
-		return render_mako_def('/register/events.mako', 'eventdisplay', ev=event)
-
-		 
-
 	def _loadCars(self):
 		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
 		registration = self.session.query(Registration).join('car').distinct().filter(Car.driverid==c.driverid)
@@ -364,12 +333,4 @@ class RegisterController():
 			for event, regid in car.regevents:
 				try: car.canregevents.remove(event.id)
 				except: pass
-
-	def _loadDriver(self):
-		c.driver = self.session.query(Driver).filter(Driver.id==c.driverid).first()
-		if c.driver is None:
-			return
-		c.fields = self.session.query(DriverField).all()
-		for field in c.fields:
-			setattr(c.driver, field.name, c.driver.getExtra(field.name))
 

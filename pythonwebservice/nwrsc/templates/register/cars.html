@@ -7,17 +7,18 @@
 $(document).ready(function() {
     $('#carmodal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget) // Button that triggered the modal
-        $('#carform').CarEdit('initform', '{{g.driver.driverid}}', cars[button.data('carid')]);
+        $('#carform').CarEdit('initform', gCars[button.data('carid')]);
     });
 });
-var cars = Array();
-var classes = Array();
+var gCars = Array();
+var gClasses = Array();
+var gIndexes = {{g.classdata.indexes()|to_json|safe}}
 {% for c in cars.values()|msort('classcode', 'number') %}
-cars['{{c.carid}}'] = {{c|to_json|safe}};
+gCars['{{c.carid}}'] = {{c|to_json|safe}};
 {%- endfor %}
 {% for c in g.classdata.classlist.values()|msort('classcode') -%}
 {% set restrict = g.classdata.restrictedIndexes(c.classcode) %}
-classes['{{c.classcode}}'] = { 'isindexed': {{c.carindexed}}, 'idxrestrict': {{restrict[0]|sort|safe}} };
+gClasses['{{c.classcode}}'] = { 'isindexed': {{'true' if c.carindexed else 'false'}}, 'usecarflag': {{'true' if c.usecarflag else 'false'}}, 'idxrestrict': {{restrict[0]|sort|safe}}, 'flagrestrict': {{restrict[1]|sort|safe}} };
 {%- endfor %}
 </script>
 <style>
@@ -29,22 +30,14 @@ h1 { font-size: 1.4rem; }
 {% block content %}
 {{m.navbar('cars')}}
 
-<div id='carscontainer' class='container'>
+<div id='carscontainer'>
+<div class='title'>Cars Present in {{g.series}}</div>
+<div class='formerror'>{{ m.formerrors(formerror) }}</div>
 
-<div class='row justify-content-center'>
-<div class='col-8'>
-{{ m.formerrors(formerror) }}
-</div>
-</div>
-
-<div class='row title'>
-<div class='col'>Cars In {{g.series}}</div>
-<div class='col'>Registered/Used In</div>
-</div>
-
+<ul>
 {% for car in cars.values()|msort("classcode","number") %}
-<div class='row'>
-<div class='col'>
+    <li>
+    <div class="btn-group" role="group">
     {% if registered[car.carid]|length > 0 %}
 	    <button class='btn btn-outline-secondary disabled fa fa-pencil' title='Cars registered or in use cannot be edited or deleted'></button>
     	<button class='btn btn-outline-secondary disabled fa fa-trash' title='Cars registered or in use cannot be edited or deleted'></button>
@@ -52,38 +45,13 @@ h1 { font-size: 1.4rem; }
     	<button class='editcar   btn btn-outline-primary fa fa-pencil' title='Edit Car' data-carid='{{car.carid}}' data-toggle='modal' data-target='#carmodal'></button>
     	<button class='deletecar btn btn-outline-primary fa fa-trash' title='Delete Car' data-carid='{{car.carid}}'></button>
     {% endif %}
+    </div>
 	{{m.carDisplay(car)}}
-</div>
-<div class='col'>
-	<ul>
-    {% for eventid in registered[car.carid] %}
-        {% set event = events[eventid] %}
-		<li>
-        {% if not event.isOpen() %}
-    		<button class='unreg btn btn-outline-secondary fa fa-trash disabled' title='Event registration is no longer open or car has runs so this assignment cannot be changed'></button>
-        {% else %}
-    		<button class='unreg btn btn-outline-primary fa fa-trash' title='Unregister' data-eventid='{{eventid}}' data-carid='{{car.carid}}'></button>
-        {% endif %}
-		<span class='regevent'>{{event.name}}</span>
-		</li>
-	{% endfor %}
-	</ul>
-</div>
-</div>
+    </li>
 {% endfor %}
-
+</ul>
 </div>
 
-<div class='modal fade' id='carmodal' tabindex=-1 role='dialog'>
-<div class='modal-dialog' role='document'>
-<div class='modal-content'>
-<h1 class='modal-header'>Car Editor</h1>
-<div class='modal-body'>
-<div class='container-fluid'>
-{{ carform.html('carform', url_for('.cars'), 'post')|safe }}
-</div> {# body #}
-</div> {# content #}
-</div> {# dialog #}
-</div> {# modal #}
+{{m.modal('carmodal', 'Car Editor', carform.html('carform', url_for('.cars'), 'post', 'col-md-3', 'col-md-9'))}}
 
 {% endblock content %}

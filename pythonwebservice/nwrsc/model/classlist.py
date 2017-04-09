@@ -83,6 +83,12 @@ class ClassData(object):
         return ret
 
 
+    def indexes(self):
+        ret = list(self.indexlist.keys())
+        ret.remove("")
+        return sorted(ret)
+
+
     def restrictedIndexes(self, classcode):
 
         RINDEX = re.compile(r'([+-])\((.*?)\)')
@@ -110,13 +116,19 @@ class ClassData(object):
                         ret |= globItem(item, fullset)
                     else:
                         ret -= globItem(item, fullset)
-            return fullset - ret
+            return ret
 
         if classcode not in self.classlist or not self.classlist[classcode].caridxrestrict:
             return ([], [])
         full = self.classlist[classcode].caridxrestrict.replace(" ", "")
-        indexrestrict = processList(RINDEX.findall(full), self.indexlist.keys())
-        flagrestrict = processList(RFLAG.findall(full), self.indexlist.keys())
+        idxlist = list(self.indexlist.keys())
+        idxlist.remove("")
+        indexrestrict = processList(RINDEX.findall(full), idxlist)
+        flagrestrict = processList(RFLAG.findall(full), idxlist)
+        if len(indexrestrict) == len(idxlist):
+            indexrestrict = []
+        if len(flagrestrict) == len(idxlist):
+            flagrestrict = []
         return (indexrestrict, flagrestrict)
 
 
