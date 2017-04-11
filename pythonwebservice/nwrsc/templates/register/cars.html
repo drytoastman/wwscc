@@ -8,6 +8,13 @@ $(document).ready(function() {
     $('#carmodal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget) // Button that triggered the modal
         $('#carform').CarEdit('initform', gCars[button.data('carid')]);
+        if (button.hasClass('deletecar')) {
+            $('#carform input[type=text], #carform input[type=number], #carform select').prop('disabled', true);
+            $('#carform [type=submit]').val('Delete');
+        } else {
+            $('#carform input[type=text], #carform input[type=number], #carform select').prop('disabled', false);
+            $('#carform [type=submit]').val('Update');
+        }
     });
 });
 var gCars = Array();
@@ -21,9 +28,6 @@ gCars['{{c.carid}}'] = {{c|to_json|safe}};
 gClasses['{{c.classcode}}'] = { 'isindexed': {{'true' if c.carindexed else 'false'}}, 'usecarflag': {{'true' if c.usecarflag else 'false'}}, 'idxrestrict': {{restrict[0]|sort|safe}}, 'flagrestrict': {{restrict[1]|sort|safe}} };
 {%- endfor %}
 </script>
-<style>
-h1 { font-size: 1.4rem; }
-</style>
 {% endblock headers %}
 
 
@@ -39,14 +43,14 @@ h1 { font-size: 1.4rem; }
     <li>
     <div class="btn-group" role="group">
     {% if registered[car.carid]|length > 0 %}
-	    <button class='btn btn-outline-secondary disabled fa fa-pencil' title='Cars registered or in use cannot be edited or deleted'></button>
-    	<button class='btn btn-outline-secondary disabled fa fa-trash' title='Cars registered or in use cannot be edited or deleted'></button>
+        <button class='btn btn-outline-secondary disabled fa fa-pencil' title='Cars registered or in use cannot be edited or deleted'></button>
+        <button class='btn btn-outline-secondary disabled fa fa-trash' title='Cars registered or in use cannot be edited or deleted'></button>
     {% else %}
-    	<button class='editcar   btn btn-outline-primary fa fa-pencil' title='Edit Car' data-carid='{{car.carid}}' data-toggle='modal' data-target='#carmodal'></button>
-    	<button class='deletecar btn btn-outline-primary fa fa-trash' title='Delete Car' data-carid='{{car.carid}}'></button>
+        <button class='editcar   btn btn-outline-primary fa fa-pencil' title='Edit Car' data-carid='{{car.carid}}' data-toggle='modal' data-target='#carmodal'></button>
+        <button class='deletecar btn btn-outline-primary fa fa-trash' title='Delete Car' data-carid='{{car.carid}}' data-toggle='modal' data-target='#carmodal'></button>
     {% endif %}
     </div>
-	{{m.carDisplay(car)}}
+    {{m.carDisplay(car)}}
     </li>
 {% endfor %}
 </ul>

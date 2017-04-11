@@ -34,7 +34,6 @@ class MyFlaskForm(FlaskForm):
     def html(self, idx, action, method, labelcol='col-md-3', inputcol='col-md-9'):
         ret = list()
         ret.append("<form id='{}' action='{}' method='{}'>".format(idx, action, method))
-        ret.append(str(self.csrf_token))
         for f in self:
             if not hasattr(f.widget, 'input_type') or f.widget.input_type != 'submit':
                 ret.append("<div class='row'>")
@@ -67,9 +66,8 @@ def formIntoAttrBase(form, base):
         if hasattr(form, k):
             setattr(base, k, getattr(form, k).data)
     # leftover fields that aren't in the top level object
-    ignore = base.toplevel | set(['csrf_token', 'submit'])
+    ignore = set(base.toplevel + ['csrf_token', 'submit'])
     for k in set(form._fields) - ignore:
-        print(k)
         base.attr[k] = getattr(form, k).data
 
 def attrBaseIntoForm(base, form):
@@ -125,6 +123,7 @@ class ProfileForm(MyFlaskForm):
     submit    = SubmitField(  'Update')
 
 class CarForm(MyFlaskForm):
+    driverid    = HiddenField(  'driverid')
     carid       = HiddenField(  'carid')
     year        = MyStringField('Year',  [Length(max=8)])
     make        = MyStringField('Make',  [Length(max=16)])
@@ -132,7 +131,7 @@ class CarForm(MyFlaskForm):
     color       = MyStringField('Color', [Length(max=16)])
     classcode   = SelectField(  'Class', [Required()])
     indexcode   = SelectField(  'Index')
-    tireindexed = BooleanField( 'TireFlag')
+    useclsmult  = BooleanField( 'MultFlag')
     number      = IntegerField( 'Number', [Required()])
     submit      = SubmitField(  'Update')
 

@@ -3,7 +3,7 @@
 
 
 {% macro errorcell(tomatch, active) %}
-{% if tomatch+"asdf" == active %}
+{% if tomatch == active %}
 <div class='row'>
 <div class='col text-center'>
 {{ m.formerrors(formerror) }}

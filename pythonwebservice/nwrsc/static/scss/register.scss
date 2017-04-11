@@ -64,10 +64,14 @@ div.container {
     button span {
         color: white;
     }
+    h1 {
+        font-size: 1.4rem;
+    }
 }
 
 .cardisplay {
     display:inline;
+    vertical-align: middle;
     span {
         white-space: nowrap;
     }
@@ -253,13 +257,16 @@ input::-webkit-inner-spin-button {
             margin-left: 0.4rem;
         }
     }
-
+    
     div.insidewrapper {
         padding: 0.5rem;
     }
 
-    .eventcarlist li * {
-        display:inline;
+    ol {
+        padding-left: 1rem;
+        .cardisplay {
+            display: block;
+        }
     }
 
     .alert {
@@ -301,6 +308,31 @@ input::-webkit-inner-spin-button {
     a {
         display: block;
         text-align: center;
+    }
+}
+
+#registermodal {
+    label {
+        font-weight: normal;
+        text-align: left;
+        font-size: 1.1rem;
+    }
+
+    .cardisplay {
+        span.code {
+            display: inline-block;
+            width: 8rem;
+        }
+    }
+
+    .row:hover {
+        background: rgba(0,0,255, 0.1);
+    }
+
+    input[type=checkbox] {
+        margin: 0.15rem auto;
+        height: 2rem;
+        width: 2rem;
     }
 }
 

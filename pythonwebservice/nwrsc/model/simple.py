@@ -29,6 +29,22 @@ class Audit(object):
 
 
 class Car(AttrBase):
+    toplevel = ['carid', 'driverid', 'classcode', 'indexcode', 'number', 'useclsmult']
+
+    def update(self, verifyid):
+        with g.db.cursor() as cur:
+            self.cleanAttr()
+            cur.execute("UPDATE cars SET classcode=%s,indexcode=%s,number=%s,useclsmult=%s,attr=%s where carid=%s and driverid=%s",
+                       (self.classcode, self.indexcode, self.number, self.useclsmult, json.JSONEncoder().encode(self.attr), 
+                        self.carid, verifyid))
+            g.db.commit()
+
+    @classmethod
+    def delete(cls, carid, verifyid):
+        with g.db.cursor() as cur:
+            cur.execute("DELETE FROM cars WHERE carid=%s and driverid=%s", (carid, verifyid))
+            g.db.commit()
+
     @classmethod
     def getForDriver(cls, driverid):
         return cls.getall("select * from cars where driverid=%s order by classcode,number", (driverid,))
@@ -50,6 +66,7 @@ class Challenge(AttrBase):
 
 
 class Driver(AttrBase):
+    toplevel = ['driverid', 'firstname', 'lastname', 'email', 'username', 'password', 'membership']
 
     def update(self):
         with g.db.cursor() as cur:
@@ -133,15 +150,12 @@ class Registration(AttrBase):
         return cls.getall("SELECT r.* FROM registered r JOIN cars c on r.carid=c.carid WHERE c.driverid=%s", (driverid,))
 
     @classmethod
-    def add(cls, eventid, carid):
+    def update(cls, eventid, carids, verifyid):
         with g.db.cursor() as cur:
-            cur.execute("INSERT INTO registered (eventid, carid) VALUES (%s, %s)", (eventid, carid))
-            g.db.commit()
-
-    @classmethod
-    def delete(cls, eventid, carid):
-        with g.db.cursor() as cur:
-            cur.execute("DELETE FROM registered where eventid=%s and carid=%s", (eventid, carid))
+            cur.execute("DELETE from registered where eventid=%s and carid in (select carid from cars where driverid=%s)", (eventid, verifyid))
+            for cid in carids:
+                # FINISH ME, what is a one-liner to insert only if car with carid has driverid=verifyid
+                cur.execute("INSERT INTO registered (eventid, carid) VALUES (%s, %s)", (eventid, cid))
             g.db.commit()
 
 

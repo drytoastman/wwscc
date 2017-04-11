@@ -5,7 +5,6 @@ from flask import g
 class AttrBase(object):
 
     def __init__(self, **kwargs):
-        self.toplevel = set()
         self.attr = dict()
         self._merge(**kwargs)
 
@@ -34,7 +33,6 @@ class AttrBase(object):
             if k == 'attr':
                 self.attr.update(v)
             else:
-                self.toplevel.add(k)
                 setattr(self, k, v)
 
     def cleanAttr(self):

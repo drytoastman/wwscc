@@ -60,6 +60,7 @@
 <div class='container-fluid'>
 <div class='modal-error'></div>
 {{ body|safe }}
+{{caller() if caller}}
 </div> {# modal-body #}
 
 </div> {# modal-content #}
@@ -106,19 +107,19 @@
 
 
 {% macro  paypalLink(event) %}
-	<form class='paypalform' action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'>
-	<span class='eimage'>
-	<input type='hidden' name='cmd' value='_xclick' />
-	<input type='hidden' name='business' value='{{event.paypal}}' />
-	<input type='hidden' name='item_name' value='{{event.name}}' />
-	<input type='hidden' name='custom' value='{{g.driver.driverid}}/{{event.eventid}}' />
-	<input type='hidden' name='amount' value='{{event.cost}}' />
-	<input type='hidden' name='currency_code' value='USD' />
-	<input type='hidden' name='notify_url' value='{{url_for('.ipn')}}'>
-	<input type='image' src='https://www.paypal.com/en_US/i/btn/x-click-but3.gif' name='submit'
-						alt='Make payments with payPal - it&#039;s fast, free and secure!' />
-	</span>
-	</form>
+    <form class='paypalform' action='https://www.paypal.com/cgi-bin/webscr' method='post' target='_blank'>
+    <span class='eimage'>
+    <input type='hidden' name='cmd' value='_xclick' />
+    <input type='hidden' name='business' value='{{event.paypal}}' />
+    <input type='hidden' name='item_name' value='{{event.name}}' />
+    <input type='hidden' name='custom' value='{{g.driver.driverid}}/{{event.eventid}}' />
+    <input type='hidden' name='amount' value='{{event.cost}}' />
+    <input type='hidden' name='currency_code' value='USD' />
+    <input type='hidden' name='notify_url' value='{{url_for('.ipn')}}'>
+    <input type='image' src='https://www.paypal.com/en_US/i/btn/x-click-but3.gif' name='submit'
+                        alt='Make payments with payPal - it&#039;s fast, free and secure!' />
+    </span>
+    </form>
 {% endmacro %}
 
 

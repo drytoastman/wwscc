@@ -52,16 +52,16 @@
 
 		indexchange: function() {
             var myform = this;
-			var tireindexcontainer = myform.find('[name=tireindexed]').parent();
+			var useclsmultcontainer = myform.find('[name=useclsmult]').parent();
 			var cc = methods.currentclass.call(myform);
 			var ci = myform.find('[name=indexcode] option:selected').val() || "noindex";
 			var restrict = cc.flagrestrict;
 
 			if (cc.usecarflag && ((restrict.length == 0) || ($.inArray(ci, restrict) >= 0))) {
-				tireindexcontainer.toggle(true)
+				useclsmultcontainer.toggle(true)
 			} else {
-				myform.find('[name=tireindexed]').prop('checked', false);
-				tireindexcontainer.toggle(false)
+				myform.find('[name=useclsmult]').prop('checked', false);
+				useclsmultcontainer.toggle(false)
 			}
 		},
 
@@ -97,6 +97,7 @@
 				});
 			}
 
+			myform.find('[name=driverid]').val(car.driverid || -1);
 			myform.find('[name=carid]').val(car.carid || -1);
 			myform.find('[name=year]').val(car.year || "");
 			myform.find('[name=make]').val(car.make || "");
@@ -106,7 +107,7 @@
 			methods.classchange.call(myform);
 			myform.find('[name=indexcode]').val(car.indexcode || "");
 			methods.indexchange.call(myform);
-			myform.find('[name=tireindexed]').prop('checked', car.tireindexed);
+			myform.find('[name=useclsmult]').prop('checked', car.useclsmult);
             myform.find('[name=number]').val(car.number || "");
 
 		}

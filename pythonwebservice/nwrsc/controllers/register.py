@@ -58,22 +58,39 @@ def profile():
 def cars():
     if not g.driver: return login()
     g.classdata = ClassData.get()
-    events      = {e.eventid:e for e in Event.byDate()}
-    cars        = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
-    registered  = defaultdict(list)
-    formerror   = ""
     carform     = CarForm()
     carform.classcode.choices = [(c.classcode, "%s - %s" % (c.classcode, c.descrip)) for c in sorted(g.classdata.classlist.values(), key=attrgetter('classcode'))]
     carform.indexcode.choices = [(i.indexcode, "%s - %s" % (i.indexcode, i.descrip)) for i in sorted(g.classdata.indexlist.values(), key=attrgetter('indexcode'))]
 
+    if request.method == 'POST':
+        if request.form.get('submit', '') == 'Delete':
+            Car.delete(request.form.get('carid', ''))
+        elif carform.validate_on_submit():
+            car = Car()
+            formIntoAttrBase(carform, car)
+            car.update()
+
+    events     = {e.eventid:e for e in Event.byDate()}
+    cars       = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
+    registered = defaultdict(list)
     for r in Registration.getForDriver(g.driver.driverid):
         registered[r.carid].append(r.eventid)
-    return render_template('register/cars.html', events=events, cars=cars, registered=registered, carform=carform, formerror=formerror)
+    return render_template('register/cars.html', events=events, cars=cars, registered=registered, carform=carform, formerror=carform.errors)
 
 
-@Register.route("/<series>/events")
+@Register.route("/<series>/events", methods=['POST', 'GET'])
 def events():
     if not g.driver: return login()
+    formerror = ""
+
+    if request.method == 'POST':
+        try:
+            carids = [uuid.UUID(k) for (k,v) in request.form.items() if v == 'y' or v is True]
+            eventid = int(request.form['eventid'])
+            Registration.update(eventid, carids, g.driver.driverid)
+        except Exception as e:
+            formerror = str(e)
+        
     g.classdata = ClassData.get()
     events = Event.byDate()
     cars   = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
@@ -83,30 +100,26 @@ def events():
         registered[r.eventid].append(r.carid)
     for p in Payment.getForDriver(g.driver.driverid):
         payments[p.eventid] = p
+    for e in events:
+        e.drivercount = e.getDriverCount()
+        e.entrycount  = e.getCount()
+        mycount = len(registered[e.eventid])
+        ds = e.attr.get('doublespecial', False)
+        if ds and e.totlimit and e.drivercount > e.totlimit and mycount == 0:
+            e.mylimit = 0
+            e.limitmessage = "This event's single entry limit of {} has been met".format(e.totlimit)
+        elif not ds and e.totlimit and e.entrycount >= e.totlimit:
+            e.mylimit = mycount
+            e.limitmessage = "This event's prereg limit of {} has been met".format(e.totlimit)
+        elif mycount >= e.perlimit:
+            e.mylimit = mycount
+            e.limitmessage = "You have reached this event's prereg limit of {} car(s)".format(e.perlimit)
+        else:
+            e.mylimit = min(e.perlimit, e.totlimit and e.totlimit-e.entrycount or 9999)
+            e.limitmessage = ""
 
-    return render_template('register/events.html', events=events, cars=cars, registered=registered, payments=payments)
+    return render_template('register/events.html', events=events, cars=cars, registered=registered, payments=payments, formerror=formerror)
 
-
-@Register.route("/logout")
-def logout():
-    session.pop('driverid', None)
-    return redirect(url_for('.index'))
-
-@Register.route("/<series>/register", methods=['POST'])
-def register():
-    return processregistration(Registration.add)
-    
-@Register.route("/<series>/unregister", methods=['POST'])
-def unregister():
-    return processregistration(Registration.delete)
-
-def processregistration(func):
-    if not g.series or not g.driver: abort(404)
-    # TODO verify carid related to driver
-    eventid = int(request.form.get('eventid', ''))
-    carid = uuid.UUID(request.form.get('carid', ''))
-    func(eventid, carid)
-    return redirect_series(g.series)
 
 @Register.route("/<series>/usednumbers")
 def usednumbers():
@@ -117,6 +130,12 @@ def usednumbers():
 
     g.settings = Settings.get()
     return json_encode(sorted(list(Car.usedNumbers(g.driver.driverid, classcode, g.settings.superuniquenumbers))))
+
+
+@Register.route("/logout")
+def logout():
+    session.pop('driverid', None)
+    return redirect(url_for('.index'))
 
 
 ####################################################################
@@ -232,105 +251,18 @@ def redirect_series(series=""):
 
 
 
-class RegisterController():
+def _checkLimitState(event, driverid, setResponse=True):
+    entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
 
-	def logout(self):
-		# Clear session for database
-		self.user.clear()
-		redirect(url_for(action=''))
-
-	def _checkLimitState(self, event, driverid, setResponse=True):
-		entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
-
-		if event.doublespecial and event.drivercount >= event.totlimit and entries.count() == 0:  # past single driver limit, no more new singles
-			if setResponse: response.status = "400 Single Driver Limit of %d reached" % (event.totlimit)
-			return False
-		if not event.doublespecial and event.totlimit and event.count >= event.totlimit:
-			if setResponse: response.status = "400 Event limit of %d reached" % (event.totlimit)
-			return False
-		if entries.count() >= event.perlimit:
-			if setResponse: response.status = "400 Entrant limit of %d reached" % (event.perlimit)
-			return False
-		return True
-		
-		
-	def registerCarsForEvent(self):
-		try:
-			eventid = int(request.POST.pop('eventid', 0))
-			event = self.session.query(Event).get(eventid)
-			for carid in map(int, request.POST):
-				car = self.session.query(Car).get(carid)
-				if not self._checkLimitState(event, car.driverid):
-					return
-				reg = Registration(eventid, carid)
-				self.session.add(reg)
-			self.session.commit()
-		except Exception as e:
-			response.status = '400 Car registration failed. Possible stale browser state, try reloading page'
-			log.error("registerevents", exc_info=1)
-
-		 
-	def registerEventsForCar(self):
-		try:
-			carid = int(request.POST.pop('carid', 0))
-			car = self.session.query(Car).get(carid)
-
-			for eventid in map(int, request.POST):
-				event = self.session.query(Event).get(eventid)
-				if not self._checkLimitState(event, car.driverid):
-					return
-				reg = Registration(eventid, carid)
-				self.session.add(reg)
-
-			self.session.commit()
-		except Exception as e:
-			response.status = '400 Event registration failed. Possible stale browser state, try reloading page'
-			log.error("registercars", exc_info=1)
-
-		 
-	def unRegisterCar(self):
-		try:
-			regid = int(request.POST.get('regid', 0))
-			self.session.delete(self.session.query(Registration).get(regid))
-			self.session.commit()
-		except Exception as e:
-			response.status = '400 Unregister failed. Possible stale browser state, try reloading page'
-			log.error("unregistercar", exc_info=1)
-
-		 
-	#@validate(schema=DriverSchema(), form='profile', prefix_error=False)
-	def newprofile(self):
-		query = self.session.query(Driver)
-		query = query.filter(Driver.firstname.like(self.form_result['firstname'])) # no case compare
-		query = query.filter(Driver.lastname.like(self.form_result['lastname'])) # no case compare
-		query = query.filter(Driver.email.like(self.form_result['email'])) # no case compare
-		for d in query.all():
-			self.user.setPreviousError("Name and unique ID already exist, please login instead")
-			redirect(url_for(action=''))
-
-		driver = Driver()
-		self.session.add(driver)
-		self._extractDriver(driver)
-		self.session.commit()
-
-		self.user.setLoginInfo(driver)
-		redirect(url_for(action=''))
-
-
-	def _loadCars(self):
-		c.cars = self.session.query(Car).filter(Car.driverid==c.driverid).order_by(Car.classcode,Car.number).all()
-		registration = self.session.query(Registration).join('car').distinct().filter(Car.driverid==c.driverid)
-
-		openevents = list()
-		for event in c.events:
-			if not event.isOpen: continue
-			if not self._checkLimitState(event, c.driverid, setResponse=False): continue
-			openevents.append(event.id)
-
-		for car in c.cars:
-			car.regevents = sorted([(c.eventmap[reg.eventid], reg.id) for reg in registration.all() if reg.carid == car.id], key = lambda x: x[0].date)
-			car.canregevents = list(openevents)
-			for event, regid in car.regevents:
-				try: car.canregevents.remove(event.id)
-				except: pass
+    if event.doublespecial and event.drivercount >= event.totlimit and entries.count() == 0:  # past single driver limit, no more new singles
+            if setResponse: response.status = "400 Single Driver Limit of %d reached" % (event.totlimit)
+            return False
+    if not event.doublespecial and event.totlimit and event.count >= event.totlimit:
+            if setResponse: response.status = "400 Event limit of %d reached" % (event.totlimit)
+            return False
+    if entries.count() >= event.perlimit:
+            if setResponse: response.status = "400 Entrant limit of %d reached" % (event.perlimit)
+            return False
+    return True
+    
 

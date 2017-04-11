@@ -27,7 +27,7 @@ public class ApplicationState {
 	   public String getCurrentHost() { return host; }
 	   public String getCurrentSeries() { return seriesName; }
 	   public Event getCurrentEvent() { return currentEvent; }
-	   public int getCurrentEventId() { return currentEvent.getEventId(); }
+	   public int getCurrentEventId() { if (currentEvent != null) { return currentEvent.getEventId(); } else { return -1; } }
 	   public int getCurrentCourse() { return currentCourse; }
 	   public int getCurrentRunGroup() { return currentRunGroup; }
 	   public int getCurrentChallengeId() { return currentChallengeId; }	
