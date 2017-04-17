@@ -8,12 +8,46 @@
 
 <div class='row justify-content-center'>
 <div class='col text-center'>
-<div class='title'>Make changes to your profile here</div>
-This applies to all series
-{{ m.formerrors(formerror) }}
+<div>{{ m.formerrors(formerror) }}</div>
 </div>
 </div>
-{{ form.html('profileform', url_for('.profile'), 'post')|safe }}
+
+<div class='row justify-content-center'>
+
+<div class='col-md-6'>
+<div class='title'>Profile</div>
+{{m.driverDisplay(g.driver)}}
+<button class='editprofile btn btn-outline-primary' title='Edit Profile' data-toggle='modal' data-target='#profilemodal'>Edit Profile</button>
 </div>
+
+<div class='col-md-6'>
+<div class='row'>
+<div class='title col'>
+Upcoming Entries
+</div>
+</div> {# sub-row #}
+
+<div class='row'><div class='col'>
+<a class='registeredlink text-center' href='{{url_for(".ical", driverid=g.driver.driverid)}}'><span class='fa fa-calendar'></span>ical link</a>
+</div></div>
+
+{% for date,events in upcoming.items()|sort %}
+{% for (series,name),entries in events.items()|sort %}
+<div class='row'><div class='col eventtitle'>
+<span class='date'>{{date}} </span>
+<span class='series'>{{series}} </span>
+<span class='name'>{{name}}</span>
+</div></div>
+{% for e in entries %}
+<div class='row'><div class='col cardisplay offset-sm-1'>{{m.carDisplay(e)}}</div></div>
+{% endfor %}
+{% endfor %}
+{% endfor %}
+
+</div> {# col-md-6 #}
+</div> {# row #}
+</div> {# continer #}
+
+{{m.modal('profilemodal', 'Profile Editor', form.html('profileform', url_for('.profile'), 'post', 'col-md-3', 'col-md-9'))}}
 
 {% endblock content %}

@@ -3,13 +3,19 @@
 	var methods = {
 
         currentclass: function() {
-			return gClasses[$(this).find('[name=classcode] option:selected').val()];
+			return gClasses[$(this).find('[name=classcode] option:selected').val()] || {};
         },
 
 		classchange: function() {
             var myform = this;
 			var cc = methods.currentclass.call(myform);
 			var indexselect = myform.find('[name=indexcode]');
+
+            if (!cc) {
+				indexselect.val(0);
+			    myform.find('[name=indexcode]').parent().toggle(false);
+                return;
+            }
             
 			if (cc.isindexed) {
 				indexselect.toggle(true);
@@ -55,13 +61,14 @@
 			var useclsmultcontainer = myform.find('[name=useclsmult]').parent();
 			var cc = methods.currentclass.call(myform);
 			var ci = myform.find('[name=indexcode] option:selected').val() || "noindex";
-			var restrict = cc.flagrestrict;
 
-			if (cc.usecarflag && ((restrict.length == 0) || ($.inArray(ci, restrict) >= 0))) {
+			myform.find('[name=useclsmult]').prop('checked', false);
+			useclsmultcontainer.toggle(false)
+
+            if (!cc) {
+                return;
+            } else if (cc.usecarflag && ((cc.flagrestrict.length == 0) || ($.inArray(ci, cc.flagrestrict) >= 0))) {
 				useclsmultcontainer.toggle(true)
-			} else {
-				myform.find('[name=useclsmult]').prop('checked', false);
-				useclsmultcontainer.toggle(false)
 			}
 		},
 
@@ -82,6 +89,9 @@
 						indexcode: {
 							required: function(element) { return (methods.currentclass.call(myform).isindexed); }
 						},
+                        classcode: {
+                            required: true
+                        },
 						number: {
 							required: true,
                             digits: true,
@@ -97,6 +107,8 @@
 				});
 			}
 
+            $("a[href=\"#usedlist\"] span.label").text("");
+            var ul = $("#usedlist ul").html("");
 			myform.find('[name=driverid]').val(car.driverid || -1);
 			myform.find('[name=carid]').val(car.carid || -1);
 			myform.find('[name=year]').val(car.year || "");
@@ -107,9 +119,8 @@
 			methods.classchange.call(myform);
 			myform.find('[name=indexcode]').val(car.indexcode || "");
 			methods.indexchange.call(myform);
-			myform.find('[name=useclsmult]').prop('checked', car.useclsmult);
+			myform.find('[name=useclsmult]').prop('checked', car.useclsmult || false);
             myform.find('[name=number]').val(car.number || "");
-
 		}
 	};
 

@@ -49,7 +49,14 @@ div.container {
 }
 
 .title {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
+    border-bottom: 1px solid gray;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    span.smaller {
+        font-size: 1.0rem;
+        vertical-align: sub;
+    }
 }
 
 .formerror {
@@ -94,7 +101,7 @@ form {
     
     label.error {
         color: red;
-        margin: auto;
+        margin-left: auto;
     }
 
     input.error, select.error {
@@ -142,6 +149,11 @@ input::-webkit-inner-spin-button {
             padding-left: 0.1rem !important;
         }
     }
+
+    .col-md-6 {
+        margin-top: 1rem;
+    }
+
     #seriesdropdown {
         .dropdown-menu, .dropdown-item {
             color: $bootstrapitem;
@@ -174,6 +186,13 @@ input::-webkit-inner-spin-button {
     }
 }
 
+@media (max-width: 576px) {
+    #eventscontainer {
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+    }
+}
+
 /* Things specific to particular containers */
 
 #loginouter {
@@ -197,13 +216,45 @@ input::-webkit-inner-spin-button {
 }
 
 #profileouter {
-    padding-left: 2rem;
-    padding-right: 2rem;
-    max-width: 40rem;
+    button.editprofile {
+        display: block;
+        margin-top: 1rem;
+    }
+
+    .driverwrapper {
+        .name {
+            font-weight: bold;
+        }
+        :not(.name) {
+            font-size: 0.9rem;
+            margin-left: 0.3rem;
+        }
+    }
+
+    .registeredlink {
+        margin-left: -0.5rem;
+    }
+
+    .eventtitle {
+        margin-top: 0.6rem;
+        font-size: 1.05rem;
+        .date {
+            font-weight: bold;
+        }
+    }
+
+    .fa-calendar {
+        vertical-align: initial;
+    }
+
+    .cardisplay {
+        font-size: 0.9rem;
+    }
 }
+    
 
 #eventscontainer {
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    xbox-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 
     div.eventheader {
         border: 1px solid $bordercolor;
@@ -281,18 +332,29 @@ input::-webkit-inner-spin-button {
     
 
 #carscontainer {
-    display: table;
-    margin: auto;
-    padding-top: 1rem;
+    margin-top: 1rem;
 
-    ul li {
-        padding: 0.3rem;
+    > div {
+        text-align: center;
+        width: 100%;
+    }
+
+    ul {
+        display: inline-block;
+        margin: auto;
+        text-align: left;
+        li {
+            padding: 0.3rem;
+        }
     }
 
     .btn-group {
         margin-right: 0.5rem;
     }
 
+    button.newcar {
+        width: 100%;
+    }
 }
 
 

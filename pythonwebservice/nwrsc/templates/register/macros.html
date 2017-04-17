@@ -4,14 +4,12 @@
   <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
-  <div class='navbar-brand'>
-        <img src='/static/images/cone.png'/>
-        Scorekeeper Reg
-  </div>
+  <div class='navbar-brand'><img src='/static/images/cone.png'/> Scorekeeper Reg</div>
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav">
+        <li class="nav-item {{'active' if current=='profile'}}"><a class="nav-link" href="{{url_for(".profile")}}">Profile</a></li>
         <li id="seriesdropdown" class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="http://example.com" id="navbarDropdownMenuLink" data-toggle="dropdown">{{g.series or "<no series>"}}</a>
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown">{{g.series or "<no series>"}}</a>
           <div class="dropdown-menu">
           {% for s in g.activeseries %}
             {% if s != g.series %}
@@ -20,7 +18,6 @@
           {% endfor %}
           </div>
         </li>
-        <li class="nav-item {{'active' if current=='profile'}}"><a class="nav-link" href="{{url_for(".profile")}}">Profile</a></li>
         {% if not g.series  %}
         <li class="nav-item"><a class="nav-link disabled">Cars</a></li>
         <li class="nav-item"><a class="nav-link disabled">Events</a></li>
@@ -69,31 +66,30 @@
 {% endmacro %}
 
 
-
-
 {% macro driverDisplay(driver) %}
 {% set basic = ('address', 'city', 'state', 'zip', 'phone', 'brag', 'sponsor') %}
 
-<span class='name'>{{driver.firstname}} {{driver.lastname}}</span>
-<span class='email'>{{driver.email}}</span>
-<span class='membership'>{{driver.membership}}</span>
-<span class='address'>{{driver.attr.address}}</span>
-<span class='csz'>{{driver.attr.city}} {{driver.attr.state}} {{driver.attr.zip}}</span>
-<span class='phone'>{{driver.attr.phone}}</span>
-<span class='brag'>Brag: {{driver.attr.brag}}</span>
-<span class='dsponsor'>Sponsor: {{driver.attr.sponsor}}</span>
+<div class='driverwrapper'>
+<div class='name'>{{driver.firstname}} {{driver.lastname}}</div>
+<div class='email'>{{driver.email}}</div>
+<div class='membership'>{{driver.membership}}</div>
+<div class='address'>{{driver.attr.address}}</div>
+<div class='csz'>{{driver.attr.city}} {{driver.attr.state}} {{driver.attr.zip}}</div>
+<div class='phone'>{{driver.attr.phone}}</div>
+{% if driver.attr.brag %}
+<div class='brag'>Brag: {{driver.attr.brag}}</div>
+{% endif %}
+{% if driver.attr.sponsor %}
+<div class='dsponsor'>Sponsor: {{driver.attr.sponsor}}</div>
+{% endif %}
 
 {% for k, v in driver.attr.items(): -%}
 {%- if k not in basic -%}
-<span class='{{k}}'>{{v}}</span>
+<div class='{{k}}'>{{v}}</div>
 {%- endif -%}
 {%- endfor %}
+</div>
 
-<a class='registeredlink' href='{{url_for(".ical", driverid=driver.driverid)}}'>
-<img src='/images/calendaricon.png'>Registered Cars iCal Link
-</a> 
-
-<input  type='button' value='Edit' class='editprofile' data-driverid='{{driver.id}}'/> 
 {% endmacro %}
 
 

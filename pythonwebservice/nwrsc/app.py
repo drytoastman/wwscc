@@ -43,7 +43,7 @@ class FlaskWithPool(Flask):
             # Set up the schema path if we have a series
             g.seriestype = Series.type(g.series)
             with g.db.cursor() as cur:
-                cur.execute("SET search_path=%s,'public'", (g.series,))
+                cur.execute("SET search_path=%s,'public'; commit", (g.series,))
 
     def db_prepare(self):
         """ Get a database connection from the pool and setup the schema path """

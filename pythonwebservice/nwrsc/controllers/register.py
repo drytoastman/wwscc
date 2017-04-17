@@ -50,8 +50,10 @@ def profile():
         formIntoAttrBase(form, g.driver)
         g.driver.update()
 
+    g.classdata = ClassData.get()
+    upcoming = getAllUpcoming(g.driver.driverid)
     attrBaseIntoForm(g.driver, form)
-    return render_template('register/profile.html', form=form, formerror=form.errors)
+    return render_template('register/profile.html', form=form, formerror=form.errors, upcoming=upcoming)
 
 
 @Register.route("/<series>/cars", methods=['POST', 'GET'])
@@ -61,21 +63,33 @@ def cars():
     carform     = CarForm()
     carform.classcode.choices = [(c.classcode, "%s - %s" % (c.classcode, c.descrip)) for c in sorted(g.classdata.classlist.values(), key=attrgetter('classcode'))]
     carform.indexcode.choices = [(i.indexcode, "%s - %s" % (i.indexcode, i.descrip)) for i in sorted(g.classdata.indexlist.values(), key=attrgetter('indexcode'))]
+    formerror = ""
 
     if request.method == 'POST':
-        if request.form.get('submit', '') == 'Delete':
-            Car.delete(request.form.get('carid', ''))
-        elif carform.validate_on_submit():
-            car = Car()
-            formIntoAttrBase(carform, car)
-            car.update()
+        try:
+            action = request.form.get('submit')
+            if action == 'Delete':
+                Car.delete(request.form.get('carid', ''), g.driver.driverid)
+            elif carform.validate():
+                car = Car()
+                formIntoAttrBase(carform, car)
+                if action == 'Update':
+                    car.update(g.driver.driverid)
+                elif action == 'Create':
+                    car.new(g.driver.driverid)
+                else:
+                    formerror = "Invalid request ({})".format(action)
 
-    events     = {e.eventid:e for e in Event.byDate()}
-    cars       = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
-    registered = defaultdict(list)
-    for r in Registration.getForDriver(g.driver.driverid):
-        registered[r.carid].append(r.eventid)
-    return render_template('register/cars.html', events=events, cars=cars, registered=registered, carform=carform, formerror=carform.errors)
+        except Exception as e:
+            g.db.rollback()
+            formerror = str(e)
+
+    events = {e.eventid:e for e in Event.byDate()}
+    cars   = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
+    active = defaultdict(set)
+    for carid,eventid in Driver.activecars(g.driver.driverid):
+        active[carid].add(eventid)
+    return render_template('register/cars.html', events=events, cars=cars, active=active, carform=carform, formerror=formerror or carform.errors)
 
 
 @Register.route("/<series>/events", methods=['POST', 'GET'])
@@ -89,6 +103,7 @@ def events():
             eventid = int(request.form['eventid'])
             Registration.update(eventid, carids, g.driver.driverid)
         except Exception as e:
+            g.db.rollback()
             formerror = str(e)
         
     g.classdata = ClassData.get()
@@ -159,7 +174,8 @@ def ipn():
 
 @Register.route("/ical/<driverid>")
 def ical(driverid):
-    return "ical for %s" % driverid
+    upcoming = getAllUpcoming(driverid)
+    return str(upcoming)
 
 @Register.route("/login", methods=['POST', 'GET'])
 def login():
@@ -249,8 +265,14 @@ def redirect_series(series=""):
         return redirect(url_for(".events", series=series))
     return redirect(url_for(".index"))
 
-
-
+def getAllUpcoming(driverid):
+    upcoming = defaultdict(lambda: defaultdict(list))
+    for s in Series.active():
+        for r in Registration.getForSeries(s, driverid):
+            if r.date >= datetime.date.today():
+                upcoming[r.date][s, r.name].append(r)
+    return upcoming
+ 
 def _checkLimitState(event, driverid, setResponse=True):
     entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
 

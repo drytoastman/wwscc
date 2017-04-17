@@ -7,13 +7,16 @@
 $(document).ready(function() {
     $('#carmodal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget) // Button that triggered the modal
-        $('#carform').CarEdit('initform', gCars[button.data('carid')]);
+        $('#carform').CarEdit('initform', gCars[button.data('carid')] || {});
         if (button.hasClass('deletecar')) {
             $('#carform input[type=text], #carform input[type=number], #carform select').prop('disabled', true);
             $('#carform [type=submit]').val('Delete');
-        } else {
+        } else if (button.hasClass('editcar')) {
             $('#carform input[type=text], #carform input[type=number], #carform select').prop('disabled', false);
             $('#carform [type=submit]').val('Update');
+        } else {
+            $('#carform input[type=text], #carform input[type=number], #carform select').prop('disabled', false);
+            $('#carform [type=submit]').val('Create');
         }
     });
 });
@@ -34,15 +37,22 @@ gClasses['{{c.classcode}}'] = { 'isindexed': {{'true' if c.carindexed else 'fals
 {% block content %}
 {{m.navbar('cars')}}
 
-<div id='carscontainer'>
-<div class='title'>Cars Present in {{g.series}}</div>
+<div id='carscontainer' class='container'>
+<div class='row justify-content-center'>
+<div class='col'>
 <div class='formerror'>{{ m.formerrors(formerror) }}</div>
+</div> {# form col #}
+</div> {# form row #}
 
+<div class='row justify-content-center'>
+<div class='col'>
+<div class='ulouter'>
 <ul>
+<div class='title'>Cars In {{g.series.upper()}}</div>
 {% for car in cars.values()|msort("classcode","number") %}
     <li>
     <div class="btn-group" role="group">
-    {% if registered[car.carid]|length > 0 %}
+    {% if active[car.carid]|length > 0 %}
         <button class='btn btn-outline-secondary disabled fa fa-pencil' title='Cars registered or in use cannot be edited or deleted'></button>
         <button class='btn btn-outline-secondary disabled fa fa-trash' title='Cars registered or in use cannot be edited or deleted'></button>
     {% else %}
@@ -53,8 +63,14 @@ gClasses['{{c.classcode}}'] = { 'isindexed': {{'true' if c.carindexed else 'fals
     {{m.carDisplay(car)}}
     </li>
 {% endfor %}
+    <li>
+    <button class='newcar btn btn-outline-primary' title='Create Car' data-toggle='modal' data-target='#carmodal'>Create New Entry</button>
+    </li>
 </ul>
-</div>
+</div> {# ulouter #}
+</div> {# col #}
+</div> {# row #}
+</div> {# container #}
 
 {{m.modal('carmodal', 'Car Editor', carform.html('carform', url_for('.cars'), 'post', 'col-md-3', 'col-md-9'))}}
 

@@ -32,8 +32,6 @@ gRegistered[{{e.eventid}}] = {{registered[e.eventid]|to_json|safe}};
 
 <div class='row'>
 <div class='col text-center'>
-ical link for all the registrations for all current series
-<a class='registeredlink' href='{{url_for(".ical", driverid=g.driver.driverid)}}'><span class='fa fa-calendar'></span></a>
 <div class='formerror'>{{ m.formerrors(formerror) }}</div>
 </div>
 </div>
@@ -128,7 +126,7 @@ ical link for all the registrations for all current series
     </div>
 
     <div class='eventcarlist col-7'>
-        <div class='header'>Registered Cars</div>
+        <div class='header'>Your Registration</div>
         <ol>
         {% for carid in registered %}
             <li>
@@ -143,7 +141,7 @@ ical link for all the registrations for all current series
             {% endif %}
 
             {% if ev.mylimit > 0 or registered|length > 0 %}
-            <button class='register btn btn-outline-primary' data-eventid='{{ev.eventid}}' data-limit='{{ev.mylimit}}' data-toggle='modal' data-target='#registermodal'>Add/Change Your Registration</button>
+            <button class='register btn btn-outline-primary' data-eventid='{{ev.eventid}}' data-limit='{{ev.mylimit}}' data-toggle='modal' data-target='#registermodal'>Add/Change</button>
             {% endif %}
 
             {% if ev.limitmessage %}
