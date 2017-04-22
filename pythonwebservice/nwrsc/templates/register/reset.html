@@ -7,7 +7,7 @@
 
 <h3>Reset Username and Password</h3>
 
-<div class='row justify-content-md-center'><div class='col col-md-auto error'>{{ m.formerrors(formerror) }}</div></div>
+<div class='row justify-content-md-center'><div class='col col-md-auto error'>{{ m.errordisplay() }}</div></div>
 
 {{form.html('resetform', url_for('.reset'), method='POST')|safe}}
 <div class='row'>

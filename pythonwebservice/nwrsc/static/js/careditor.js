@@ -22,13 +22,13 @@
 			    myform.find('[name=indexcode]').parent().toggle(true);
 				var restrict = cc.idxrestrict;
                 if (restrict.length == 0) {
-                    restrict = gIndexes;
+                    restrict = gIndexes.keys();
                 }
 				
 				indexselect.find("option").remove();
                 indexselect.append(new Option("", "", false, false));
    				for (var ii = 0; ii < restrict.length; ii++) {
-                    indexselect.append(new Option(restrict[ii], restrict[ii], false, false));
+                    indexselect.append(new Option(restrict[ii] + " - " + gIndexes[restrict[ii]], restrict[ii], false, false));
                 }
 			} else {
 				indexselect.val(0);
@@ -41,9 +41,12 @@
 
             // Get the objects we want and set initial values for the structure
             var code = myform.find('[name=classcode] option:selected').val();
+            if (!code) return; // blank value with new dialog
+
             var numobj = myform.find('[name=number]').data('usednumbers', []);
-            $("a[href=\"#usedlist\"] span.label").text(" Unavailable Numbers in " + code);
-            var ul = $("#usedlist ul").html("loading...");
+            $("#usedwrapper a").toggle(true);
+            $("#usedwrapper span.label").text(" Unavailable Numbers in " + code);
+            var ul = $("#usedwrapper ul").html("loading...");
 
             // Actually make a request for the list and update the UL
             $.get("usednumbers", {'classcode': code}, function (data) {
@@ -80,8 +83,8 @@
 				myform.data('cardialoginit', true);
 				myform.find('[name=classcode]').change(function() { methods.classchange.call(myform); });
 				myform.find('[name=indexcode]').change(function() { methods.indexchange.call(myform); });
-                myform.find('[name=number]').after("<div style='margin:auto;width:100%'><a data-toggle='collapse' href='#usedlist'><span class='fa'/><span class='label'>Numbers Used By Others</span></a><div id='usedlist' class='collapse'><ul></ul></div></div>");
-                add_collapse_icons('#usedlist');
+                myform.find('[name=number]').after("<div id='usedwrapper'><a data-toggle='collapse' href='#usedlist'><span class='fa'></span><span class='label'></span></a><div id='usedlist' class='collapse'><ul></ul></div></div>");
+                add_collapse_icons("#usedlist")
 
 				$.validator.setDefaults({ignore:[]});
 				myform.validate({
@@ -107,8 +110,8 @@
 				});
 			}
 
-            $("a[href=\"#usedlist\"] span.label").text("");
-            var ul = $("#usedlist ul").html("");
+            $("#usedwrapper a").toggle(false);
+            var ul = $("#usedwrapper ul").html("");
 			myform.find('[name=driverid]').val(car.driverid || -1);
 			myform.find('[name=carid]').val(car.carid || -1);
 			myform.find('[name=year]').val(car.year || "");

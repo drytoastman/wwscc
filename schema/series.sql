@@ -120,6 +120,7 @@ CREATE TABLE events (
     countedruns   INTEGER     NOT NULL DEFAULT 0, 
 	segments      INTEGER     NOT NULL DEFAULT 0,
     perlimit      INTEGER     NOT NULL DEFAULT 0, 
+    sinlimit      INTEGER     NOT NULL DEFAULT 0, 
     totlimit      INTEGER     NOT NULL DEFAULT 0, 
     conepen       FLOAT       NOT NULL DEFAULT 2.0, 
     gatepen       FLOAT       NOT NULL DEFAULT 10.0, 
@@ -133,7 +134,7 @@ GRANT  ALL ON events TO <seriesname>;
 GRANT  ALL ON events_eventid_seq TO <seriesname>;
 CREATE TRIGGER eventmod AFTER INSERT OR UPDATE OR DELETE ON events FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 CREATE TRIGGER eventuni BEFORE UPDATE ON events FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
-COMMENT ON TABLE events IS 'The list of events for this series, attr includes location, sponsor, host, chair, designer, paypal, snail, cost, notes, doublespecial, etc';
+COMMENT ON TABLE events IS 'The list of events for this series, attr includes location, sponsor, host, chair, designer, paypal, snail, cost, notes, etc';
 
 
 CREATE TABLE cars (

@@ -3,7 +3,7 @@ $grayborder: 1px solid #bbb;
 $eventsborder: 1px solid #ccc;
 $containerborder: 1px solid #aaa;
 $linkblue: rgb(40,40,255);
-$bordercolor: #CCC;
+$bordercolor: #BBB;
 
 $bootstrapblue: #0275d8;
 $bootstrapitem: rgba(255, 255, 255, 0.75);
@@ -27,9 +27,6 @@ nav {
 .navbar {
     padding: 0px;
   
-    .fa-calendar {
-        color: rgba(255, 255, 255, 0.5);
-    }
     .nav-item > a:hover  {
         color: white !important;
     }
@@ -38,19 +35,10 @@ nav {
     }
 }
 
-div.container {
-    margin-top: 1.5rem;
-}
-
-.fa {
-    padding: 0px 0.5rem;
-    font-size: 1.4rem;
-    vertical-align: middle;
-}
 
 .title {
     font-size: 1.4rem;
-    border-bottom: 1px solid gray;
+    border-bottom: 1px solid $bordercolor;
     margin-bottom: 0.5rem;
     text-align: center;
     span.smaller {
@@ -59,7 +47,7 @@ div.container {
     }
 }
 
-.formerror {
+.error {
     color: red;
 }
 
@@ -77,10 +65,15 @@ div.container {
 }
 
 .cardisplay {
-    display:inline;
-    vertical-align: middle;
     span {
         white-space: nowrap;
+    }
+    span.code {
+        font-weight: bold;
+        display: block;
+    }
+    span.desc {
+        font-size: 0.9rem;
     }
 }
 
@@ -186,13 +179,6 @@ input::-webkit-inner-spin-button {
     }
 }
 
-@media (max-width: 576px) {
-    #eventscontainer {
-        margin-left: 0.5rem;
-        margin-right: 0.5rem;
-    }
-}
-
 /* Things specific to particular containers */
 
 #loginouter {
@@ -238,6 +224,8 @@ input::-webkit-inner-spin-button {
     .eventtitle {
         margin-top: 0.6rem;
         font-size: 1.05rem;
+        white-space: nowrap;
+        overflow: hidden;
         .date {
             font-weight: bold;
         }
@@ -245,23 +233,35 @@ input::-webkit-inner-spin-button {
 
     .fa-calendar {
         vertical-align: initial;
+        padding: 0px 0.4rem;
+        font-size: 1.4rem;
     }
 
-    .cardisplay {
+    ol {
         font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        padding-left: 2rem;
     }
 }
     
 
+#eventsouter {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
 #eventscontainer {
-    xbox-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    width: 100%;
+    min-width: 20rem;
+    margin: auto;
+
+    > .title {
+        border-bottom-style: none;
+    }
 
     div.eventheader {
-        border: 1px solid $bordercolor;
-        border-bottom-style: none;
-        background: #FFF;
-        padding-bottom: 10px;
-        margin-bottom: -10px;
+        border-top: 1px solid $bordercolor;
 
         a {
             cursor: pointer;
@@ -291,10 +291,6 @@ input::-webkit-inner-spin-button {
     }
 
     div.eventholder {
-        border-left: 1px solid $bordercolor;
-        border-right: 1px solid $bordercolor;
-        border-top-style: none;
-
         .header {
             font-weight: bold;
             border-bottom: 1px solid $bordercolor;
@@ -314,62 +310,55 @@ input::-webkit-inner-spin-button {
     }
 
     ol {
-        padding-left: 1rem;
-        .cardisplay {
-            display: block;
-        }
+        overflow: hidden;
+        padding-left: 1.5rem;
+        margin-bottom: 0.5rem;
     }
 
     .alert {
-        margin-top: 0.8rem;
-    }
-
-    button.register {
-        padding: 0.5rem;
-        margin-top: 0.5rem;
+        margin: 0.3rem 0;
+        padding: 0.3rem;
     }
 }
     
 
 #carscontainer {
-    margin-top: 1rem;
-
-    > div {
-        text-align: center;
-        width: 100%;
-    }
-
-    ul {
-        display: inline-block;
+    table {
         margin: auto;
-        text-align: left;
-        li {
-            padding: 0.3rem;
+        td {
+            padding: 0.25rem;
         }
-    }
-
-    .btn-group {
-        margin-right: 0.5rem;
     }
 
     button.newcar {
         width: 100%;
     }
+
+    .fa {
+        font-size: 1.4rem;
+        padding: 0.4rem 0.8rem;
+    }
 }
 
 
-#carmodal {
+#usedwrapper {
+    width: 90%;
+    margin: auto;
+
+    a {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+
     ul {
+        text-align: center;
+        padding-right: 2.0rem;
         li {
             display: inline-block;
             width: 2.6rem;
             text-align: right;
         }
-    }
-
-    a {
-        display: block;
-        text-align: center;
     }
 }
 
@@ -377,14 +366,10 @@ input::-webkit-inner-spin-button {
     label {
         font-weight: normal;
         text-align: left;
-        font-size: 1.1rem;
     }
 
-    .cardisplay {
-        span.code {
-            display: inline-block;
-            width: 8rem;
-        }
+    .fa-car {
+        margin: 0.5rem;
     }
 
     .row:hover {
@@ -392,7 +377,8 @@ input::-webkit-inner-spin-button {
     }
 
     input[type=checkbox] {
-        margin: 0.15rem auto;
+        margin: 0.5rem;
+        margin-left: auto;
         height: 2rem;
         width: 2rem;
     }

@@ -1,5 +1,7 @@
 
+import re
 import json
+import icalendar
 from flask import escape, make_response
 
 def xml_encode(data, wrapper=None):
@@ -12,6 +14,11 @@ def json_encode(data):
     response.headers['Content-type'] = 'application/json'
     return response
 
+def ical_encode(data):
+    response = make_response(ICalEncoder().encodeevents(data))
+    response.headers['Content-type'] = 'text/calendar'
+    return response
+
 def json_raw(data):
     response = make_response(data)
     response.headers['Content-type'] = 'application/json'
@@ -19,6 +26,25 @@ def json_raw(data):
 
 def to_json(obj):
     return JSONEncoder().encode(obj)
+
+
+class ICalEncoder():
+    def encodeevents(self, data):
+        cal = icalendar.Calendar()
+        cal.add('prodid', '-//Scorekeeper Registration')
+        cal.add('version', '2.0')
+        cal.add('x-wr-calname;value=text', 'Scorekeeper Registration')
+        cal.add('method', 'publish');
+        for date, events in sorted(data.items()):
+            for (series, name), reglist in sorted(events.items()):
+                codes = [reg.classcode for reg in reglist]
+                event = icalendar.Event()
+                event.add('summary', "%s: %s" % (name, ','.join(codes)))
+                event.add('dtstart', date)
+                event['uid'] = 'SCOREKEEPER-CALENDAR-%s-%s' % (re.sub(r'\W','', name), date)
+                cal.add_component(event)
+        return cal.to_ical()
+
 
 class JSONEncoder(json.JSONEncoder):
     """ Helper that calls getPublicFeed if available for getting json encoding """

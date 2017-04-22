@@ -24,34 +24,43 @@ def convert(sourcefile, name, password):
     old.row_factory = sqlite3.Row
 
     psycopg2.extras.register_uuid()
-    new = psycopg2.connect("user='postgres' dbname='scorekeeper'")
+    new = psycopg2.connect(user='postgres', dbname='scorekeeper', cursor_factory=psycopg2.extras.DictCursor)
     cur = new.cursor()
 
     cur.execute("set search_path=%s,%s", (name, 'public'))
 
     #DRIVERS, add to global list and remap ids as necessary
+    print("drivers")
     for r in old.execute('select * from drivers'):
         d = AttrWrapper(r, r.keys())
 
-        newd = dict()
-        newd['driverid']   = uuid.uuid1()
-        newd['firstname']  = d.firstname.strip()
-        newd['lastname']   = d.lastname.strip()
-        newd['email']      = d.email.strip()
-        newd['username']   = newd['driverid']
-        newd['password']   = ""
-        newd['membership'] = d.membership and d.membership.strip() or ""
-        newd['attr']       = dict()
-        for a in ('alias', 'address', 'city', 'state', 'zip', 'phone', 'brag', 'sponsor', 'notes'):
-            if hasattr(d, a) and getattr(d, a) is not None:
-                newd['attr'][a] = getattr(d, a).strip()
-
-        cur.execute("insert into drivers values (%s, %s, %s, %s, %s, %s, %s, %s, now())", 
-            (newd['driverid'], newd['firstname'], newd['lastname'], newd['email'], newd['username'], newd['password'], newd['membership'], json.dumps(newd['attr'])))
-        remapdriver[d.id] = newd['driverid']
+        cur.execute("select * from drivers where lower(firstname)=%s and lower(lastname)=%s and lower(email)=%s", 
+                    (d.firstname.strip().lower(), d.lastname.strip().lower(), d.email.strip().lower()))
+        if cur.rowcount > 0:
+            match = cur.fetchone()
+            remapdriver[d.id] = match['driverid']
+            print('match %s %s %s' % (d.firstname, d.lastname, d.email))
+        else:
+            newd = dict()
+            newd['driverid']   = uuid.uuid1()
+            newd['firstname']  = d.firstname.strip()
+            newd['lastname']   = d.lastname.strip()
+            newd['email']      = d.email.strip()
+            newd['username']   = newd['driverid']
+            newd['password']   = ""
+            newd['membership'] = d.membership and d.membership.strip() or ""
+            newd['attr']       = dict()
+            for a in ('alias', 'address', 'city', 'state', 'zip', 'phone', 'brag', 'sponsor', 'notes'):
+                if hasattr(d, a) and getattr(d, a):
+                    newd['attr'][a] = getattr(d, a).strip()
+    
+            cur.execute("insert into drivers values (%s, %s, %s, %s, %s, %s, %s, %s, now())", 
+                (newd['driverid'], newd['firstname'], newd['lastname'], newd['email'], newd['username'], newd['password'], newd['membership'], json.dumps(newd['attr'])))
+            remapdriver[d.id] = newd['driverid']
 
 
     #INDEXLIST (put into its own index group)
+    print("indexes")
     cur.execute("insert into indexlist values ('', 'No Index', 1.000, now())")
     for r in old.execute("select * from indexlist"):
         i = AttrWrapper(r, r.keys())
@@ -59,6 +68,7 @@ def convert(sourcefile, name, password):
                     (i.code, i.descrip, i.value))
 
     #CLASSLIST (map seriesid)
+    print("classes")
     for r in old.execute("select * from classlist"):
         c = AttrWrapper(r, r.keys())
         c.usecarflag  = c.usecarflag and True or False
@@ -71,6 +81,7 @@ def convert(sourcefile, name, password):
 
 
     #CARS (all the same fields, need to map carid, driverid and seriesid)
+    print("cars")
     for r in old.execute("select * from cars"):
         c = AttrWrapper(r, r.keys())
         if c.driverid < 0:
@@ -84,7 +95,7 @@ def convert(sourcefile, name, password):
         newc['useclsmult'] = bool(getattr(c, 'tireindexed', False))
         newc['attr']       = dict()
         for a in ('year', 'make', 'model', 'color'):
-            if hasattr(c, a) and getattr(c, a) is not None:
+            if hasattr(c, a) and getattr(c, a):
                 newc['attr'][a] = getattr(c, a)
 
         cur.execute("insert into cars values (%s, %s, %s, %s, %s, %s, %s, now())", 
@@ -94,6 +105,7 @@ def convert(sourcefile, name, password):
         
     #EVENTS (all the same fields)
     maxeid = 1
+    print("events")
     for r in old.execute("select * from events"):
         e = AttrWrapper(r, r.keys())
         if not e.segments.strip():
@@ -111,6 +123,7 @@ def convert(sourcefile, name, password):
         newe['countedruns'] = e.countedruns
         newe['segments']    = segments
         newe['perlimit']    = e.perlimit
+        newe['sinlimit']    = e.totlimit
         newe['totlimit']    = e.totlimit
         newe['conepen']     = e.conepen
         newe['gatepen']     = e.gatepen
@@ -120,16 +133,17 @@ def convert(sourcefile, name, password):
         maxeid = max(maxeid, e.id)
 
         for a in ('location', 'sponsor', 'host', 'chair', 'designer', 'paypal', 'snail', 'cost', 'notes', 'doublespecial'):
-            if hasattr(e, a) and getattr(e, a) is not None:
+            if hasattr(e, a) and getattr(e, a):
                 newe['attr'][a] = getattr(e, a)
 
-        cur.execute("insert into events values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", 
+        cur.execute("insert into events values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())", 
             (newe['eventid'], newe['name'], newe['date'], newe['regopened'], newe['regclosed'], newe['courses'], newe['runs'], newe['countedruns'], newe['segments'],
-            newe['perlimit'], newe['totlimit'], newe['conepen'], newe['gatepen'], newe['ispro'], newe['ispractice'], json.dumps(newe['attr'])))
+            newe['perlimit'], newe['sinlimit'], newe['totlimit'], newe['conepen'], newe['gatepen'], newe['ispro'], newe['ispractice'], json.dumps(newe['attr'])))
     # Make sure database sequence is on the same page as us
     cur.execute("ALTER SEQUENCE events_eventid_seq RESTART WITH %s", (maxeid+1,))
 
     #REGISTERED (map carid)
+    print("registered")
     for r in old.execute("select * from registered"):
         oldr = AttrWrapper(r, r.keys())
         if oldr.eventid > 0x0FFFF:
@@ -138,18 +152,21 @@ def convert(sourcefile, name, password):
 
 
     #CLASSORDER
+    print("classorder")
     for r in old.execute("select * from rungroups"):
         oldr = AttrWrapper(r, r.keys())
         cur.execute("insert into classorder values (%s, %s, %s, %s, now())", (oldr.eventid, oldr.classcode, oldr.rungroup, oldr.gorder))
 
 
     #RUNORDER 
+    print("runorder")
     for r in old.execute("select * from runorder"):
         oldr = AttrWrapper(r, r.keys())
         cur.execute("insert into runorder values (%s, %s, %s, %s, %s, now())", (oldr.eventid, oldr.course, oldr.rungroup, oldr.row, remapcar[oldr.carid]))
 
 
     #RUNS (map eventid, carid)
+    print("runs")
     for r in old.execute("select * from runs"):
         oldr = AttrWrapper(r, r.keys())
         if (oldr.eventid > 0x0FFFF):
@@ -157,8 +174,8 @@ def convert(sourcefile, name, password):
             continue
             
         attr = dict()
-        attr['reaction'] = oldr.reaction or 0.0
-        attr['sixty'] = oldr.sixty or 0.0
+        if olr.reaction: attr['reaction'] = oldr.reaction
+        if old.sixty:    attr['sixty'] = oldr.sixty
         for ii in range(1,6):
             seg = getattr(oldr, 'seg%d'%ii)
             if seg is not None and seg > 0:
@@ -168,6 +185,7 @@ def convert(sourcefile, name, password):
 
 
     #SETTINGS
+    print("settings")
     settings = dict()
     for r in old.execute("select name,val from settings"):
         key = r['name']
@@ -178,6 +196,7 @@ def convert(sourcefile, name, password):
 
         
     #CHALLENGES (remap challengeid, eventid)
+    print("challenges")
     for r in old.execute("select * from challenges"):
         c = AttrWrapper(r, r.keys())
 
@@ -191,6 +210,7 @@ def convert(sourcefile, name, password):
 
 
     #CHALLENGEROUNDS (remap roundid, challengeid, carid)
+    print("challengerounds")
     check1 = set()
     maxcid = 1
     for rp in old.execute("select * from challengerounds"):
@@ -209,6 +229,7 @@ def convert(sourcefile, name, password):
 
 
     #CHALLENGERUNS (now in ther own table)
+    print("challengeruns")
     for r in challengeruns:
         chid  = r.eventid >> 16
         round = r.eventid & 0x0FFF

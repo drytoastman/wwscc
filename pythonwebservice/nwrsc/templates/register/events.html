@@ -11,15 +11,32 @@ $(document).ready(function() {
 
     $('#registermodal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget) // Button that triggered the modal
-        $('#registerform').RegEdit('initform', button.data('eventid'), button.data('limit'));
+        initregform('#registerform', button.data('eventid'), button.data('limit'), button.data('msg'))
     });
 });
+
+function initregform(id, eventid, limit, msg)
+{
+    var me = $(id);
+    var checkmax = function() {
+        var dodisable = (me.find(":checked").length >= limit);
+        me.find('input[type=checkbox]:unchecked').prop('disabled', dodisable);
+        me.find('.statuslabel').html( dodisable && msg || "");
+    };
+
+    me.find('input[name=eventid]').val(eventid);
+    me.find('input[type=checkbox]').prop('checked', false).prop('disabled', false).click(checkmax);
+    gRegistered[eventid].forEach(function (carid) {
+        me.find("input[name="+carid+"]").prop('checked', true);
+    });
+    checkmax();
+}
+
 
 var gRegistered = Array();
 {% for e in events %}
 gRegistered[{{e.eventid}}] = {{registered[e.eventid]|to_json|safe}};
 {%- endfor %}
-
 </script>
 {% endblock headers %}
 
@@ -32,13 +49,14 @@ gRegistered[{{e.eventid}}] = {{registered[e.eventid]|to_json|safe}};
 
 <div class='row'>
 <div class='col text-center'>
-<div class='formerror'>{{ m.formerrors(formerror) }}</div>
+{{m.errordisplay()}}
 </div>
 </div>
 </div>
 
+<div id='eventsouter'>
 <div id='eventscontainer' class='container'>
-
+    <div class='title'>Events in {{g.series}}</div>
 {% for ev in events %}
     {% set eclass = ev.isOpen() and "eventopen show" or "eventclosed" %}
     <div class='eventheader {{eclass}} row justify-content-start'>
@@ -55,26 +73,29 @@ gRegistered[{{e.eventid}}] = {{registered[e.eventid]|to_json|safe}};
 
 {% endfor %}
 </div>
+</div>
 
 {% call m.modal('registermodal', 'Register Cars', '') %}
-    <form id='registerform' action='{{url_for(".events")}}' method='POST'>
+    <form id='registerform' action='{{url_for(".eventspost")}}' method='POST'>
         <input type='hidden' name='eventid' value=''/>
+        <div class='row'>
+        <div class='col text-center'><a href='cars'><span class='fa fa-car'></span>Create,Edit and Delete Cars Here</a></div>
+         </div>
         {% for c in cars.values() %}
         <div class='row'>
         <input class="col-2" name="{{c.carid}}" type="checkbox" value="y"/>
-        <label class='col-10' for="{{c.carid}}">{{m.carDisplay(c)}}</label>
+        <label class="col-10" for="{{c.carid}}">{{m.carDisplay(c)}}</label>
         </div>
         {% endfor %}
         <div class='row'>
-        <div class='col-2'></div>
-        <div class='col-10 text-center'><span class='statuslabel formerror'></span></div>
-         </div>
+        <div class='col text-center'><span class='statuslabel error'></span></div>
+        </div>
         <div class='row'>
-        <div class='col-2'></div>
-        <div class='col-10'><input type='submit' class='btn btn-primary' value='Update'/></div>
-         </div>
+        <div class='col'><input type='submit' class='btn btn-primary' value='Update'/></div>
+        </div>
     </form>
 {% endcall %}
+
 
 {% endblock content %}
 
@@ -95,16 +116,16 @@ gRegistered[{{e.eventid}}] = {{registered[e.eventid]|to_json|safe}};
     <dt>{{ev.hasClosed() and "Closed" or "Closes"}}</dt><dd>{{ev.regclosed.strftime('%b %d %I:%M %p')}}</dd>
 
     {% for k, v in ev.attr.items() -%}
-    {% if k not in ('paypal', 'cost', 'notes') and v: %}
+    {% if k not in ('paypal', 'cost', 'notes') and v %}
     <dt>{{k|title}}</dt><dd>{{v}}</dd>
     {% endif %}
     {%- endfor %}
 
     {%if ev.hasOpened() %}
         {% if ev.totlimit %}
-            {% if ev.attr.doublespecial %}
-                <dt>Single Entries</dt><dd>{{entryLink(ev, "%s/%s" % (ev.drivercount, ev.totlimit))}}</dd>
-                <dt>Total Entries</dt><dd>{{entryLink(ev, ev.entrycount)}}</dd>
+            {% if ev.sinlimit %}
+                <dt>Singles</dt><dd>{{entryLink(ev, "%s/%s" % (ev.drivercount, ev.sinlimit))}}</dd>
+                <dt>Total</dt><dd>{{entryLink(ev, "%s/%s" % (ev.entrycount, ev.totlimit))}}</dd>
             {% else %}
                 <dt>Entries</dt><dd>{{entryLink(ev, "%s/%s" % (ev.entrycount, ev.totlimit))}}</dd>
             {% endif %}
@@ -119,7 +140,7 @@ gRegistered[{{e.eventid}}] = {{registered[e.eventid]|to_json|safe}};
     {% endif %}
 
     {% if not ev.hasClosed() and ev.attr.notes %}
-        <dt>Notes</dt><dd>{{ev.attr.notes}}</dd>
+        <dt>Notes</dt><dd>{{ev.attr.notes|safe}}</dd>
     {% endif %}
     </dl>
 
@@ -136,15 +157,11 @@ gRegistered[{{e.eventid}}] = {{registered[e.eventid]|to_json|safe}};
         </ol>
 
         {% if ev.isOpen() %}
-            {% if ev.attr.doublespecial and registered|length > 0 %}
-                <div class='alert alert-warning'>Double entries are allowed but not guaranteed for this event yet</div>
-            {% endif %}
-
             {% if ev.mylimit > 0 or registered|length > 0 %}
-            <button class='register btn btn-outline-primary' data-eventid='{{ev.eventid}}' data-limit='{{ev.mylimit}}' data-toggle='modal' data-target='#registermodal'>Add/Change</button>
+            <button class='register btn btn-outline-primary' data-eventid='{{ev.eventid}}' data-limit='{{ev.mylimit}}' data-msg='{{ev.limitmessage}}' data-toggle='modal' data-target='#registermodal'>Add/Change</button>
             {% endif %}
 
-            {% if ev.limitmessage %}
+            {% if registered|length >= ev.mylimit and ev.limitmessage %}
             <div class='alert alert-warning'>{{ev.limitmessage}}</div>
             {% endif %}
 

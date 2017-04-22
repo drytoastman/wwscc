@@ -22,7 +22,7 @@ $(document).ready(function() {
 });
 var gCars = Array();
 var gClasses = Array();
-var gIndexes = {{g.classdata.indexes()|to_json|safe}}
+var gIndexes = Array();
 {% for c in cars.values()|msort('classcode', 'number') %}
 gCars['{{c.carid}}'] = {{c|to_json|safe}};
 {%- endfor %}
@@ -30,6 +30,9 @@ gCars['{{c.carid}}'] = {{c|to_json|safe}};
 {% set restrict = g.classdata.restrictedIndexes(c.classcode) %}
 gClasses['{{c.classcode}}'] = { 'isindexed': {{'true' if c.carindexed else 'false'}}, 'usecarflag': {{'true' if c.usecarflag else 'false'}}, 'idxrestrict': {{restrict[0]|sort|safe}}, 'flagrestrict': {{restrict[1]|sort|safe}} };
 {%- endfor %}
+{% for i in g.classdata.indexlist.values()|msort('indexcode') -%}
+gIndexes['{{i.indexcode}}'] = "{{i.descrip}}";
+{% endfor %}
 </script>
 {% endblock headers %}
 
@@ -37,20 +40,13 @@ gClasses['{{c.classcode}}'] = { 'isindexed': {{'true' if c.carindexed else 'fals
 {% block content %}
 {{m.navbar('cars')}}
 
-<div id='carscontainer' class='container'>
-<div class='row justify-content-center'>
-<div class='col'>
-<div class='formerror'>{{ m.formerrors(formerror) }}</div>
-</div> {# form col #}
-</div> {# form row #}
+<div id='carscontainer'>
+{{m.errordisplay()}}
 
-<div class='row justify-content-center'>
-<div class='col'>
-<div class='ulouter'>
-<ul>
-<div class='title'>Cars In {{g.series.upper()}}</div>
+<table>
+<tr><td colspan=3 class='title'>Cars in {{g.series}}</td></tr>
 {% for car in cars.values()|msort("classcode","number") %}
-    <li>
+    <tr><td>
     <div class="btn-group" role="group">
     {% if active[car.carid]|length > 0 %}
         <button class='btn btn-outline-secondary disabled fa fa-pencil' title='Cars registered or in use cannot be edited or deleted'></button>
@@ -59,19 +55,14 @@ gClasses['{{c.classcode}}'] = { 'isindexed': {{'true' if c.carindexed else 'fals
         <button class='editcar   btn btn-outline-primary fa fa-pencil' title='Edit Car' data-carid='{{car.carid}}' data-toggle='modal' data-target='#carmodal'></button>
         <button class='deletecar btn btn-outline-primary fa fa-trash' title='Delete Car' data-carid='{{car.carid}}' data-toggle='modal' data-target='#carmodal'></button>
     {% endif %}
-    </div>
-    {{m.carDisplay(car)}}
-    </li>
+    </td>
+    <td class='cardisplay'>{{m.carDisplay(car)}}</td></tr>
 {% endfor %}
-    <li>
-    <button class='newcar btn btn-outline-primary' title='Create Car' data-toggle='modal' data-target='#carmodal'>Create New Entry</button>
-    </li>
-</ul>
-</div> {# ulouter #}
-</div> {# col #}
-</div> {# row #}
+<tr><td colspan=3 class='button'><button class='newcar btn btn-outline-primary' title='Create Car' data-toggle='modal' data-target='#carmodal'>Create New Entry</button></td></tr>
+</table>
+
 </div> {# container #}
 
-{{m.modal('carmodal', 'Car Editor', carform.html('carform', url_for('.cars'), 'post', 'col-md-3', 'col-md-9'))}}
+{{m.modal('carmodal', 'Car Editor', carform.html('carform', url_for('.carspost'), 'post', 'col-md-3', 'col-md-9'))}}
 
 {% endblock content %}

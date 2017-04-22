@@ -9,11 +9,11 @@
     <ul class="navbar-nav">
         <li class="nav-item {{'active' if current=='profile'}}"><a class="nav-link" href="{{url_for(".profile")}}">Profile</a></li>
         <li id="seriesdropdown" class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown">{{g.series or "<no series>"}}</a>
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown">Series {{g.series or "<no series>"}}</a>
           <div class="dropdown-menu">
           {% for s in g.activeseries %}
             {% if s != g.series %}
-                <a class="dropdown-item" href="{{url_for('.events', series=s)}}">{{s}}</a>
+                <a class="dropdown-item" href="{{url_for(g.selection, series=s)}}">{{s}}</a>
             {% endif %}
           {% endfor %}
           </div>
@@ -32,21 +32,19 @@
 {% endmacro %}
 
 
-{% macro formerrors(formerror) %}
-{% if formerror is string: %}
-<div class='formerror'>{{formerror}}</div>
-{% else %}
-{% for field, msg in formerror.items(): %}
-<div class='formerror'>{{field}}: {{msg[0]}}</div>
+{% macro errordisplay() %}
+<div class='formerror'>
+{% for msg in get_flashed_messages() %}
+<div class='error'>{{msg}}</div>
 {% endfor %}
-{% endif %}
+</div>
 {% endmacro %}
 
 
 {% macro modal(id, title, body) %}
 <div class='modal fade' id='{{id}}' tabindex=-1 role='dialog'>
 <div class='modal-dialog' role='document'>
-<div class='modal-content'>
+<div class='modal-content' style='overflow:hidden'>
 
 <div class='modal-header'>
 <h1 class='modal-title text-center'>{{title}}</h1>
@@ -58,6 +56,7 @@
 <div class='modal-error'></div>
 {{ body|safe }}
 {{caller() if caller}}
+</div> {# container-fluid #}
 </div> {# modal-body #}
 
 </div> {# modal-content #}
@@ -94,11 +93,19 @@
 
 
 {% macro carDisplay(car) %}
-{% set istr = g.classdata.getIndexStr(car) %}
 <div class='cardisplay'>
-<span class='code'>{{car.classcode}}/{{car.number}} {{istr and "("+istr+")" or ""}}</span>
-<span class='desc'>{{car.attr.year}} {{car.attr.make}} {{car.attr.model}} {{car.attr.color}}</span> 
+{{ carcode(car) }}
+{{ cardesc(car) }}
 </div>
+{% endmacro %}
+
+{% macro carcode(car) %}
+{% set istr = g.classdata.getIndexStr(car) %}
+<span class='code'>{{car.classcode}}/{{car.number}} {{istr and "("+istr+")" or ""}}</span>
+{% endmacro %}
+
+{% macro cardesc(car) %}
+<span class='desc'>{{car.attr.year}} {{car.attr.make}} {{car.attr.model}} {{car.attr.color}}</span> 
 {% endmacro %}
 
 

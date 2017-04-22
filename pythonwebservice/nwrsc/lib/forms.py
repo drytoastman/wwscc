@@ -1,4 +1,5 @@
 import logging
+from operator import attrgetter
 
 from flask import request
 from flask_wtf import FlaskForm
@@ -15,6 +16,10 @@ def addlengthfields(field, kwargs):
             if v.max > 0: kwargs.setdefault('maxlength', field.validators[0].max)
             if v.min > 0 and v.max > 0: kwargs.setdefault('required', 1)
     return kwargs
+
+def flashformerrors(form):
+    for field,msg in form.errors.items():
+        flash("{}: {}".format(field, msg[0]))
 
 class MyStringField(StringField):
     def __call__(self, **kwargs):
@@ -134,4 +139,9 @@ class CarForm(MyFlaskForm):
     useclsmult  = BooleanField( 'MultFlag')
     number      = IntegerField( 'Number', [Required()])
     submit      = SubmitField(  'Update')
+
+    def __init__(self, classdata):
+        MyFlaskForm.__init__(self)
+        self.classcode.choices = [(c.classcode, "%s - %s" % (c.classcode, c.descrip)) for c in sorted(classdata.classlist.values(), key=attrgetter('classcode'))]
+        self.indexcode.choices = [(i.indexcode, "%s - %s" % (i.indexcode, i.descrip)) for i in sorted(classdata.indexlist.values(), key=attrgetter('indexcode'))]
 

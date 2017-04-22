@@ -4,13 +4,12 @@ import uuid
 import time
 import itsdangerous
 from collections import defaultdict
-from operator import attrgetter
 
-from flask import abort, Blueprint, current_app, g, redirect, request, render_template, session, url_for
+from flask import abort, Blueprint, current_app, flash, g, redirect, request, render_template, session, url_for
 
 from nwrsc.model import *
 from nwrsc.lib.forms import *
-from nwrsc.lib.encoding import json_encode
+from nwrsc.lib.encoding import json_encode, ical_encode
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +19,7 @@ Register = Blueprint("Register", __name__)
 def setup():
     g.title = 'Scorekeeper Registration'
     g.activeseries = Series.active()
+    g.selection = request.endpoint
     if 'driverid' in session:
         g.driver = Driver.get(session['driverid'])
     else:
@@ -31,6 +31,7 @@ def setup():
 @Register.route("/")
 def index():
     if not g.driver: return login()
+    g.selection = 'Register.events'
     return render_template('register/serieslist.html', subapp='register', serieslist=Series.active())
 
 @Register.route("/<series>/")
@@ -39,73 +40,74 @@ def series():
     if not g.driver: return login()
     return redirect(url_for('.events'))
 
-@Register.route("/profile", methods=['POST', 'GET'])
-@Register.route("/<series>/profile", methods=['POST', 'GET'])
+
+@Register.route("/profile")
+@Register.route("/<series>/profile")
 def profile():
     if not g.driver: return login()
-    g.driver = Driver.get(session['driverid'])
-    form = ProfileForm()
+    g.driver    = Driver.get(session['driverid'])
+    g.classdata = ClassData.get()
+    form        = ProfileForm()
+    upcoming    = getAllUpcoming(g.driver.driverid)
+    attrBaseIntoForm(g.driver, form)
+    return render_template('register/profile.html', form=form, upcoming=upcoming)
 
+@Register.route("/profilepost", methods=['POST'])
+@Register.route("/<series>/profilepost", methods=['POST'])
+def profilepost():
+    form = ProfileForm()
     if form.validate_on_submit():
         formIntoAttrBase(form, g.driver)
         g.driver.update()
-
-    g.classdata = ClassData.get()
-    upcoming = getAllUpcoming(g.driver.driverid)
-    attrBaseIntoForm(g.driver, form)
-    return render_template('register/profile.html', form=form, formerror=form.errors, upcoming=upcoming)
+    flashformerrors(form)
+    return redirect(url_for('.profile'))
 
 
-@Register.route("/<series>/cars", methods=['POST', 'GET'])
+@Register.route("/<series>/cars")
 def cars():
     if not g.driver: return login()
     g.classdata = ClassData.get()
-    carform     = CarForm()
-    carform.classcode.choices = [(c.classcode, "%s - %s" % (c.classcode, c.descrip)) for c in sorted(g.classdata.classlist.values(), key=attrgetter('classcode'))]
-    carform.indexcode.choices = [(i.indexcode, "%s - %s" % (i.indexcode, i.descrip)) for i in sorted(g.classdata.indexlist.values(), key=attrgetter('indexcode'))]
-    formerror = ""
-
-    if request.method == 'POST':
-        try:
-            action = request.form.get('submit')
-            if action == 'Delete':
-                Car.delete(request.form.get('carid', ''), g.driver.driverid)
-            elif carform.validate():
-                car = Car()
-                formIntoAttrBase(carform, car)
-                if action == 'Update':
-                    car.update(g.driver.driverid)
-                elif action == 'Create':
-                    car.new(g.driver.driverid)
-                else:
-                    formerror = "Invalid request ({})".format(action)
-
-        except Exception as e:
-            g.db.rollback()
-            formerror = str(e)
-
-    events = {e.eventid:e for e in Event.byDate()}
-    cars   = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
-    active = defaultdict(set)
+    carform = CarForm(g.classdata)
+    events  = {e.eventid:e for e in Event.byDate()}
+    cars    = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
+    active  = defaultdict(set)
     for carid,eventid in Driver.activecars(g.driver.driverid):
         active[carid].add(eventid)
-    return render_template('register/cars.html', events=events, cars=cars, active=active, carform=carform, formerror=formerror or carform.errors)
+    return render_template('register/cars.html', events=events, cars=cars, active=active, carform=carform)
 
 
-@Register.route("/<series>/events", methods=['POST', 'GET'])
+@Register.route("/<series>/carspost", methods=['POST'])
+def carspost():
+    if not g.driver: return login()
+    g.classdata = ClassData.get()
+    carform     = CarForm(g.classdata)
+
+    try:
+        action = request.form.get('submit')
+        if action == 'Delete':
+            Car.delete(request.form.get('carid', ''), g.driver.driverid)
+        elif carform.validate():
+            car = Car()
+            formIntoAttrBase(carform, car)
+            if action == 'Update':
+                car.update(g.driver.driverid)
+            elif action == 'Create':
+                car.new(g.driver.driverid)
+            else:
+                flash("Invalid request ({})".format(action))
+        else:
+            flashformerrors(carform)
+
+    except Exception as e:
+        g.db.rollback()
+        flash(str(e))
+    return redirect(url_for('.cars'))
+
+
+@Register.route("/<series>/events")
 def events():
     if not g.driver: return login()
-    formerror = ""
 
-    if request.method == 'POST':
-        try:
-            carids = [uuid.UUID(k) for (k,v) in request.form.items() if v == 'y' or v is True]
-            eventid = int(request.form['eventid'])
-            Registration.update(eventid, carids, g.driver.driverid)
-        except Exception as e:
-            g.db.rollback()
-            formerror = str(e)
-        
     g.classdata = ClassData.get()
     events = Event.byDate()
     cars   = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
@@ -116,24 +118,34 @@ def events():
     for p in Payment.getForDriver(g.driver.driverid):
         payments[p.eventid] = p
     for e in events:
-        e.drivercount = e.getDriverCount()
-        e.entrycount  = e.getCount()
-        mycount = len(registered[e.eventid])
-        ds = e.attr.get('doublespecial', False)
-        if ds and e.totlimit and e.drivercount > e.totlimit and mycount == 0:
-            e.mylimit = 0
-            e.limitmessage = "This event's single entry limit of {} has been met".format(e.totlimit)
-        elif not ds and e.totlimit and e.entrycount >= e.totlimit:
-            e.mylimit = mycount
-            e.limitmessage = "This event's prereg limit of {} has been met".format(e.totlimit)
-        elif mycount >= e.perlimit:
-            e.mylimit = mycount
-            e.limitmessage = "You have reached this event's prereg limit of {} car(s)".format(e.perlimit)
-        else:
-            e.mylimit = min(e.perlimit, e.totlimit and e.totlimit-e.entrycount or 9999)
-            e.limitmessage = ""
+        e.drivercount  = e.getDriverCount()
+        e.entrycount   = e.getCount()
+        mycount        = len(registered[e.eventid])
 
-    return render_template('register/events.html', events=events, cars=cars, registered=registered, payments=payments, formerror=formerror)
+        limits = [[999, ""],]
+        if e.sinlimit and e.drivercount >= e.sinlimit and mycount == 0:
+            limits.append([0,          "The single entry limit of {} has been met".format(e.sinlimit)])
+        if e.perlimit:
+            limits.append([e.perlimit, "The personal entry limit of {} has been met".format(e.perlimit)])
+        if e.totlimit:
+            limits.append([e.totlimit - e.entrycount + mycount, "The total entry limit of {} has been met".format(e.totlimit)])
+
+        (e.mylimit, e.limitmessage) = min(limits, key=lambda x: x[0])
+
+    return render_template('register/events.html', events=events, cars=cars, registered=registered, payments=payments)
+
+
+@Register.route("/<series>/eventspost", methods=['POST'])
+def eventspost():
+    if not g.driver: return login()
+    try:
+        carids = [uuid.UUID(k) for (k,v) in request.form.items() if v == 'y' or v is True]
+        eventid = int(request.form['eventid'])
+        Registration.update(eventid, carids, g.driver.driverid)
+    except Exception as e:
+        g.db.rollback()
+        flash(str(e))
+    return redirect(url_for('.events'))
 
 
 @Register.route("/<series>/usednumbers")
@@ -174,8 +186,7 @@ def ipn():
 
 @Register.route("/ical/<driverid>")
 def ical(driverid):
-    upcoming = getAllUpcoming(driverid)
-    return str(upcoming)
+    return ical_encode(getAllUpcoming(driverid))
 
 @Register.route("/login", methods=['POST', 'GET'])
 def login():
@@ -186,7 +197,6 @@ def login():
     login = PasswordForm(prefix='login')
     reset = ResetForm(prefix='reset')
     register = RegisterForm(prefix='register')
-    formerror = ""
     active = "login"
 
     if login.submit.data:
@@ -195,9 +205,9 @@ def login():
             if user and user.password == login.password.data:
                 session['driverid'] = user.driverid
                 return redirect_series(login.gotoseries.data)
-            formerror = "Invalid username/password"
+            flash("Invalid username/password")
         else:
-            formerror = login.errors
+            flashformerrors(login.errors)
 
     elif reset.submit.data:
         active = "reset"
@@ -207,25 +217,25 @@ def login():
                     token = current_app.usts.dumps({'request': 'reset', 'driverid': str(d.driverid)})
                     link = url_for('.reset', token=token, _external=True)
                     return render_template("simple.html", content="An email as been sent with a link to reset your username/password. (%s)" % link)
-            formerror = "No user could be found with those parameters"
+            flash("No user could be found with those parameters")
         else:
-            formerror = reset.errors
+            flashformerrors(reset.errors)
 
     elif register.submit.data:
         active = "register"
         if register.validate_on_submit():
             if Driver.byusername(register.username.data) != None:
-                formerror = "That username is already taken"
+                flash("That username is already taken")
             else:
                 session['driverid'] = Driver.new(register.firstname.data.strip(), register.lastname.data.strip(), register.email.data.strip(),
                                             register.username.data.strip(), register.password.data.strip())
                 return redirect_series(register.gotoseries.data)
         else:
-            formerror = register.errors
+            flashformerrors(register.errors)
 
     login.gotoseries.data = g.series
     register.gotoseries.data = g.series
-    return render_template('/register/login.html', active=active, formerror=formerror, login=login, reset=reset, register=register)
+    return render_template('/register/login.html', active=active, login=login, reset=reset, register=register)
         
 
 @Register.route("/reset", methods=['GET', 'POST'])
@@ -252,7 +262,7 @@ def reset():
     
         if req['request'] == 'reset':
             session['driverid'] = uuid.UUID(req['driverid'])
-            return render_template("register/reset.html", form=form, formerror="")
+            return render_template("register/reset.html", form=form)
 
     elif form.errors:
         return render_template("register/reset.html", form=form, formerror=form.errors)
@@ -260,6 +270,9 @@ def reset():
     abort(400)
 
  
+####################################################################
+# Utility functions
+
 def redirect_series(series=""):
     if series and series in Series.active():
         return redirect(url_for(".events", series=series))
@@ -273,7 +286,7 @@ def getAllUpcoming(driverid):
                 upcoming[r.date][s, r.name].append(r)
     return upcoming
  
-def _checkLimitState(event, driverid, setResponse=True):
+def checkLimitState(event, driverid, setResponse=True):
     entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
 
     if event.doublespecial and event.drivercount >= event.totlimit and entries.count() == 0:  # past single driver limit, no more new singles

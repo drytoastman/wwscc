@@ -99,7 +99,6 @@ class Driver(AttrBase):
     def new(cls, first, last, email, user, pwhash):
         with g.db.cursor() as cur:
             newid = uuid.uuid1()
-            self.cleanAttr()
             cur.execute("INSERT INTO drivers (driverid,firstname,lastname,email,username,password) "
                         "VALUES (%s,%s,%s,%s,%s,%s)", (newid, first, last, email, user, pwhash))
             g.db.commit()
