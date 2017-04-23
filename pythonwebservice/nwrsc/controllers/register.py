@@ -5,7 +5,7 @@ import time
 import itsdangerous
 from collections import defaultdict
 
-from flask import abort, Blueprint, current_app, flash, g, redirect, request, render_template, session, url_for
+from flask import abort, Blueprint, current_app, flash, g, get_template_attribute, redirect, request, render_template, session, url_for
 
 from nwrsc.model import *
 from nwrsc.lib.forms import *
@@ -22,6 +22,7 @@ def setup():
     g.selection = request.endpoint
     if 'driverid' in session:
         g.driver = Driver.get(session['driverid'])
+        if g.series: g.classdata = ClassData.get()
     else:
         g.driver = None
 
@@ -45,8 +46,6 @@ def series():
 @Register.route("/<series>/profile")
 def profile():
     if not g.driver: return login()
-    g.driver    = Driver.get(session['driverid'])
-    g.classdata = ClassData.get()
     form        = ProfileForm()
     upcoming    = getAllUpcoming(g.driver.driverid)
     attrBaseIntoForm(g.driver, form)
@@ -66,7 +65,6 @@ def profilepost():
 @Register.route("/<series>/cars")
 def cars():
     if not g.driver: return login()
-    g.classdata = ClassData.get()
     carform = CarForm(g.classdata)
     events  = {e.eventid:e for e in Event.byDate()}
     cars    = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
@@ -79,8 +77,7 @@ def cars():
 @Register.route("/<series>/carspost", methods=['POST'])
 def carspost():
     if not g.driver: return login()
-    g.classdata = ClassData.get()
-    carform     = CarForm(g.classdata)
+    carform = CarForm(g.classdata)
 
     try:
         action = request.form.get('submit')
@@ -108,7 +105,6 @@ def carspost():
 def events():
     if not g.driver: return login()
 
-    g.classdata = ClassData.get()
     events = Event.byDate()
     cars   = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
     registered = defaultdict(list)
@@ -118,34 +114,30 @@ def events():
     for p in Payment.getForDriver(g.driver.driverid):
         payments[p.eventid] = p
     for e in events:
-        e.drivercount  = e.getDriverCount()
-        e.entrycount   = e.getCount()
-        mycount        = len(registered[e.eventid])
-
-        limits = [[999, ""],]
-        if e.sinlimit and e.drivercount >= e.sinlimit and mycount == 0:
-            limits.append([0,          "The single entry limit of {} has been met".format(e.sinlimit)])
-        if e.perlimit:
-            limits.append([e.perlimit, "The personal entry limit of {} has been met".format(e.perlimit)])
-        if e.totlimit:
-            limits.append([e.totlimit - e.entrycount + mycount, "The total entry limit of {} has been met".format(e.totlimit)])
-
-        (e.mylimit, e.limitmessage) = min(limits, key=lambda x: x[0])
+        decorateEvent(e, len(registered[e.eventid]))
 
     return render_template('register/events.html', events=events, cars=cars, registered=registered, payments=payments)
 
 
 @Register.route("/<series>/eventspost", methods=['POST'])
 def eventspost():
-    if not g.driver: return login()
+    if not g.driver: abort(404)
     try:
+        error = ""
         carids = [uuid.UUID(k) for (k,v) in request.form.items() if v == 'y' or v is True]
         eventid = int(request.form['eventid'])
         Registration.update(eventid, carids, g.driver.driverid)
     except Exception as e:
         g.db.rollback()
-        flash(str(e))
-    return redirect(url_for('.events'))
+        error = str(e)
+
+    eventdisplay = get_template_attribute('/register/macros.html', 'eventdisplay')
+    event  = Event.get(eventid)
+    cars   = {c.carid:c for c in Car.getForDriver(g.driver.driverid)}
+    reg    = [ r.carid for r in Registration.getForDriver(g.driver.driverid) if r.eventid == eventid]
+    pay    = [ p for p in Payment.getForDriver(g.driver.driverid) if p.eventid == eventid]
+    decorateEvent(event, len(reg))
+    return eventdisplay(event, cars, reg, pay, error)
 
 
 @Register.route("/<series>/usednumbers")
@@ -286,6 +278,20 @@ def getAllUpcoming(driverid):
                 upcoming[r.date][s, r.name].append(r)
     return upcoming
  
+def decorateEvent(e, mycount):
+    e.drivercount  = e.getDriverCount()
+    e.entrycount   = e.getCount()
+    limits         = [[999, ""],]
+    if e.sinlimit and e.drivercount >= e.sinlimit and mycount == 0:
+        limits.append([0,          "The single entry limit of {} has been met".format(e.sinlimit)])
+    if e.perlimit:
+        limits.append([e.perlimit, "The personal entry limit of {} has been met".format(e.perlimit)])
+    if e.totlimit:
+        limits.append([e.totlimit - e.entrycount + mycount, "The total entry limit of {} has been met".format(e.totlimit)])
+
+    (e.mylimit, e.limitmessage) = min(limits, key=lambda x: x[0])
+
+
 def checkLimitState(event, driverid, setResponse=True):
     entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
 

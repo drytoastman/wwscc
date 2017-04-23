@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{g.title or "Scorekeeper"}}</title>
 {% block headers %}{% endblock %}
-<script type='text/javascript'>
 {% if g.series and g.eventid -%}
+<script type='text/javascript'>
 $.nwr.urlbase = "{{url_for('.index', eventid=g.eventid)}}/";
-{%- endif %}
 </script>
+{%- endif %}
 </head>
 <body>
 {% block content %}{% endblock %}

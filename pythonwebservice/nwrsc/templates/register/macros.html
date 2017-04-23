@@ -94,18 +94,10 @@
 
 {% macro carDisplay(car) %}
 <div class='cardisplay'>
-{{ carcode(car) }}
-{{ cardesc(car) }}
-</div>
-{% endmacro %}
-
-{% macro carcode(car) %}
-{% set istr = g.classdata.getIndexStr(car) %}
+{% set istr = g.classdata.getIndexStr(car) -%}
 <span class='code'>{{car.classcode}}/{{car.number}} {{istr and "("+istr+")" or ""}}</span>
-{% endmacro %}
-
-{% macro cardesc(car) %}
 <span class='desc'>{{car.attr.year}} {{car.attr.make}} {{car.attr.model}} {{car.attr.color}}</span> 
+</div>
 {% endmacro %}
 
 
@@ -123,6 +115,86 @@
                         alt='Make payments with payPal - it&#039;s fast, free and secure!' />
     </span>
     </form>
+{% endmacro %}
+
+
+{% macro  entryLink(ev, text) %}
+<a class='viewlink' href='{{url_for('.view', eventid=ev.eventid)}}'>{{text}}</a>
+{% endmacro %}
+
+
+{% macro  eventdisplay(ev, ecars, registered, payments, error='') %}
+    <script type="text/javascript">
+    gRegistered[{{ev.eventid}}] = {{registered|to_json|safe}};
+    </script>
+
+    <div class='insidewrapper row'> {# have to reset row inside collapse it seems #}
+    <div class='detailscontainer col-5'>
+    <div class='header'>Details</div>
+
+    <dl>
+    {%- if not ev.hasOpened() %}
+    <dt>Opens</dt><dd>{{ev.regopened.strftime('%b %d at %I:%M%p')}}</dd>
+    {%- endif %}
+    <dt>{{ev.hasClosed() and "Closed" or "Closes"}}</dt><dd>{{ev.regclosed.strftime('%b %d %I:%M %p')}}</dd>
+
+    {%- for k, v in ev.attr.items() -%}
+    {%- if k not in ('paypal', 'cost', 'notes') and v %}
+    <dt>{{k|title}}</dt><dd>{{v}}</dd>
+    {%- endif %}
+    {%- endfor %}
+
+    {%- if ev.hasOpened() %}
+        {%-  if ev.totlimit %}
+            {%-  if ev.sinlimit %}
+            <dt>Singles</dt><dd>{{entryLink(ev, "%s/%s" % (ev.drivercount, ev.sinlimit))}}</dd>
+            <dt>Total</dt><dd>{{entryLink(ev, "%s/%s" % (ev.entrycount, ev.totlimit))}}</dd>
+            {%-  else %}
+            <dt>Entries</dt><dd>{{entryLink(ev, "%s/%s" % (ev.entrycount, ev.totlimit))}}</dd>
+            {%-  endif %}
+        {%-  else %}
+        <dt>Entries</dt><dd>{{entryLink(ev, ev.entrycount)}}</dd>
+        {%-  endif %}
+    {%- endif %}
+
+    {%- if ev.isOpen() %}
+      {%- if ev.attr.cost %}<dt>Cost</dt><dd>{{ev.attr.cost}}</dd>{% endif %}
+      {%- if ev.attr.paypal %}<dt>Paypal</dt><dd>{{paypalLink(ev)}}</dd>{% endif %}
+    {%- endif %}
+
+    {%- if not ev.hasClosed() and ev.attr.notes %}
+        <dt>Notes</dt><dd>{{ev.attr.notes|safe}}</dd>
+    {%- endif %}
+    </dl>
+    </div>
+
+    <div class='eventcarlist col-7'>
+        <div class='header'>Your Registration</div>
+        <div class='error'>{{error}}</div>
+        <ol>
+        {%- for carid in registered %}
+            <li>{{carDisplay(ecars[carid])}}</li>
+        {%- endfor %}
+        </ol>
+
+        {%- if ev.isOpen() %}
+            {%- if ev.mylimit > 0 or registered|length > 0 %}
+            <button class='register btn btn-outline-primary' data-eventid='{{ev.eventid}}' data-limit='{{ev.mylimit}}' data-msg='{{ev.limitmessage}}' data-toggle='modal' data-target='#registermodal'>Add/Change</button>
+            {%- endif %}
+
+            {%- if registered|length >= ev.mylimit and ev.limitmessage %}
+            <div class='alert alert-warning'>{{ev.limitmessage}}</div>
+            {%- endif %}
+
+            <ul class='payments'>
+            {%- for p in payments %}
+                <li>{{p.amount}} ({{p.status}})</li>
+            {%- endfor %}
+            </ul>
+        {%- endif %}
+    </div>
+    </div>
+
 {% endmacro %}
 
 
