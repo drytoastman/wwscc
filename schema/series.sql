@@ -134,7 +134,7 @@ GRANT  ALL ON events TO <seriesname>;
 GRANT  ALL ON events_eventid_seq TO <seriesname>;
 CREATE TRIGGER eventmod AFTER INSERT OR UPDATE OR DELETE ON events FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 CREATE TRIGGER eventuni BEFORE UPDATE ON events FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
-COMMENT ON TABLE events IS 'The list of events for this series, attr includes location, sponsor, host, chair, designer, paypal, snail, cost, notes, etc';
+COMMENT ON TABLE events IS 'The list of events for this series, attr includes location, sponsor, host, chair, designer, snail, cost, payments, notes, etc';
 
 
 CREATE TABLE cars (
@@ -214,25 +214,6 @@ GRANT  ALL ON runorder TO <seriesname>;
 CREATE TRIGGER ordermod AFTER INSERT OR UPDATE OR DELETE ON runorder FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
 CREATE TRIGGER orderuni BEFORE UPDATE ON runorder FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE runorder IS 'This is the list of cars in each rungroup as seen in data entry';
-
-
-CREATE TABLE payments (
-    txid     TEXT        PRIMARY KEY,
-    date     DATE        NOT NULL, 
-    type     TEXT        NOT NULL, 
-    status   TEXT        NOT NULL, 
-    driverid UUID        NOT NULL REFERENCES public.drivers, 
-    eventid  INTEGER     NOT NULL REFERENCES events, 
-    amount   FLOAT       NOT NULL,
-    modified TIMESTAMP   NOT NULL DEFAULT now()
-);
-CREATE INDEX ON payments(driverid);
-CREATE INDEX ON payments(eventid);
-REVOKE ALL ON payments FROM public;
-GRANT  ALL ON payments TO <seriesname>;
-CREATE TRIGGER paymentmod AFTER INSERT OR UPDATE OR DELETE ON payments FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
-CREATE TRIGGER paymentuni BEFORE UPDATE ON payments FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
-COMMENT ON TABLE payments IS 'the payments that have been made online';
 
 
 CREATE TABLE classorder (

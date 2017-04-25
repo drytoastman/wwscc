@@ -110,7 +110,6 @@
     <input type='hidden' name='custom' value='{{g.driver.driverid}}/{{event.eventid}}' />
     <input type='hidden' name='amount' value='{{event.cost}}' />
     <input type='hidden' name='currency_code' value='USD' />
-    <input type='hidden' name='notify_url' value='{{url_for('.ipn')}}'>
     <input type='image' src='https://www.paypal.com/en_US/i/btn/x-click-but3.gif' name='submit'
                         alt='Make payments with payPal - it&#039;s fast, free and secure!' />
     </span>
@@ -123,7 +122,7 @@
 {% endmacro %}
 
 
-{% macro  eventdisplay(ev, ecars, registered, payments, error='') %}
+{% macro  eventdisplay(ev, ecars, registered, error='') %}
     <script type="text/javascript">
     gRegistered[{{ev.eventid}}] = {{registered|to_json|safe}};
     </script>
@@ -139,7 +138,7 @@
     <dt>{{ev.hasClosed() and "Closed" or "Closes"}}</dt><dd>{{ev.regclosed.strftime('%b %d %I:%M %p')}}</dd>
 
     {%- for k, v in ev.attr.items() -%}
-    {%- if k not in ('paypal', 'cost', 'notes') and v %}
+    {%- if k not in ('payments', 'notes') and v %}
     <dt>{{k|title}}</dt><dd>{{v}}</dd>
     {%- endif %}
     {%- endfor %}
@@ -157,13 +156,12 @@
         {%-  endif %}
     {%- endif %}
 
-    {%- if ev.isOpen() %}
-      {%- if ev.attr.cost %}<dt>Cost</dt><dd>{{ev.attr.cost}}</dd>{% endif %}
-      {%- if ev.attr.paypal %}<dt>Paypal</dt><dd>{{paypalLink(ev)}}</dd>{% endif %}
+    {%- if ev.isOpen() and ev.attr.payments %}
+    <dt>Payments</dt><dd>{{ev.attr.payments|safe}}</dd>
     {%- endif %}
 
     {%- if not ev.hasClosed() and ev.attr.notes %}
-        <dt>Notes</dt><dd>{{ev.attr.notes|safe}}</dd>
+    <dt>Notes</dt><dd>{{ev.attr.notes|safe}}</dd>
     {%- endif %}
     </dl>
     </div>
@@ -185,12 +183,6 @@
             {%- if registered|length >= ev.mylimit and ev.limitmessage %}
             <div class='alert alert-warning'>{{ev.limitmessage}}</div>
             {%- endif %}
-
-            <ul class='payments'>
-            {%- for p in payments %}
-                <li>{{p.amount}} ({{p.status}})</li>
-            {%- endfor %}
-            </ul>
         {%- endif %}
     </div>
     </div>

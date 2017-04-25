@@ -108,36 +108,38 @@ def events():
     events = Event.byDate()
     cars   = {c.carid:c   for c in Car.getForDriver(g.driver.driverid)}
     registered = defaultdict(list)
-    payments = defaultdict(list)
     for r in Registration.getForDriver(g.driver.driverid):
         registered[r.eventid].append(r.carid)
-    for p in Payment.getForDriver(g.driver.driverid):
-        payments[p.eventid] = p
     for e in events:
         decorateEvent(e, len(registered[e.eventid]))
 
-    return render_template('register/events.html', events=events, cars=cars, registered=registered, payments=payments)
+    return render_template('register/events.html', events=events, cars=cars, registered=registered)
 
 
 @Register.route("/<series>/eventspost", methods=['POST'])
 def eventspost():
     if not g.driver: abort(404)
+
     try:
-        error = ""
-        carids = [uuid.UUID(k) for (k,v) in request.form.items() if v == 'y' or v is True]
         eventid = int(request.form['eventid'])
-        Registration.update(eventid, carids, g.driver.driverid)
+        carids  = [uuid.UUID(k) for (k,v) in request.form.items() if v == 'y' or v is True]
+        curreg  = len([r.carid for r in Registration.getForDriver(g.driver.driverid) if r.eventid == eventid])
+        event   = Event.get(eventid)
+        decorateEvent(event, curreg) # Figure out limit with current registration
+        if len(carids) > event.mylimit:
+            error = "Limit hit outside session, request aborted"
+        else:
+            error = ""
+            Registration.update(eventid, carids, g.driver.driverid)
     except Exception as e:
         g.db.rollback()
-        error = str(e)
+        return "<div class='error'>{}</div>".format(e)
 
     eventdisplay = get_template_attribute('/register/macros.html', 'eventdisplay')
-    event  = Event.get(eventid)
     cars   = {c.carid:c for c in Car.getForDriver(g.driver.driverid)}
     reg    = [ r.carid for r in Registration.getForDriver(g.driver.driverid) if r.eventid == eventid]
-    pay    = [ p for p in Payment.getForDriver(g.driver.driverid) if p.eventid == eventid]
     decorateEvent(event, len(reg))
-    return eventdisplay(event, cars, reg, pay, error)
+    return eventdisplay(event, cars, reg, error)
 
 
 @Register.route("/<series>/usednumbers")
@@ -171,10 +173,6 @@ def view():
     for r in Registration.getForEvent(g.eventid):
         registered[r.classcode].append(r)
     return render_template('register/reglist.html', event=event, registered=registered)
-
-@Register.route("/<series>/ipn")
-def ipn():
-    return "ipn"
 
 @Register.route("/ical/<driverid>")
 def ical(driverid):
@@ -290,20 +288,4 @@ def decorateEvent(e, mycount):
         limits.append([e.totlimit - e.entrycount + mycount, "The total entry limit of {} has been met".format(e.totlimit)])
 
     (e.mylimit, e.limitmessage) = min(limits, key=lambda x: x[0])
-
-
-def checkLimitState(event, driverid, setResponse=True):
-    entries = self.session.query(Registration.id).join('car').filter(Registration.eventid==event.id).filter(Car.driverid==driverid)
-
-    if event.doublespecial and event.drivercount >= event.totlimit and entries.count() == 0:  # past single driver limit, no more new singles
-            if setResponse: response.status = "400 Single Driver Limit of %d reached" % (event.totlimit)
-            return False
-    if not event.doublespecial and event.totlimit and event.count >= event.totlimit:
-            if setResponse: response.status = "400 Event limit of %d reached" % (event.totlimit)
-            return False
-    if entries.count() >= event.perlimit:
-            if setResponse: response.status = "400 Entrant limit of %d reached" % (event.perlimit)
-            return False
-    return True
-    
 

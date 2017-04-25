@@ -132,7 +132,7 @@ def convert(sourcefile, name, password):
         newe['attr']        = dict()
         maxeid = max(maxeid, e.id)
 
-        for a in ('location', 'sponsor', 'host', 'chair', 'designer', 'paypal', 'snail', 'cost', 'notes', 'doublespecial'):
+        for a in ('location', 'sponsor', 'host', 'chair', 'designer', 'snail', 'cost', 'notes', 'doublespecial'):
             if hasattr(e, a) and getattr(e, a):
                 newe['attr'][a] = getattr(e, a)
 

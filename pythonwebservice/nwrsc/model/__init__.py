@@ -5,5 +5,5 @@ from .result import Result
 from .rungroups import RunGroups
 from .series import Series
 from .settings import Settings
-from .simple import Audit, Car, Driver, Challenge, Event, Payment, Registration, Run, RunOrder
+from .simple import Audit, Car, Driver, Challenge, Event, Registration, Run, RunOrder
 

@@ -120,7 +120,7 @@ class Driver(AttrBase):
 class Event(AttrBase):
 
     def feedFilter(self, key, value):
-        if key in ('paypal', 'snail'):
+        if key in ('payments', 'snail'):
             return None
         return value
 
@@ -144,11 +144,6 @@ class Event(AttrBase):
     def byDate(cls):
         return cls.getall("select * from events order by date")
 
-
-class Payment(AttrBase):
-    @classmethod
-    def getForDriver(cls, driverid):
-        return cls.getall("SELECT * FROM payments WHERE driverid=%s", (driverid,))
 
 
 class Registration(AttrBase):
