@@ -21,6 +21,7 @@ from werkzeug.contrib.profiler import ProfilerMiddleware
 from nwrsc.controllers.admin import Admin
 from nwrsc.controllers.dynamic import Announcer, Timer
 from nwrsc.controllers.feed import Xml, Json
+from nwrsc.controllers.merge import Merge
 from nwrsc.controllers.register import Register
 from nwrsc.controllers.results import Results
 from nwrsc.lib.encoding import to_json
@@ -154,6 +155,7 @@ def create_app(config=None):
     theapp.register_blueprint(Admin,     url_prefix="/admin/<series>")
     theapp.register_blueprint(Announcer, url_prefix="/announcer/<series>")
     theapp.register_blueprint(Json,      url_prefix="/json/<series>")
+    theapp.register_blueprint(Merge,     url_prefix="/merge/<series>")
     theapp.register_blueprint(Register,  url_prefix="/register")
     theapp.register_blueprint(Results,   url_prefix="/results/<series>")
     theapp.register_blueprint(Timer,     url_prefix="/timer")

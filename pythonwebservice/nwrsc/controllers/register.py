@@ -206,6 +206,7 @@ def login():
                 if d.email == reset.email.data:
                     token = current_app.usts.dumps({'request': 'reset', 'driverid': str(d.driverid)})
                     link = url_for('.reset', token=token, _external=True)
+                    # FINISH ME, do email here
                     return render_template("simple.html", content="An email as been sent with a link to reset your username/password. (%s)" % link)
             flash("No user could be found with those parameters")
         else:
@@ -213,6 +214,7 @@ def login():
 
     elif register.submit.data:
         active = "register"
+        # FINISH ME, some kind of CAPTCHA here
         if register.validate_on_submit():
             if Driver.byusername(register.username.data) != None:
                 flash("That username is already taken")

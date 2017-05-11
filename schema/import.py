@@ -46,7 +46,7 @@ def convert(sourcefile, name, password):
             newd['firstname']  = d.firstname.strip()
             newd['lastname']   = d.lastname.strip()
             newd['email']      = d.email.strip()
-            newd['username']   = newd['driverid']
+            newd['username']   = ""
             newd['password']   = ""
             newd['membership'] = d.membership and d.membership.strip() or ""
             newd['attr']       = dict()

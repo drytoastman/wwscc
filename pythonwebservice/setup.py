@@ -9,7 +9,6 @@ x = setup(
     url='https://github.com/drytoastman/wwscc',
 
     install_requires=[
-        "psycopg2",
         "Flask",
         "Flask-Assets",
         "Flask-Bcrypt",
@@ -17,11 +16,13 @@ x = setup(
         "Flask-Mail",
         "Flask-WTF",
         "cheroot",
-        "libsass",
         "cssmin",
-        "ReportLab",
         "icalendar",
+        "libsass",
+        "ReportLab",
+        "psycopg2",
         "python-dateutil",
+        "zeroconf"
     ],
 
     packages=find_packages(),

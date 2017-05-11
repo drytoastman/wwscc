@@ -103,7 +103,7 @@ CREATE TABLE drivers (
     firstname  TEXT        NOT NULL, 
     lastname   TEXT        NOT NULL, 
     email      TEXT        NOT NULL,
-    username   TEXT,
+    username   TEXT        NOT NULL DEFAULT '',
     password   TEXT        NOT NULL DEFAULT '',
     membership TEXT        NOT NULL DEFAULT '',
     attr       JSONB       NOT NULL DEFAULT '{}', 
