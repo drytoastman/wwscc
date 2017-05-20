@@ -1,9 +1,8 @@
 
 from collections import OrderedDict
+import datetime
 import json
-
-from flask import g
-
+import logging
 
 TABLES =  OrderedDict({
     'settings':        ['name'],
@@ -21,9 +20,10 @@ TABLES =  OrderedDict({
     'challengeruns':   ['challengeid', 'round', 'carid', 'course'],
 })
 
-
+log  = logging.getLogger(__name__)
 SUMPART = "sum(('x' || substring(t.rowhash, {}, 8))::bit(32)::bigint)"
 SUMS = "{}, {}, {}, {}".format(SUMPART.format(1), SUMPART.format(9), SUMPART.format(17), SUMPART.format(25))
+LOCALTIME = datetime.datetime(9999, 1, 1)
 
 
 def loadHashes():
@@ -47,6 +47,39 @@ def loadPk(table):
         cur.execute("SELECT {} from {}".format(','.join(TABLES[table]+['modified']), table))
         return cur.fetchall()
 
-def get(request):
-    with g.db.cursor() as cur:
-        cur.execute
+
+def clearactive(db):
+    with db.cursor() as cur:
+        cur.execute("UPDATE mergeservers SET active=FALSE")
+
+def newserver(db, obj):
+    with db.cursor() as cur:
+        cur.execute("INSERT INTO mergeservers (serverid, active, lastmerge, attr) VALUES (%s,%s,%s,%s)",
+            (obj['serverid'], obj['active'], obj['lastmerge'], json.dumps(obj['attr'])))
+
+def updateserver(db, obj):
+    with db.cursor() as cur:
+        cur.execute("UPDATE mergeservers SET active=%s, lastmerge=%s, attr=%s where serverid=%s", 
+            (obj['active'], obj['lastmerge'], json.dumps(obj['attr']), obj['serverid']))
+
+def getserver(db, serverid):
+    with db.cursor() as cur:
+        cur.execute("SELECT * FROM mergeservers WHERE serverid=%s", (serverid,))
+        if cur.rowcount == 0:
+            return None
+        return cur.fetchone()
+
+def activeservers(db):
+    with db.cursor() as cur:
+        cur.execute("SELECT * FROM mergeservers WHERE active=TRUE")
+        return cur.fetchall()
+
+def getlocalhost(db):
+    with db.cursor() as cur:
+        cur.execute("SELECT * FROM mergeservers WHERE lastmerge>=%s", (LOCALTIME,))
+        if cur.rowcount == 0:
+            return None
+        if cur.rowcount > 1:
+            log.error("More than one local host in the merge table")
+        return cur.fetchone()
+

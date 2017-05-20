@@ -119,3 +119,13 @@ CREATE TRIGGER driversuni BEFORE UPDATE ON drivers FOR EACH ROW EXECUTE PROCEDUR
 COMMENT ON TABLE drivers IS 'The global list of drivers for all series';
 
 
+CREATE TABLE mergeservers (
+    serverid   UUID       PRIMARY KEY,
+    active     BOOLEAN    NOT NULL DEFAULT FALSE,
+    lastmerge  TIMESTAMP  NOT NULL DEFAULT 'epoch',
+    attr       JSONB      NOT NULL DEFAULT '{}'
+);
+REVOKE ALL   ON mergeservers FROM public;
+GRANT  ALL   ON mergeservers TO baseaccess;
+COMMENT ON TABLE mergeservers IS 'Local state of other sevrers we are periodically merging with';
+

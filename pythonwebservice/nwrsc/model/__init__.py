@@ -3,7 +3,6 @@ from .base import AttrBase, Entrant
 from .car import Car
 from .classlist import Class, Index, ClassData
 from .driver import Driver
-from .merge import loadHashes, loadPk
 from .result import Result
 from .rungroups import RunGroups
 from .series import Series

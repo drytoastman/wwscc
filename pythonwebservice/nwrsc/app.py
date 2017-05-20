@@ -21,11 +21,11 @@ from werkzeug.contrib.profiler import ProfilerMiddleware
 from nwrsc.controllers.admin import Admin
 from nwrsc.controllers.dynamic import Announcer, Timer
 from nwrsc.controllers.feed import Xml, Json
-from nwrsc.controllers.merge import Merge
 from nwrsc.controllers.register import Register
 from nwrsc.controllers.results import Results
 from nwrsc.lib.encoding import to_json
 from nwrsc.model import Series
+from nwrsc.merge.process import MergeProcess
 
 log = logging.getLogger(__name__)
 
@@ -142,7 +142,8 @@ def create_app(config=None):
         "LOG_STDERR":False,
         "LOG_LEVEL":"INFO",
         "SECRET_KEY":'secret stuff here',
-        "TEMPLATES_AUTO_RELOAD":True
+        "TEMPLATES_AUTO_RELOAD":True,
+        "RUN_MERGER":True
     })
 
     # Let the site config override what it wants
@@ -155,7 +156,6 @@ def create_app(config=None):
     theapp.register_blueprint(Admin,     url_prefix="/admin/<series>")
     theapp.register_blueprint(Announcer, url_prefix="/announcer/<series>")
     theapp.register_blueprint(Json,      url_prefix="/json/<series>")
-    theapp.register_blueprint(Merge,     url_prefix="/merge/<series>")
     theapp.register_blueprint(Register,  url_prefix="/register")
     theapp.register_blueprint(Results,   url_prefix="/results/<series>")
     theapp.register_blueprint(Timer,     url_prefix="/timer")
@@ -212,6 +212,9 @@ def create_app(config=None):
         theapp.wsgi_app = ProfilerMiddleware(theapp.wsgi_app, restrictions=[30])
     theapp.hasher = Bcrypt(theapp)
     theapp.usts = URLSafeTimedSerializer(theapp.config["SECRET_KEY"])
+
+    if theapp.config.get('RUN_MERGER', False):
+        MergeProcess().start()
 
     log.info("Scorekeeper App created")
     return theapp

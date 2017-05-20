@@ -26,7 +26,7 @@ x = setup(
     ],
 
     packages=find_packages(),
-    scripts=['bin/webserver'],
+    scripts=['bin/webserver.py', 'bin/dbcreate.py', 'bin/olddbimport.py'],
     include_package_data=True,
     zip_safe=False,
 )
