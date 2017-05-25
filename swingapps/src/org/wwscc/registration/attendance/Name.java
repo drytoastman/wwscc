@@ -8,8 +8,6 @@
 
 package org.wwscc.registration.attendance;
 
-import org.apache.commons.lang3.text.WordUtils;
-
 public class Name implements Comparable<Name>
 {
 	String first;
@@ -22,7 +20,8 @@ public class Name implements Comparable<Name>
 	
 	public Name capitalized()
 	{
-		return new Name(WordUtils.capitalize(first), WordUtils.capitalize(last));
+		throw new UnsupportedOperationException("Need to reimplement getAttendance if anyone uses it anymore");
+		//return new Name(WordUtils.capitalize(first), WordUtils.capitalize(last));
 	}
 	
 	public String toString() 
