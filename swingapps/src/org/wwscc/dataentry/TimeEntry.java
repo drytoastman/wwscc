@@ -323,13 +323,13 @@ public class TimeEntry extends JPanel implements ActionListener, ListSelectionLi
 						throw new Exception("cancel");
 					break;
 				case BWTIMER_NETWORK:
-					SimpleFinderDialog dialog = new SimpleFinderDialog("BWTimer");
+					SimpleFinderDialog dialog = new SimpleFinderDialog(SimpleFinderDialog.BWTIMER_TYPE);
 					dialog.doDialog("Find BW Timers", null);
 					if ((newAddr = dialog.getResult()) == null)
 						throw new Exception("cancel");
 					break;
 				case PROTIMER_NETWORK:					
-					SimpleFinderDialog dialog2 = new SimpleFinderDialog("ProTimer");
+					SimpleFinderDialog dialog2 = new SimpleFinderDialog(SimpleFinderDialog.PROTIMER_TYPE);
 					dialog2.doDialog("Find Pro Timers", null);
 					if ((newAddr = dialog2.getResult()) == null)
 						throw new Exception("cancel");

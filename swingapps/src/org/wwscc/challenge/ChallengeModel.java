@@ -612,7 +612,7 @@ public class ChallengeModel implements MessageListener
 				try
 				{
 					InetSocketAddress newAddr;
-					SimpleFinderDialog dialog = new SimpleFinderDialog("ProTimer");
+					SimpleFinderDialog dialog = new SimpleFinderDialog(SimpleFinderDialog.PROTIMER_TYPE);
 					dialog.doDialog("Find Pro Timers", null);
 					if ((newAddr = dialog.getResult()) != null)
 					{

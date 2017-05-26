@@ -47,10 +47,10 @@ public class StupidSimpleDataService implements Runnable
     {        
         ServerSocket ssocket = null; 
         try  {
-        	log.log(Level.INFO, "Starting announcer timer server on port " + port);
+        	log.log(Level.INFO, "Starting ssds server on port " + port);
             ssocket = new ServerSocket(port); 
         }  catch (IOException ioe)  {
-        	log.log(Level.SEVERE, "Failed to start announcer time server: " + ioe, ioe);
+        	log.log(Level.SEVERE, "Failed to ssds server: " + ioe, ioe);
         }
 
         while (true) 

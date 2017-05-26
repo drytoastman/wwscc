@@ -13,6 +13,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
+
+import org.wwscc.dialogs.SimpleFinderDialog;
 import org.wwscc.storage.Run;
 import org.wwscc.timercomm.TimerService;
 import org.wwscc.util.Logging;
@@ -46,7 +48,7 @@ public class DebugTimer extends JPanel
 		add(tf, "w 200, wrap");
 		add(defaultButton, "w 200, wrap");
 		
-		server = new TimerService("BWTimer");
+		server = new TimerService(SimpleFinderDialog.BWTIMER_TYPE);
 		server.start();
 	}
 		

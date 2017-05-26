@@ -13,11 +13,14 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.wwscc.services.ServiceAnnouncer;
-import org.wwscc.services.ServiceMessage;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
+
 import org.wwscc.storage.LeftRightDialin;
 import org.wwscc.storage.Run;
 import org.wwscc.util.MT;
@@ -32,21 +35,23 @@ public class TimerService implements RunServiceInterface, ThreadedClass
 {
 	private static final Logger log = Logger.getLogger(TimerService.class.getName());
 
+	JmDNS jmdns;
+	String servicetype;
+	String servicename;
 	ServerSocket serversock;
-	ServiceAnnouncer announcer;
 	Vector<RunServiceInterface> clients;
 	Vector<RunServiceInterface> marked;
 	boolean done;
 
 	
-	public TimerService(String name) throws IOException
+	public TimerService(String type) throws IOException
 	{
 		serversock = new ServerSocket(0);
-		log.log(Level.INFO, "Service {0} started on port {1}", new Object[]{name, serversock.getLocalPort()});
+		servicetype = type;
+		servicename = UUID.randomUUID().toString();
+		log.log(Level.INFO, "Service {0} started on port {1}", new Object[]{servicename, serversock.getLocalPort()});
 		
-		announcer = new ServiceAnnouncer();
-		announcer.addDescription(ServiceMessage.createType(name, InetAddress.getLocalHost().getHostName(), serversock.getLocalPort()));
-		announcer.start();
+		jmdns = JmDNS.create(InetAddress.getLocalHost());
 		clients = new Vector<RunServiceInterface>();
 		marked = new Vector<RunServiceInterface>();
 		done = true;
@@ -124,6 +129,11 @@ public class TimerService implements RunServiceInterface, ThreadedClass
 			catch (UnknownHostException ex) { ip = "unknown"; }
 			
 			Messenger.sendEvent(MT.TIMER_SERVICE_LISTENING, new Object[] { this, ip, serversock.getLocalPort() } );
+			try {
+				jmdns.registerService(ServiceInfo.create(servicetype, servicename, serversock.getLocalPort(), ""));
+			} catch (IOException ioe) {
+				log.warning("Unable to register timer service for discovery: " + ioe);
+			}
 			
 			while (!done)
 			{
@@ -145,8 +155,8 @@ public class TimerService implements RunServiceInterface, ThreadedClass
 				((TimerClient)tc).stop();
 			}
 
-			announcer.stop();
 			try { serversock.close(); } catch (IOException ioe) {}
+			try { jmdns.unregisterAllServices(); jmdns.close(); } catch (IOException ioe) {}
 			
 			Messenger.sendEvent(MT.TIMER_SERVICE_NOTLISTENING, this);
 		}

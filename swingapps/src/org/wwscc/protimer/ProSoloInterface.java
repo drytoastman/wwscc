@@ -33,6 +33,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import net.miginfocom.swing.MigLayout;
 import org.wwscc.components.MyServerLabel;
+import org.wwscc.dialogs.SimpleFinderDialog;
 import org.wwscc.timercomm.SerialDataInterface;
 import org.wwscc.timercomm.TimerService;
 import org.wwscc.util.Logging;
@@ -111,7 +112,7 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
         timing = new TimingInterface();
 	
 		try {
-			server = new TimerService("ProTimer");
+			server = new TimerService(SimpleFinderDialog.PROTIMER_TYPE);
 			model.addRunServerListener(server);
 			server.start();
 		} catch (IOException ioe) {
