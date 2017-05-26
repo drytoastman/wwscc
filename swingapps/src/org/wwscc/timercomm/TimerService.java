@@ -36,6 +36,7 @@ public class TimerService implements RunServiceInterface, ThreadedClass
 	private static final Logger log = Logger.getLogger(TimerService.class.getName());
 
 	JmDNS jmdns;
+	Thread autocloser;
 	String servicetype;
 	String servicename;
 	ServerSocket serversock;
@@ -119,6 +120,20 @@ public class TimerService implements RunServiceInterface, ThreadedClass
 		return ret;
 	}
 
+	class AutoCloseHook extends Thread
+	{
+		@Override
+		public void run()
+		{
+			try { 
+				jmdns.unregisterAllServices(); 
+				jmdns.close(); 
+			} catch (IOException ioe) {
+				log.warning("Error shutting down TimerService announcer");
+			}
+		}
+	}
+	
 	class ServiceThread implements Runnable
 	{
 		@Override
@@ -131,6 +146,8 @@ public class TimerService implements RunServiceInterface, ThreadedClass
 			Messenger.sendEvent(MT.TIMER_SERVICE_LISTENING, new Object[] { this, ip, serversock.getLocalPort() } );
 			try {
 				jmdns.registerService(ServiceInfo.create(servicetype, servicename, serversock.getLocalPort(), ""));
+				autocloser = new AutoCloseHook();
+				Runtime.getRuntime().addShutdownHook(autocloser);
 			} catch (IOException ioe) {
 				log.warning("Unable to register timer service for discovery: " + ioe);
 			}
@@ -156,7 +173,8 @@ public class TimerService implements RunServiceInterface, ThreadedClass
 			}
 
 			try { serversock.close(); } catch (IOException ioe) {}
-			try { jmdns.unregisterAllServices(); jmdns.close(); } catch (IOException ioe) {}
+			autocloser.start();
+			Runtime.getRuntime().removeShutdownHook(autocloser);
 			
 			Messenger.sendEvent(MT.TIMER_SERVICE_NOTLISTENING, this);
 		}
