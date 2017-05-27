@@ -29,6 +29,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.SwingWorker;
@@ -85,7 +86,8 @@ public class SimpleFinderDialog extends BaseDialog<InetSocketAddress> implements
 			for (String service : serviceNames) {
 				jmdns.addServiceListener(service, list);
 			}
-			mainPanel.add(p, "w 300, h 400, spanx 2, wrap");
+			mainPanel.add(new JLabel("Full Discovery Can Take Up To 6 Seconds"), "spanx 2, center, wrap");
+			mainPanel.add(p, "w 300, h 400, growx, spanx 2, wrap");
 		}
 		catch (IOException ioe)
 		{

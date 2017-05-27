@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -60,6 +61,9 @@ public class Logging
 	
 			root.addHandler(ah);
 			root.addHandler(fh);
+			if (System.getenv("CONSOLELOG").equals("1")) {
+				root.addHandler(new ConsoleHandler());
+			}
 	
 			root.setLevel(Level.WARNING);
 			Logger.getLogger("org.wwscc").setLevel(Level.FINER);
