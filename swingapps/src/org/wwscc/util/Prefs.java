@@ -10,6 +10,9 @@ package org.wwscc.util;
 import java.awt.Rectangle;
 import java.io.File;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -27,6 +30,8 @@ public class Prefs
 	private static final Logger log = Logger.getLogger(Prefs.class.getCanonicalName());
 	
 	private static Preferences prefs;
+	private static String installroot = null;
+	
 	static
 	{
 		prefs = Preferences.userNodeForPackage(Prefs.class);
@@ -41,7 +46,6 @@ public class Prefs
 	{
 		prefs = Preferences.userRoot().node(name);
 	}
-	
 	
 	public static Map<String,String> getPasswords() 
 	{
@@ -76,7 +80,27 @@ public class Prefs
 	
 	public static String getInstallRoot() 
 	{
-		return new File(System.getProperty("user.home"), "scorekeeper").getAbsolutePath();
+		if (installroot == null) {
+			Path p = Paths.get(".").toAbsolutePath();
+			while (p != null)
+			{				
+				if (Files.isDirectory(p.resolve("java")) && Files.isDirectory(p.resolve("python")) && Files.isDirectory(p.resolve("database")))
+				{
+					installroot = p.toAbsolutePath().toString();
+					break;
+				}
+				
+				p = p.getParent();
+				if (p == null) {
+					log.severe("Unable to determine the scorekeeper install location.  Things will most likely not work");
+					installroot = Paths.get(".").toAbsolutePath().toString();
+					break;
+				}
+			}
+			
+			log.info("Using install root: " + installroot);
+		}
+		return installroot;
 	}
 	
 	public static String getLogDirectory()

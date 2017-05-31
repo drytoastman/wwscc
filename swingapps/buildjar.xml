@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project Scorekeeper Java Apps">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <target name="create_run_jar">
+        <property name="destjar" value="../installers/stage/swingapps.jar" />
+        <delete file="${destjar}"/>
+        <subant verbose="true" target="build-project" buildpath="." />
+        <jar destfile="${destjar}">
+            <manifest>
+            	<attribute name="Main-Class" value="org.wwscc.util.Launcher"/>
+            </manifest>
+            <fileset dir="bin"/>
+        	<fileset dir="native">
+        	    <include name="**/*.so"/>
+        	    <include name="**/*.dll"/>
+        	    <include name="**/*.jnilib"/>
+        	</fileset>
+        	<zipgroupfileset dir="lib" includes="*.jar" />
+        </jar>
+    </target>
+</project>

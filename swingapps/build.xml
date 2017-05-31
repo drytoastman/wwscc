@@ -5,25 +5,24 @@
               directory with the processing instruction <?eclipse.ant.import?>
               as the first entry and export the buildfile again. --><project basedir="." default="build" name="Scorekeeper Java Apps">
     <property environment="env"/>
+    <property name="ECLIPSE_HOME" value="../../../../../software/juno-sr1"/>
     <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.6"/>
-    <property name="source" value="1.6"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
     <path id="JUnit 4.libraryclasspath">
-        <pathelement location="../../../../../software/juno-sr1/plugins/org.junit_4.10.0.v4_10_0_v20120426-0900/junit.jar"/>
-        <pathelement location="../../../../../software/juno-sr1/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
+        <pathelement location="../../../../../Users/bwilson/.p2/pool/plugins/org.junit_4.12.0.v201504281640/junit.jar"/>
+        <pathelement location="../../../../../Users/bwilson/.p2/pool/plugins/org.hamcrest.core_1.3.0.v201303031735.jar"/>
     </path>
     <path id="Scorekeeper Java Apps.classpath">
         <pathelement location="bin"/>
-        <pathelement location="lib/miglayout-4.0-swing.jar"/>
         <pathelement location="lib/RXTXcomm.jar"/>
-        <pathelement location="lib/commons-codec-1.6.jar"/>
-        <pathelement location="lib/commons-logging-1.1.1.jar"/>
-        <pathelement location="lib/commons-io-2.4.jar"/>
-        <pathelement location="lib/commons-lang3-3.1.jar"/>
-        <pathelement location="lib/httpcore-4.2.2.jar"/>
-        <pathelement location="lib/httpmime-4.2.3.jar"/>
-        <pathelement location="lib/httpclient-4.2.3.jar"/>
         <path refid="JUnit 4.libraryclasspath"/>
+        <pathelement location="lib/miglayout-4.0-swing.jar"/>
+        <pathelement location="lib/postgresql-9.4.1212.jar"/>
+        <pathelement location="lib/json-simple-1.1.1.jar"/>
+        <pathelement location="lib/jmdns-3.5.1.jar"/>
+        <pathelement location="lib/slf4j-jdk14-1.7.25.jar"/>
+        <pathelement location="lib/slf4j-api-1.7.25.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
@@ -48,61 +47,38 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
+            <src path="tests"/>
             <classpath refid="Scorekeeper Java Apps.classpath"/>
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
-    <target name="Admin">
-        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="Admin"/>
+    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
+        <copy todir="${ant.library.dir}">
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </copy>
+        <unzip dest="${ant.library.dir}">
+            <patternset includes="jdtCompilerAdapter.jar"/>
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </unzip>
+    </target>
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+    <target name="DebugTimer">
+        <java classname="org.wwscc.bwtimer.DebugTimer" failonerror="true" fork="yes">
+            <env key="CONSOLELOG" value="1"/>
             <classpath refid="Scorekeeper Java Apps.classpath"/>
         </java>
     </target>
-    <target name="ProTimer">
-        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="ProTimer"/>
+    <target name="ProSoloInterface">
+        <java classname="org.wwscc.protimer.ProSoloInterface" failonerror="true" fork="yes">
             <classpath refid="Scorekeeper Java Apps.classpath"/>
         </java>
     </target>
-    <target name="Registration">
-        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="Registration"/>
-            <classpath refid="Scorekeeper Java Apps.classpath"/>
-        </java>
-    </target>
-    <target name="Registration Node2">
-        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="Registration prefs=node2"/>
-            <classpath refid="Scorekeeper Java Apps.classpath"/>
-        </java>
-    </target>
-    <target name="Registration Node1">
-        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="Registration prefs=node1"/>
-            <classpath refid="Scorekeeper Java Apps.classpath"/>
-        </java>
-    </target>
-    <target name="DataEntry">
-        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="DataEntry"/>
-            <classpath refid="Scorekeeper Java Apps.classpath"/>
-        </java>
-    </target>
-    <target name="DataEntry Node1">
-        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="DataEntry prefs=node1"/>
-            <classpath refid="Scorekeeper Java Apps.classpath"/>
-        </java>
-    </target>
-    <target name="Challenge">
-        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="ChallengeGUI"/>
-            <classpath refid="Scorekeeper Java Apps.classpath"/>
-        </java>
-    </target>
-    <target name="BWTimer">
-        <java classname="org.wwscc.util.Launcher" failonerror="true" fork="yes">
-            <arg line="BWTimer"/>
+    <target name="TrayMonitor">
+        <java classname="org.wwscc.tray.TrayMonitor" failonerror="true" fork="yes">
+            <env key="CONSOLELOG" value="1"/>
             <classpath refid="Scorekeeper Java Apps.classpath"/>
         </java>
     </target>

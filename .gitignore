@@ -11,4 +11,5 @@ pythonwebservice/nwrsc/static/.webassets-cache
 pythonwebservice/nwrsc.egg-info
 pythonwebservice/build
 pythonwebservice/dist
-downloads
+installers/stage
+installers/*.exe

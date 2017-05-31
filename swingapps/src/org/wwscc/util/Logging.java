@@ -50,21 +50,24 @@ public class Logging
 			for(Handler handler : handlers) {
 				root.removeHandler(handler);
 			}
+	
+			// Get dialog alerts up first
+			AlertHandler ah = new AlertHandler();
+			ah.setLevel(Level.WARNING);	
+			root.addHandler(ah);
 			
+			// Then console handler if desired (generally only when debugging)
+			if (System.getenv("CONSOLELOG") != null) {
+				root.addHandler(new ConsoleHandler());
+			}
+	
+			// Then try to setup file logging (this might cause errors if we can't figure out where our logdir is)
 			File logdir = getLogDir();
 			FileHandler fh = new FileHandler(new File(logdir, name+".%g.log").getAbsolutePath(), 1000000, 10, true);
 			fh.setFormatter(new SingleLineFormatter());
 			fh.setLevel(Level.ALL);
-	
-			AlertHandler ah = new AlertHandler();
-			ah.setLevel(Level.WARNING);
-	
-			root.addHandler(ah);
 			root.addHandler(fh);
-			if (System.getenv("CONSOLELOG").equals("1")) {
-				root.addHandler(new ConsoleHandler());
-			}
-	
+			
 			root.setLevel(Level.WARNING);
 			Logger.getLogger("org.wwscc").setLevel(Level.FINER);
 		}
