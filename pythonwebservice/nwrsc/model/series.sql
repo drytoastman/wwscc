@@ -237,7 +237,7 @@ CREATE TABLE challenges (
     challengeid SERIAL      PRIMARY KEY,
     eventid     INTEGER     NOT NULL,
     name        TEXT        NOT NULL, 
-    depth       INTEGER     NOT NULL CHECK (depth >= 1 AND depth <= 6)
+    depth       INTEGER     NOT NULL CHECK (depth >= 1 AND depth <= 6),
     modified    TIMESTAMP   NOT NULL DEFAULT now(),
 	FOREIGN KEY (eventid) REFERENCES events(eventid)
 );

@@ -19,6 +19,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Type: filesandordirs; Name: "{app}\java";
 Type: filesandordirs; Name: "{app}\python";
 
+;[UninstallDelete]
+;Type: filesandordirs; Name: 
+
 [Dirs]
 Name: "{app}\database"; Permissions: users-modify; Flags: uninsneveruninstall
 Name: "{app}\logs";     Permissions: users-modify; Flags: uninsneveruninstall
@@ -29,12 +32,12 @@ Source: "stage\swingapps.jar"; DestDir: "{app}";
 Source: "stage\wheels\*";      DestDir: "{tmp}\wheels";
 
 [Icons]
-Name: "{group}\LauncherMonitor"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar TrayMonitor";  WorkingDir: "{app}";
-Name: "{group}\Uninstall";       Filename: "{app}\unins000.exe";                                                      WorkingDir: "{app}";
+Name: "{group}\LauncherMonitor"; WorkingDir: "{app}"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar TrayMonitor";  
+Name: "{group}\Uninstall";       WorkingDir: "{app}"; Filename: "{app}\unins000.exe";                                                      
 
 [Run]
-Filename: "{code:getPythonPath}";     Parameters: "-m venv {app}\python";
-Filename: "{app}\python\Scripts\pip"; Parameters: "install {tmp}\wheels\nwrsc-{#SetupSetting("AppVersion")}-py3-none-any.whl -f file:{tmp}\wheels";
+Filename: "{code:getPythonPath}";     Flags: runasoriginaluser; Parameters: "-m venv {app}\python"; 
+Filename: "{app}\python\Scripts\pip"; Flags: runasoriginaluser; Parameters: "install {tmp}\wheels\nwrsc-{#SetupSetting("AppVersion")}-py3-none-any.whl -f file:{tmp}\wheels"; 
 
 [Code]
 

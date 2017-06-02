@@ -81,10 +81,14 @@ public class Prefs
 	public static String getInstallRoot() 
 	{
 		if (installroot == null) {
+			installroot = System.getenv("INSTALLROOT");
+			if (installroot != null)
+				return installroot;
+			
 			Path p = Paths.get(".").toAbsolutePath();
 			while (p != null)
 			{				
-				if (Files.isDirectory(p.resolve("java")) && Files.isDirectory(p.resolve("python")) && Files.isDirectory(p.resolve("database")))
+				if (Files.isDirectory(p.resolve("python")) && Files.isDirectory(p.resolve("database")))
 				{
 					installroot = p.toAbsolutePath().toString();
 					break;
@@ -100,6 +104,7 @@ public class Prefs
 			
 			log.info("Using install root: " + installroot);
 		}
+		
 		return installroot;
 	}
 	
