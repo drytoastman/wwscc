@@ -36,8 +36,9 @@ Name: "{group}\LauncherMonitor"; WorkingDir: "{app}"; Filename: "{code:getJavaPa
 Name: "{group}\Uninstall";       WorkingDir: "{app}"; Filename: "{app}\unins000.exe";                                                      
 
 [Run]
-Filename: "{code:getPythonPath}";     Flags: runasoriginaluser; Parameters: "-m venv {app}\python"; 
-Filename: "{app}\python\Scripts\pip"; Flags: runasoriginaluser; Parameters: "install {tmp}\wheels\nwrsc-{#SetupSetting("AppVersion")}-py3-none-any.whl -f file:{tmp}\wheels"; 
+Filename: "{code:getPythonPath}";        Flags: runasoriginaluser; Parameters: "-m venv {app}\python"; 
+Filename: "{app}\python\Scripts\pip";    Flags: runasoriginaluser; Parameters: "install {tmp}\wheels\nwrsc-{#SetupSetting("AppVersion")}-py3-none-any.whl -f file:{tmp}\wheels"; 
+Filename: "{app}\python\Scripts\python"; Flags: runasoriginaluser; Parameters: "{app}\python\Scripts\dbensure.py wwwpass";
 
 [Code]
 

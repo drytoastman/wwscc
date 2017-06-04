@@ -29,7 +29,6 @@ class BaseInstallCreator():
         pass
 
     def execute(self):
-        """
         print("Building jar file")
         subprocess.run([shutil.which("ant"), "-f", "../swingapps/buildjar.xml"])
 
@@ -50,7 +49,6 @@ class BaseInstallCreator():
         distutils.core.run_setup("setup.py", ['bdist_wheel', '-q'])
         os.chdir(save)
         shutil.copyfile(PDIST, os.path.join(WHEELS, NWRWHL))
-        """
 
         self.buildInstaller()
 
