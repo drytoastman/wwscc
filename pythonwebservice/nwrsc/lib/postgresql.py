@@ -7,14 +7,14 @@ import pkg_resources
 import psycopg2
 import subprocess
 
-SUPERU  = "superu"
+SUPERU  = "superuser"
 
 HBA = """
-#TYPE     DATABASE  USER        ADDRESS         METHOD
-host      all       all         127.0.0.1/32    trust
-hostnossl all       all         0.0.0.0/0       reject   # force SSL for non-localhost connections
-host      all       superu      0.0.0.0/0       reject   # no super user off site
-host      all       +baseaccess 0.0.0.0/0       password
+#TYPE     DATABASE  USER                 ADDRESS         METHOD
+host      all       all                  127.0.0.1/32    trust    # No password for local access
+hostnossl all       all                  0.0.0.0/0       reject   # force SSL for non-localhost connections
+host      all       superuser,localuser  0.0.0.0/0       reject   # no super or local user off site
+host      all       +driversaccess       0.0.0.0/0       password # allow any other logins with password
 """
 
 CONFADDON = """
@@ -28,7 +28,7 @@ ssl_ca_file = 'scorekeeperca.crt'
 ssl_crl_file = ''
 """
 
-def ensure_database_installed(basedir):
+def ensure_postgresql_running(basedir):
     bindir  = os.path.join(basedir, "postgresql", "bin")
     dbdir   = os.path.join(basedir, "database")
     hbaconf = os.path.join(dbdir,   "pg_hba.conf")
@@ -46,10 +46,23 @@ def ensure_database_installed(basedir):
     if subprocess.call([pg_ctl, "-D", dbdir, "status"]):
         print("Starting database")
         subprocess.call([pg_ctl, "-D", dbdir, "-w", "start"])
+        return True # We started the database
+
+    return False # Someone else started the database
 
 
-def ensure_database_running(basedir):
-    ensure_database_installed(basedir)
+def ensure_postgresql_stopped(basedir):
+    dbdir   = os.path.join(basedir, "database")
+    pg_ctl  = os.path.join(basedir, "postgresql",  "bin", "pg_ctl")
+    if not subprocess.call([pg_ctl, "-D", dbdir, "status"]):
+        print("Stopping database")
+        subprocess.call([pg_ctl, "-D", dbdir, "-w", "stop"])
+
+
+#############################
+
+def ensure_database_created(basedir):
+    ret = ensure_postgresql_running(basedir)
     pg = psycopg2.connect(host='127.0.0.1', port=54329, user=SUPERU, dbname='postgres')
     pg.autocommit = True
     pgc = pg.cursor()
@@ -59,20 +72,22 @@ def ensure_database_running(basedir):
         pgc.execute("CREATE DATABASE scorekeeper")
         pg.commit()
     pg.close()
+    return ret
 
 
-def ensure_public_schema(wwwpass):
+def ensure_public_schema():
     db = psycopg2.connect(host='127.0.0.1', port=54329, user=SUPERU, dbname='scorekeeper')
     dbc = db.cursor()
     dbc.execute("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename='drivers'")
     if dbc.rowcount == 0:
         print("Creating top level drivers table")
-        dbc.execute(processsqlfile('public.sql', { '<wwwpassword>':wwwpass }))
+        dbc.execute(processsqlfile('public.sql', {}))
         db.commit()
     db.close()
 
 
 def ensure_series_schema(seriesname, seriespass):
+    ensure_public_schema()
     db = psycopg2.connect(host='127.0.0.1', port=54329, user=SUPERU, dbname='scorekeeper')
     dbc = db.cursor()
     dbc.execute("SELECT tablename FROM pg_tables WHERE schemaname=%s AND tablename='runs'", (seriesname,))
@@ -87,9 +102,7 @@ def processsqlfile(name, replacements):
     ret = []
     with pkg_resources.resource_stream('nwrsc', 'model/'+name) as ip:
         for l in ip.readlines():
-            l = l.decode('utf-8').strip()
-            if not l or l.startswith('-'):
-                continue
+            l = l.decode('utf-8')
             for key in replacements:
                 l = l.replace(key, replacements[key])
             ret.append(l)

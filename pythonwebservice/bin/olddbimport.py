@@ -1,32 +1,33 @@
 #!/usr/bin/env python3
 
 import sys
+import os
 
 class AttrWrapper(object):
     def __init__(self, tup, headers):
         for k,v in zip(headers, tup):
             setattr(self, k, v)
 
-def convert(sourcefile, name, password):
+def convert(sourcefile):
     import sqlite3
     import json
     import uuid
     import psycopg2
     import psycopg2.extras
 
-    remapdriver = dict()
-    remapcar = dict()
+    remapdriver   = dict()
+    remapcar      = dict({-1:None})
     challengeruns = list()
-
-    remapcar[-1] = None
 
     old = sqlite3.connect(sourcefile)
     old.row_factory = sqlite3.Row
 
     psycopg2.extras.register_uuid()
-    new = psycopg2.connect(user='postgres', dbname='scorekeeper', cursor_factory=psycopg2.extras.DictCursor)
+    new = psycopg2.connect(host='127.0.0.1', port=54329, user='superuser', dbname='scorekeeper', cursor_factory=psycopg2.extras.DictCursor)
     cur = new.cursor()
 
+    name = os.path.basename(sourcefile[:-3])
+    print("putting things in", name)
     cur.execute("set search_path=%s,%s", (name, 'public'))
 
     #DRIVERS, add to global list and remap ids as necessary
@@ -46,7 +47,7 @@ def convert(sourcefile, name, password):
             newd['firstname']  = d.firstname.strip()
             newd['lastname']   = d.lastname.strip()
             newd['email']      = d.email.strip()
-            newd['username']   = ""
+            newd['username']   = str(uuid.uuid1()) # Fake for now
             newd['password']   = ""
             newd['membership'] = d.membership and d.membership.strip() or ""
             newd['attr']       = dict()
@@ -148,7 +149,10 @@ def convert(sourcefile, name, password):
         oldr = AttrWrapper(r, r.keys())
         if oldr.eventid > 0x0FFFF:
             continue
-        cur.execute("insert into registered values (%s, %s, %s, now())", (oldr.eventid, remapcar[oldr.carid], oldr.paid and True or False))
+        if oldr.carid in remapcar:
+            cur.execute("insert into registered values (%s, %s, %s, now())", (oldr.eventid, remapcar[oldr.carid], oldr.paid and True or False))
+        else:
+            print("skipping unknown carid {}".format(oldr.carid))
 
 
     #CLASSORDER
@@ -174,8 +178,8 @@ def convert(sourcefile, name, password):
             continue
             
         attr = dict()
-        if olr.reaction: attr['reaction'] = oldr.reaction
-        if old.sixty:    attr['sixty'] = oldr.sixty
+        if oldr.reaction: attr['reaction'] = oldr.reaction
+        if oldr.sixty:    attr['sixty'] = oldr.sixty
         for ii in range(1,6):
             seg = getattr(oldr, 'seg%d'%ii)
             if seg is not None and seg > 0:
@@ -243,8 +247,8 @@ def convert(sourcefile, name, password):
     new.close()
 
 if __name__ == '__main__':
-    if len(sys.argv) < 4:
-        print("Usage: {} <old db file> <name> <password>".format(sys.argv[0]))
+    if len(sys.argv) < 2:
+        print("Usage: {} <old db file>".format(sys.argv[0]))
     else:
-        convert(sys.argv[1], sys.argv[2], sys.argv[3])
+        convert(sys.argv[1])
 

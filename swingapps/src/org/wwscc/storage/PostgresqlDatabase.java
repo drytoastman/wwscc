@@ -35,11 +35,11 @@ public class PostgresqlDatabase extends SQLDataInterface
 	 * @param password the password for the series access
 	 * @throws SQLException
 	 */
-	public PostgresqlDatabase(String series, String password) throws SQLException
+	public PostgresqlDatabase(String series) throws SQLException
 	{
 		conn = null;
 		leftovers = new HashMap<ResultSet, PreparedStatement>();
-		conn = getConnection("127.0.0.1", series, password);
+		conn = getConnection(series);
 	}
 
 	/**
@@ -52,7 +52,7 @@ public class PostgresqlDatabase extends SQLDataInterface
 	    List<String> ret = new ArrayList<String>();
 		try
 		{
-			Connection sconn = getConnection("127.0.0.1", "seriesview", "seriesview");
+			Connection sconn = getConnection(null);
 			DatabaseMetaData meta = sconn.getMetaData();
 		    ResultSet rs = meta.getSchemas();
 		    while (rs.next()) {
@@ -73,19 +73,17 @@ public class PostgresqlDatabase extends SQLDataInterface
 
 	/**
 	 * Wrap the properties and url pieces to get a PG connection
-	 * @param host the host to connect to
-	 * @param user the username to use
-	 * @param password the password to use
+	 * @param series the series we are interested in
 	 * @return a java.sql.Connection object
 	 * @throws SQLException
 	 */
-	private static Connection getConnection(String host, String user, String password) throws SQLException
+	private static Connection getConnection(String series) throws SQLException
 	{
 		Properties props = new Properties();
-		props.setProperty("user", user);
-		props.setProperty("password", password);
-		//props.setProperty("ssl","true");
-		return DriverManager.getConnection("jdbc:postgresql://"+host+"/scorekeeper", props);
+		props.setProperty("user", "localuser");
+		if (series != null)
+			props.setProperty("currentSchema", series+",public");
+		return DriverManager.getConnection("jdbc:postgresql://127.0.0.1:54329/scorekeeper", props);
 	}
 	
 	@Override

@@ -1,12 +1,12 @@
 [Setup]
-AppName=WWSCC Applications
+AppName=Scorekeeper
 AppVersion=2.0
 OutputDir=.
-OutputBaseFilename=WWSCCSetup-{#SetupSetting("AppVersion")}
+OutputBaseFilename=ScorekeeperSetup-{#SetupSetting("AppVersion")}
 AppPublisher=Brett Wilson
 DefaultDirName={userdocs}\scorekeeper-{#SetupSetting("AppVersion")}
 UsePreviousAppDir=yes
-DefaultGroupName=Scorekeeper
+DefaultGroupName=Scorekeeper-{#SetupSetting("AppVersion")}
 AllowNoIcons=yes
 Compression=lzma
 SolidCompression=yes
@@ -16,29 +16,31 @@ ArchitecturesInstallIn64BitMode=x64
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [InstallDelete]
-Type: filesandordirs; Name: "{app}\java";
 Type: filesandordirs; Name: "{app}\python";
 
-;[UninstallDelete]
-;Type: filesandordirs; Name: 
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}\python";
 
 [Dirs]
 Name: "{app}\database"; Permissions: users-modify; Flags: uninsneveruninstall
 Name: "{app}\logs";     Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
-Source: "stage\pgsql\*";       DestDir: "{app}\postgresql"; Flags: ignoreversion recursesubdirs;
-Source: "stage\swingapps.jar"; DestDir: "{app}"; 
-Source: "stage\wheels\*";      DestDir: "{tmp}\wheels";
+Source: "stage\siteconfig.json";     DestDir: "{app}";            Flags: uninsneveruninstall
+Source: "stage\pgsql\*";             DestDir: "{app}\postgresql"; Flags: ignoreversion recursesubdirs;
+Source: "stage\scorekeeperapps.jar"; DestDir: "{app}";
+Source: "stage\wheels\*";            DestDir: "{tmp}\wheels";
 
 [Icons]
-Name: "{group}\LauncherMonitor"; WorkingDir: "{app}"; Filename: "{code:getJavaPath}\javaw"; Parameters: "-jar wwsccapps.jar TrayMonitor";  
-Name: "{group}\Uninstall";       WorkingDir: "{app}"; Filename: "{app}\unins000.exe";                                                      
+Name: "{group}\Launcher-{#SetupSetting("AppVersion")}"; WorkingDir: "{app}"; Filename: "{code:getJavaPath}\bin\javaw.exe"; Parameters: "-jar scorekeeperapps.jar TrayMonitor";
+Name: "{group}\Uninstall";                              WorkingDir: "{app}"; Filename: "{app}\unins000.exe";                                                      
 
 [Run]
-Filename: "{code:getPythonPath}";        Flags: runasoriginaluser; Parameters: "-m venv {app}\python"; 
+Filename: "{code:getPythonPath}";        Flags: runasoriginaluser; Parameters: "-m venv {app}\python"; AfterInstall: AddRules
 Filename: "{app}\python\Scripts\pip";    Flags: runasoriginaluser; Parameters: "install {tmp}\wheels\nwrsc-{#SetupSetting("AppVersion")}-py3-none-any.whl -f file:{tmp}\wheels"; 
 Filename: "{app}\python\Scripts\python"; Flags: runasoriginaluser; Parameters: "{app}\python\Scripts\dbensure.py wwwpass";
+Filename: "{sys}\sc.exe";                                          Parameters: "stop   w3svc";
+Filename: "{sys}\sc.exe";                                          Parameters: "config w3svc start= disabled";
 
 [Code]
 
@@ -53,7 +55,7 @@ var
   PythonPath: string;
 
 function getJavaPath(Param: String): String;
-begin Result := JavaPath + '\bin'; end;
+begin Result := JavaPath; end;
 
 function getPythonPath(Param: String): String;
 begin Result := PythonPath; end;
@@ -64,9 +66,6 @@ var
  PythonInstalled: Boolean;
  Version: String;
 begin
-   // Make sure service is stopped if its present so that files can be replaced
-   //Exec('sc', 'stop NWRSc', '', SW_SHOW, ewWaitUntilTerminated, ErrorCode);
-
    JavaInstalled := false;
    PythonInstalled := false;
    Result := false;
@@ -163,14 +162,12 @@ begin
   end;
 end;
 
-procedure CurStepChanged(CurStep: TSetupStep);
+procedure AddRules();
 begin
-  if CurStep=ssDone then begin
-    SetFirewallException('Scorekeeper Python',     ExpandConstant('{app}')+'\python\Scripts\python.exe');
-    SetFirewallException('Scorekeeper Postgresql', ExpandConstant('{app}')+'\postgresql\bin\postgres.exe');
-    SetFirewallException('Scorekeeper Java',       JavaPath);
-    SetFirewallPortException('Scorekeeper MDNS',   NET_FW_PROTOCOL_UDP, 5353);
-  end;
+  SetFirewallException('Scorekeeper Python',     ExpandConstant('{app}')+'\python\Scripts\python.exe');
+  SetFirewallException('Scorekeeper Postgresql', ExpandConstant('{app}')+'\postgresql\bin\postgres.exe');
+  SetFirewallException('Scorekeeper Java',       JavaPath+'\bin\javaw.exe');
+  SetFirewallPortException('Scorekeeper MDNS', NET_FW_PROTOCOL_UDP, 5353);
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
@@ -178,7 +175,7 @@ begin
   if CurUninstallStep=usPostUninstall then begin
     RemoveFirewallException(ExpandConstant('{app}')+'\python\Scripts\python.exe');
     RemoveFirewallException(ExpandConstant('{app}')+'\postgresql\bin\postgres.exe');
-    RemoveFirewallException(JavaPath);
+    RemoveFirewallException(JavaPath+'\bin\javaw.exe');
   end;
 end;
 

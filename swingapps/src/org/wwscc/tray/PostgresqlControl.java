@@ -28,7 +28,7 @@ public class PostgresqlControl implements ServiceControl
 		if (Prefs.isWindows())
 		{
 			String pgctl = new File(Prefs.getInstallRoot(), "postgresql/bin/pg_ctl").getAbsolutePath();
-			String dbdir = new File(Prefs.getInstallRoot(), "pgdb").getAbsolutePath();
+			String dbdir = new File(Prefs.getInstallRoot(), "database").getAbsolutePath();
 			logfile = new File(Prefs.getLogDirectory(), "postgresql.log").getAbsolutePath();
 			checker = new ProcessBuilder(pgctl,  "-D", dbdir, "status");
 			starter = new ProcessBuilder(pgctl,  "-D", dbdir, "-l", logfile, "start");

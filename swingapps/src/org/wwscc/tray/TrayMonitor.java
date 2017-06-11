@@ -194,7 +194,7 @@ public class TrayMonitor implements ActionListener
     		{
     			try {
     				databaseRunning = databaseCtrl.check();
-    				webserverRunning = false; //webserverCtrl.check();
+    				webserverRunning = webserverCtrl.check();
 					mDatabase.setLabel(databaseRunning ? DATABASE_RUNNING : DATABASE_NOT_RUNNING);
 					mWebServer.setLabel(webserverRunning ? WEBSERVER_RUNNING : WEBSERVER_NOT_RUNNING);
 					trayIcon.setImage((databaseRunning && webserverRunning) ? coneok : conewarn);

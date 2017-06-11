@@ -34,8 +34,8 @@ public class CherryPyControl implements ServiceControl
 	
 	public CherryPyControl()
 	{
-		python  = FileSystems.getDefault().getPath(Prefs.getInstallRoot(), "webserver/Scripts/python");
-		server  = FileSystems.getDefault().getPath(Prefs.getInstallRoot(), "webserver/Scripts/webserver");
+		python  = FileSystems.getDefault().getPath(Prefs.getInstallRoot(), "python/Scripts/python");
+		server  = FileSystems.getDefault().getPath(Prefs.getInstallRoot(), "python/Scripts/webserver.py");
 		pidfile = FileSystems.getDefault().getPath(Prefs.getLogDirectory(), "webserver.pid");
 		logfile = FileSystems.getDefault().getPath(Prefs.getLogDirectory(), "webserver.log");
 		stopcommand = new ArrayList<String>();
@@ -73,7 +73,7 @@ public class CherryPyControl implements ServiceControl
 			if ((runner != null) && runner.isAlive())
 				return true;
 			
-			Socket s = new Socket("127.0.0.1", 8080);
+			Socket s = new Socket("127.0.0.1", 80);
 			ret = true;
 			s.close();
 		}

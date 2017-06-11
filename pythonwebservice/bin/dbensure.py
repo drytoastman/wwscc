@@ -5,16 +5,20 @@ import sys
 
 import nwrsc.lib.postgresql as p
 
+westartedpostgres = False
 basedir = os.path.abspath(os.path.join(os.path.dirname(sys.executable), "../.."))
-argc    = len(sys.argv)
+argc = len(sys.argv)
 
-if argc == 2:
-    p.ensure_database_running(basedir)
-    p.ensure_public_schema(sys.argv[1])
+if argc == 1:
+    westartedpostgres = p.ensure_database_created(basedir)
+    p.ensure_public_schema()
 elif argc == 3:
-    p.ensure_database_running(basedir)
+    westartedpostgres = p.ensure_database_created(basedir)
     p.ensure_series_schema(sys.argv[1], sys.argv[2])
 else:
-    print("Usage: {} (<wwwpassword> | <seriesname> <seriespassword>)")
+    print("Usage: {} [<seriesname> <seriespassword>]")
     sys.exit(-1)
+
+if westartedpostgres:
+    p.ensure_postgresql_stopped(basedir)
 

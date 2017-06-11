@@ -71,7 +71,7 @@ class FlaskWithPool(Flask):
     def create_pool(self):
         """ Create a new pool of connections.  Server should support 100, leave 10 for applications """
         self.pool = ThreadedConnectionPool(5, 80, cursor_factory=DictCursor, host="127.0.0.1", port=54329, dbname="scorekeeper",
-                                      user=self.config['DBUSER'], password=self.config['DBPASS'], application_name="webserver")
+                                      user=self.config['DBUSER'], application_name="webserver")
     def reset_pool(self):
         """ First person here gets to reset it, others can continue on and try again """
         if self.resetlock.acquire(False):
@@ -134,8 +134,7 @@ def create_app(config=None):
         "DEBUG": True,
         "PROFILE": False,
         "LOGGER_HANDLER_POLICY":"None",
-        "DBUSER":"wwwuser",
-        "DBPASS":"wwwuser",
+        "DBUSER":"localuser",
         "SHOWLIVE":True,
         "INSTALLROOT": installroot,
         "ASSETS_DEBUG":False,
@@ -143,7 +142,7 @@ def create_app(config=None):
         "LOG_LEVEL":"INFO",
         "SECRET_KEY":'secret stuff here',
         "TEMPLATES_AUTO_RELOAD":True,
-        "RUN_MERGER":True
+        "RUN_MERGER":False
     })
 
     # Let the site config override what it wants

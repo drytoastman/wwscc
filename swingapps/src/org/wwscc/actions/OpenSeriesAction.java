@@ -18,11 +18,6 @@ public class OpenSeriesAction extends AbstractAction
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 	}
 	
-	private String askForPassword(String series)
-	{
-		return (String)JOptionPane.showInputDialog(null, "Enter the series password for " + series + ":");
-	}
-	
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
@@ -31,19 +26,10 @@ public class OpenSeriesAction extends AbstractAction
 		if (series == null)
 			return;
 		
-		String password = Prefs.getPasswordFor(series);
-		if (password == null) password = askForPassword(series);
-		
-		while (password != null)
+		if (Database.openSeries(series))
 		{
-			if (Database.openSeries(series, password))
-			{
-				Prefs.setSeries(series);
-				Prefs.setPasswordFor(series, password);
-				return;
-			}
-			
-			password = askForPassword(series);
+			Prefs.setSeries(series);
+			return;
 		}
 	}
 }

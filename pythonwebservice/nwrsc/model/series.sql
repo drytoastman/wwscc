@@ -2,8 +2,8 @@
 CREATE SCHEMA <seriesname>; 
 CREATE USER   <seriesname> PASSWORD '<password>';
 GRANT ALL ON SCHEMA <seriesname> TO <seriesname>;
-GRANT baseaccess   TO <seriesname>;
-GRANT <seriesname> TO wwwuser;
+GRANT driversaccess TO <seriesname>;
+GRANT <seriesname>  TO localuser;
 SET search_path='<seriesname>','public';
 
 CREATE TABLE serieslog (
@@ -132,8 +132,8 @@ CREATE TABLE events (
 REVOKE ALL ON events FROM public;
 GRANT  ALL ON events TO <seriesname>;
 GRANT  ALL ON events_eventid_seq TO <seriesname>;
-CREATE TRIGGER eventmod AFTER INSERT OR UPDATE OR DELETE ON events FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
-CREATE TRIGGER eventuni BEFORE UPDATE ON events FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
+CREATE TRIGGER  eventmod AFTER  INSERT OR UPDATE OR DELETE ON events FOR EACH ROW EXECUTE PROCEDURE logseriesmods();
+CREATE TRIGGER  eventuni BEFORE UPDATE ON events FOR EACH ROW EXECUTE PROCEDURE ignoreunmodified();
 COMMENT ON TABLE events IS 'The list of events for this series, attr includes location, sponsor, host, chair, designer, snail, cost, payments, notes, etc';
 
 

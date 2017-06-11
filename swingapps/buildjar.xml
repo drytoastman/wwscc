@@ -4,7 +4,7 @@
     <!--ANT 1.7 is required                                        -->
     <!--define folder properties-->
     <target name="create_run_jar">
-        <property name="destjar" value="../installers/stage/swingapps.jar" />
+        <property name="destjar" value="../installers/stage/scorekeeperapps.jar" />
         <delete file="${destjar}"/>
         <subant verbose="true" target="build-project" buildpath="." />
         <jar destfile="${destjar}">

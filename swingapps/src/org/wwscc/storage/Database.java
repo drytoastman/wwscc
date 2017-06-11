@@ -33,8 +33,7 @@ public class Database
 	public static void openDefault()
 	{
 		try {
-			String s = Prefs.getSeries("");
-			openSeries(s, Prefs.getPasswordFor(s));
+			openSeries(Prefs.getSeries(""));
 		} catch (Exception ioe) {
 			log.severe("Failed to open default: " + ioe);
 		}
@@ -46,7 +45,7 @@ public class Database
 	 * @param password
 	 * @return true if the series was opened, false otherwise
 	 */
-	public static boolean openSeries(String series, String password)
+	public static boolean openSeries(String series)
 	{
 		if (d != null)
 			d.close();
@@ -59,7 +58,7 @@ public class Database
 			}
 			else
 			{
-				d = new PostgresqlDatabase(series, password);
+				d = new PostgresqlDatabase(series);
 				Messenger.sendEvent(MT.SERIES_CHANGED, series);
 			}
 			return true;

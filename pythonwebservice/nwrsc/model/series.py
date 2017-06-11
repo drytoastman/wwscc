@@ -21,7 +21,7 @@ class Series(object):
 
     @classmethod
     def active(cls):
-        return activeindb(g.db)
+        return cls.activeindb(g.db)
 
     @classmethod
     def activeindb(cls, db):

@@ -15,12 +15,13 @@ import org.wwscc.challenge.ChallengeGUI;
 import org.wwscc.dataentry.DataEntry;
 import org.wwscc.protimer.ProSoloInterface;
 import org.wwscc.registration.Registration;
+import org.wwscc.tray.TrayMonitor;
 
 /**
  */
 public class Launcher
 {
-	static String[] apps = new String[] {"DataEntry", "Registration", "ChallengeGUI", "ProTimer", "BWTimer"};
+	static String[] apps = new String[] {"DataEntry", "Registration", "ChallengeGUI", "ProTimer", "BWTimer", "TrayMonitor"};
 
 	public static void main(String args[])
 	{
@@ -75,6 +76,8 @@ public class Launcher
 				Timer.main(args);
 			else if (app.equals("Registration"))
 				Registration.main(args);
+			else if (app.equals("TrayMonitor"))
+				TrayMonitor.main(args);
 		}
 		catch (Throwable e)
 		{

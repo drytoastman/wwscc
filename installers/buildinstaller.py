@@ -2,6 +2,7 @@
 
 import distutils
 import glob
+import json
 import os
 import pip
 import platform
@@ -23,32 +24,40 @@ PDIST  = os.path.join(PYTHON, "dist", NWRWHL)
 PREQ   = os.path.join(PYTHON, "versionedrequirements.txt")
 JAVA   = "../swingapps"
 
+def printe(line):
+    print(line, file=sys.stderr)
+    sys.stderr.flush()
+
 class BaseInstallCreator():
     
     def __init__(self):
         pass
 
     def execute(self):
-        print("Building jar file")
+        printe("Building jar file")
         subprocess.run([shutil.which("ant"), "-f", "../swingapps/buildjar.xml"])
 
-        print("Checking for cached postgresql archive")
+        printe("Checking for cached postgresql archive")
         pg = self.extractPostgresql()
 
-        print("Creating postgresql layout")
+        printe("Creating postgresql layout")
         for file in pg.namelist():
             if file.startswith(('pgsql/bin/', 'pgsql/lib', 'pgsql/share')) and not file.endswith((".lib", ".mo", ".a")):
                 pg.extract(file, STAGE)
            
-        print("Downloading any necessary python wheels")
+        printe("Downloading any necessary python wheels")
         pip.main(["wheel", "-r", PREQ, "-f", "file:"+WHEELS, "-q", "-w", WHEELS])
 
-        print("Building webservice wheel")
+        printe("Building webservice wheel")
         save = os.getcwd()
         os.chdir(PYTHON)
         distutils.core.run_setup("setup.py", ['bdist_wheel', '-q'])
         os.chdir(save)
         shutil.copyfile(PDIST, os.path.join(WHEELS, NWRWHL))
+
+        printe("Creating base sitconfig.json")
+        with open(os.path.join(STAGE, 'siteconfig.json'), 'w') as fp:
+            fp.write(json.dumps({}))
 
         self.buildInstaller()
 
@@ -56,7 +65,7 @@ class BaseInstallCreator():
     def ensurearchive(self, name):
         path = os.path.join(STAGE, name)
         if not os.path.exists(path):
-            print("Downloading {} ... ".format(name))
+            printe("Downloading {} ... ".format(name))
             urllib.request.urlretrieve("https://get.enterprisedb.com/postgresql/"+name, path)
         return path
 
@@ -85,12 +94,12 @@ class DarwinInstallCreator(BaseInstallCreator):
 
 if __name__ == "__main__":
     system = (platform.system(), sys.maxsize > 2**32 and 64 or 32)
-    print("System is {}/{}".format(*system))
+    printe("System is {}/{}".format(*system))
 
     if system == ("Windows", 64): creator = WindowsInstallCreator()
     elif system == ("Linux", 64): creator = LinuxInstallCreator()
     elif system[0] == "darwin":   creator = DarwinInstallCreator()
-    else: print("Unable to work with system ({})".format(system)); sys.exit(-1)
+    else: printe("Unable to work with system ({})".format(system)); sys.exit(-1)
 
     creator.execute()
 

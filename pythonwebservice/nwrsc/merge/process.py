@@ -39,7 +39,7 @@ class MergeProcess(threading.Thread):
             'port':self.localport,
             'dbname':"scorekeeper",
             'application_name':"mergetool",
-            'user':"postgres"
+            'user':"localuser"
         }
         psycopg2.extras.register_uuid()
         self.localdb = psycopg2.connect(**args)
@@ -82,8 +82,7 @@ class MergeProcess(threading.Thread):
                         'port':remote['attr']['port'],
                         'dbname':"scorekeeper",
                         'application_name':"mergetool",
-                        'user':"wwwuser",
-                        'password':"wwwpass"
+                        'user':"localuser"
                     }
 
                     conn = psycopg2.connect(**args)
