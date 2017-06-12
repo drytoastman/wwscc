@@ -76,6 +76,8 @@ def loadAnnouncerResults(carid):
 
     def entrant_tables(cid):
         (group, driver) = Result.getDecoratedClassResults(settings, results, cid)
+        if driver is None:
+            return "No result data for carid {}".format(cid)
         if classdata.classlist[driver['classcode']].champtrophy:
             decchamp = Result.getDecoratedChampResults(champ, driver)
         else:
@@ -84,7 +86,7 @@ def loadAnnouncerResults(carid):
 
     for n in RunOrder.getNextRunOrder(carid, g.eventid):
         for e in results[n.classcode]:
-            if e['carid'] == n.carid:
+            if e['carid'] == str(n.carid):
                 order.append((e, Result.getBestNetRun(e)))
                 break
 

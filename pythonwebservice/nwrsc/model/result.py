@@ -334,6 +334,7 @@ class Result(object):
     @classmethod
     def _decorateClassResults(cls, settings, eventresults, carid):
         """ Calculate things for the announcer/info displays """
+        carid = str(carid) # json data holds UUID as strings
         ppoints = PosPoints(settings.pospointlist)
         for clscode, entrants in eventresults.items():
             for e in entrants:
@@ -369,6 +370,8 @@ class Result(object):
                 newlist.sort(key=itemgetter('net'))
                 # we are done, break out and return from here
                 return (newlist, e)
+
+        return ([], None)
 
 
     @classmethod
@@ -568,6 +571,8 @@ class Result(object):
                 fields  = The fields to match to each column
         """
         lists = list()
+        carid = str(kwargs.get('carid', ''))
+
         for key in keys:
             indexed = key.get('indexed', True)
             counted = key.get('counted', True)
@@ -593,7 +598,7 @@ class Result(object):
                     current = False
 
                     # For the selected car, highlight and throw in any old/potential results if available
-                    if e['carid'] == kwargs.get('carid'):
+                    if e['carid'] == carid:
                         current = True
                         cls._decorateEntrant(e)
                         if course == 0: # don't do old/potential single course stuff at this point

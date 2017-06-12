@@ -56,6 +56,7 @@ class PlaceHolder(object):
         self.countedruns = 0
         self.usecarflag = False
         self.carindexed = False
+        self.champtrophy = False
 
 class ClassData(object):
 
