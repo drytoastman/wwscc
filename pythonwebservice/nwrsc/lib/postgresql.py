@@ -11,9 +11,9 @@ SUPERU  = "superuser"
 
 HBA = """
 #TYPE     DATABASE  USER                 ADDRESS         METHOD
-host      all       all                  127.0.0.1/32    trust    # No password for local access
-hostnossl all       all                  0.0.0.0/0       reject   # force SSL for non-localhost connections
+host      all       superuser,localuser  127.0.0.1/32    trust    # No password for local access
 host      all       superuser,localuser  0.0.0.0/0       reject   # no super or local user off site
+hostnossl all       all                  0.0.0.0/0       reject   # force SSL for non-localhost connections
 host      all       +driversaccess       0.0.0.0/0       password # allow any other logins with password
 """
 
@@ -60,6 +60,16 @@ def ensure_postgresql_stopped(basedir):
 
 
 #############################
+
+
+def check_password(user, password):
+    try:
+        pg = psycopg2.connect(host='127.0.0.1', port=54329, user=user, password=password, dbname='scorekeeper')
+        pg.close()
+        return True
+    except Exception:
+        return False
+
 
 def ensure_database_created(basedir):
     ret = ensure_postgresql_running(basedir)

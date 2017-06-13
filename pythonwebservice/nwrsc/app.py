@@ -138,7 +138,7 @@ def create_app(config=None):
         "SHOWLIVE":True,
         "INSTALLROOT": installroot,
         "ASSETS_DEBUG":False,
-        "LOG_STDERR":False,
+        "LOG_STDERR":True,
         "LOG_LEVEL":"INFO",
         "SECRET_KEY":'secret stuff here',
         "TEMPLATES_AUTO_RELOAD":True,

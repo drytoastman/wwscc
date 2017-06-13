@@ -1,7 +1,16 @@
+$widgetFontFamily: Lucida Grande, Lucida Sans, Arial, sans-serif;
+$widgetHeaderBackground: #00F;
+$widgetHeaderColor: #FFF;
+$widgetStateHoverBackground: #00A;
+$widgetStateActiveBackground: #0AA;
+$widgetStateActiveColor: #AAA;
+
 @import "anytimec.scss";
-@import "jqueryui.scss";
-@import "forms.scss";
 @import "superfish.scss";
+
+input[name=message] {
+    display: none;
+}
 
 .body {
   margin-left: 15px;

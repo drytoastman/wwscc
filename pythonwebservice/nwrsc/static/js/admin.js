@@ -157,7 +157,7 @@ function collectgroups(frm)
     }
 }
 
-
+/*
 $(window).load(function(){
     // wait until image loads before updating text info for series settings
     $(".imageinfo").each(function() {
@@ -185,4 +185,5 @@ $(document).ready(function(){
 
 	$(':submit').button();
 });
+*/
 		
