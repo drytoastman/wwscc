@@ -4,6 +4,7 @@
 *.log*
 swingapps/*.dll
 swingapps/*.so
+swingapps/*.jar
 swingapps/bin
 pythonwebservice/nwrsc/static/*.js
 pythonwebservice/nwrsc/static/*.css

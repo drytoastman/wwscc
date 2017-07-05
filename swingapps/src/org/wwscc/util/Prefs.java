@@ -77,41 +77,15 @@ public class Prefs
 		return System.getProperty("os.name").split("\\s")[0].equals("Mac");
 	}
 	
-	public static String getInstallRoot() 
-	{
-		if (installroot == null) {
-			installroot = System.getenv("INSTALLROOT");
-			if (installroot != null)
-				return installroot;
-			
-			Path p = Paths.get(".").toAbsolutePath();
-			while (p != null)
-			{				
-				if (Files.isDirectory(p.resolve("python")) && Files.isDirectory(p.resolve("database")))
-				{
-					installroot = p.toAbsolutePath().toString();
-					break;
-				}
-				
-				p = p.getParent();
-				if (p == null) {
-					log.severe("Unable to determine the scorekeeper install location.  Things will most likely not work");
-					installroot = Paths.get(".").toAbsolutePath().toString();
-					break;
-				}
-			}
-			
-			log.info("Using install root: " + installroot);
-		}
-		
-		return installroot;
-	}
-	
+    public static String getDocRoot() 
+    {
+        return Paths.get(System.getProperty("user.home"), "nwrsc").toString();
+    }
+
 	public static String getLogDirectory()
 	{
-		return FileSystems.getDefault().getPath(getInstallRoot(), "logs").toString();
+		return FileSystems.getDefault().getPath(getDocRoot(), "logs").toString();
 	}
-
 
 	public static String getHomeServer() { return prefs.get("hostname", "scorekeeper.wwscc.org"); }
 	public static String getPasswordFor(String series) { return prefs.get("password-"+series, ""); }

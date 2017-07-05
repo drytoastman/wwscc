@@ -45,18 +45,15 @@ public class Launcher
 			// Load serial library for applications that need it
 			if (app.equals("DataEntry") || app.equals("ProTimer") || app.equals("BWTimer"))
 			{
-				String model = System.getProperty("sun.arch.data.model", "?");
-				if (!model.equals("64")) {
+				try {
+					System.loadLibrary("rxtxSerial");
+				} catch (Throwable e) {
 					JOptionPane.showMessageDialog(null, 
-							"<HTML>The active version of Java is "+model+"-bits, not 64-bits.<br>"+
-							"Serial Port Access will not be available.<br><br>"+
-							"You must download a 64-bit version of Java to fix this problem.", 
-							"Java Version Issue", JOptionPane.WARNING_MESSAGE);
-				} else {
-					LibLoader.installSerialLibrary();
+						"Can't load the native serial drivers, serial port access will be broken.  Everything else should be fine.",
+						"Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
-			
+
 			// Check if we are using a special prefs node, only used for testing
 			for (String arg : args) {
 				if (arg.startsWith("prefs=")) {

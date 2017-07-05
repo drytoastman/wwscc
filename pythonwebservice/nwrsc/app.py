@@ -24,10 +24,12 @@ from nwrsc.controllers.feed import Xml, Json
 from nwrsc.controllers.register import Register
 from nwrsc.controllers.results import Results
 from nwrsc.lib.encoding import to_json
+from nwrsc.lib.postgresql import ensure_database_created, ensure_public_schema
 from nwrsc.model import Series
 from nwrsc.merge.process import MergeProcess
 
 log = logging.getLogger(__name__)
+
 
 class FlaskWithPool(Flask):
     """ Add some PGPool operations so we can reset from a request context when the DB is restarted on us """
@@ -70,8 +72,8 @@ class FlaskWithPool(Flask):
 
     def create_pool(self):
         """ Create a new pool of connections.  Server should support 100, leave 10 for applications """
-        self.pool = ThreadedConnectionPool(5, 80, cursor_factory=DictCursor, host="127.0.0.1", port=54329, dbname="scorekeeper",
-                                      user=self.config['DBUSER'], application_name="webserver")
+        self.pool = ThreadedConnectionPool(5, 80, cursor_factory=DictCursor, application_name="webserver", dbname="scorekeeper",
+                                            host=self.config['DBHOST'], port=self.config['DBPORT'], user=self.config['DBUSER'])
     def reset_pool(self):
         """ First person here gets to reset it, others can continue on and try again """
         if self.resetlock.acquire(False):
@@ -121,9 +123,6 @@ def create_app(config=None):
         ret.sort(key=attrgetter(*attr))
         return ret
 
-
-    # Figure out where we are
-    installroot = os.path.abspath(os.path.join(sys.executable, "../../../"))
     # setup uuid for postgresql
     register_uuid()
 
@@ -131,12 +130,13 @@ def create_app(config=None):
     theapp = FlaskWithPool("nwrsc")
     theapp.config.update({
         "PORT": 80,
-        "DEBUG": True,
+        "DEBUG": False,
         "PROFILE": False,
         "LOGGER_HANDLER_POLICY":"None",
-        "DBUSER":"localuser",
+        "DBHOST": "192.168.24.3",
+        "DBPORT": 5432,
+        "DBUSER": "localuser",
         "SHOWLIVE":True,
-        "INSTALLROOT": installroot,
         "ASSETS_DEBUG":False,
         "LOG_STDERR":True,
         "LOG_LEVEL":"INFO",
@@ -146,7 +146,7 @@ def create_app(config=None):
     })
 
     # Let the site config override what it wants
-    theapp.config.from_json(os.path.join(installroot, 'siteconfig.json'))
+    theapp.config.from_envvar('NWRSC_SETTINGS', silent=True)
 
     # Setup basic top level URL handling followed by Blueprints for the various sections
     theapp.url_value_preprocessor(preprocessor)
@@ -176,8 +176,13 @@ def create_app(config=None):
         log.info("%s %s?%s %s %s (%s)" % (request.method, request.path, request.query_string, response.status_code, response.content_length, response.content_encoding))
         return response
 
-    # Create a PG connection pool and extra Jinja bits
+    # Make sure the basic database is present and create a PG connection pool
+    connkeys = { 'host':theapp.config['DBHOST'], 'port':theapp.config['DBPORT'], 'user':'postgres' }
+    ensure_database_created(connkeys)
+    ensure_public_schema(connkeys)
     theapp.create_pool()
+
+    # extra Jinja bits
     theapp.jinja_env.filters['t3'] = t3
     theapp.jinja_env.filters['msort'] = msort
     theapp.jinja_env.filters['to_json'] = to_json
@@ -192,7 +197,7 @@ def create_app(config=None):
     root.setLevel(level)
     root.handlers = []
 
-    fhandler = RotatingFileHandler(os.path.join(installroot, 'logs/webserver.log'), maxBytes=1000000, backupCount=10)
+    fhandler = RotatingFileHandler(os.path.expanduser('~/nwrscwebserver.log'), maxBytes=1000000, backupCount=10)
     fhandler.setFormatter(fmt)
     fhandler.setLevel(level)
     root.addHandler(fhandler)

@@ -37,14 +37,7 @@ public class TrayMonitor implements ActionListener
 {
 	private static final Logger log = Logger.getLogger(TrayMonitor.class.getName());
 	
-	public static final String DATABASE_NOT_RUNNING  = "Start Database Server";
-	public static final String DATABASE_RUNNING      = "Stop Database Server";
-	public static final String WEBSERVER_NOT_RUNNING = "Start Webserver";
-	public static final String WEBSERVER_RUNNING     = "Stop Webserver";
-	
-    ServiceControl databaseCtrl, webserverCtrl;
-    boolean databaseRunning, webserverRunning;
-    MenuItem mDatabase, mWebServer, mQuit;
+    MenuItem mQuit;
     BackgroundChecker checker;
     Image coneok, conewarn;
     TrayIcon trayIcon;
@@ -72,8 +65,6 @@ public class TrayMonitor implements ActionListener
         newMenuItem("BWTimer",       "BWTimer",      launch);
         newMenuItem("ChallengeGUI",  "ChallengeGUI", launch);
                 
-        mDatabase  = newMenuItem(DATABASE_NOT_RUNNING,  "database",  trayPopup);
-        mWebServer = newMenuItem(WEBSERVER_NOT_RUNNING, "webserver", trayPopup);
         mQuit      = newMenuItem("Quit",                "quit",      trayPopup);
 
         coneok   = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/wwscc/images/conesmall.png"));
@@ -98,13 +89,10 @@ public class TrayMonitor implements ActionListener
 	    	System.exit(-2);
         }
 
-        databaseCtrl = new PostgresqlControl();
-        webserverCtrl = new CherryPyControl();
+        //webserverCtrl = new CherryPyControl();
         
-        if (!databaseCtrl.check())
-        	databaseCtrl.start();
-        if (!webserverCtrl.check())
-        	webserverCtrl.start();
+        //if (!webserverCtrl.check())
+        //	webserverCtrl.start();
         checker = new BackgroundChecker();
         checker.start();
 	}
@@ -124,22 +112,11 @@ public class TrayMonitor implements ActionListener
 		String cmd = e.getActionCommand();
 		switch (cmd)
 		{
-			case "database":
-	    		if (databaseRunning) databaseCtrl.stop();
-	    		else                 databaseCtrl.start();
-	    		break;
-	    	
-			case "webserver":
-				if (webserverRunning) webserverCtrl.stop();
-				else                  webserverCtrl.start();
-				break;
-				
 			case "quit":
 				if (JOptionPane.showConfirmDialog(null, "This will stop the datbase server and web server.  Is that ok?", 
 					"Quit Scorekeeper", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
 				{
-					databaseCtrl.stop();
-					webserverCtrl.stop();
+					//webserverCtrl.stop();
 					System.exit(0);
 				}
 				
@@ -193,11 +170,7 @@ public class TrayMonitor implements ActionListener
     		while (!done)
     		{
     			try {
-    				databaseRunning = databaseCtrl.check();
-    				webserverRunning = webserverCtrl.check();
-					mDatabase.setLabel(databaseRunning ? DATABASE_RUNNING : DATABASE_NOT_RUNNING);
-					mWebServer.setLabel(webserverRunning ? WEBSERVER_RUNNING : WEBSERVER_NOT_RUNNING);
-					trayIcon.setImage((databaseRunning && webserverRunning) ? coneok : conewarn);
+					trayIcon.setImage(coneok); // : conewarn);
     				synchronized (this) { this.wait(5000); }
 
 				} catch (InterruptedException e) {}

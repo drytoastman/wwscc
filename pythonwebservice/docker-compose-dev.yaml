@@ -1,0 +1,7 @@
+---
+version: '3.2'
+services:
+  nwrscweb:
+    # mount the local user's directory and create a link in the container
+    volumes: [".:/code"]
+    command: "ash -c 'pip install -e /code && webserver.py'"

@@ -24,7 +24,7 @@ import org.wwscc.util.Prefs;
 public class Attendance
 {
 	//private static final Logger log = Logger.getLogger(Attendance.class.getCanonicalName());
-	public static final File defaultfile = new File(Prefs.getInstallRoot(), "attendance.csv");
+	public static final File defaultfile = new File(Prefs.getDocRoot(), "attendance.csv");
 	
 	/**
 	 * Retrieve the attendance report from the main host

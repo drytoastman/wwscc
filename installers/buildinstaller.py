@@ -37,59 +37,21 @@ class BaseInstallCreator():
         printe("Building jar file")
         subprocess.run([shutil.which("ant"), "-f", "../swingapps/buildjar.xml"])
 
-        printe("Checking for cached postgresql archive")
-        pg = self.extractPostgresql()
-
-        printe("Creating postgresql layout")
-        for file in pg.namelist():
-            if file.startswith(('pgsql/bin/', 'pgsql/lib', 'pgsql/share')) and not file.endswith((".lib", ".mo", ".a")):
-                pg.extract(file, STAGE)
-           
-        printe("Downloading any necessary python wheels")
-        pip.main(["wheel", "-r", PREQ, "-f", "file:"+WHEELS, "-q", "-w", WHEELS])
-
-        printe("Building webservice wheel")
-        save = os.getcwd()
-        os.chdir(PYTHON)
-        distutils.core.run_setup("setup.py", ['bdist_wheel', '-q'])
-        os.chdir(save)
-        shutil.copyfile(PDIST, os.path.join(WHEELS, NWRWHL))
-
-        printe("Creating base sitconfig.json")
-        with open(os.path.join(STAGE, 'siteconfig.json'), 'w') as fp:
-            fp.write(json.dumps({}))
-
         self.buildInstaller()
-
-
-    def ensurearchive(self, name):
-        path = os.path.join(STAGE, name)
-        if not os.path.exists(path):
-            printe("Downloading {} ... ".format(name))
-            urllib.request.urlretrieve("https://get.enterprisedb.com/postgresql/"+name, path)
-        return path
-
-    def extractPostgresql(self):
-        raise NotImplementedError()
 
     def buildInstaller(self):
         raise NotImplementedError()
 
 
 class WindowsInstallCreator(BaseInstallCreator):
-    def extractPostgresql(self):
-        return zipfile.ZipFile(self.ensurearchive("postgresql-9.6.3-1-windows-x64-binaries.zip"))
-
     def buildInstaller(self):
         subprocess.run(["C:/Program Files (x86)/Inno Setup 5/iscc.exe", "windows.iss"])
 
 class LinuxInstallCreator(BaseInstallCreator):
-    def extractPostgresql(self):
-        return zipfile.ZipFile(self.ensurearchive("postgresql-9.6.3-1-linux-x64-binaries.tar.gz"))
+    pass
 
 class DarwinInstallCreator(BaseInstallCreator):
-    def extractPostgresql(self):
-        return zipfile.ZipFile(self.ensurearchive("postgresql-9.6.3-1-windows-x64-binaries.zip"))
+    pass
 
 
 if __name__ == "__main__":

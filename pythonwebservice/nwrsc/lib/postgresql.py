@@ -7,12 +7,10 @@ import pkg_resources
 import psycopg2
 import subprocess
 
-SUPERU  = "superuser"
-
 HBA = """
 #TYPE     DATABASE  USER                 ADDRESS         METHOD
-host      all       superuser,localuser  127.0.0.1/32    trust    # No password for local access
-host      all       superuser,localuser  0.0.0.0/0       reject   # no super or local user off site
+host      all       postgres,localuser   127.0.0.1/32    trust    # No password for local access
+host      all       postgres,localuser   0.0.0.0/0       reject   # no super or local user off site
 hostnossl all       all                  0.0.0.0/0       reject   # force SSL for non-localhost connections
 host      all       +driversaccess       0.0.0.0/0       password # allow any other logins with password
 """
@@ -38,7 +36,7 @@ def ensure_postgresql_running(basedir):
 
     if not os.path.exists(pgconf):
         print("Initializing database directory")
-        subprocess.call([initdb, "-D", dbdir, "-U", SUPERU])
+        subprocess.call([initdb, "-D", dbdir, "-U", "postgres"])
         with open(hbaconf, 'w') as hba, open(pgconf, 'a') as conf:
             hba.write(HBA)
             conf.write(CONFADDON)
@@ -71,9 +69,8 @@ def check_password(user, password):
         return False
 
 
-def ensure_database_created(basedir):
-    ret = ensure_postgresql_running(basedir)
-    pg = psycopg2.connect(host='127.0.0.1', port=54329, user=SUPERU, dbname='postgres')
+def ensure_database_created(connkeys):
+    pg = psycopg2.connect(dbname='postgres', **connkeys)
     pg.autocommit = True
     pgc = pg.cursor()
     pgc.execute("SELECT datname FROM pg_database WHERE datname='scorekeeper'")
@@ -82,11 +79,9 @@ def ensure_database_created(basedir):
         pgc.execute("CREATE DATABASE scorekeeper")
         pg.commit()
     pg.close()
-    return ret
 
-
-def ensure_public_schema():
-    db = psycopg2.connect(host='127.0.0.1', port=54329, user=SUPERU, dbname='scorekeeper')
+def ensure_public_schema(connkeys):
+    db = psycopg2.connect(dbname='scorekeeper', **connkeys)
     dbc = db.cursor()
     dbc.execute("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename='drivers'")
     if dbc.rowcount == 0:
@@ -96,9 +91,9 @@ def ensure_public_schema():
     db.close()
 
 
-def ensure_series_schema(seriesname, seriespass):
+def ensure_series_schema(connkeys, seriesname, seriespass):
     ensure_public_schema()
-    db = psycopg2.connect(host='127.0.0.1', port=54329, user=SUPERU, dbname='scorekeeper')
+    db = psycopg2.connect(dbname='scorekeeper', **connkeys)
     dbc = db.cursor()
     dbc.execute("SELECT tablename FROM pg_tables WHERE schemaname=%s AND tablename='runs'", (seriesname,))
     if dbc.rowcount == 0:

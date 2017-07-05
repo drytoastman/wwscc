@@ -25,9 +25,9 @@ def justdie(self, timeout=None):
     return
 
 if __name__ == '__main__':
+    pidfile = os.path.expanduser('~/nwrscwebserver.pid')
     theapp = create_app()
     port = theapp.config['PORT']
-    pidfile = os.path.join(theapp.config['INSTALLROOT'], 'logs', 'webserver.pid')
 
     signal.signal(signal.SIGABRT, removepid)
     signal.signal(signal.SIGINT,  removepid)
