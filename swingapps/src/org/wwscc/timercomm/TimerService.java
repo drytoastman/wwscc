@@ -18,7 +18,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.jmdns.JmDNS;
+import javax.jmdns.JmmDNS;
 import javax.jmdns.ServiceInfo;
 
 import org.wwscc.storage.LeftRightDialin;
@@ -35,7 +35,7 @@ public class TimerService implements RunServiceInterface, ThreadedClass
 {
 	private static final Logger log = Logger.getLogger(TimerService.class.getName());
 
-	JmDNS jmdns;
+    JmmDNS jmdns; 
 	Thread autocloser;
 	String servicetype;
 	String servicename;
@@ -52,7 +52,7 @@ public class TimerService implements RunServiceInterface, ThreadedClass
 		servicename = UUID.randomUUID().toString();
 		log.log(Level.INFO, "Service {0} started on port {1}", new Object[]{servicename, serversock.getLocalPort()});
 		
-		jmdns = JmDNS.create(InetAddress.getLocalHost());
+        jmdns = JmmDNS.Factory.getInstance();
 		clients = new Vector<RunServiceInterface>();
 		marked = new Vector<RunServiceInterface>();
 		done = true;

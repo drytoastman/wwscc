@@ -21,7 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.jmdns.JmDNS;
+import javax.jmdns.JmmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
@@ -49,8 +49,8 @@ public class SimpleFinderDialog extends BaseDialog<InetSocketAddress> implements
 	public static final String PROTIMER_TYPE = "_protimer._tcp.local.";
 	public static final String DATABASE_TYPE = "_scorekeeperdb._tcp.local.";
 			
-	JServiceList list;
-	JmDNS jmdns;
+	private JServiceList list;
+	private JmmDNS jmdns;
 	
 	/**
 	 * shortcut when only looking for a single name
@@ -80,25 +80,21 @@ public class SimpleFinderDialog extends BaseDialog<InetSocketAddress> implements
 		list.addListSelectionListener(this);
 		
 		JScrollPane p = new JScrollPane(list);
-		try
-		{
-			jmdns = JmDNS.create(InetAddress.getLocalHost());
-			for (String service : serviceNames) {
-				jmdns.addServiceListener(service, list);
-			}
-			mainPanel.add(new JLabel("Full Discovery Can Take Up To 6 Seconds"), "spanx 2, center, wrap");
-			mainPanel.add(p, "w 300, h 400, growx, spanx 2, wrap");
-		}
-		catch (IOException ioe)
-		{
-			mainPanel.add(label("ServiceFinder failed to start: " + ioe.getMessage(), false), "wrap");
-		}
-		
+        mainPanel.add(new JLabel("Full Discovery Can Take Up To 6 Seconds"), "spanx 2, center, wrap");
+        mainPanel.add(p, "w 300, h 400, growx, spanx 2, wrap");
+    
 		mainPanel.add(label("Host", false), "");
 		mainPanel.add(entry("host", ""), "growx, wrap");
 		mainPanel.add(label("Port", false), "");
 		mainPanel.add(ientry("port", 0), "growx, wrap");
 		result = null;
+
+        new Thread(new Runnable() { public void run() {
+            jmdns = JmmDNS.Factory.getInstance();
+            for (String service : serviceNames) {
+                jmdns.addServiceListener(service, list);
+            }
+        }}).start();
     }
 
 	@Override
@@ -184,7 +180,7 @@ class JServiceList extends JList<ServiceInfo> implements ServiceListener
 	public void serviceResolved(ServiceEvent event)
 	{
 		log.info("serviceResolved: " + event);
-		if (!serviceModel.contains(event.getInfo())) {
+		if (!serviceModel.contains(event.getInfo()) && event.getInfo().getInet4Addresses().length > 0) {
 			serviceModel.addElement(event.getInfo());
 		}
 		repaint();
