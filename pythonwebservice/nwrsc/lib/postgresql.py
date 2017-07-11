@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import sys
 import time
 import os.path
@@ -92,7 +90,7 @@ def ensure_public_schema(connkeys):
 
 
 def ensure_series_schema(connkeys, seriesname, seriespass):
-    ensure_public_schema()
+    ensure_public_schema(connkeys)
     db = psycopg2.connect(dbname='scorekeeper', **connkeys)
     dbc = db.cursor()
     dbc.execute("SELECT tablename FROM pg_tables WHERE schemaname=%s AND tablename='runs'", (seriesname,))

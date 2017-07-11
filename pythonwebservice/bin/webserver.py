@@ -4,7 +4,7 @@ import signal
 import os, sys
 from cheroot import wsgi
 from cheroot.workers import threadpool
-from nwrsc import create_app
+from nwrsc.app import create_app
 
 server = None
 

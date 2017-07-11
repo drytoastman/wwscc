@@ -1,5 +1,5 @@
 import sys
-import os.path
+import os
 import datetime
 import logging
 import threading
@@ -12,7 +12,7 @@ from flask_compress import Compress
 from flask_assets import Environment, Bundle
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
-from psycopg2 import OperationalError
+from psycopg2 import OperationalError, DatabaseError
 from psycopg2.pool import ThreadedConnectionPool
 from psycopg2.extras import DictCursor, register_uuid
 from werkzeug.debug.tbtools import get_current_traceback
@@ -36,6 +36,7 @@ class FlaskWithPool(Flask):
     def __init__(self, name):
         Flask.__init__(self, name)
         self.resetlock = threading.Lock()
+        self.pool = None
 
     def _series_setup(self):
         """ Check if we have the series in the URL, set the schema path if available, return an error message otherwise """
@@ -56,7 +57,7 @@ class FlaskWithPool(Flask):
             self._series_setup()
             if g.seriestype == Series.INVALID:
                 abort(404, "%s is not a valid series" % g.series)
-        except OperationalError as e:
+        except (DatabaseError, OperationalError) as e:
             log.warning("Possible database restart.  Reseting pool and trying again!")
             try: 
                 self.reset_pool()
@@ -78,9 +79,15 @@ class FlaskWithPool(Flask):
         """ First person here gets to reset it, others can continue on and try again """
         if self.resetlock.acquire(False):
             try:
-                if not self.pool.closed:
+                if self.pool and not self.pool.closed:
                     self.pool.closeall()
+                # Make sure the basic database is present and create a PG connection pool
+                connkeys = { 'host':self.config['DBHOST'], 'port':self.config['DBPORT'], 'user':'postgres' }
+                ensure_database_created(connkeys)
+                ensure_public_schema(connkeys)
                 self.create_pool()
+            except Exception as e:
+                log.error("Error in reset pool: %s", str(e))
             finally:
                 self.resetlock.release()
 
@@ -129,24 +136,22 @@ def create_app(config=None):
     # Setup the application with default configuration
     theapp = FlaskWithPool("nwrsc")
     theapp.config.update({
-        "PORT": 80,
-        "DEBUG": False,
-        "PROFILE": False,
-        "LOGGER_HANDLER_POLICY":"None",
-        "DBHOST": "192.168.24.3",
-        "DBPORT": 5432,
-        "DBUSER": "localuser",
-        "SHOWLIVE":True,
-        "ASSETS_DEBUG":False,
-        "LOG_STDERR":True,
-        "LOG_LEVEL":"INFO",
-        "SECRET_KEY":'secret stuff here',
-        "TEMPLATES_AUTO_RELOAD":True,
-        "RUN_MERGER":False
+        "PORT":                    int(os.environ.get('NWRSC_PORT',     80)),
+        "DEBUG":                  bool(os.environ.get('NWRSC_DEBUG',    False)),
+        "PROFILE":                bool(os.environ.get('NWRSC_PROFILE',  False)),
+        "DBHOST":                      os.environ.get('NWRSC_DBHOST',   '192.168.24.3'),
+        "DBPORT":                  int(os.environ.get('NWRSC_DBPORT',   5432)),
+        "DBUSER":                      os.environ.get('NWRSC_DBUSER',   'localuser'),
+        "SHOWLIVE":               bool(os.environ.get('NWRSC_SHOWLIVE', True)),
+        "LOG_LEVEL":                   os.environ.get('NWRSC_LOGLEVEL', 'INFO'),
+        "SECRET_KEY":                  os.environ.get('NWRSC_SECRET',   'secret stuff here'),
+        "ASSETS_DEBUG":           False,
+        "LOGGER_HANDLER_POLICY":  "None",
     })
 
-    # Let the site config override what it wants
-    theapp.config.from_envvar('NWRSC_SETTINGS', silent=True)
+    theapp.config['TEMPLATES_AUTO_RELOAD'] = theapp.config['DEBUG']
+    theapp.config['LOG_STDERR']            = theapp.config['DEBUG']
+    #"RUN_MERGER":
 
     # Setup basic top level URL handling followed by Blueprints for the various sections
     theapp.url_value_preprocessor(preprocessor)
@@ -176,11 +181,7 @@ def create_app(config=None):
         log.info("%s %s?%s %s %s (%s)" % (request.method, request.path, request.query_string, response.status_code, response.content_length, response.content_encoding))
         return response
 
-    # Make sure the basic database is present and create a PG connection pool
-    connkeys = { 'host':theapp.config['DBHOST'], 'port':theapp.config['DBPORT'], 'user':'postgres' }
-    ensure_database_created(connkeys)
-    ensure_public_schema(connkeys)
-    theapp.create_pool()
+    theapp.reset_pool()
 
     # extra Jinja bits
     theapp.jinja_env.filters['t3'] = t3

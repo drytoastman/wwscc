@@ -4,7 +4,6 @@ services:
   nwrscweb:
     container_name: "nwrscweb"
     image: "drytoastman/nwrscweb"
-    build: .
     command: "webserver.py"
     networks:
       nwrscnet:
@@ -17,6 +16,7 @@ services:
     networks:
       nwrscnet:
         ipv4_address: 192.168.24.3
+    ports: ["54329:5432"]
 
 networks:
   nwrscnet:

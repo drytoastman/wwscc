@@ -3,12 +3,14 @@
 import sys
 import os
 
+from nwrsc.lib.postgresql import ensure_series_schema
+
 class AttrWrapper(object):
     def __init__(self, tup, headers):
         for k,v in zip(headers, tup):
             setattr(self, k, v)
 
-def convert(sourcefile):
+def convert(sourcefile, password):
     import sqlite3
     import json
     import uuid
@@ -18,16 +20,16 @@ def convert(sourcefile):
     remapdriver   = dict()
     remapcar      = dict({-1:None})
     challengeruns = list()
+    name = os.path.basename(sourcefile[:-3])
+    print("putting things in", name)
 
     old = sqlite3.connect(sourcefile)
     old.row_factory = sqlite3.Row
 
     psycopg2.extras.register_uuid()
-    new = psycopg2.connect(host='127.0.0.1', port=54329, user='superuser', dbname='scorekeeper', cursor_factory=psycopg2.extras.DictCursor)
+    ensure_series_schema({'host':'127.0.0.1', 'port':54329, 'user':'postgres'}, name, password)
+    new = psycopg2.connect(host='127.0.0.1', port=54329, user='postgres', dbname='scorekeeper', cursor_factory=psycopg2.extras.DictCursor)
     cur = new.cursor()
-
-    name = os.path.basename(sourcefile[:-3])
-    print("putting things in", name)
     cur.execute("set search_path=%s,%s", (name, 'public'))
 
     #DRIVERS, add to global list and remap ids as necessary
@@ -247,8 +249,8 @@ def convert(sourcefile):
     new.close()
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print("Usage: {} <old db file>".format(sys.argv[0]))
+    if len(sys.argv) < 3:
+        print("Usage: {} <old db file> <seriespassword>".format(sys.argv[0]))
     else:
-        convert(sys.argv[1])
+        convert(sys.argv[1], sys.argv[2])
 
