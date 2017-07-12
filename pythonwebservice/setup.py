@@ -21,8 +21,7 @@ x = setup(
         "libsass",
         "ReportLab",
         "psycopg2",
-        "python-dateutil",
-        "zeroconf"
+        "python-dateutil"
     ],
 
     packages=find_packages(),

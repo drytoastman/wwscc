@@ -11,7 +11,7 @@ import uuid
 
 import psycopg2
 import psycopg2.extras
-from zeroconf import ServiceBrowser, ServiceInfo, Zeroconf
+#from zeroconf import ServiceBrowser, ServiceInfo, Zeroconf
 
 from nwrsc.model import Series
 import nwrsc.merge.model as m

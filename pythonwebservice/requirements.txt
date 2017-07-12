@@ -4,7 +4,6 @@ cffi==1.10.0
 cheroot==5.5.0
 click==6.7
 cssmin==0.2.0
-enum-compat==0.0.2
 Flask==0.12.2
 Flask-Assets==0.12
 Flask-Bcrypt==0.7.1
@@ -16,7 +15,6 @@ itsdangerous==0.24
 Jinja2==2.9.6
 libsass==0.12.3
 MarkupSafe==1.0
-netifaces==0.10.4
 olefile==0.44
 Pillow==4.1.1
 psycopg2==2.7.1
@@ -28,4 +26,3 @@ six==1.10.0
 webassets==0.12.1
 Werkzeug==0.12.2
 WTForms==2.1
-zeroconf==0.19.0
