@@ -38,44 +38,29 @@ class FlaskWithPool(Flask):
         self.resetlock = threading.Lock()
         self.pool = None
 
-    def _series_setup(self):
+    def db_prepare(self):
         """ Check if we have the series in the URL, set the schema path if available, return an error message otherwise """
-        g.seriestype = Series.UNKNOWN
-        g.db =  self.pool.getconn() 
-        #log.debug("{} setup: {} connections used".format(threading.current_thread(), len(self.pool._used)))
+        if hasattr(g, 'db'):
+            raise EnvironmentError('Database has already been prepared.  Preparing again is an error.')
+
+        g.db = self._get_from_pool()
         if hasattr(g, 'series') and g.series:
             # Set up the schema path if we have a series
             g.seriestype = Series.type(g.series)
-            with g.db.cursor() as cur:
-                cur.execute("SET search_path=%s,'public'; commit", (g.series,))
-
-    def db_prepare(self):
-        """ Get a database connection from the pool and setup the schema path """
-        if hasattr(g, 'db'):
-            raise EnvironmentError('Database has already been prepared.  Preparing again is an error.')
-        try:
-            self._series_setup()
             if g.seriestype == Series.INVALID:
                 abort(404, "%s is not a valid series" % g.series)
-        except (DatabaseError, OperationalError) as e:
-            log.warning("Possible database restart.  Reseting pool and trying again!")
-            try: 
-                self.reset_pool()
-                self._series_setup()
-            except OperationalError as e:
-                raise EnvironmentError("Errors with postgresql connection pool.  Bailing")
+            with g.db.cursor() as cur:
+                cur.execute("SET search_path=%s,'public'; commit", (g.series,))
+        else:
+            g.seriestype = Series.UNKNOWN
 
     def db_return(self):
         """ Return a connection to the pool and clear the attribute """
         if hasattr(g, 'db'):
             self.pool.putconn(g.db) 
-            del g.db
+            del g.db # Removes 'db' from g dictionary
 
-    def create_pool(self):
-        """ Create a new pool of connections.  Server should support 100, leave 10 for applications """
-        self.pool = ThreadedConnectionPool(5, 80, cursor_factory=DictCursor, application_name="webserver", dbname="scorekeeper",
-                                            host=self.config['DBHOST'], port=self.config['DBPORT'], user=self.config['DBUSER'])
-    def reset_pool(self):
+    def _reset_pool(self):
         """ First person here gets to reset it, others can continue on and try again """
         if self.resetlock.acquire(False):
             try:
@@ -85,11 +70,32 @@ class FlaskWithPool(Flask):
                 connkeys = { 'host':self.config['DBHOST'], 'port':self.config['DBPORT'], 'user':'postgres' }
                 ensure_database_created(connkeys)
                 ensure_public_schema(connkeys)
-                self.create_pool()
+                # Create a new pool of connections.  Server should support 100, leave 10 for applications
+                self.pool = ThreadedConnectionPool(5, 80, cursor_factory=DictCursor, application_name="webserver", dbname="scorekeeper",
+                                                         host=self.config['DBHOST'], port=self.config['DBPORT'], user=self.config['DBUSER'])
             except Exception as e:
-                log.error("Error in reset pool: %s", str(e))
+                log.error("Error in pool create/reset: %s", str(e))
             finally:
                 self.resetlock.release()
+
+    def _get_from_pool(self):
+        """ Get a database connection from the pool and make sure its connected, attempt reset once if needed """
+        try:
+            ret = self.pool.getconn() 
+            with ret.cursor() as cur:
+                cur.execute("select 1")
+        except (DatabaseError, OperationalError) as e:
+            log.warning("Possible database restart.  Reseting pool and trying again!")
+            try: 
+                self._reset_pool()
+                ret = self.pool.getconn() 
+                with ret.cursor() as cur:
+                    cur.execute("select 1")
+            except (DatabaseError, OperationalError) as e:
+                raise EnvironmentError("Errors with postgresql connection pool.  Bailing")
+
+        #log.debug("{} setup: {} connections used".format(threading.current_thread(), len(self.pool._used)))
+        return ret
 
 
 def create_app(config=None):
@@ -181,7 +187,7 @@ def create_app(config=None):
         log.info("%s %s?%s %s %s (%s)" % (request.method, request.path, request.query_string, response.status_code, response.content_length, response.content_encoding))
         return response
 
-    theapp.reset_pool()
+    theapp._reset_pool()
 
     # extra Jinja bits
     theapp.jinja_env.filters['t3'] = t3
