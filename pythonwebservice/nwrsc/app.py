@@ -50,7 +50,7 @@ class FlaskWithPool(Flask):
             if g.seriestype == Series.INVALID:
                 abort(404, "%s is not a valid series" % g.series)
             with g.db.cursor() as cur:
-                cur.execute("SET search_path=%s,'public'; commit", (g.series,))
+                cur.execute("SET search_path=%s,'public'; commit; begin", (g.series,))
         else:
             g.seriestype = Series.UNKNOWN
 
