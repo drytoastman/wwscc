@@ -1,12 +1,14 @@
+#define Version 2.0
+
 [Setup]
 AppName=Scorekeeper
-AppVersion=2.0
+Versionsion={#Version}
 OutputDir=.
-OutputBaseFilename=ScorekeeperSetup-{#SetupSetting("AppVersion")}
+OutputBaseFilename=ScorekeeperSetup-{#Version}
 AppPublisher=Brett Wilson
-DefaultDirName={userdocs}\scorekeeper-{#SetupSetting("AppVersion")}
+DefaultDirName={userdocs}\scorekeeper-{#Version}
 UsePreviousAppDir=yes
-DefaultGroupName=Scorekeeper-{#SetupSetting("AppVersion")}
+DefaultGroupName=Scorekeeper-{#Version}
 AllowNoIcons=yes
 Compression=lzma
 SolidCompression=yes
@@ -19,15 +21,17 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "{app}\logs"; Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
-;Source: "swingapps\scorekeeperapps.jar"; DestDir: "{app}";
+Source: "scorekeeperapps-{#Version}.jar"; DestDir: "{app}";
+Source: "docker-compose.yaml";            DestDir: "{app}";
+Source: "rxtxSerial.dll";                 DestDir: "{code:getJavaPath}\bin";
 
 [Icons]
-Name: "{group}\Launcher-{#SetupSetting("AppVersion")}"; WorkingDir: "{app}"; Filename: "{code:getJavaPath}\bin\javaw.exe"; Parameters: "-jar scorekeeperapps.jar TrayMonitor";
-Name: "{group}\Uninstall";                              WorkingDir: "{app}"; Filename: "{app}\unins000.exe";                                                      
+Name: "{group}\Launcher-{#Version}"; WorkingDir: "{app}"; Filename: "{code:getJavaPath}\bin\javaw.exe"; Parameters: "-jar scorekeeperapps-{#Version}.jar TrayMonitor";
+Name: "{group}\Uninstall";           WorkingDir: "{app}"; Filename: "{app}\unins000.exe";
 
 [Run]
 Filename: "{sys}\sc.exe"; Parameters: "stop   w3svc";
-Filename: "{sys}\sc.exe"; Parameters: "config w3svc start= disabled";
+Filename: "{sys}\sc.exe"; Parameters: "config w3svc start=disabled";
 
 [Code]
 const

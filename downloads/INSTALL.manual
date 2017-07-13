@@ -1,0 +1,26 @@
+Basic manual installation steps with examples:
+
+1. Install Docker 17 or up
+       Ubuntu: See https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/
+               Also add your user to the docker group so sudo+password isn't required to run (See security implications)
+          Mac: See https://docs.docker.com/docker-for-mac/install/
+      Windows: See https://docs.docker.com/toolbox/toolbox_install_windows/
+
+2. Install Java 8 or up
+       Ubuntu: Run "sudo apt-get install openjdk-8-jre openjfx"
+          Mac: See http://java.com/download
+      Windows: See http://java.com/download
+
+3. SerialPort Access: If you will need serial port access on the local machine, you must install the RXTX JNI library
+       Ubuntu: Run "sudo apt-get install librxtx-java"
+          Mac: Copy librxtxSerial.jnilib to /Library/Java/Extensions
+      Windows: Copy rxtxSerial.dll to c:\Program Files\Java\jre[VER]\bin
+
+4. Network Setup: You may need to open firewall ports or stop other services for all Scorekeeper features to work on a network
+    TCP/80:    Required for others to see the local web server
+    TCP/54329: Required for others to start a merge session with the local database
+    UDP/5353:  Required for others to discover the local database, ProTimer or BWTimer
+
+5. Copy scorekeeperapps-(VERSION).jar and docker-compose.yaml to a directory.
+      Execute: "java -jar scorekeeperapps-(VERSION).jar"
+

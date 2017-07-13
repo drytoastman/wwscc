@@ -1,22 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="create_run_jar" name="Create Runnable Jar for Project Scorekeeper Java Apps">
     <target name="create_run_jar">
-        <property name="destjar" value="scorekeeperapps.jar" />
+        <property name="version" value="latest"/>
+        <property name="destdir" value="../downloads" />
+        <property name="destjar" value="${destdir}/scorekeeperapps-${version}.jar" />
         <delete file="${destjar}"/>
         <subant verbose="true" target="build-project" buildpath="." />
         <jar destfile="${destjar}">
             <manifest>
-            	<attribute name="Main-Class" value="org.wwscc.util.Launcher"/>
+                <attribute name="Main-Class" value="org.wwscc.util.Launcher"/>
             </manifest>
             <fileset dir="bin"/>
-            <!--
-        	<fileset dir="native">
-        	    <include name="**/*.so"/>
-        	    <include name="**/*.dll"/>
-        	    <include name="**/*.jnilib"/>
-        	</fileset>
-            -->
-        	<zipgroupfileset dir="lib" includes="*.jar" />
+            <zipgroupfileset dir="lib" includes="*.jar" />
         </jar>
     </target>
 </project>

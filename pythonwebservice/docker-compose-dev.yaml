@@ -1,8 +1,9 @@
 ---
+# Need to specify the main docker-compose network and images before these additions
 version: '3.2'
 services:
   nwrscweb:
-    # mount the local user's directory and create a link in the container
+    # mount the local user's directory and create a link in the container so it uses the local copy of the web service
     build: .
     volumes: [".:/code"]
     command: "ash -c 'pip install -e /code && webserver.py'"
