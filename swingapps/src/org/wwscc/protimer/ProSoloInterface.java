@@ -237,7 +237,7 @@ public class ProSoloInterface extends JFrame implements ActionListener, MessageL
 	}
 
 
-    public static void main(String[] args)
+    public static void main(String args[])
 	{
 		try
 		{

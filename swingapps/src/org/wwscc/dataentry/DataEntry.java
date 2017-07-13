@@ -156,14 +156,14 @@ public class DataEntry extends JFrame implements MessageListener
 	 * Main
 	 * @param args the command line args, added to title
 	 */
-	public static void main(String[] args)
+	public static void main(String args[])
 	{
 		try
 		{
 			Class.forName("org.wwscc.dataentry.Sounds");
 			Logging.logSetup("dataentry");
 			
-			final String title = "DataEntry " + ((args.length>1)?args[1]:"");
+			final String title = "DataEntry";
 			SwingUtilities.invokeLater(new Runnable() { public void run() {
 				try {
 					new DataEntry(title);

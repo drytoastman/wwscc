@@ -21,6 +21,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +40,7 @@ public class TrayMonitor implements ActionListener
 	private static final Logger log = Logger.getLogger(TrayMonitor.class.getName());
 	
     MenuItem mQuit;
-    BackgroundChecker checker;
+    DockerMonitor monitor;
     Image coneok, conewarn;
     TrayIcon trayIcon;
     PopupMenu trayPopup;
@@ -54,7 +56,7 @@ public class TrayMonitor implements ActionListener
 	    	    
 	    cmdline = args;
         
-        trayPopup  = new PopupMenu();        
+        trayPopup   = new PopupMenu();        
         Menu launch = new Menu("Launch");
         trayPopup.add(launch);
         
@@ -75,7 +77,7 @@ public class TrayMonitor implements ActionListener
         
         // Do a check when opening the context menu
         trayIcon.addMouseListener(new MouseAdapter() {
-    	    private void docheck(MouseEvent e) { if (e.isPopupTrigger()) { synchronized (checker) { checker.notify(); }}}
+    	    private void docheck(MouseEvent e) { if (e.isPopupTrigger()) { synchronized (monitor) { monitor.notify(); }}}
     	    @Override
     	    public void mouseReleased(MouseEvent e) { docheck(e); }
     	    @Override
@@ -89,12 +91,8 @@ public class TrayMonitor implements ActionListener
 	    	System.exit(-2);
         }
 
-        //webserverCtrl = new CherryPyControl();
-        
-        //if (!webserverCtrl.check())
-        //	webserverCtrl.start();
-        checker = new BackgroundChecker();
-        checker.start();
+        monitor = new DockerMonitor();
+        monitor.start();
 	}
 
 	private MenuItem newMenuItem(String initial, String cmd, Menu parent)
@@ -116,8 +114,11 @@ public class TrayMonitor implements ActionListener
 				if (JOptionPane.showConfirmDialog(null, "This will stop the datbase server and web server.  Is that ok?", 
 					"Quit Scorekeeper", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
 				{
-					//webserverCtrl.stop();
-					System.exit(0);
+                    synchronized (monitor)
+                    {
+                        monitor.done = true;
+                        monitor.notify();
+                    }
 				}
 				
 			default:
@@ -156,28 +157,74 @@ public class TrayMonitor implements ActionListener
 	 * Thread to keep pinging our services to check their status.  It pauses for 3 seconds but can
 	 * be woken by anyone calling notify on the class object.
 	 */
-    class BackgroundChecker extends Thread
+    class DockerMonitor extends Thread
     {
     	boolean done = false;
-    	public BackgroundChecker()
+        
+        Image currentIcon;
+        ProcessBuilder up;
+        ProcessBuilder down;
+        ProcessBuilder top;
+        ProcessBuilder ps;
+
+    	public DockerMonitor()
     	{
-    		super("Background Checker");
+    		super("Docker Monitor");
+            up   = new ProcessBuilder("docker-compose", "-p", "test2", "-f", "docker-compose.yaml", "up", "-d");
+            down = new ProcessBuilder("docker-compose", "-p", "test2", "-f", "docker-compose.yaml", "down");
+            top  = new ProcessBuilder("docker-compose", "-p", "test2", "-f", "docker-compose.yaml", "top");
+            ps   = new ProcessBuilder("docker-compose", "-p", "test2", "-f", "docker-compose.yaml", "ps");
+            currentIcon = null;
     	}
     	
     	@Override
     	public void run()
     	{
+            try {
+                log.info(String.format("Running %s", up.command().toString()));
+                Process p = up.start();
+                log.info("docker up returns " + p.waitFor());
+            } catch (Exception ioe) {
+                log.log(Level.SEVERE, "Unable to start services: " + ioe, ioe);
+            }
+
     		while (!done)
     		{
     			try {
-					trayIcon.setImage(coneok); // : conewarn);
+                    Process p = ps.start();
+			        log.info(String.format("Running %s", ps.command().toString()));
+                    log.info("docker ps returns " + p.waitFor());
+                    InputStream is = p.getInputStream();
+                    byte buf[] =  new byte[8192];
+                    is.read(buf);
+                    System.out.println(new String(buf));
+                    is.close();
+                        
+                    Image next = coneok;
+                    if (next != currentIcon) {
+    					trayIcon.setImage(next); 
+                        currentIcon = next;
+                    }
+
     				synchronized (this) { this.wait(5000); }
 
-				} catch (InterruptedException e) {}
+				} catch (InterruptedException e) {
+                } catch (IOException ioe) {
+                }
     		}
-    	}
+
+            try {
+                Process p = down.start();
+                log.info("docker down returns " + p.waitFor());
+            } catch (Exception ioe) {
+                log.log(Level.SEVERE, "Unable to shutdown: " + ioe, ioe);
+            }
+
+            System.exit(0);
+        }
     }
 	
+
     /**
      * Main entry point.
      * @param args passed to any launched application, ignored otherwise

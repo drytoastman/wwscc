@@ -8,6 +8,8 @@
 
 package org.wwscc.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import org.wwscc.bwtimer.Timer;
@@ -26,43 +28,35 @@ public class Launcher
 	public static void main(String args[])
 	{
 		String app = "";
+        List<String> passthru;
+        int startarg = 0;
+
 		try
 		{
 			System.setProperty("swing.defaultlaf", UIManager.getSystemLookAndFeelClassName());
-			if (args.length == 0)
-			{
-				Object o = JOptionPane.showInputDialog(null,
-						"Select Application", "Launcher", JOptionPane.QUESTION_MESSAGE, null, apps, null);
-				if (o == null)
-					return;
-				app = (String)o;
-			}
-			else
-			{
+			if (args.length > 0) {
 				app = args[0];
-			}
-
-			// Load serial library for applications that need it
-			if (app.equals("DataEntry") || app.equals("ProTimer") || app.equals("BWTimer"))
-			{
-				try {
-					System.loadLibrary("rxtxSerial");
-				} catch (Throwable e) {
-					JOptionPane.showMessageDialog(null, 
-						"Can't load the native serial drivers, serial port access will be broken.  Everything else should be fine.",
-						"Error", JOptionPane.ERROR_MESSAGE);
-				}
+                startarg = 1;
+			} else {
+				app = "TrayMonitor";
 			}
 
 			// Check if we are using a special prefs node, only used for testing
-			for (String arg : args) {
-				if (arg.startsWith("prefs=")) {
-					String node = arg.substring(arg.indexOf('=')+1);
+            passthru = new ArrayList<String>();
+			for (int ii = startarg; ii < args.length; ii++) {
+				if (args[ii].startsWith("prefs=")) {
+					String node = args[ii].substring(args[ii].indexOf('=')+1);
 					Prefs.setPrefsNode(node);
-				}
+				} else {
+                    passthru.add(args[ii]);
+                }
 			}			
 			
-			// Launch the application
+			// Repurpose the args and launch the application
+            args = new String[passthru.size()];
+            for (int ii = 0; ii < args.length; ii++)
+                args[ii] = passthru.get(ii);
+
 			if (app.equals("DataEntry"))
 				DataEntry.main(args);
 			else if (app.equals("ChallengeGUI"))
@@ -75,6 +69,8 @@ public class Launcher
 				Registration.main(args);
 			else if (app.equals("TrayMonitor"))
 				TrayMonitor.main(args);
+            else
+			    JOptionPane.showMessageDialog(null, "Unknown application " + app, "Error", JOptionPane.ERROR_MESSAGE);
 		}
 		catch (Throwable e)
 		{
