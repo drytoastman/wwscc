@@ -1,29 +1,30 @@
 ---
 version: '3.2'
 services:
-  nwrscweb:
-    container_name: "nwrscweb"
+
+  web:
     image: "drytoastman/nwrscweb"
     command: "webserver.py"
     networks:
-      nwrscnet:
+      net:
         ipv4_address: 192.168.24.2
     ports: ["80:80"]
-  nwrscdb:
-    container_name: "nwrscdb"
+
+  db:
     image: "postgres:9.6.3-alpine"
-    volumes: ["mydata:/var/lib/postgresql/data"]
+    volumes: ["database:/var/lib/postgresql/data"]
     networks:
-      nwrscnet:
+      net:
         ipv4_address: 192.168.24.3
     ports: ["54329:5432"]
 
 networks:
-  nwrscnet:
+  net:
     driver: bridge
     ipam:
       driver: default
       config: [subnet: 192.168.24.0/24]
 
 volumes:
-  mydata:
+  database:
+

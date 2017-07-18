@@ -21,8 +21,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +37,7 @@ public class TrayMonitor implements ActionListener
 {
 	private static final Logger log = Logger.getLogger(TrayMonitor.class.getName());
 	
-    MenuItem mQuit;
+    MenuItem mWebserver, mDatabase, mQuit;
     DockerMonitor monitor;
     Image coneok, conewarn;
     TrayIcon trayIcon;
@@ -55,19 +53,23 @@ public class TrayMonitor implements ActionListener
 	    }
 	    	    
 	    cmdline = args;
-        
-        trayPopup   = new PopupMenu();        
+        trayPopup   = new PopupMenu();
         Menu launch = new Menu("Launch");
         trayPopup.add(launch);
-        
+
+        mWebserver = new MenuItem("Web Off");
+        mDatabase  = new MenuItem("Database Off");
+
         newMenuItem("DataEntry",     "DataEntry",    launch);
         newMenuItem("Registration",  "Registration", launch);
         newMenuItem("Syncronizer",   "Synchronizer", launch);
         newMenuItem("ProTimer",      "ProTimer",     launch);
         newMenuItem("BWTimer",       "BWTimer",      launch);
         newMenuItem("ChallengeGUI",  "ChallengeGUI", launch);
-                
-        mQuit      = newMenuItem("Quit",                "quit",      trayPopup);
+        
+        mWebserver = newMenuItem("Web",      "web",  trayPopup);
+        mDatabase  = newMenuItem("Database", "db",   trayPopup);                
+        mQuit      = newMenuItem("Quit",     "quit", trayPopup);
 
         coneok   = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/wwscc/images/conesmall.png"));
         conewarn = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/wwscc/images/conewarn.png"));
@@ -110,6 +112,10 @@ public class TrayMonitor implements ActionListener
 		String cmd = e.getActionCommand();
 		switch (cmd)
 		{
+			case "web":
+				break;
+			case "db":
+				break;
 			case "quit":
 				if (JOptionPane.showConfirmDialog(null, "This will stop the datbase server and web server.  Is that ok?", 
 					"Quit Scorekeeper", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
@@ -120,6 +126,7 @@ public class TrayMonitor implements ActionListener
                         monitor.notify();
                     }
 				}
+				break;
 				
 			default:
 				launch(cmd);
@@ -159,48 +166,39 @@ public class TrayMonitor implements ActionListener
 	 */
     class DockerMonitor extends Thread
     {
-    	boolean done = false;
-        
         Image currentIcon;
-        ProcessBuilder up;
-        ProcessBuilder down;
-        ProcessBuilder top;
-        ProcessBuilder ps;
-
+    	boolean done;        
+        
     	public DockerMonitor()
     	{
     		super("Docker Monitor");
-            up   = new ProcessBuilder("docker-compose", "-p", "test2", "-f", "docker-compose.yaml", "up", "-d");
-            down = new ProcessBuilder("docker-compose", "-p", "test2", "-f", "docker-compose.yaml", "down");
-            top  = new ProcessBuilder("docker-compose", "-p", "test2", "-f", "docker-compose.yaml", "top");
-            ps   = new ProcessBuilder("docker-compose", "-p", "test2", "-f", "docker-compose.yaml", "ps");
             currentIcon = null;
+            done = false;
     	}
     	
     	@Override
     	public void run()
     	{
-            try {
-                log.info(String.format("Running %s", up.command().toString()));
-                Process p = up.start();
-                log.info("docker up returns " + p.waitFor());
-            } catch (Exception ioe) {
-                log.log(Level.SEVERE, "Unable to start services: " + ioe, ioe);
-            }
+    		if (DockerInterface.machinepresent())
+    		{
+    			DockerInterface.machineenv();
+    			if (!DockerInterface.machinecreated())
+    				DockerInterface.createmachine();
+    			if (!DockerInterface.machinerunning())
+    				DockerInterface.startmachine();
+    		}
+    		
+    		DockerInterface.up();
 
     		while (!done)
     		{
     			try {
-                    Process p = ps.start();
-			        log.info(String.format("Running %s", ps.command().toString()));
-                    log.info("docker ps returns " + p.waitFor());
-                    InputStream is = p.getInputStream();
-                    byte buf[] =  new byte[8192];
-                    is.read(buf);
-                    System.out.println(new String(buf));
-                    is.close();
-                        
-                    Image next = coneok;
+    				boolean res[] = DockerInterface.ps();
+                
+    				mWebserver.setLabel("Web " +     (res[0]?"On":"Off"));
+    				mDatabase.setLabel("Database " + (res[1]?"On":"Off"));
+                    Image next = (res[0] && res[1]) ? coneok : conewarn;
+                    
                     if (next != currentIcon) {
     					trayIcon.setImage(next); 
                         currentIcon = next;
@@ -209,17 +207,10 @@ public class TrayMonitor implements ActionListener
     				synchronized (this) { this.wait(5000); }
 
 				} catch (InterruptedException e) {
-                } catch (IOException ioe) {
                 }
     		}
 
-            try {
-                Process p = down.start();
-                log.info("docker down returns " + p.waitFor());
-            } catch (Exception ioe) {
-                log.log(Level.SEVERE, "Unable to shutdown: " + ioe, ioe);
-            }
-
+    		DockerInterface.down();
             System.exit(0);
         }
     }

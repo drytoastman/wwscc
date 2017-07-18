@@ -27,6 +27,8 @@ import java.util.logging.SimpleFormatter;
 import javax.swing.FocusManager;
 import javax.swing.JOptionPane;
 
+import sun.util.logging.PlatformLogger;
+
 /**
  */
 public class Logging
@@ -50,17 +52,22 @@ public class Logging
 			for(Handler handler : handlers) {
 				root.removeHandler(handler);
 			}
-	
+
 			// Get dialog alerts up first
 			AlertHandler ah = new AlertHandler();
-			ah.setLevel(Level.WARNING);	
+			ah.setLevel(Level.WARNING);
 			root.addHandler(ah);
 			
 			// Then console handler if desired (generally only when debugging)
 			if (System.getenv("CONSOLELOG") != null) {
-				root.addHandler(new ConsoleHandler());
+				ConsoleHandler ch = new ConsoleHandler();
+				ch.setLevel(Level.ALL);
+				root.addHandler(ch);
 			}
-	
+
+			// Set levels before windows preference load barfs useless data on the user
+			PlatformLogger.getLogger("java.util.prefs").setLevel(PlatformLogger.Level.SEVERE);
+
 			// Then try to setup file logging (this might cause errors if we can't figure out where our logdir is)
 			File logdir = getLogDir();
 			FileHandler fh = new FileHandler(new File(logdir, name+".%g.log").getAbsolutePath(), 1000000, 10, true);
@@ -69,7 +76,7 @@ public class Logging
 			root.addHandler(fh);
 			
 			root.setLevel(Level.WARNING);
-			Logger.getLogger("org.wwscc").setLevel(Level.FINER);
+			Logger.getLogger("org.wwscc").setLevel(Level.FINEST);			
 		}
 		catch (IOException ioe)
 		{

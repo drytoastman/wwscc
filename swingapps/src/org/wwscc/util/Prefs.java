@@ -9,8 +9,6 @@ package org.wwscc.util;
 
 import java.awt.Rectangle;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +27,6 @@ public class Prefs
 	private static final Logger log = Logger.getLogger(Prefs.class.getCanonicalName());
 	
 	private static Preferences prefs;
-	private static String installroot = null;
 	
 	static
 	{
