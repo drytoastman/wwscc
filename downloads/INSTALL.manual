@@ -14,7 +14,7 @@ Basic manual installation steps with examples:
 3. SerialPort Access: If you will need serial port access on the local machine, you must install the RXTX JNI library
        Ubuntu: Run "sudo apt-get install librxtx-java"
           Mac: Copy librxtxSerial.jnilib to /Library/Java/Extensions
-      Windows: Copy rxtxSerial.dll to c:\Program Files\Java\jre[VER]\bin
+      Windows: Copy rxtxSerial.dll to c:\Program Files\Java\jre[VERSION]\bin
 
 4. Network Setup: You may need to open firewall ports or stop other services for all Scorekeeper features to work on a network
     TCP/80:    Required for others to see the local web server

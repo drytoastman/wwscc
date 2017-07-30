@@ -7,7 +7,6 @@ services:
     command: "webserver.py"
     networks:
       net:
-        ipv4_address: 192.168.24.2
     ports: ["80:80"]
 
   db:
@@ -15,15 +14,11 @@ services:
     volumes: ["database:/var/lib/postgresql/data"]
     networks:
       net:
-        ipv4_address: 192.168.24.3
     ports: ["54329:5432"]
 
 networks:
   net:
     driver: bridge
-    ipam:
-      driver: default
-      config: [subnet: 192.168.24.0/24]
 
 volumes:
   database:

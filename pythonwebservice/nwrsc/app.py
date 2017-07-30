@@ -145,7 +145,7 @@ def create_app(config=None):
         "PORT":                    int(os.environ.get('NWRSC_PORT',     80)),
         "DEBUG":                  bool(os.environ.get('NWRSC_DEBUG',    False)),
         "PROFILE":                bool(os.environ.get('NWRSC_PROFILE',  False)),
-        "DBHOST":                      os.environ.get('NWRSC_DBHOST',   '192.168.24.3'),
+        "DBHOST":                      os.environ.get('NWRSC_DBHOST',   'db'),
         "DBPORT":                  int(os.environ.get('NWRSC_DBPORT',   5432)),
         "DBUSER":                      os.environ.get('NWRSC_DBUSER',   'localuser'),
         "SHOWLIVE":               bool(os.environ.get('NWRSC_SHOWLIVE', True)),
