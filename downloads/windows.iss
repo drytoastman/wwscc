@@ -21,9 +21,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "{app}\logs"; Permissions: users-modify; Flags: uninsneveruninstall
 
 [Files]
-Source: "scorekeeperapps-{#Version}.jar"; DestDir: "{app}";
-Source: "docker-compose.yaml";            DestDir: "{app}";
-Source: "rxtxSerial.dll";                 DestDir: "{code:getJavaPath}\bin";
+Source: "scorekeeperapps-{#Version}.jar";          DestDir: "{app}";
+Source: "..\pythonwebservice\docker-compose.yaml"; DestDir: "{app}";
+Source: "rxtxSerial.dll";                          DestDir: "{code:getJavaPath}\bin";
 
 [Icons]
 Name: "{group}\Launcher-{#Version}"; WorkingDir: "{app}"; Filename: "{code:getJavaPath}\bin\javaw.exe"; Parameters: "-jar scorekeeperapps-{#Version}.jar TrayMonitor";

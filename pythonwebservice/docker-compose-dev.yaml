@@ -1,8 +1,8 @@
 ---
-# Need to specify the main docker-compose network and images before these additions
+# Need to specify the main docker-compose file before this file
 version: '3.2'
 services:
-  nwrscweb:
+  web:
     # mount the local user's directory and create a link in the container so it uses the local copy of the web service
     build: .
     volumes: [".:/code"]

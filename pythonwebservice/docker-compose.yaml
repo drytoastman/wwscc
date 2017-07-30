@@ -1,0 +1,21 @@
+---
+version: '3.2'
+services:
+
+  web:
+    image:    "drytoastman/nwrscweb:${TAG:-latest}"
+    networks: { net1: }
+    ports:    ["80:80"]
+
+  db:
+    image:    "postgres:9.6.3-alpine"
+    volumes:  ["database:/var/lib/postgresql/data"]
+    networks: { net1: }
+    ports:    ["54329:5432"]
+
+networks:
+  net1:
+
+volumes:
+  database:
+

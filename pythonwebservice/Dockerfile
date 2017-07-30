@@ -6,3 +6,4 @@ RUN apk add --no-cache libpq libstdc++ \
     && apk del buildreq
 COPY . /tmp/app
 RUN pip install /tmp/app
+CMD ["webserver.py"]
