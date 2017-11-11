@@ -16,12 +16,12 @@
 
 <tr title='when registration should open'>
 <th>Registration Opens</th>
-<td><input id='formregclosed' type='text' size='40' name='regopened' value="${c.event.regopened.strftime("%m/%d/%Y %H:%M")}"></td>
+<td><input id='formregopened' type='text' size='40' name='regopened' value="${c.event.regopened.strftime("%m/%d/%Y %H:%M")}"></td>
 </tr>
 
 <tr title='when registration should close'>
 <th>Registration Closes</th>
-<td><input id='formregopened' type='text' size='40' name='regclosed' value="${c.event.regclosed.strftime("%m/%d/%Y %H:%M")}"></td>
+<td><input id='formregclosed' type='text' size='40' name='regclosed' value="${c.event.regclosed.strftime("%m/%d/%Y %H:%M")}"></td>
 </tr>
 
 <th>Location</th>
@@ -132,10 +132,23 @@
 
 <script>
 $(document).ready(function(){
-	$("#formdate").AnyTime_picker( { format: "%m/%d/%Y" } );
+    $("#formdate").AnyTime_picker( { format: "%m/%d/%Y" } );
     $("#formregopened").AnyTime_picker( { format: "%m/%d/%Y %H:%i" } );
     $("#formregclosed").AnyTime_picker( { format: "%m/%d/%Y %H:%i" } );
     $("#eventform .showall").click(function() { $("#eventform .advanced").show(); $("#eventform .showall").hide(); return false; });
     $("#eventform .hideadv").click(function() { $("#eventform .advanced").hide(); $("#eventform .showall").show(); return false; }).click();
+    $("#formdate").change(function() {
+        d = $(this).val().split("/");
+        prevmonth = d[0]-1;
+        if (prevmonth < 10) {
+            prevmonth = "0"+prevmonth;
+        }
+        prev2days = d[1]-2;
+        if (prev2days < 10) {
+            prev2days = "0"+prev2days;
+        }
+        $('#formregopened').val(prevmonth + "/" + d[1] + "/" + d[2] + " 00:00");
+        $('#formregclosed').val(d[0] + "/" + prev2days + "/" + d[2] + " 18:00");
+    });
 });
 </script>

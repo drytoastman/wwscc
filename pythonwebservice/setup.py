@@ -26,7 +26,7 @@ x = setup(
 		"Pylons==0.10rc1",
 		"Routes==1.10.3",
 		"simplejson==2.0.8",
-        "SQLAlchemy==0.5.8",
+		"SQLAlchemy==0.5.8",
 		"Tempita==0.2",
 		"WebError==0.10.1",
 		"WebHelpers==0.6.4",

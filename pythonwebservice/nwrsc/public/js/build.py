@@ -34,8 +34,8 @@ def concat(files, output):
 	dest.close()
 
 
-
-compile([
+compilations = {
+	'register.js': [
 		'external/jquery-1.9.0.js',
 		'external/jquery-ui-1.10.0.custom.js',
 		'external/jquery.validate.1.10.js',
@@ -44,9 +44,9 @@ compile([
 		'internal/drivereditor.js',
 		'internal/regeditor.js',
 		'internal/register.js'
-		], 'register.js')
+		],
 
-compile([
+	'admin.js': [
 		'external/jquery-1.9.0.js',
 		'external/jquery-ui-1.10.0.custom.js',
 		'external/jquery.validate.1.10.js',
@@ -59,20 +59,30 @@ compile([
 		'internal/drivereditor.js',
 		'internal/regeditor.js',
 		'internal/admin.js'
-		], 'admin.js')
+		],
 
-compile([
+	'announcer.js': [
 		'external/jquery-1.9.0.js',
 		'external/jquery-ui-1.10.0.custom.js',
 		'internal/nwr.js',
 		'internal/announcer.js',
-		], 'announcer.js')
+		],
 
-compile([
+	'live.js': [
 		'external/jquery-1.9.0.js',
 		'external/migrate.js',
 		'external/jquery.mobile-1.4.3.js',
 		'internal/nwr.js',
 		'internal/live.js',
-		], 'live.js')
+		]
+}
+
+
+if __name__ == '__main__':
+	which = compilations.keys()
+	if len(sys.argv) > 1:
+		which = sys.argv[1:]
+
+	for k in which:
+		compile(compilations[k], k)
 
